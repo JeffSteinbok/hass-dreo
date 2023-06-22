@@ -24,5 +24,5 @@ PRESET_MODES = {
 SPEED_RANGES = {  
     # off is not included
     "DR-HTF008S": (1, 5),
-    "DR-HTF001S": (1, 5)
+    "DR-HTF001S": (1, 6)
 }
