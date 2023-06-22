@@ -1,0 +1,12 @@
+{
+  "domain": "dreo",
+  "name": "Dreo",
+  "codeowners": ["@jeffsteinbok"],
+  "config_flow": false,
+  "requirements": ["websockets"],
+  "dependencies": [],
+  "documentation": "https://github.com/user/my_component/",
+  "iot_class": "cloud_push",
+  "version": "0.0.1",
+  "integration_type": "hub"
+}
