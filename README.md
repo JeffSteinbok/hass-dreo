@@ -3,6 +3,7 @@
 ## Installation
 
 Currently supported fans:
+- DR-HTF001S
 - DR-HTF008S
 
 ### configuration.yaml
