@@ -2,6 +2,9 @@
 
 ## Installation
 
+Currently supported fans:
+- DR-HTF008S
+
 ### configuration.yaml
 
 ```
