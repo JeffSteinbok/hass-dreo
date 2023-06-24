@@ -1,4 +1,5 @@
-# Dreo Fan Integration for Home Assistant
+# Dreo Smart Device Integration for Home Assistant
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 HomeAssistant integration for Dreo brand smart devices. 
 
@@ -15,7 +16,10 @@ The integration will not load if the fan is of another model.
 _I plan to add HACS support in the near future, but for now, this is manually installed._
 
 ### HACS (Recommended)
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+
+1. Add this repository to HACS *AS A CUSTOM REPOSITORY*.
+1. Search for *Dreo Smart Device*, and choose install. 
+1. Reboot Home Assistant and configure as below.
 
 ### Manually
 Copy the `dreo` directory into your `/config/custom_components` directory, then restart your HomeAssistant Core.
