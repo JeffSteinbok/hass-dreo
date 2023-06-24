@@ -11,7 +11,7 @@ Currently supported fans:
 - DR-HTF001S
 - DR-HTF008S
 
-The integration will not load if the fan is of another model. If you have a different model that you can try, let me know in the [https://github.com/JeffSteinbok/hass-dreo/issues](Issues) and I'll add it. Please make sure to include:
+The integration will not load if the fan is of another model. If you have a different model that you can try, let me know in the Issues and I'll add it. Please make sure to include:
 * Model - in the format above
 * Number of speeds the fan supports (not including "off")
 * Does the fan support oscilating?
