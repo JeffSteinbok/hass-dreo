@@ -7,10 +7,16 @@ This integration is based on the engineering that Gavin Zyonse did for the HomeB
 
 ## Compatability
 Currently supported fans:
-The integration will not load if the fan is of another model.
 
 - DR-HTF001S
 - DR-HTF008S
+
+The integration will not load if the fan is of another model. If you have a different model that you can try, let me know in the [https://github.com/JeffSteinbok/hass-dreo/issues](Issues) and I'll add it. Please make sure to include:
+* Model - in the format above
+* Number of speeds the fan supports (not including "off")
+* Does the fan support oscilating?
+* What preset modes are supported?
+* Is temperature supported?
 
 ## Installation
 _I plan to add HACS support in the near future, but for now, this is manually installed._
