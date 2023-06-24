@@ -48,8 +48,6 @@ logger:
 
 ### To Do
 This is my first HA plugin and a bit slow going; bunch of stuff left to do:
-* HACS Support
-* GitHub Releases
 * CI Pipeline
 * Tests
 * Config Flow
