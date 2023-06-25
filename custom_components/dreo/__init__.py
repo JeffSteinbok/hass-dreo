@@ -4,7 +4,7 @@ import threading
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, Platform
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_REGION, Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -32,6 +32,7 @@ CONFIG_SCHEMA = vol.Schema(
             {
                 vol.Required(CONF_USERNAME): cv.string,
                 vol.Required(CONF_PASSWORD): cv.string,
+                vol.Optional(CONF_REGION, default='us'): cv.string
             }
         ),
     },
@@ -45,10 +46,11 @@ async def async_setup(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Set up dreo as config entry."""
     username = config_entry[COMPONENT_DOMAIN].get(CONF_USERNAME)
     password = config_entry[COMPONENT_DOMAIN].get(CONF_PASSWORD)
+    region = config_entry[COMPONENT_DOMAIN].get(CONF_REGION)
     _LOGGER.debug(username)
 
     from .pydreo import PyDreo
-    manager = PyDreo(username, password)
+    manager = PyDreo(username, password, region)
 
     login = await hass.async_add_executor_job(manager.login)
 

@@ -56,7 +56,7 @@ def object_factory(dev_type, config, dreo : "PyDreo") -> Tuple[str, PyDreoBaseDe
 class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
 
-    def __init__(self, username, password, redact=True):
+    def __init__(self, username, password, region, redact=True):
         """Initialize Dreo class with username, password and time zone."""
 
         self._redact = redact
@@ -64,6 +64,8 @@ class PyDreo:  # pylint: disable=function-redefined
             self.redact = redact
         self.username = username
         self.password = password
+        self.region = region
+        self.api_url = f"https://app-api-{region}.dreo-cloud.com"
         self.token = None
         self.account_id = None
         self.devices = None
@@ -171,6 +173,7 @@ class PyDreo:  # pylint: disable=function-redefined
         self.in_process = True
         proc_return = False
         response, _ = Helpers.call_api(
+            self.api_url,
             '/api/v2/user-device/device/list',
             'get',
             headers=Helpers.req_headers(self),
@@ -198,6 +201,7 @@ class PyDreo:  # pylint: disable=function-redefined
         self.in_process = True
         proc_return = False
         response, _ = Helpers.call_api(
+            self.api_url,
             '/api/user-device/device/state',
             'get',
             headers=Helpers.req_headers(self),
@@ -230,6 +234,7 @@ class PyDreo:  # pylint: disable=function-redefined
             _LOGGER.error('Password invalid')
             return False
         response, _ = Helpers.call_api(
+            self.api_url,
             '/api/oauth/login', 'post',
             headers=Helpers.req_headers(self),
             json_object=Helpers.req_body(self, 'login')
@@ -271,7 +276,7 @@ class PyDreo:  # pylint: disable=function-redefined
     async def start_websocket(self):
         _LOGGER.info("Starting WebSocket for incoming changes.")
         # open websocket
-        url = f"wss://wsb-us.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={str(int(time.time() * 1000))}"
+        url = f"wss://wsb-{self.region}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={str(int(time.time() * 1000))}"
         async with websockets.connect(url) as ws:
             self.ws = ws
             _LOGGER.info('WebSocket successfully opened')

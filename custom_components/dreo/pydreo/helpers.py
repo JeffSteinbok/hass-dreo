@@ -13,7 +13,6 @@ import requests
 from .constant import LOGGER_NAME
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
-API_BASE_URL = "https://app-api-us.dreo-cloud.com"
 API_TIMEOUT = 30
 
 NUMERIC = Optional[Union[int, float, str]]
@@ -106,7 +105,7 @@ class Helpers:
         return stringvalue
 
     @staticmethod
-    def call_api(api: str, method: str, json_object:  Optional[dict] = None,
+    def call_api(url: str, api: str, method: str, json_object:  Optional[dict] = None,
                  headers: Optional[dict] = None) -> tuple:
         """Make API calls by passing endpoint, header and body."""
         response = None
@@ -114,24 +113,24 @@ class Helpers:
         try:
             _LOGGER.debug("=======call_api=============================")
             _LOGGER.debug("[%s] calling '%s' api", method, api)
-            _LOGGER.debug("API call URL: \n  %s%s", API_BASE_URL, api)
+            _LOGGER.debug("API call URL: \n  %s%s", url, api)
             _LOGGER.debug("API call headers: \n  %s",
                          Helpers.redactor(json.dumps(headers)))
             _LOGGER.debug("API call json: \n  %s",
                          Helpers.redactor(json.dumps(json_object)))
             if method.lower() == 'get':
                 r = requests.get(
-                    API_BASE_URL + api, headers=headers, params={**json_object, "timestamp": str(int(time.time() * 1000))},
+                    url + api, headers=headers, params={**json_object, "timestamp": str(int(time.time() * 1000))},
                     timeout=API_TIMEOUT
                 )
             elif method.lower() == 'post':
                 r = requests.post(
-                    API_BASE_URL + api, json=json_object, headers=headers,  params={"timestamp": str(int(time.time() * 1000))},
+                    url + api, json=json_object, headers=headers,  params={"timestamp": str(int(time.time() * 1000))},
                     timeout=API_TIMEOUT
                 )
             elif method.lower() == 'put':
                 r = requests.put(
-                    API_BASE_URL + api, json=json_object, headers=headers,
+                    url + api, json=json_object, headers=headers,
                     timeout=API_TIMEOUT
                 )
         except requests.exceptions.RequestException as e:
@@ -146,7 +145,7 @@ class Helpers:
                     _LOGGER.debug("API response: \n\n  %s \n ",
                                  Helpers.redactor(json.dumps(response)))
             else:
-                _LOGGER.debug('Unable to fetch %s%s', API_BASE_URL, api)
+                _LOGGER.debug('Unable to fetch %s%s', url, api)
         return response, status_code
 
     @staticmethod
