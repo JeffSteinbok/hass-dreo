@@ -9,6 +9,7 @@ This integration is based on the engineering that Gavin Zyonse did for the HomeB
 Currently supported fans:
 
 - DR-HTF001S
+- DR-HTF002S
 - DR-HTF008S
 - DR-HTF004S
 
@@ -41,6 +42,15 @@ dreo:
 
 fan:
     - platform: dreo  
+```
+
+If you are located in Europe (including UK) add eu region to dreo section
+
+```
+dreo:
+  username: [email]
+  password: [password]
+  region: eu
 ```
 
 ### Debugging
