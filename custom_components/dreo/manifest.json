@@ -5,9 +5,9 @@
   "config_flow": false,
   "dependencies": [],
   "documentation": "https://github.com/jeffsteinbok/hass-dreo/blob/master/README.md",
-  "issue_tracker": "https://github.com/jeffsteinbok/hass-dreo/issues",
   "integration_type": "hub",
   "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/jeffsteinbok/hass-dreo/issues",  
   "requirements": ["websockets"],
   "version": "0.0.2"
 }
