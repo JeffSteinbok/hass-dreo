@@ -28,31 +28,10 @@ _I plan to add HACS support in the near future, but for now, this is manually in
 
 1. Add this repository to HACS *AS A CUSTOM REPOSITORY*.
 1. Search for *Dreo Smart Device*, and choose install. 
-1. Reboot Home Assistant and configure as below.
+1. Reboot Home Assistant and configure from the "Add Integration" flow.
 
 ### Manually
 Copy the `dreo` directory into your `/config/custom_components` directory, then restart your HomeAssistant Core.
-
-### Configuration
-Add the following content to your `configuration.yaml` file.  I recommend using `secrets.yaml` and storing the login information there.
-
-```
-dreo:
-  username: [email]
-  password: [password]
-
-fan:
-    - platform: dreo  
-```
-
-If you are located in Europe (including UK) add eu region to dreo section
-
-```
-dreo:
-  username: [email]
-  password: [password]
-  region: eu
-```
 
 ### Debugging
 This integration logs to two loggers as shown below. To get verbose logs, change the log level.  Please have logs handy if you're reaching out for help.
@@ -66,7 +45,6 @@ logger:
 
 ### To Do
 This is my first HA plugin and a bit slow going; bunch of stuff left to do:
-* CI Pipeline
 * Tests
 * Config Flow
 * Temperature Sensor
