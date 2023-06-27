@@ -17,21 +17,13 @@ from homeassistant.util.percentage import (
 )
 
 from .basedevice import DreoBaseDeviceHA
-from .const import (DOMAIN, DREO_DISCOVERY, DREO_FANS)
+from .const import (DOMAIN, DREO_DISCOVERY, DREO_FANS, DREO_MANAGER)
 from .pydreo.constant import *      
 from .pydreo.pydreofan import PyDreoFan
 
 _LOGGER = logging.getLogger("dreo")
 
-DEV_TYPE_TO_HA = {
-    "DR-HTF008S": "fan",
-}
-
-from . import (
-    COMPONENT_DATA
-)
-
-async def async_setup_platform(
+async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
@@ -41,10 +33,10 @@ async def async_setup_platform(
     _LOGGER.info("Starting Dreo Fan Platform")
     _LOGGER.debug("Dreo Fan:async_setup_platform")
 
-    dreoData = hass.data[COMPONENT_DATA]
+    manager = hass.data[DOMAIN][DREO_MANAGER]
 
     fansHAs = []
-    for fanEntity in dreoData.fans:
+    for fanEntity in manager.fans:
         fansHAs.append(DreoFanHA(fanEntity))
 
     async_add_entities(fansHAs)

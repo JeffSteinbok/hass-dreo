@@ -56,7 +56,6 @@ class Helpers:
             body['himei'] =  "faede31549d649f58864093158787ec9"
             body['password'] = cls.hash_password(manager.password)
             body['scope'] =  "all"
-            print("HI THERE")
             print(body)
 
         elif type_ == 'devicelist':
@@ -105,7 +104,10 @@ class Helpers:
         return stringvalue
 
     @staticmethod
-    def call_api(url: str, api: str, method: str, json_object:  Optional[dict] = None,
+    def call_api(url: str, 
+                 api: str, 
+                 method: str, 
+                 json_object: Optional[dict] = None,
                  headers: Optional[dict] = None) -> tuple:
         """Make API calls by passing endpoint, header and body."""
         response = None
@@ -135,8 +137,6 @@ class Helpers:
                 )
         except requests.exceptions.RequestException as e:
             _LOGGER.debug(e)
-        except Exception as e:  # pylint: disable=broad-except
-            _LOGGER.debug(e)
         else:
             if r.status_code == 200:
                 status_code = 200
@@ -157,41 +157,3 @@ class Helpers:
         if isinstance(r, dict) and r.get('code') == 0:
             return True
         return False
-
-    @staticmethod
-    def build_details_dict(r: dict) -> dict:
-        """Build details dictionary from API response."""
-        return {
-            'active_time': r.get('activeTime', 0),
-            'energy': r.get('energy', 0),
-            'night_light_status': r.get('nightLightStatus', None),
-            'night_light_brightness': r.get('nightLightBrightness', None),
-            'night_light_automode': r.get('nightLightAutomode', None),
-            'power': r.get('power', 0),
-            'voltage': r.get('voltage', 0),
-        }
-
-    @staticmethod
-    def build_config_dict(r: dict) -> dict:
-        """Build configuration dictionary from API response."""
-        if r.get('threshold') is not None:
-            threshold = r.get('threshold')
-        else:
-            threshold = r.get('threshHold')
-        return {
-            'current_firmware_version': r.get('currentFirmVersion'),
-            'latest_firmware_version': r.get('latestFirmVersion'),
-            'maxPower': r.get('maxPower'),
-            'threshold': threshold,
-            'power_protection': r.get('powerProtectionStatus'),
-            'energy_saving_status': r.get('energySavingStatus'),
-        }
-
-    @staticmethod
-    def named_tuple_to_str(named_tuple: NamedTuple) -> str:
-        """Convert named tuple to string."""
-        tuple_str = ''
-        for key, val in named_tuple._asdict().items():
-            tuple_str += f'{key}: {val}, '
-        return tuple_str
-

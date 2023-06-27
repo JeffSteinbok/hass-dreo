@@ -11,43 +11,22 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .const import (
     DOMAIN,
-    SERVICE_UPDATE_DEVS,
-    DREO_DISCOVERY,
     DREO_FANS,
     DREO_MANAGER
 )
 
 _LOGGER = logging.getLogger("dreo")
 
-
 DOMAIN = "dreo"
-COMPONENT_DOMAIN = "dreo"
-COMPONENT_DATA = "dreo-data"
-COMPONENT_ATTRIBUTION = "Data provided by Dreo servers."
-COMPONENT_BRAND = "Dreo"
 
-CONFIG_SCHEMA = vol.Schema(
-    {
-        COMPONENT_DOMAIN: vol.Schema(
-            {
-                vol.Required(CONF_USERNAME): cv.string,
-                vol.Required(CONF_PASSWORD): cv.string,
-                vol.Optional(CONF_REGION, default='us'): cv.string
-            }
-        ),
-    },
-    extra=vol.ALLOW_EXTRA
-)
-
-async def async_setup(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
 
     _LOGGER.debug("async_setup")
 
-    """Set up dreo as config entry."""
-    username = config_entry[COMPONENT_DOMAIN].get(CONF_USERNAME)
-    password = config_entry[COMPONENT_DOMAIN].get(CONF_PASSWORD)
-    region = config_entry[COMPONENT_DOMAIN].get(CONF_REGION)
-    _LOGGER.debug(username)
+    _LOGGER.debug(config_entry.data.get(CONF_USERNAME))
+    username = config_entry.data.get(CONF_USERNAME)
+    password = config_entry.data.get(CONF_PASSWORD)
+    region = "us"
 
     from .pydreo import PyDreo
     manager = PyDreo(username, password, region)
@@ -64,15 +43,11 @@ async def async_setup(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
         _LOGGER.error("Unable to load devices from the dreo server")
         return False
 
-    # TODO: What's the difference?
-    #device_dict = await hass.async_add_executor_job(async_process_devices, hass, manager)
-    device_dict = await async_process_devices(hass, manager)
+    device_dict = process_devices(manager)
 
-    # TODO: Move all of this into the manager init?
     manager.start_monitoring()
 
-    #forward_setup = hass.config_entries.async_forward_entry_setup
-    hass.data[COMPONENT_DATA] = manager
+    forward_setup = hass.config_entries.async_forward_entry_setup
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DREO_MANAGER] = manager
 
@@ -84,32 +59,10 @@ async def async_setup(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
         fans.extend(device_dict[DREO_FANS])
         platforms.append(Platform.FAN)
 
-    #await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
-
-    async def async_new_device_discovery(service: ServiceCall) -> None:
-        """Discover if new devices should be added."""
-        manager = hass.data[DOMAIN][DREO_MANAGER]
-        fans = hass.data[DOMAIN][DREO_FANS]
-        
-        dev_dict = await async_process_devices(hass, manager)
-        fan_devs = dev_dict.get(DREO_FANS, [])
-
-        fan_set = set(fan_devs)
-        new_fans = list(fan_set.difference(fans))
-        if new_fans and fans:
-            fans.extend(new_fans)
-            async_dispatcher_send(hass, DREO_DISCOVERY.format(DREO_FANS), new_fans)
-            return
-        if new_fans and not fans:
-            fans.extend(new_fans)
-            hass.async_create_task(forward_setup(config_entry, Platform.FAN))
-
-
-        manager.start_monitoring()
-
+    await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True
 
-async def async_process_devices(hass, manager):
+def process_devices(manager) -> dict:
     """Assign devices to proper component."""
     devices = {}
     devices[DREO_FANS] = []
