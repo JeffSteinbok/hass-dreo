@@ -48,4 +48,4 @@ This is my first HA plugin and a bit slow going; bunch of stuff left to do:
 * Tests
 * Config Flow
 * Temperature Sensor
-* Creating a Device in HA for the fan, inclusive of logo.
+* Creating a Device in HA for the fan, inclusive of logo
