@@ -14,7 +14,7 @@ import json
 import logging
 import time
 from itertools import chain
-from typing import Tuple
+from typing import Tuple, Optional
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .pydreofan import PyDreoFan
@@ -23,7 +23,7 @@ from .helpers import Helpers
 import asyncio
 import websockets
 
-from .constant import LOGGER_NAME
+from .constant import *
 
 __version__ = "0.0.1"
 
@@ -32,7 +32,6 @@ _LOGGER = logging.getLogger(LOGGER_NAME)
 API_RATE_LIMIT: int = 30
 
 DEFAULT_ENER_UP_INT: int = 21600
-
 
 def object_factory(dev_type, config, dreo : "PyDreo") -> Tuple[str, PyDreoBaseDevice]:
     """Get device type and instantiate class."""
@@ -56,16 +55,15 @@ def object_factory(dev_type, config, dreo : "PyDreo") -> Tuple[str, PyDreoBaseDe
 class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
 
-    def __init__(self, username, password, region, redact=True):
+    def __init__(self, username, password, redact=True):
         """Initialize Dreo class with username, password and time zone."""
+        self.auth_region = DREO_AUTH_REGION_NA # Will get the region from the auth call
 
         self._redact = redact
         if redact:
             self.redact = redact
         self.username = username
         self.password = password
-        self.region = region
-        self.api_url = f"https://app-api-{region}.dreo-cloud.com"
         self.token = None
         self.account_id = None
         self.devices = None
@@ -80,6 +78,16 @@ class PyDreo:  # pylint: disable=function-redefined
         self._dev_list = {
             'fans': self.fans,
         }
+
+    @property
+    def apiServerRegion(self) -> str:
+        """Return region."""
+        if (self.auth_region == DREO_AUTH_REGION_NA):
+            return DREO_API_REGION_US
+        elif (self.auth_region == DREO_AUTH_REGION_EU):
+            return DREO_API_REGION_EU
+        else:
+            _LOGGER.error("Invalid Auth Region:", self.auth_region)
 
     @property
     def redact(self) -> bool:
@@ -102,7 +110,7 @@ class PyDreo:  # pylint: disable=function-redefined
             for _, v in self._dev_list.items():
                 for dev in v:
                     if (
-                        dev.deviceId == new_dev.get('deviceId')
+                        dev.deviceId == new_dev.get(DEVICEID_KEY)
                     ):
                         return False
         return True
@@ -113,8 +121,8 @@ class PyDreo:  # pylint: disable=function-redefined
         dev_num = 0
         dev_rem = []
         for dev in devices:
-            if dev.get('deviceId') is not None:
-                dev['deviceId'] = dev['deviceId']
+            if dev.get(DEVICEID_KEY) is not None:
+                dev[DEVICEID_KEY] = dev[DEVICEID_KEY]
             dev_num += 1
             if dev_rem:
                 devices = [i for j, i in enumerate(
@@ -166,23 +174,16 @@ class PyDreo:  # pylint: disable=function-redefined
         return True
 
     def load_devices(self) -> bool:
-        """Return tuple listing outlets, switches, and fans of devices."""
         if not self.enabled:
             return False
 
         self.in_process = True
         proc_return = False
-        response, _ = Helpers.call_api(
-            self.api_url,
-            '/api/v2/user-device/device/list',
-            'get',
-            headers=Helpers.req_headers(self),
-            json_object=Helpers.req_body(self, 'devicelist'),
-        )
+        response, _ = self.call_dreo_api(DREO_API_DEVICELIST)
 
         if response and Helpers.code_check(response):
-            if 'data' in response and 'list' in response['data']:
-                device_list = response['data']['list']
+            if DATA_KEY in response and LIST_KEY in response[DATA_KEY]:
+                device_list = response[DATA_KEY][LIST_KEY]
                 proc_return = self.process_devices(device_list)
             else:
                 _LOGGER.error('Device list in response not found')
@@ -200,23 +201,17 @@ class PyDreo:  # pylint: disable=function-redefined
 
         self.in_process = True
         proc_return = False
-        response, _ = Helpers.call_api(
-            self.api_url,
-            '/api/user-device/device/state',
-            'get',
-            headers=Helpers.req_headers(self),
-            json_object={ **Helpers.req_body(self, 'devicestate'),
-                          'deviceSn': device.sn },
-        )
+        response, _ = self.call_dreo_api(DREO_API_DEVICESTATE, { DEVICESN_KEY: device.sn })
         
         if response and Helpers.code_check(response):
-            if 'data' in response and 'mixed' in response['data']:
-                device_state = response['data']['mixed']
+            if DATA_KEY in response and MIXED_KEY in response[DATA_KEY]:
+                device_state = response[DATA_KEY][MIXED_KEY]
                 device.update_state(device_state)
+                proc_return = True
             else:
                 _LOGGER.error('Mixed state in response not found')
         else:
-            _LOGGER.warning('Error retrieving device state')
+            _LOGGER.error('Error retrieving device state')
 
         self.in_process = False
 
@@ -233,22 +228,21 @@ class PyDreo:  # pylint: disable=function-redefined
         if pass_check is False:
             _LOGGER.error('Password invalid')
             return False
-        response, _ = Helpers.call_api(
-            self.api_url,
-            '/api/oauth/login', 'post',
-            headers=Helpers.req_headers(self),
-            json_object=Helpers.req_body(self, 'login')
-        )
-        print (response)
-        if Helpers.code_check(response) and 'data' in response:
-            self.token = response["data"]["access_token"]
-            print("TOKEN")
-            print(self.token)
-            self.enabled = True
-            _LOGGER.debug('Login successful')
-            _LOGGER.debug('token %s', self.token)
+        response, _ = self.call_dreo_api(DREO_API_LOGIN)
 
-            return True
+        if Helpers.code_check(response) and DATA_KEY in response:
+            # get the region code from auth
+            authRegion = response[DATA_KEY][REGION_KEY]
+            _LOGGER.info("Dreo Auth reports user region as: {0}".format(authRegion))
+            if (authRegion != self.auth_region):
+                _LOGGER.info("Dreo Auth reports different region than current; retrying.")
+                self.auth_region = authRegion
+                return self.login()
+            else:
+                self.token = response[DATA_KEY][ACCESS_TOKEN_KEY]
+                self.enabled = True
+                _LOGGER.debug('Login successful')
+                return True
         _LOGGER.error('Error logging in with username and password')
         return False
 
@@ -261,22 +255,42 @@ class PyDreo:  # pylint: disable=function-redefined
             return True
         return False
 
+    def call_dreo_api(self, 
+                      api: str,
+                      json_object: Optional[dict] = None,
+                      headers: Optional[dict] = None) -> tuple:
+        _LOGGER.debug("Calling Dreo API: {0}".format(api))
+        api_url = DREO_API_URL_FORMAT.format(self.apiServerRegion)
+
+        if (json_object is None):
+            json_object = {}
+
+        json_object_full = { **Helpers.req_body(self, api),
+                             **json_object }
+        
+        return Helpers.call_api(api_url,
+                         DREO_APIS[api][DREO_API_LIST_PATH],
+                         DREO_APIS[api][DREO_API_LIST_METHOD],
+                         json_object_full,
+                         Helpers.req_headers(self))    
+    
     def start_monitoring(self):
+        '''Initialize the websocket and start monitoring'''
+
+        def start_ws_wrapper() :
+            asyncio.run(self.start_websocket())
+
         self._event_thread = threading.Thread(
-            name="DreoWebSocketStream", target=self.start_test, args=()
+            name="DreoWebSocketStream", target=start_ws_wrapper, args=()
         )
         self._event_thread.setDaemon(True)
         self._event_thread.start()
         return True
 
-
-    def start_test(self):
-        asyncio.run(self.start_websocket())
-
     async def start_websocket(self):
         _LOGGER.info("Starting WebSocket for incoming changes.")
         # open websocket
-        url = f"wss://wsb-{self.region}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={str(int(time.time() * 1000))}"
+        url = f"wss://wsb-{self.apiServerRegion}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={str(int(time.time() * 1000))}"
         async with websockets.connect(url) as ws:
             self.ws = ws
             _LOGGER.info('WebSocket successfully opened')
@@ -323,5 +337,5 @@ class PyDreo:  # pylint: disable=function-redefined
             'timestamp': str(int(time.time() * 1000))
         }
         content = json.dumps(fullParams)
-        print(content)
+        _LOGGER.debug(content)
         asyncio.run(self.ws.send(content))
