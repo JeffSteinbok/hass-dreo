@@ -4,7 +4,7 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .pydreobasedevice import PyDreoBaseDevice
+from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .helpers import Helpers
 
 from .constant import *
@@ -21,8 +21,11 @@ class PyDreoFan(PyDreoBaseDevice):
         """Initialize air devices."""
         super().__init__(details, dreo)
 
-        self._speed_range = SPEED_RANGES[self.model]
-        self._preset_modes = PRESET_MODES[self.model]
+        if (self.model not in SUPPORTED_FANS):
+            raise UnknownModelError(self.model)
+        
+        self._speed_range = SUPPORTED_FANS[self.model][SPEED_RANGE_KEY]
+        self._preset_modes = SUPPORTED_FANS[self.model][PRESET_MODES_KEY]
         
     def __repr__(self):
         # Representation string of object.
