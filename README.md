@@ -34,6 +34,8 @@ _I plan to add HACS support in the near future, but for now, this is manually in
 Copy the `dreo` directory into your `/config/custom_components` directory, then restart your HomeAssistant Core.
 
 ### Debugging
+Idealy, use the Diagnostics feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
+
 This integration logs to two loggers as shown below. To get verbose logs, change the log level.  Please have logs handy if you're reaching out for help.
 
 ```
