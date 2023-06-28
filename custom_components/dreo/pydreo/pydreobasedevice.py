@@ -10,6 +10,9 @@ from .constant import *
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
+class UnknownModelError(Exception):
+    pass
+    
 class PyDreoBaseDevice(object):
     """Base class for all Dreo devices.
 
@@ -24,7 +27,8 @@ class PyDreoBaseDevice(object):
         self._model = details.get("model", None)
         self._dreo = dreo
         self._is_on = False
-
+        
+        self.raw_state = None
         self._attr_cbs = []
         self._lock = threading.Lock()
 

@@ -7,7 +7,7 @@ import logging
 import threading
 
 """Dreo API Device Libary."""
-
+import sys
 import logging
 import time
 import json
@@ -16,7 +16,7 @@ import time
 from itertools import chain
 from typing import Tuple, Optional
 
-from .pydreobasedevice import PyDreoBaseDevice
+from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
 from .helpers import Helpers
 
@@ -30,27 +30,6 @@ __version__ = "0.0.1"
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 API_RATE_LIMIT: int = 30
-
-DEFAULT_ENER_UP_INT: int = 21600
-
-def object_factory(dev_type, config, dreo : "PyDreo") -> Tuple[str, PyDreoBaseDevice]:
-    """Get device type and instantiate class."""
-    def fans(dev_type, config, manager):
-        fan_cls = fan_mods.fan_modules[dev_type]  # noqa: F405
-        fan_obj = getattr(fan_mods, fan_cls)
-        return 'fans', fan_obj(config, manager)
-
-    if dev_type in fan_mods.fan_modules:  # type: ignore  # noqa: F405
-        type_str, dev_obj = fans(dev_type, config, dreo)
-    else:
-        _LOGGER.debug('Unknown device named %s model %s',
-                     config.get('deviceName', ''),
-                     config.get('deviceType', '')
-                     )
-        type_str = 'unknown'
-        dev_obj = None
-    return type_str, dev_obj
-
 
 class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
@@ -129,10 +108,10 @@ class PyDreo:  # pylint: disable=function-redefined
                             devices) if j not in dev_rem]
         return devices
 
-    def process_devices(self, dev_list: list) -> bool:
+    def _process_devices(self, dev_list: list) -> bool:
         """Instantiate Device Objects."""
         devices = self.set_dev_id(dev_list)
-        _LOGGER.debug('pydreo.process_devices')
+        _LOGGER.debug('pydreo._process_devices')
         num_devices = 0
         for _, v in self._dev_list.items():
             if isinstance(v, list):
@@ -152,24 +131,16 @@ class PyDreo:  # pylint: disable=function-redefined
 
         #detail_keys = ['deviceType', 'deviceName', 'deviceStatus']
         for dev in devices:
+            # For now, let's keep this simple and just support fans...
+            # Get the state of the device...seperate API call...boo
             try:
-                #device_str, device_obj = object_factory(dev_type, dev, self)
-                #device_list = getattr(self, device_str)
-                #device_list.append(device_obj)
-                print(dev)
-                # For now, let's keep this simple and just support fans...
-
-                # Get the state of the device...seperate API call...boo
-                
-
                 deviceFan = PyDreoFan(dev, self)
                 self.load_device_state(deviceFan)
                 self.fans.append(deviceFan)
                 self._deviceListBySn[deviceFan.sn] = deviceFan
-            except AttributeError as err:
-                _LOGGER.debug('Error - %s', err)
-                _LOGGER.debug('%s device not added', dev_type)
-                continue
+            except UnknownModelError as ume:
+                _LOGGER.warning("Unknown fan model: %s", ume)
+                _LOGGER.debug(dev)
 
         return True
 
@@ -181,10 +152,14 @@ class PyDreo:  # pylint: disable=function-redefined
         proc_return = False
         response, _ = self.call_dreo_api(DREO_API_DEVICELIST)
 
+        # Stash the raw response for use by the diagnostics system, so we don't have to pull 
+        # logs
+        self.raw_response = response
+
         if response and Helpers.code_check(response):
             if DATA_KEY in response and LIST_KEY in response[DATA_KEY]:
                 device_list = response[DATA_KEY][LIST_KEY]
-                proc_return = self.process_devices(device_list)
+                proc_return = self._process_devices(device_list)
             else:
                 _LOGGER.error('Device list in response not found')
         else:
@@ -203,6 +178,9 @@ class PyDreo:  # pylint: disable=function-redefined
         proc_return = False
         response, _ = self.call_dreo_api(DREO_API_DEVICESTATE, { DEVICESN_KEY: device.sn })
         
+        # stash the raw return value from the devicestate api call
+        device.raw_state = response
+
         if response and Helpers.code_check(response):
             if DATA_KEY in response and MIXED_KEY in response[DATA_KEY]:
                 device_state = response[DATA_KEY][MIXED_KEY]
@@ -322,7 +300,6 @@ class PyDreo:  # pylint: disable=function-redefined
             except websockets.exceptions.ConnectionClosed:
                 _LOGGER.error('Dreo WebSocket Closed')
                 break
-        
 
     def _ws_consume_message(self, message) :
         messageDeviceSn = message["devicesn"]
