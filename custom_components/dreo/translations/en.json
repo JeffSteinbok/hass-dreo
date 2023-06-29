@@ -1,0 +1,19 @@
+{
+    "config": {
+      "step": {
+        "user": {
+          "title": "Enter Dreo Username and Password",
+          "data": {
+            "username": "Email Address",
+            "password": "Password"
+          }
+        }
+      },
+      "error": {
+        "invalid_auth": "Authentication failed."
+      },
+      "abort": {
+        "single_instance_allowed": "Only one instance is allowed."
+      }
+    }
+  }
