@@ -303,8 +303,14 @@ class PyDreo:  # pylint: disable=function-redefined
 
     def _ws_consume_message(self, message) :
         messageDeviceSn = message["devicesn"]
-        device : PyDreoBaseDevice = self._deviceListBySn[messageDeviceSn] 
-        device.handle_server_update_base(message)
+
+        if (messageDeviceSn in self._deviceListBySn):
+            device = self._deviceListBySn[messageDeviceSn]
+            device.handle_server_update_base(message)
+        else:
+            # Message is to an unknown device, log it out just in case...
+            _LOGGER.debug("Received message for unknown or unsupported device. SN: {0}".format(messageDeviceSn))
+            _LOGGER.debug("Message: {0}".format(message))
 
     def send_command(self, device : PyDreoBaseDevice, params):
         fullParams = {
