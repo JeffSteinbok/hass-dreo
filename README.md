@@ -5,6 +5,9 @@ HomeAssistant integration for Dreo brand smart devices.
 
 This integration is based on the engineering that Gavin Zyonse did for the HomeBridge integration here: https://github.com/zyonse/homebridge-dreo.
 
+## IMPORTANT NOTE ON CONFIGURATION
+If you used the very early version of this that required editing `configuration.yaml`, you will need to do a 1-time reconfiguration. You can delete the configuration entries you added and go through the configuration flow within the HomeAssistant web site.
+
 ## Compatability
 Currently supported fans:
 
@@ -14,12 +17,7 @@ Currently supported fans:
 - DR-HTF007S
 - DR-HTF008S
 
-The integration will not load if the fan is of another model. If you have a different model that you can try, let me know in the Issues and I'll add it. Please make sure to include:
-* Model - in the format above
-* Number of speeds the fan supports (not including "off")
-* Does the fan support oscilating?
-* What preset modes are supported?
-* Is temperature supported?
+If you have a different model that you can try, please see instructions [below](#addingfans).
 
 ## Installation
 _I plan to add HACS support in the near future, but for now, this is manually installed._
@@ -43,6 +41,29 @@ logger:
     logs:
         dreo: info
         pydreo: info
+```
+
+<a name="addingFans"></a>
+### Adding New Fans
+Don't see your model listed above? Let me know in the Issues and I'll add it. Please make sure to include:
+
+* Model - in the format above
+* Number of speeds the fan supports (not including "off")
+* Does the fan support oscilating?
+* What preset modes are supported?
+* Is temperature supported?
+
+Depending on answers, I may reach out and need you to pull some debug logs.
+
+#### Debug Logs for New Fans
+
+1. Turn on **debug** logging for **pydreo** and start up HA.
+1. Go to your Dreo app on your phone, and perform the various commands you want to be able to use in HA.  Dreo servers will send updates to the WebSocket i'm listening on.
+1. Go look at the logs, you should see something like the below.  Send me that, and if you can, how it maps to the actions you were performing.
+
+```
+2023-06-29 01:02:25,312 - pydreo - DEBUG - Received message for unknown or unsupported device. SN: XXX341964289-77f2977b24191a4a:001:0000000000b
+2023-06-29 01:02:25,312 - pydreo - DEBUG - Message: {'method': 'control-report', 'devicesn': 'XXX0393341964289-77f2977b24191a4a:001:0000000000b', 'messageid': 'bdf23a1f-c8e1-4e22-8ad3-dc0cd5dfdc7c', 'timestamp': 1688025746, 'reported': {'windtype': 1}}
 ```
 
 ### To Do
