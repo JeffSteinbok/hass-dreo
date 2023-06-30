@@ -8,6 +8,16 @@ This integration is based on the engineering that Gavin Zyonse did for the HomeB
 ## IMPORTANT NOTE ON CONFIGURATION
 If you used the very early version of this that required editing `configuration.yaml`, you will need to do a 1-time reconfiguration. You can delete the configuration entries you added and go through the configuration flow within the HomeAssistant web site.
 
+## Table of Contents
+- [Compatability](#compatability)
+- [Installation](#installation)
+- [Configuration](#configuration)
+   - [Moving from Arlo](#configuration-moving)
+   - [Creating a Login](#configuration-login)
+   - [Main Configuration](#configuration-main)
+   - [Alarm Configuration](#configuration-alarm)
+   - 
+<a name="compatability"></a>
 ## Compatability
 Currently supported fans:
 
