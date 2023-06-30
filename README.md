@@ -11,12 +11,10 @@ If you used the very early version of this that required editing `configuration.
 ## Table of Contents
 - [Compatability](#compatability)
 - [Installation](#installation)
-- [Configuration](#configuration)
-   - [Moving from Arlo](#configuration-moving)
-   - [Creating a Login](#configuration-login)
-   - [Main Configuration](#configuration-main)
-   - [Alarm Configuration](#configuration-alarm)
-   - 
+- [Debugging](#debugging)
+- [Adding new Fans](#addingFans)
+- [To Do](#todo)
+    
 <a name="compatability"></a>
 ## Compatability
 Currently supported fans:
@@ -29,6 +27,7 @@ Currently supported fans:
 
 If you have a different model that you can try, please see instructions [below](#addingfans).
 
+<a name="installation"></a>
 ## Installation
 _I plan to add HACS support in the near future, but for now, this is manually installed._
 
@@ -41,7 +40,8 @@ _I plan to add HACS support in the near future, but for now, this is manually in
 ### Manually
 Copy the `dreo` directory into your `/config/custom_components` directory, then restart your HomeAssistant Core.
 
-### Debugging
+<a name="debugging"></a>
+## Debugging
 Idealy, use the Diagnostics feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
 
 This integration logs to two loggers as shown below. To get verbose logs, change the log level.  Please have logs handy if you're reaching out for help.
@@ -54,7 +54,7 @@ logger:
 ```
 
 <a name="addingFans"></a>
-### Adding New Fans
+## Adding New Fans
 Don't see your model listed above? Let me know in the Issues and I'll add it. Please make sure to include:
 
 * Model - in the format above
@@ -65,7 +65,7 @@ Don't see your model listed above? Let me know in the Issues and I'll add it. Pl
 
 Depending on answers, I may reach out and need you to pull some debug logs.
 
-#### Debug Logs for New Fans
+### Debug Logs for New Fans
 
 1. Turn on **debug** logging for **pydreo** and start up HA.
 1. Go to your Dreo app on your phone, and perform the various commands you want to be able to use in HA.  Dreo servers will send updates to the WebSocket i'm listening on.
@@ -76,9 +76,9 @@ Depending on answers, I may reach out and need you to pull some debug logs.
 2023-06-29 01:02:25,312 - pydreo - DEBUG - Message: {'method': 'control-report', 'devicesn': 'XXX0393341964289-77f2977b24191a4a:001:0000000000b', 'messageid': 'bdf23a1f-c8e1-4e22-8ad3-dc0cd5dfdc7c', 'timestamp': 1688025746, 'reported': {'windtype': 1}}
 ```
 
-### To Do
+<a name="todo"></a>
+## To Do
 This is my first HA plugin and a bit slow going; bunch of stuff left to do:
 * Tests
-* Config Flow
 * Temperature Sensor
 * Creating a Device in HA for the fan, inclusive of logo
