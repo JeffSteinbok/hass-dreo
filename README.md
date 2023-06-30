@@ -29,7 +29,6 @@ If you have a different model that you can try, please see instructions [below](
 
 <a name="installation"></a>
 ## Installation
-_I plan to add HACS support in the near future, but for now, this is manually installed._
 
 ### HACS (Recommended)
 
