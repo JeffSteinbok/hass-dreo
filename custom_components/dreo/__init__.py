@@ -62,6 +62,14 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True
 
+async def async_unload_entry(hass, config_entry):
+    """Unload a config entry."""
+    _LOGGER.debug("Unloading Dreo Integration")
+    manager = hass.data[DOMAIN].pop(DREO_MANAGER)
+    await hass.config_entries.async_forward_entry_unload(config_entry, Platform.FAN)    
+    manager.stop_monitoring()
+    return True
+
 def process_devices(manager) -> dict:
     """Assign devices to proper component."""
     devices = {}
