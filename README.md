@@ -19,11 +19,15 @@ If you used the very early version of this that required editing `configuration.
 ## Compatability
 Currently supported fans:
 
+Tower fans:
 - DR-HTF001S
 - DR-HTF002S
 - DR-HTF004S
 - DR-HTF007S
 - DR-HTF008S
+
+Air circulators:
+- DR-HAF003S
 
 If you have a different model that you can try, please see instructions [below](#addingfans).
 
