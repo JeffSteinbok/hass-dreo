@@ -17,6 +17,7 @@ from itertools import chain
 from typing import Tuple, Optional
 
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
+from .pydreoaircirculatorfan import PyDreoAirCirculatorFan
 from .pydreofan import PyDreoFan
 from .helpers import Helpers
 
@@ -134,7 +135,20 @@ class PyDreo:  # pylint: disable=function-redefined
             # For now, let's keep this simple and just support fans...
             # Get the state of the device...seperate API call...boo
             try:
-                deviceFan = PyDreoFan(dev, self)
+                model = dev.get("model", None)
+                _LOGGER.debug(f"found device with model {model}")
+                if model is None:
+                    raise UnknownModelError(model)
+
+                if model.startswith(TOWER_FAN_MODEL_PREFIX):
+                    _LOGGER.debug(f"{model} is a tower fan")
+                    deviceFan: PyDreoBaseDevice = PyDreoFan(dev, self)
+                elif model.startswith(AIR_CIRCULATOR_MODEL_PREFIX):
+                    _LOGGER.debug(f"{model} is an air circulator")
+                    deviceFan = PyDreoAirCirculatorFan(dev, self)
+                else:
+                    raise UnknownModelError(model)
+
                 self.load_device_state(deviceFan)
                 self.fans.append(deviceFan)
                 self._deviceListBySn[deviceFan.sn] = deviceFan
