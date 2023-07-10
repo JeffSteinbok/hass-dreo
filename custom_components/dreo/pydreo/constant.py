@@ -1,4 +1,3 @@
-
 LOGGER_NAME = "pydreo"
 
 ACCESS_TOKEN_KEY = "access_token"
@@ -18,7 +17,9 @@ TEMPERATURE_KEY = "temperature"
 VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
 
-DREO_API_URL_FORMAT = "https://app-api-{0}.dreo-cloud.com" # {0} is the 2 letter region code
+DREO_API_URL_FORMAT = (
+    "https://app-api-{0}.dreo-cloud.com"  # {0} is the 2 letter region code
+)
 
 DREO_API_LIST_PATH = "path"
 DREO_API_LIST_METHOD = "method"
@@ -27,13 +28,19 @@ DREO_API_LOGIN = "login"
 DREO_API_DEVICELIST = "devicelist"
 DREO_API_DEVICESTATE = "devicestate"
 
-DREO_APIS =  {
-    DREO_API_LOGIN : { DREO_API_LIST_PATH: '/api/oauth/login',
-               DREO_API_LIST_METHOD: 'post' },
-    DREO_API_DEVICELIST: { DREO_API_LIST_PATH: '/api/v2/user-device/device/list',
-                    DREO_API_LIST_METHOD: 'get' },
-    DREO_API_DEVICESTATE: { DREO_API_LIST_PATH: '/api/user-device/device/state',
-                    DREO_API_LIST_METHOD: 'get' }                    
+DREO_APIS = {
+    DREO_API_LOGIN: {
+        DREO_API_LIST_PATH: "/api/oauth/login",
+        DREO_API_LIST_METHOD: "post",
+    },
+    DREO_API_DEVICELIST: {
+        DREO_API_LIST_PATH: "/api/v2/user-device/device/list",
+        DREO_API_LIST_METHOD: "get",
+    },
+    DREO_API_DEVICESTATE: {
+        DREO_API_LIST_PATH: "/api/user-device/device/state",
+        DREO_API_LIST_METHOD: "get",
+    },
 }
 
 DREO_AUTH_REGION_NA = "NA"

@@ -21,12 +21,12 @@ class PyDreoFan(PyDreoBaseDevice):
         """Initialize air devices."""
         super().__init__(details, dreo)
 
-        if (self.model not in SUPPORTED_TOWER_FANS):
+        if self.model not in SUPPORTED_TOWER_FANS:
             raise UnknownModelError(self.model)
 
         fan_details = SUPPORTED_TOWER_FANS[self.model]
 
-        self._speed_range= fan_details.speed_range
+        self._speed_range = fan_details.speed_range
         self._preset_modes = fan_details.preset_modes
 
     def __repr__(self):
@@ -39,24 +39,24 @@ class PyDreoFan(PyDreoBaseDevice):
         _LOGGER.debug("{}: got {} message **".format(self.name, message))
 
         valPoweron = self.get_server_update_key_value(message, POWERON_KEY)
-        if (isinstance(valPoweron, bool)):
+        if isinstance(valPoweron, bool):
             self._is_on = valPoweron
 
         valWindType = self.get_server_update_key_value(message, WINDTYPE_KEY)
-        if (isinstance(valWindType, int)):
+        if isinstance(valWindType, int):
             self._windType = valWindType
 
         # HAVE TO FIGURE OUT HOW TO DO THE MAPPING EXACTLY
         valWindLevel = self.get_server_update_key_value(message, WINDLEVEL_KEY)
-        if (isinstance(valWindLevel, int)):
+        if isinstance(valWindLevel, int):
             self._fan_speed = valWindLevel
 
         valShakeHorizon = self.get_server_update_key_value(message, SHAKEHORIZON_KEY)
-        if (isinstance(valShakeHorizon, bool)):
+        if isinstance(valShakeHorizon, bool):
             self._oscillating = valShakeHorizon
 
         valTemperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
-        if (isinstance(valTemperature, int)):
+        if isinstance(valTemperature, int):
             self._temperature = valTemperature
 
     @property
@@ -102,17 +102,25 @@ class PyDreoFan(PyDreoBaseDevice):
 
     def set_preset_mode(self, preset_mode: str):
         _LOGGER.debug("PyDreoFan:set_preset_mode")
-        if (preset_mode in self.preset_modes):
+        if preset_mode in self.preset_modes:
             self._send_command(WINDTYPE_KEY, self._preset_modes.index(preset_mode) + 1)
         else:
-            _LOGGER.error("Preset mode %s is not in the acceptable list: %s", preset_mode, self._preset_modes)
+            _LOGGER.error(
+                "Preset mode %s is not in the acceptable list: %s",
+                preset_mode,
+                self._preset_modes,
+            )
 
     def change_fan_speed(self, fan_speed: int):
         _LOGGER.debug("PyDreoFan:change_fan_speed")
         if fan_speed >= self._speed_range[0] and fan_speed <= self._speed_range[1]:
             self._send_command(WINDLEVEL_KEY, fan_speed)
         else:
-            _LOGGER.error("Fan speed %s is not in the acceptable range: %s", fan_speed, self._speed_range)
+            _LOGGER.error(
+                "Fan speed %s is not in the acceptable range: %s",
+                fan_speed,
+                self._speed_range,
+            )
 
     def oscillate(self, oscillating: bool) -> None:
         _LOGGER.debug("PyDreoFan:oscillate")

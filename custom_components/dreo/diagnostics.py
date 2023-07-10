@@ -16,14 +16,16 @@ from .const import *
 KEYS_TO_REDACT = {"sn", "_sn", "wifi_ssid", "module_hardware_mac"}
 
 
-async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry) -> dict[str, Any]:
+async def async_get_config_entry_diagnostics(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     manager: PyDreo = hass.data[DOMAIN][DREO_MANAGER]
 
     data = {
         DOMAIN: {
             "fan_count": len(manager.fans),
-            "raw_devicelist": _redact_values(manager.raw_response)
+            "raw_devicelist": _redact_values(manager.raw_response),
         },
         "devices": {
             "fans": [_redact_values(device.__dict__) for device in manager.fans],
@@ -31,6 +33,7 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
     }
 
     return data
+
 
 def _redact_values(data: dict) -> dict:
     """Rebuild and redact values of a dictionary, recursively"""
@@ -44,6 +47,6 @@ def _redact_values(data: dict) -> dict:
             else:
                 new_data[key] = item
         else:
-            new_data[key] = REDACTED    
+            new_data[key] = REDACTED
 
     return new_data
