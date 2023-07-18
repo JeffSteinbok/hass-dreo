@@ -8,6 +8,9 @@ This integration is based on the engineering that Gavin Zyonse did for the HomeB
 ## Compatability
 Currently supported fans:
 
+- DR-HAF001S
+- DR-HAF003S
+- DR-HAF004S
 - DR-HTF001S
 - DR-HTF002S
 - DR-HTF004S
