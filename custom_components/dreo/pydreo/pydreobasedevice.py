@@ -10,66 +10,64 @@ from .constant import *
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
+
 class UnknownModelError(Exception):
     pass
-    
+
+
 class PyDreoBaseDevice(object):
     """Base class for all Dreo devices.
 
     Has code to handle providing common attributes and comment event handling.
     """
 
-
-    def __init__(self, details: Dict[str, list], dreo : "PyDreo"):
+    def __init__(self, details: Dict[str, list], dreo: "PyDreo"):
         self._name = details.get("deviceName", None)
         self._device_id = details.get("deviceId", None)
         self._sn = details.get("sn", None)
         self._model = details.get("model", None)
         self._dreo = dreo
         self._is_on = False
-        
+
         self.raw_state = None
         self._attr_cbs = []
         self._lock = threading.Lock()
-
 
     def __repr__(self):
         # Representation string of object.
         return "<{0}:{1}:{2}>".format(
             self.__class__.__name__, self._device_id, self._name
         )
-    
-    def get_server_update_key_value(self, message : dict, key : str) :
+
+    def get_server_update_key_value(self, message: dict, key: str):
         if (message is not None) and (isinstance(message[REPORTED_KEY], dict)):
-            reported : dict = message[REPORTED_KEY]
+            reported: dict = message[REPORTED_KEY]
 
             if (reported is not None) and (key in reported):
                 value = reported[key]
                 _LOGGER.info("%s reported: %s", key, value)
                 return value
-            
+
         return None
 
-
     def handle_server_update_base(self, message):
+        _LOGGER.debug("{}: got {} message **".format(self.name, message))
         self.handle_server_update(message)
-        self._do_callbacks()                
+        self._do_callbacks()
 
     def handle_server_update(self):
         pass
 
     def _send_command(self, commandKey: str, value):
-        params : dict = {
-            commandKey: value
-        }
+        params: dict = {commandKey: value}
         self._dreo.send_command(self, params)
 
-    def update_state(self, state: dict) :
-        _LOGGER.debug("pyDreoBaseDevice:update_state")
+    def update_state(self, state: dict):
+        _LOGGER.debug("pyDreoBaseDevice:update_state: {0}".format(state))
         self._is_on = state[POWERON_KEY][STATE_KEY]
-        
+
     def add_attr_callback(self, cb):
-        self._attr_cbs.append(cb)        
+        self._attr_cbs.append(cb)
 
     def _do_callbacks(self):
         cbs = []
@@ -78,7 +76,7 @@ class PyDreoBaseDevice(object):
                 cbs.append(cb)
         for cb in cbs:
             cb()
-    
+
     @property
     def name(self):
         """Returns the device name."""
@@ -93,7 +91,7 @@ class PyDreoBaseDevice(object):
     def sn(self):
         """Returns the device's serial number."""
         return self._sn
-    
+
     @property
     def model(self):
         """Returns the device's model number."""

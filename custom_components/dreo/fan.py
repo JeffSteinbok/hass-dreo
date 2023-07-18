@@ -17,17 +17,18 @@ from homeassistant.util.percentage import (
 )
 
 from .basedevice import DreoBaseDeviceHA
-from .const import (DOMAIN, DREO_DISCOVERY, DREO_FANS, DREO_MANAGER)
-from .pydreo.constant import *      
+from .const import DOMAIN, DREO_DISCOVERY, DREO_FANS, DREO_MANAGER
+from .pydreo.constant import *
 from .pydreo.pydreofan import PyDreoFan
 
 _LOGGER = logging.getLogger("dreo")
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-    _discovery_info=None
+    _discovery_info=None,
 ) -> None:
     """Set up the Dreo fan platform."""
     _LOGGER.info("Starting Dreo Fan Platform")
@@ -45,7 +46,7 @@ async def async_setup_entry(
 class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     """Representation of a Dreo fan."""
 
-    def __init__(self, pyDreoFan : PyDreoFan):
+    def __init__(self, pyDreoFan: PyDreoFan):
         """Initialize the Dreo fan device."""
         super().__init__(pyDreoFan)
         self.device = pyDreoFan
@@ -53,27 +54,24 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def percentage(self) -> int | None:
         """Return the current speed."""
-        return ranged_value_to_percentage(self.device.speed_range, self.device.fan_speed)
+        return ranged_value_to_percentage(
+            self.device.speed_range, self.device.fan_speed
+        )
 
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
         return self.device.is_on
-    
+
     @property
     def oscillating(self) -> bool:
         """This represents horizontal oscillation only"""
-        if (self.device.oscillation_mode in (OscillationMode.HORIZONTAL, OscillationMode.BOTH)):
-            return True
-        else:
-            return False
+        return self.device.oscillating
 
     @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
-        return int_states_in_range(
-            self.device.speed_range
-        )
+        return int_states_in_range(self.device.speed_range)
 
     @property
     def preset_modes(self) -> list[str]:
@@ -88,18 +86,16 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the fan."""
-        attr = {
-            'temperature': self.device.temperature,
+        attr = {"temperature": self.device.temperature,
             'model': self.device.model,
-            'sn': self.device.sn
-        }
+            'sn': self.device.sn}
         return attr
 
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
         supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
-        if (self.device.oscillation_support is not OscillationSupport.NONE):
+        if (self.device.supports_oscillation):
             supported_features = supported_features | FanEntityFeature.OSCILLATE
 
         return supported_features
@@ -112,7 +108,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     ) -> None:
         """Turn the device on."""
         _LOGGER.debug("DreoFanHA:turn_on")
-        self.device.set_power(True)     
+        self.device.set_power(True)
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
@@ -129,11 +125,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
             self.device.set_power(True)
 
         self.device.change_fan_speed(
-            math.ceil(
-                percentage_to_ranged_value(
-                    self.device.speed_range, percentage
-                )
-            )
+            math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
         )
         self.schedule_update_ha_state()
 
@@ -152,12 +144,10 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
 
         self.schedule_update_ha_state()
 
-
     def oscillate(self, oscillating: bool) -> None:
         """Oscillate the fan."""
         self.device.oscillate(oscillating)
         self.schedule_update_ha_state()
-
 
     async def async_added_to_hass(self):
         """Register callbacks."""
@@ -170,4 +160,3 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
 
         _LOGGER.debug("DreoBaseDeviceHA: %s registering callbacks", self._attr_name)
         self.device.add_attr_callback(update_state)
-
