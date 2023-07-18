@@ -24,6 +24,20 @@ class DreoBaseDeviceHA(Entity):
         self._attr_name = pyDreoBaseDevice.name
 
     @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+
+        #TODO: Return more field; customize by subclass.
+        return DeviceInfo(
+            identifiers={
+                # Serial numbers are unique identifiers within a specific domain
+                (DOMAIN, self.device.sn)
+            },
+            name=self.device.name,
+            manufacturer="Dreo"
+        )
+
+    @property
     def available(self) -> bool:
         """Return True if device is available."""
         # return self.device.connection_status == "online"
