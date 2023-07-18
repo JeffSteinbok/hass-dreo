@@ -7,9 +7,7 @@ from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_REGION
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.entity_registry import (
-    async_entries_for_config_entry
-)
+from homeassistant.helpers.entity_registry import async_entries_for_config_entry
 from homeassistant.helpers.selector import (
     TextSelector,
     TextSelectorConfig,
@@ -21,6 +19,7 @@ from .const import *
 from .pydreo import PyDreo
 
 _LOGGER = logging.getLogger("dreo")
+
 
 class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Dreo Custom config flow."""
@@ -45,7 +44,7 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema(self.data_schema),
             errors=errors if errors else {},
         )
-    
+
     async def async_step_user(self, user_input=None):
         """Handle a flow start."""
         if self._async_current_entries():

@@ -9,18 +9,14 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import (
-    DOMAIN,
-    DREO_FANS,
-    DREO_MANAGER
-)
+from .const import DOMAIN, DREO_FANS, DREO_MANAGER
 
 _LOGGER = logging.getLogger("dreo")
 
 DOMAIN = "dreo"
 
-async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
 
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     _LOGGER.debug("async_setup")
 
     _LOGGER.debug(config_entry.data.get(CONF_USERNAME))
@@ -29,6 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     region = "us"
 
     from .pydreo import PyDreo
+
     manager = PyDreo(username, password, region)
 
     login = await hass.async_add_executor_job(manager.login)
@@ -36,7 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     if not login:
         _LOGGER.error("Unable to login to the dreo server")
         return False
-    
+
     load_devices = await hass.async_add_executor_job(manager.load_devices)
 
     if not load_devices:
@@ -60,14 +57,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.append(Platform.FAN)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
-    return True
-
-async def async_unload_entry(hass, config_entry):
-    """Unload a config entry."""
-    _LOGGER.debug("Unloading Dreo Integration")
-    manager = hass.data[DOMAIN].pop(DREO_MANAGER)
-    await hass.config_entries.async_forward_entry_unload(config_entry, Platform.FAN)    
-    manager.stop_monitoring()
     return True
 
 def process_devices(manager) -> dict:
