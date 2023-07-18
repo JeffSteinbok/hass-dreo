@@ -62,7 +62,11 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     
     @property
     def oscillating(self) -> bool:
-        return self.device.oscillating
+        """This represents horizontal oscillation only"""
+        if (self.device.oscillation_mode in (OscillationMode.HORIZONTAL, OscillationMode.BOTH)):
+            return True
+        else:
+            return False
 
     @property
     def speed_count(self) -> int:
@@ -85,18 +89,20 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the fan."""
         attr = {
-            'temperature': self.device.temperature
+            'temperature': self.device.temperature,
+            'model': self.device.model,
+            'sn': self.device.sn
         }
         return attr
 
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
-        return (
-            FanEntityFeature.SET_SPEED |
-            FanEntityFeature.OSCILLATE |
-            FanEntityFeature.PRESET_MODE
-        )
+        supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
+        if (self.device.oscillation_support is not OscillationSupport.NONE):
+            supported_features = supported_features | FanEntityFeature.OSCILLATE
+
+        return supported_features
 
     def turn_on(
         self,
