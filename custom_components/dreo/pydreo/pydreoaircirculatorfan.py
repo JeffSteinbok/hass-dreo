@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
-class PyDreoAirCirculatorFan(PyDreoBaseDevice):
+class PyDreoAirCirculatorFan(PyDreoFan):
     """Base class for Dreo Air Circulator Fan API Calls."""
 
     def __init__(self, fan_definition: PyDreoFanDefinition, details: Dict[str, list], dreoManager: "PyDreo") -> None:
