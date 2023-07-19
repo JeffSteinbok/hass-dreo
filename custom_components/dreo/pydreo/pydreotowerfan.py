@@ -54,8 +54,8 @@ class PyDreoTowerFan(PyDreoFan):
     def update_state(self, state: dict) :
         _LOGGER.debug("PyDreoTowerFan:update_state")
         super().update_state(state)
-        self._windType = state[WINDTYPE_KEY][STATE_KEY]
-        self._oscillating = state[SHAKEHORIZON_KEY][STATE_KEY]
+        self._windType = self.get_state_update_value(state, WINDTYPE_KEY)
+        self._oscillating = self.get_state_update_value(state, SHAKEHORIZON_KEY)
 
     def oscillate(self, oscillating: bool) -> None:
         _LOGGER.debug("PyDreoTowerFan:oscillate")
