@@ -326,7 +326,7 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.debug("_ws_ping_handler")
         while True:
             try:
-                await ws.send("2")
+                await ws.send('2')
                 await asyncio.sleep(15)
             except (websockets.exceptions.ConnectionClosed, websockets.exceptions.ConnectionClosedOK):
                 try:
@@ -353,7 +353,7 @@ class PyDreo:  # pylint: disable=function-redefined
             "devicesn": device.sn,
             "method": "control",
             "params": params,
-            "timestamp": str(int(time.time() * 1000)),
+            "timestamp": Helpers.api_timestamp(),
         }
         content = json.dumps(fullParams)
         _LOGGER.debug(content)
