@@ -38,7 +38,6 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         key="temperature",
         translation_key="temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
-        native_unit_of_measurement=TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda device: device.temperature,
         #exists_fn=lambda device: .....
