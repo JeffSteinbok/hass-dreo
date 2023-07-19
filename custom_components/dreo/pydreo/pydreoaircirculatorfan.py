@@ -3,7 +3,7 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
+from .pydreofan import PyDreoFan, UnknownModelError
 from .models import SUPPORTED_AIR_CIRCULATOR_FANS
 from .constant import *
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
-class PyDreoAirCirculatorFan(PyDreoBaseDevice):
+class PyDreoAirCirculatorFan(PyDreoFan):
     """Base class for Dreo Air Circulator Fan API Calls."""
 
     def __init__(self, fan_definition: PyDreoFanDefinition, details: Dict[str, list], dreoManager: "PyDreo") -> None:
