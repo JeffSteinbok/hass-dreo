@@ -10,10 +10,8 @@ from .constant import *
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
-
 class UnknownModelError(Exception):
-    pass
-
+    """Exception thrown when we don't recognize a model of a device."""
 
 class PyDreoBaseDevice(object):
     """Base class for all Dreo devices.
@@ -40,6 +38,7 @@ class PyDreoBaseDevice(object):
         )
 
     def get_server_update_key_value(self, message: dict, key: str):
+        """Helper method to get values from a WebSocket update in a safe way."""
         if (message is not None) and (isinstance(message[REPORTED_KEY], dict)):
             reported: dict = message[REPORTED_KEY]
 
@@ -51,18 +50,24 @@ class PyDreoBaseDevice(object):
         return None
 
     def handle_server_update_base(self, message):
+        """Initial method called when we get a WebSocket message."""
         _LOGGER.debug("{}: got {} message **".format(self.name, message))
+
+        # This method exists so that we can run the polymorphic function to process updates, and then
+        # run a _do_callbacks() command safely afterwards.
         self.handle_server_update(message)
         self._do_callbacks()
 
-    def handle_server_update(self):
-        pass
+    def handle_server_update(self, message: dict):
+        """Method to process WebSocket message"""
 
     def _send_command(self, commandKey: str, value):
+        """Send a command to the Dreo servers via WebSocket."""
         params: dict = {commandKey: value}
         self._dreo.send_command(self, params)
 
     def get_state_update_value(self, state: dict, key: str):
+        """Get a value from the state update in a safe manner."""
         if (key in state):
             keyValObject: dict = state[key]
             if (keyValObject is not None):
@@ -72,7 +77,10 @@ class PyDreoBaseDevice(object):
         return None
 
     def update_state(self, state: dict):
+        """Process the state dictionary from the REST API."""
         _LOGGER.debug("pyDreoBaseDevice:update_state: {0}".format(state))
+
+        # TODO: Inconsistent placement of POWERON between BaseDevice and Fan for State/WebSocket
         self._is_on = self.get_state_update_value(state, POWERON_KEY)
 
     def add_attr_callback(self, cb):

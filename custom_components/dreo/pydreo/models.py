@@ -8,12 +8,15 @@ from .constant import (
     FAN_MODE_TURBO,
 )
 
-
 @dataclass
 class DreoFanDetails:
-    preset_modes: list[str]
-    speed_range: tuple[int, int]
+    """Represents a Dreo Fan model and capabilities"""
 
+    preset_modes: list[str] 
+    """List of possible preset mode names"""
+
+    speed_range: tuple[int, int]
+    """Supported speed levels, starting from 1"""
 
 SUPPORTED_TOWER_FANS = {
     "DR-HTF001S": DreoFanDetails(

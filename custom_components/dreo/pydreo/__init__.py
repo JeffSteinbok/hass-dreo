@@ -1,31 +1,25 @@
 """Dreo API Library."""
 
-# pylint: skip-file
 # flake8: noqa
 # from .pydreo import PyDreo
 import logging
 import threading
 
-"""Dreo API Device Libary."""
-import sys
-import logging
-import time
+import asyncio
 import json
-import logging
+import sys
 import time
 from itertools import chain
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
-from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
-from .pydreoaircirculatorfan import PyDreoAirCirculatorFan
-from .pydreotowerfan import PyDreoTowerFan
-from .helpers import Helpers
-
-import asyncio
 import websockets
 
 from .constant import *
+from .helpers import Helpers
 from .models import *
+from .pydreoaircirculatorfan import PyDreoAirCirculatorFan
+from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
+from .pydreotowerfan import PyDreoTowerFan
 
 __version__ = "0.2.0"
 
@@ -71,7 +65,7 @@ class PyDreo:  # pylint: disable=function-redefined
         elif self.auth_region == DREO_AUTH_REGION_EU:
             return DREO_API_REGION_EU
         else:
-            _LOGGER.error("Invalid Auth Region:", self.auth_region)
+            _LOGGER.error("Invalid Auth Region: {0}".format(self.auth_region))
 
     @property
     def redact(self) -> bool:
@@ -300,7 +294,7 @@ class PyDreo:  # pylint: disable=function-redefined
     async def _start_websocket(self):
         _LOGGER.info("Starting WebSocket for incoming changes.")
         # open websocket
-        url = f"wss://wsb-{self.apiServerRegion}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={str(int(time.time() * 1000))}"
+        url = f"wss://wsb-{self.apiServerRegion}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={Helpers.api_timestamp()}"
         async with websockets.connect(url) as ws:
             self.ws = ws
             _LOGGER.info("WebSocket successfully opened")
@@ -354,7 +348,7 @@ class PyDreo:  # pylint: disable=function-redefined
             "devicesn": device.sn,
             "method": "control",
             "params": params,
-            "timestamp": str(int(time.time() * 1000)),
+            "timestamp": Helpers.api_timestamp(),
         }
         content = json.dumps(fullParams)
         _LOGGER.debug(content)
