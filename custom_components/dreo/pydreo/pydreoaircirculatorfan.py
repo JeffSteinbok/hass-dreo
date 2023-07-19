@@ -48,6 +48,10 @@ class PyDreoAirCirculatorFan(PyDreoFan):
         return self._is_on
 
     @property
+    def supports_preset_modes(self):
+        return self._wind_mode is not None
+    
+    @property
     def preset_mode(self):
         return self._fan_definition.preset_modes[self._wind_mode - 1]
 

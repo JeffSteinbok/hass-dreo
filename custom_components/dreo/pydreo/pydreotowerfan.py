@@ -45,6 +45,10 @@ class PyDreoTowerFan(PyDreoFan):
         valShakeHorizon = self.get_server_update_key_value(message, SHAKEHORIZON_KEY)
         if (isinstance(valShakeHorizon, bool)):
             self._oscillating = valShakeHorizon
+    
+    @property
+    def supports_preset_modes(self):
+        return self._windType is not None
 
     @property
     def preset_mode(self):

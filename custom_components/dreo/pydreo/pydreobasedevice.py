@@ -73,7 +73,7 @@ class PyDreoBaseDevice(object):
             if (keyValObject is not None):
                 return keyValObject[STATE_KEY]
 
-        _LOGGER.debug("Expected state value {0} not present.  Device: {1}".format(key, self.name))
+        _LOGGER.error("Expected state value ({0}) not present.  Device: {1}".format(key, self.name))
         return None
 
     def update_state(self, state: dict):
