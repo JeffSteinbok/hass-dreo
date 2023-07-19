@@ -3,7 +3,7 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
+from .pydreofan import PyDreoFan, UnknownModelError
 from .models import SUPPORTED_AIR_CIRCULATOR_FANS
 from .constant import *
 
