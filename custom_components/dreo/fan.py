@@ -81,7 +81,10 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def preset_mode(self) -> str | None:
         """Get the current preset mode."""
-        return self.device.preset_mode
+        if (self.device.supports_preset_modes):
+            return self.device.preset_mode
+        else:
+            return None
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -94,7 +97,10 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
-        supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
+        supported_features = FanEntityFeature.SET_SPEED 
+        
+        if (self.device.supports_preset_modes):
+            supported_features = supported_features | FanEntityFeature.PRESET_MODE
         if (self.device.supports_oscillation):
             supported_features = supported_features | FanEntityFeature.OSCILLATE
 

@@ -4,9 +4,7 @@ import hashlib
 import logging
 import time
 import json
-import colorsys
-from dataclasses import dataclass, field, InitVar
-from typing import NamedTuple, Optional, Union
+from typing import Optional, Union
 import re
 import requests
 
@@ -32,7 +30,7 @@ class Helpers:
             "accept-encoding": "gzip",
             "user-agent": "okhttp/4.9.1",
         }
-        if manager.token != None:
+        if manager.token is not None:
             headers["authorization"] = f"Bearer {manager.token}"
         return headers
 
@@ -131,7 +129,7 @@ class Helpers:
                 r = requests.get(
                     url + api,
                     headers=headers,
-                    params={**json_object, "timestamp": str(int(time.time() * 1000))},
+                    params={**json_object, "timestamp": Helpers.api_timestamp()},
                     timeout=API_TIMEOUT,
                 )
             elif method.lower() == "post":
@@ -139,7 +137,7 @@ class Helpers:
                     url + api,
                     json=json_object,
                     headers=headers,
-                    params={"timestamp": str(int(time.time() * 1000))},
+                    params={"timestamp": Helpers.api_timestamp()},
                     timeout=API_TIMEOUT,
                 )
             elif method.lower() == "put":
@@ -170,3 +168,8 @@ class Helpers:
         if isinstance(r, dict) and r.get("code") == 0:
             return True
         return False
+
+    @staticmethod
+    def api_timestamp() -> str:
+        """Timestamp in correct format for API calls"""
+        return str(int(time.time() * 1000))

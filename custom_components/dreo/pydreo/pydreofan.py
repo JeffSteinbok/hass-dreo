@@ -1,12 +1,10 @@
 """Dreo API for controling fans."""
 
 import logging
-from typing import Dict
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 
-from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
-from .models import SUPPORTED_TOWER_FANS
 from .constant import *
+from .pydreobasedevice import PyDreoBaseDevice
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -67,6 +65,10 @@ class PyDreoFan(PyDreoBaseDevice):
     def temperature(self):
         return self._temperature
 
+    @property 
+    def supports_preset_modes(self):
+        pass
+    
     @property
     def supports_oscillation(self):
         pass
@@ -76,22 +78,15 @@ class PyDreoFan(PyDreoBaseDevice):
         pass
     
     def update_state(self, state: dict) :
+        """Process the state dictionary from the REST API."""
         _LOGGER.debug("PyDreoFan:update_state")
         super().update_state(state)
-        #TODO Add better protection here if keys don't exist.  No reason to just fail.
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
 
     def set_power(self, value: bool):
         _LOGGER.debug("PyDreoFan:set_power")
         self._send_command(POWERON_KEY, value)
-
-    def set_preset_mode(self, preset_mode: str):
-        _LOGGER.debug("PyDreoFan:set_preset_mode")        
-        if (preset_mode in self.preset_modes):
-            self._send_command(WINDTYPE_KEY, self._preset_modes.index(preset_mode) + 1)
-        else:
-            _LOGGER.error("Preset mode %s is not in the acceptable list: %s", preset_mode, self._preset_modes)
     
     def change_fan_speed(self, fan_speed : int) :
         # TODO: Make sure fan speed in range

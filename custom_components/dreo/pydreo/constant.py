@@ -66,12 +66,6 @@ VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 
 AIR_CIRCULATOR_WIND_MODE_KEY = "mode"
 
-class OscillationMode(Enum):
-    OFF = 0,
-    HORIZONTAL = 1,
-    VERTCICAL = 2,
-    BOTH = 3
-
 SUPPORTED_FANS = {
     "DR-HAF001S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
                                        speed_range=(1,4),
