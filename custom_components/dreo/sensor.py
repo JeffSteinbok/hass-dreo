@@ -37,6 +37,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
     DreoSensorEntityDescription(
         key="temperature",
         translation_key="temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
         native_unit_of_measurement=TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda device: device.temperature,
@@ -75,6 +76,8 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
         self.entity_definition = definition
         self._attr_name = super().name + " " + definition.key
         self._attr_unique_id = f"{super().unique_id}-{definition.key}"
+        self._attr_device_class = definition.device_class
+        self._attr_state_class = definition.state_class
 
     @property
     def native_value(self) -> StateType:
