@@ -63,12 +63,13 @@ class PyDreoBaseDevice(object):
         self._dreo.send_command(self, params)
 
     def get_state_update_value(self, state: dict, key: str):
-        keyValObject: dict = state[key]
-        if (keyValObject is not None):
-            return keyValObject[STATE_KEY]
-        else:
-            _LOGGER.debug("Expected state value {0} not present.  Device: {1}".format(key, self.name))
-            return None
+        if (key in state):
+            keyValObject: dict = state[key]
+            if (keyValObject is not None):
+                return keyValObject[STATE_KEY]
+
+        _LOGGER.debug("Expected state value {0} not present.  Device: {1}".format(key, self.name))
+        return None
 
     def update_state(self, state: dict):
         _LOGGER.debug("pyDreoBaseDevice:update_state: {0}".format(state))
