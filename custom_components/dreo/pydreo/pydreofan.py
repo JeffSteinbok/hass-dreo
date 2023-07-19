@@ -78,9 +78,9 @@ class PyDreoFan(PyDreoBaseDevice):
     def update_state(self, state: dict) :
         _LOGGER.debug("PyDreoFan:update_state")
         super().update_state(state)
-        self._fan_speed = state[WINDLEVEL_KEY][STATE_KEY]
-        self._temperature = state[TEMPERATURE_KEY][STATE_KEY]
-        self._oscillating = state[SHAKEHORIZON_KEY][STATE_KEY]
+        #TODO Add better protection here if keys don't exist.  No reason to just fail.
+        self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
+        self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
 
     def set_power(self, value: bool):
         _LOGGER.debug("PyDreoFan:set_power")

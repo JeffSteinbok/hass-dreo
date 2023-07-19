@@ -58,9 +58,11 @@ class PyDreoAirCirculatorFan(PyDreoFan):
     def vertically_oscillating(self):
         return self._vertically_oscillating
 
+    @property
     def supports_horizontal_oscillation(self):
         return self._horizontally_oscillating is not None
 
+    @property
     def supports_vertical_oscillation(self) -> bool:
         return self._vertically_oscillating is not None
 
@@ -71,9 +73,10 @@ class PyDreoAirCirculatorFan(PyDreoFan):
     def update_state(self, state: dict):
         _LOGGER.debug("PyDreoAirCirculatorFan:update_state")
         super().update_state(state)
-        self._windType = state[AIR_CIRCULATOR_WIND_MODE_KEY][STATE_KEY]
-        self._horizontally_oscillating = state[HORIZONTAL_OSCILLATION_KEY][STATE_KEY]
-        self._vertically_oscillating = state[VERTICAL_OSCILLATION_KEY][STATE_KEY]
+
+        self._windType = self.get_state_update_value(state, AIR_CIRCULATOR_WIND_MODE_KEY)
+        self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
+        self._vertically_oscillating = self.get_state_update_value(state, VERTICAL_OSCILLATION_KEY)
 
     # NOTE: some of these fans can oscillate horizontally and vertically
     # since HA's fan entity only supports a single oscillation option,
@@ -86,9 +89,9 @@ class PyDreoAirCirculatorFan(PyDreoFan):
         
     def oscillate(self, oscillating: bool) -> None:
         _LOGGER.debug("PyDreoAirCirculatorFan:oscillate")
-        if self.supports_horizontal_oscillation():
+        if self.supports_horizontal_oscillation:
             self.oscillate_horizontally(oscillating)
-        elif self.supports_vertical_oscillation():
+        elif self.supports_vertical_oscillation:
             self.oscillate_vertically(oscillating)
         else:
             _LOGGER.error("This device does not support oscillation")
@@ -99,14 +102,14 @@ class PyDreoAirCirculatorFan(PyDreoFan):
 
     def set_horizontal_oscillation_angle(self, angle: int) -> None:
         _LOGGER.debug("PyDreoAirCirculatorFan:set_horizontal_oscillation_angle")
-        if not self.supports_horizontal_oscillation():
+        if not self.supports_horizontal_oscillation:
             _LOGGER.error("This device does not support horizontal oscillation")
             return
         self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, angle)
 
     def set_vertical_oscillation_angle(self, angle: int) -> None:
         _LOGGER.debug("PyDreoAirCirculatorFan:set_vertical_oscillation_angle")
-        if not self.supports_vertical_oscillation():
+        if not self.supports_vertical_oscillation:
             _LOGGER.error("This device does not support vertical oscillation")
             return
 
