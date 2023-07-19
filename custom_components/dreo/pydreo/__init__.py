@@ -326,11 +326,16 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.debug("_ws_ping_handler")
         while True:
             try:
-                await ws.send('2')
+                await ws.send("2")
                 await asyncio.sleep(15)
-            except websockets.exceptions.ConnectionClosed:
-                _LOGGER.info('Dreo WebSocket Closed - Unless intended, will reconnect')
-                break
+            except (websockets.exceptions.ConnectionClosed, websockets.exceptions.ConnectionClosedOK):
+                try:
+                    self.start_monitoring()
+                except Exception as ex:
+                    _LOGGER.error(f"Dreo WebSocket Closed: {ex}")
+                    for device in self._deviceListBySn:
+                        device.raw_state = "unavailable"
+                    break
 
     def _ws_consume_message(self, message):
         messageDeviceSn = message["devicesn"]
@@ -348,8 +353,12 @@ class PyDreo:  # pylint: disable=function-redefined
             "devicesn": device.sn,
             "method": "control",
             "params": params,
-            "timestamp": Helpers.api_timestamp(),
+            "timestamp": str(int(time.time() * 1000)),
         }
         content = json.dumps(fullParams)
         _LOGGER.debug(content)
-        asyncio.run(self.ws.send(content))
+        try:
+            asyncio.run(self.ws.send(content))
+        except websockets.exceptions.ConnectionClosedOK:
+            _LOGGER.warning("PYDREO ConnectionClosedOK, retrying login")
+            self.start_monitoring()
