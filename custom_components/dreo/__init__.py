@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import DOMAIN, DREO_FANS, DREO_MANAGER
+from .const import DOMAIN, DREO_FANS, DREO_SENSORS, DREO_MANAGER
 
 _LOGGER = logging.getLogger("dreo")
 

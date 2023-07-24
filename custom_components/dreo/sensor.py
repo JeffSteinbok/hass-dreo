@@ -26,7 +26,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
-from .const import DOMAIN, DREO_MANAGER
+from .const import *
 
 @dataclass
 class DreoSensorEntityDescription(SensorEntityDescription):
