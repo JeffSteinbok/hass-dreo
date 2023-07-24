@@ -26,12 +26,13 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
-from .const import *
+from .const import DOMAIN, DREO_MANAGER
 
 @dataclass
 class DreoSensorEntityDescription(SensorEntityDescription):
     """Describe Dreo sensor entity."""
     value_fn: Callable[[DreoFanHA], StateType] = None
+    exists_fn: Callable[[DreoFanHA], bool] = None
 
 SENSORS: tuple[DreoSensorEntityDescription, ...] = (
     DreoSensorEntityDescription(
@@ -40,7 +41,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda device: device.temperature,
-        #exists_fn=lambda device: .....
+        exists_fn=lambda device: device.is_feature_supported("temperature")
     ),
 )
 

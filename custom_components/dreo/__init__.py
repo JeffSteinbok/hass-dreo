@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 
-from .const import DOMAIN, DREO_FANS, DREO_SENSORS, DREO_MANAGER
+from .const import DOMAIN, DREO_FANS, DREO_MANAGER
 
 _LOGGER = logging.getLogger("dreo")
 
@@ -55,7 +55,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     if device_dict[DREO_FANS]:
         fans.extend(device_dict[DREO_FANS])
         platforms.append(Platform.FAN)
-        platforms.append(Platform.SENSOR)  
+        platforms.append(Platform.SENSOR)
+        platforms.append(Platform.SWITCH)
+        #platforms.append(Platform.NUMBER)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True

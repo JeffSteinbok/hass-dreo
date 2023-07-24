@@ -113,3 +113,14 @@ class PyDreoBaseDevice(object):
     def model(self):
         """Returns the device's model number."""
         return self._model
+    
+    def is_feature_supported(self, feature: str) -> bool:
+        """Does this device support a given fature"""
+        property_name = "supports_" + feature
+        print(hasattr(self, property_name))
+        print(callable(getattr(self, property_name)))
+        if (hasattr(self, property_name)):
+            return getattr(self, property_name)
+        else:
+            return False
+

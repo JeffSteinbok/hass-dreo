@@ -81,10 +81,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def preset_mode(self) -> str | None:
         """Get the current preset mode."""
-        if (self.device.supports_preset_modes):
-            return self.device.preset_mode
-        else:
-            return None
+        return self.device.preset_mode
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -97,10 +94,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
-        supported_features = FanEntityFeature.SET_SPEED 
-        
-        if (self.device.supports_preset_modes):
-            supported_features = supported_features | FanEntityFeature.PRESET_MODE
+        supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
         if (self.device.supports_oscillation):
             supported_features = supported_features | FanEntityFeature.OSCILLATE
 
@@ -154,15 +148,3 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         """Oscillate the fan."""
         self.device.oscillate(oscillating)
         self.schedule_update_ha_state()
-
-    async def async_added_to_hass(self):
-        """Register callbacks."""
-
-        @callback
-        def update_state():
-            _LOGGER.debug("callback:" + self._attr_name)
-            # Tell HA we're ready to update
-            self.async_schedule_update_ha_state()
-
-        _LOGGER.debug("DreoBaseDeviceHA: %s registering callbacks", self._attr_name)
-        self.device.add_attr_callback(update_state)

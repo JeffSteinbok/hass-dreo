@@ -46,3 +46,15 @@ class DreoBaseDeviceHA(Entity):
     @property
     def should_poll(self):
         return False
+
+    async def async_added_to_hass(self):
+        """Register callbacks."""
+
+        @callback
+        def update_state():
+            _LOGGER.debug("callback:" + self._attr_name)
+            # Tell HA we're ready to update
+            self.async_schedule_update_ha_state()
+
+        _LOGGER.debug("DreoBaseDeviceHA: %s registering callbacks", self._attr_name)
+        self.device.add_attr_callback(update_state)

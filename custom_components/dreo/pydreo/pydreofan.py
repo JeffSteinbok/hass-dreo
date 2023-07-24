@@ -65,6 +65,10 @@ class PyDreoFan(PyDreoBaseDevice):
     def temperature(self):
         return self._temperature
 
+    @property
+    def supports_temperature(self):
+        return self._temperature is not None
+
     @property 
     def supports_preset_modes(self):
         pass
