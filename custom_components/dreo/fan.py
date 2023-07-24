@@ -5,23 +5,18 @@ import logging
 import math
 from typing import Any
 
-from homeassistant.components.fan import FanEntity, FanEntityFeature
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.util.percentage import (
-    int_states_in_range,
-    percentage_to_ranged_value,
-    ranged_value_to_percentage,
-)
+from .haimports import * # pylint: disable=W0401
 
 from .basedevice import DreoBaseDeviceHA
-from .const import DOMAIN, DREO_DISCOVERY, DREO_FANS, DREO_MANAGER
-from .pydreo.constant import *
+from .const import (
+    LOGGER,
+    DOMAIN,
+    DREO_MANAGER
+)
+
 from .pydreo.pydreofan import PyDreoFan
 
-_LOGGER = logging.getLogger("dreo")
+_LOGGER = logging.getLogger(LOGGER)
 
 
 async def async_setup_entry(
@@ -95,7 +90,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     def supported_features(self) -> int:
         """Return the list of supported features."""
         supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
-        if (self.device.supports_oscillation):
+        if (self.device.oscillating is not None):
             supported_features = supported_features | FanEntityFeature.OSCILLATE
 
         return supported_features
@@ -146,6 +141,6 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
 
     def oscillate(self, oscillating: bool) -> None:
         """Oscillate the fan."""
-        self.device.oscillate(oscillating)
+        self.device.oscillating = oscillating
         self.schedule_update_ha_state()
 

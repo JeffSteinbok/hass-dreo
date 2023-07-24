@@ -1,18 +1,15 @@
 """BaseDevice utilities for Dreo Component."""
 import logging
-from typing import Any
-
-# from .pydreo.pydreobasedevice import PyDreoBaseDevice
-
-from homeassistant.helpers.entity import DeviceInfo, Entity, ToggleEntity
-from homeassistant.core import HomeAssistant, callback
-
-from .const import DOMAIN, DREO_FANS
-
-_LOGGER = logging.getLogger("dreo")
 
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
+from .haimports import * # pylint: disable=W0401,W0614
 
+from .const import (
+    LOGGER,
+    DOMAIN
+)
+
+_LOGGER = logging.getLogger(LOGGER)
 
 class DreoBaseDeviceHA(Entity):
     """Base class for Dreo Entity Representations."""
@@ -52,7 +49,7 @@ class DreoBaseDeviceHA(Entity):
 
         @callback
         def update_state():
-            _LOGGER.debug("callback:" + self._attr_name)
+            _LOGGER.debug("callback: {%s}", self._attr_name)
             # Tell HA we're ready to update
             self.async_schedule_update_ha_state()
 

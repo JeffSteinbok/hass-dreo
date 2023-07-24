@@ -5,7 +5,12 @@ from typing import Dict
 from typing import TYPE_CHECKING
 
 from .pydreofan import PyDreoFan
-from .constant import *
+from .fandefinition import PyDreoFanDefinition
+from .constant import (
+    LOGGER_NAME,
+    WINDTYPE_KEY,
+    SHAKEHORIZON_KEY
+)
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -56,14 +61,16 @@ class PyDreoTowerFan(PyDreoFan):
     def preset_mode(self, value: str) -> None:
         _LOGGER.debug("PyDreoTowerFan:set_preset_mode")  
 
-        if (self._windType is None):
+        if self._windType is None:
             _LOGGER.error("Attempting to set preset_mode on a device that doesn't support.")
             return
         
-        if (value in self.preset_modes):
+        if value in self.preset_modes:
             self._send_command(WINDTYPE_KEY, self._fan_definition.preset_modes.index(value) + 1)
         else:
-            _LOGGER.error("Preset mode %s is not in the acceptable list: %s", value, self._fan_definition.preset_modes)
+            _LOGGER.error("Preset mode %s is not in the acceptable list: %s", 
+                          value, 
+                          self._fan_definition.preset_modes)
 
     @property
     def oscillating(self) -> bool:

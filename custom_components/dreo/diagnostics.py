@@ -1,17 +1,20 @@
 """Diagnostics support for VeSync."""
+
+# Suppress warnings about unused function arguments
+# pylint: disable=W0613
+
 from __future__ import annotations
 
 from typing import Any
 
-from .pydreo import PyDreo, PyDreoBaseDevice
+from .pydreo import PyDreo
 
-from homeassistant.components.diagnostics import REDACTED
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
-from homeassistant.helpers.device_registry import DeviceEntry
+from .haimports import * # pylint: disable=W0401,W0614
 
-from .const import *
+from .const import (
+    DOMAIN,
+    DREO_MANAGER
+)
 
 KEYS_TO_REDACT = {"sn", "_sn", "wifi_ssid", "module_hardware_mac"}
 

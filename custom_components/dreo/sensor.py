@@ -1,4 +1,11 @@
 """Support temperature for some Dreo fans"""
+# Suppress warnings about DataClass constructors
+# pylint: disable=E1123
+
+# Suppress warnings about unused function arguments
+# pylint: disable=W0613
+
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -8,25 +15,15 @@ import logging
 from .basedevice import DreoBaseDeviceHA
 from .fan import DreoFanHA
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
+from .haimports import * # pylint: disable=W0401,W0614
 
-_LOGGER = logging.getLogger("dreo")
-
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-    SensorEntityDescription,
-    SensorStateClass,
+from .const import (
+    LOGGER,
+    DOMAIN,
+    DREO_MANAGER
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    TEMPERATURE
-)
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import StateType
 
-from .const import *
+_LOGGER = logging.getLogger(LOGGER)
 
 @dataclass
 class DreoSensorEntityDescription(SensorEntityDescription):
