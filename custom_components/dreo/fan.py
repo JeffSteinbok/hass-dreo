@@ -148,3 +148,4 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         """Oscillate the fan."""
         self.device.oscillate(oscillating)
         self.schedule_update_ha_state()
+

@@ -27,18 +27,12 @@ from .const import *
 @dataclass
 class DreoSwitchEntityDescription(SwitchEntityDescription):
     """Describe Dreo Switch entity."""
-    get_value_fn: Callable[[DreoFanHA]] = None
-    set_value_fn: Callable([DreoFanHA]) = None
-    exists_fn: Callable([DreoFanHA]) = None
     attr_name: str = None
 
 SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
     DreoSwitchEntityDescription(
         key="hosc",
         translation_key="hosc",
-        get_value_fn=lambda device: device.oscillating,
-        set_value_fn=lambda device, val: device.oscillate(val),
-        exists_fn=lambda device: device.is_feature_supported("oscillation"),
         attr_name="hosc"
     ),
 )
@@ -79,7 +73,7 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
     def is_on(self) -> bool:
         """Return True if device is on."""
         _LOGGER.debug("DreoSwitchHA:is_on")
-        return self.entity_definition.get_value_fn(self.device)
+        return getattr(self.device, self.entity_definition.attr_name)
 
 
     def turn_on(
@@ -90,9 +84,9 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
     ) -> None:
         """Turn the device on."""
         _LOGGER.debug("DreoSwitchHA:turn_on")
-        return self.entity_definition.set_value_fn(self.device, True)
+        return setattr(self.device, self.entity_definition.attr_name, True)
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
         _LOGGER.debug("DreoSwitchHA:turn_off")
-        return self.entity_definition.set_value_fn(self.device, False)
+        return setattr(self.device, self.entity_definition.attr_name, False)
