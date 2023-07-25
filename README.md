@@ -124,5 +124,3 @@ Depending on answers, I may reach out and need you to pull some debug logs.
 ## To Do
 This is my first HA plugin and a bit slow going; bunch of stuff left to do:
 * Tests
-* Temperature Sensor
-* Creating a Device in HA for the fan, inclusive of logo
