@@ -13,6 +13,7 @@ import logging
 
 from .haimports import * # pylint: disable=W0401,W0614
 from .basedevice import DreoBaseDeviceHA
+from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 
 
@@ -28,12 +29,20 @@ _LOGGER = logging.getLogger(LOGGER)
 class DreoSwitchEntityDescription(SwitchEntityDescription):
     """Describe Dreo Switch entity."""
     attr_name: str = None
+    icon: str = None
 
 SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
     DreoSwitchEntityDescription(
-        key="hosc",
-        translation_key="hosc",
-        attr_name="oscillating"
+        key="horizontally oscillating",
+        translation_key="horizontally oscillating",
+        attr_name="horizontally_oscillating",
+        icon="mdi:rotate-360"
+    ),
+    DreoSwitchEntityDescription(
+        key="vertically oscillating",
+        translation_key="vertically oscillating",
+        attr_name="vertically_oscillating",
+        icon="mdi:rotate-360"
     ),
 )
 
@@ -46,12 +55,13 @@ async def async_setup_entry(
     _LOGGER.info("Starting Dreo Switch Platform")
     _LOGGER.debug("Dreo Switch:async_setup_platform")
 
-    manager = hass.data[DOMAIN][DREO_MANAGER]
+    manager : PyDreo = hass.data[DOMAIN][DREO_MANAGER]
 
     switch_ha_colletion = []
     for fan_entity in manager.fans:
-        # Really ugly hack since there is just one Switch for now...
-        switch_ha_colletion.append(DreoSwitchHA(fan_entity, SWITCHES[0]))
+        for switch_definition in SWITCHES:
+            if (fan_entity.is_feature_supported(switch_definition.attr_name)):
+                switch_ha_colletion.append(DreoSwitchHA(fan_entity,switch_definition))
 
     async_add_entities(switch_ha_colletion)
 
@@ -67,6 +77,7 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
         self.entity_definition = definition
         self._attr_name = super().name + " " + definition.key
         self._attr_unique_id = f"{super().unique_id}-{definition.key}"
+        self._attr_icon = definition.icon
 
     @property
     def is_on(self) -> bool:
