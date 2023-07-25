@@ -3,5 +3,8 @@
     "python.linting.pylintEnabled": true,
     "python.linting.pylintArgs": [
         "--generated-members", "websockets.*"
-    ]
+    ],
+    "python.analysis.diagnosticSeverityOverrides": 
+    {   "use-before-def": "none"
+    }
 }

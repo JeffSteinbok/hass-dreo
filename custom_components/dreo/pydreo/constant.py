@@ -66,36 +66,6 @@ VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 
 AIR_CIRCULATOR_WIND_MODE_KEY = "mode"
 
-SUPPORTED_FANS = {
-    "DR-HAF001S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
-                                       speed_range=(1,4),
-                                       oscillation_support= OscillationSupport.HORIZONTAL),
-
-    "DR-HAF003S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
-                                       speed_range=(1,8),
-                                       oscillation_support= OscillationSupport.HORIZONTAL),
-
-    "DR-HAF004S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
-                                       speed_range=(1,9),
-                                       oscillation_support= OscillationSupport.BOTH),
-
-    "DR-HTF001S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
-                                       speed_range=(1,6),
-                                       oscillation_support= OscillationSupport.HORIZONTAL),
-
-    "DR-HTF002S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
-                                       speed_range=(1,12),
-                                       oscillation_support= OscillationSupport.HORIZONTAL),
-                                       
-    "DR-HTF004S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
-                                       speed_range=(1,4),
-                                       oscillation_support= OscillationSupport.HORIZONTAL),
-
-    "DR-HTF007S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
-                                       speed_range=(1,9),
-                                       oscillation_support= OscillationSupport.HORIZONTAL),
-
-    "DR-HTF008S" : PyDreoFanDefinition(preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
-                                       speed_range=(1,5),
-                                       oscillation_support= OscillationSupport.HORIZONTAL),
-}
+class TemperatureUnit(Enum):
+    CELCIUS = 0
+    FAHRENHEIT = 1

@@ -2,29 +2,27 @@
 import logging
 import threading
 
-import voluptuous as vol
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_REGION, Platform
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.dispatcher import async_dispatcher_send
+from .haimports import * # pylint: disable=W0401,W0614
+from .const import (
+    LOGGER,
+    DOMAIN,
+    DREO_FANS,
+    DREO_SENSORS,
+    DREO_MANAGER
+)
 
-from .const import DOMAIN, DREO_FANS, DREO_SENSORS, DREO_MANAGER
-
-_LOGGER = logging.getLogger("dreo")
-
-DOMAIN = "dreo"
-
+_LOGGER = logging.getLogger(LOGGER)
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    _LOGGER.debug("async_setup")
+    "HomeAssistant EntryPoint"
+    _LOGGER.debug("async_setup_entry")
 
     _LOGGER.debug(config_entry.data.get(CONF_USERNAME))
     username = config_entry.data.get(CONF_USERNAME)
     password = config_entry.data.get(CONF_PASSWORD)
     region = "us"
 
-    from .pydreo import PyDreo
+    from .pydreo import PyDreo # pylint: disable=C0415
 
     manager = PyDreo(username, password, region)
 
@@ -55,7 +53,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     if device_dict[DREO_FANS]:
         fans.extend(device_dict[DREO_FANS])
         platforms.append(Platform.FAN)
-        platforms.append(Platform.SENSOR)  
+        platforms.append(Platform.SENSOR)
+        platforms.append(Platform.SWITCH)
+        #platforms.append(Platform.NUMBER)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True

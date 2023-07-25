@@ -17,9 +17,10 @@ import websockets
 from .constant import *
 from .helpers import Helpers
 from .models import *
+from .pydreotowerfan import PyDreoTowerFan
 from .pydreoaircirculatorfan import PyDreoAirCirculatorFan
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
-from .pydreotowerfan import PyDreoTowerFan
+from .pydreofan import PyDreoFan
 
 __version__ = "0.2.0"
 
@@ -49,7 +50,7 @@ class PyDreo:  # pylint: disable=function-redefined
         self.in_process = False
         self._dev_list = {}
         self._deviceListBySn = {}
-        self.fans = []
+        self.fans : list[PyDreoFan] = []
         self._signal_close = False
         self._testonly_signal_interrupt = False
 
@@ -252,7 +253,8 @@ class PyDreo:  # pylint: disable=function-redefined
         json_object: Optional[dict] = None,
         headers: Optional[dict] = None,
     ) -> tuple:
-        _LOGGER.debug("Calling Dreo API: {0}".format(api))
+        _LOGGER.debug("Calling Dreo API: {%s}",
+                      api)
         api_url = DREO_API_URL_FORMAT.format(self.apiServerRegion)
 
         if json_object is None:
