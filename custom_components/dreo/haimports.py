@@ -55,5 +55,6 @@ from homeassistant.components.sensor import (
 )
 
 from homeassistant.const import (
-    TEMPERATURE
+    TEMPERATURE,
+    UnitOfTemperature 
 )

@@ -5,7 +5,7 @@ import logging
 import math
 from typing import Any
 
-from .haimports import * # pylint: disable=W0401
+from .haimports import * # pylint: disable=W0401,W0614
 
 from .basedevice import DreoBaseDeviceHA
 from .const import (

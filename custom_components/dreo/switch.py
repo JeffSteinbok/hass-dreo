@@ -33,16 +33,28 @@ class DreoSwitchEntityDescription(SwitchEntityDescription):
 
 SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
     DreoSwitchEntityDescription(
-        key="horizontally oscillating",
-        translation_key="horizontally oscillating",
+        key="Horizontally Oscillating",
+        translation_key="horizontally_oscillating",
         attr_name="horizontally_oscillating",
         icon="mdi:rotate-360"
     ),
     DreoSwitchEntityDescription(
-        key="vertically oscillating",
-        translation_key="vertically oscillating",
+        key="Vertically Oscillating",
+        translation_key="vertically_oscillating",
         attr_name="vertically_oscillating",
         icon="mdi:rotate-360"
+    ),
+    DreoSwitchEntityDescription(
+        key="Display Auto Off",
+        translation_key="display_auto_off",
+        attr_name="display_auto_off",
+        icon="mdi:monitor"
+    ),
+    DreoSwitchEntityDescription(
+        key="Panel Sound",
+        translation_key="panel_sound",
+        attr_name="panel_sound",
+        icon="mdi:volume-high"
     ),
 )
 
@@ -71,19 +83,21 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
 
     def __init__(self, 
                  pyDreoDevice: PyDreoBaseDevice,
-                 definition: DreoSwitchEntityDescription) -> None:
+                 description: DreoSwitchEntityDescription) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
-        self.entity_definition = definition
-        self._attr_name = super().name + " " + definition.key
-        self._attr_unique_id = f"{super().unique_id}-{definition.key}"
-        self._attr_icon = definition.icon
+
+        # Note this is a "magic" HA property.  Don't rename
+        self.entity_description = description
+
+        self._attr_name = super().name + " " + description.key
+        self._attr_unique_id = f"{super().unique_id}-{description.key}"
 
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
         _LOGGER.debug("DreoSwitchHA:is_on")
-        return getattr(self.device, self.entity_definition.attr_name)
+        return getattr(self.device, self.entity_description.attr_name)
 
     def turn_on(
         self,
@@ -93,9 +107,9 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
     ) -> None:
         """Turn the device on."""
         _LOGGER.debug("DreoSwitchHA:turn_on")
-        return setattr(self.device, self.entity_definition.attr_name, True)
+        return setattr(self.device, self.entity_description.attr_name, True)
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
         _LOGGER.debug("DreoSwitchHA:turn_off")
-        return setattr(self.device, self.entity_definition.attr_name, False)
+        return setattr(self.device, self.entity_description.attr_name, False)

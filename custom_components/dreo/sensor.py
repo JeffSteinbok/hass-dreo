@@ -15,6 +15,8 @@ import logging
 from .basedevice import DreoBaseDeviceHA
 from .fan import DreoFanHA
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
+from .pydreo.constant import TemperatureUnit
+
 from .haimports import * # pylint: disable=W0401,W0614
 
 from .const import (
@@ -30,6 +32,7 @@ class DreoSensorEntityDescription(SensorEntityDescription):
     """Describe Dreo sensor entity."""
     value_fn: Callable[[DreoFanHA], StateType] = None
     exists_fn: Callable[[DreoFanHA], bool] = None
+    native_unit_of_measurement_fn: Callable[[DreoFanHA], str] = None
 
 SENSORS: tuple[DreoSensorEntityDescription, ...] = (
     DreoSensorEntityDescription(
@@ -37,11 +40,11 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         translation_key="temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: UnitOfTemperature.CELCIUS if (device.temperature_units == TemperatureUnit.CELCIUS) else UnitOfTemperature.FAHRENHEIT,
         value_fn=lambda device: device.temperature,
         exists_fn=lambda device: device.is_feature_supported("temperature")
     ),
 )
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -67,16 +70,17 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
 
     def __init__(self, 
                  pyDreoDevice: PyDreoBaseDevice,
-                 definition: DreoSensorEntityDescription) -> None:
+                 description: DreoSensorEntityDescription) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
-        self.entity_definition = definition
-        self._attr_name = super().name + " " + definition.key
-        self._attr_unique_id = f"{super().unique_id}-{definition.key}"
-        self._attr_device_class = definition.device_class
-        self._attr_state_class = definition.state_class
-
+        
+        # Note this is a "magic" HA property.  Don't rename
+        self.entity_description = description
+        self._attr_name = super().name + " " + description.key
+        self._attr_unique_id = f"{super().unique_id}-{description.key}"
+        self._attr_native_unit_of_measurement = description.native_unit_of_measurement_fn(self.device)
+        
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
-        return self.entity_definition.value_fn(self.device)
+        return self.entity_description.value_fn(self.device)
