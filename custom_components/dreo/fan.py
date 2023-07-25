@@ -89,7 +89,9 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
-        supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.PRESET_MODE
+        supported_features = FanEntityFeature.SET_SPEED
+        if (self.device.preset_mode is not None):
+            supported_features = supported_features | FanEntityFeature.PRESET_MODE
         if (self.device.oscillating is not None):
             supported_features = supported_features | FanEntityFeature.OSCILLATE
 

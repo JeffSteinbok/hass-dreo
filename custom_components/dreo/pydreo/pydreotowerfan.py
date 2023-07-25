@@ -29,7 +29,7 @@ class PyDreoTowerFan(PyDreoFan):
         """Initialize air devices."""
         super().__init__(fan_definition, details, dreoManager)
         self._fan_definition = fan_definition
-        self._windType = None
+        self._wind_type = None
         self._oscillating = None
 
     def __repr__(self):
@@ -44,7 +44,7 @@ class PyDreoTowerFan(PyDreoFan):
 
         valWindType = self.get_server_update_key_value(message, WINDTYPE_KEY)
         if isinstance(valWindType, int):
-            self._windType = valWindType
+            self._wind_type = valWindType
 
         valShakeHorizon = self.get_server_update_key_value(message, SHAKEHORIZON_KEY)
         if (isinstance(valShakeHorizon, bool)):
@@ -53,15 +53,15 @@ class PyDreoTowerFan(PyDreoFan):
     @property
     def preset_mode(self):
         """Return the current preset mode."""
-        if (self._windType is None):
+        if (self._wind_type is None):
             return None
-        return self.preset_modes[self._windType - 1]
+        return self.preset_modes[self._wind_type - 1]
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
         _LOGGER.debug("PyDreoTowerFan:set_preset_mode")  
 
-        if self._windType is None:
+        if self._wind_type is None:
             _LOGGER.error("Attempting to set preset_mode on a device that doesn't support.")
             return
         
@@ -92,5 +92,5 @@ class PyDreoTowerFan(PyDreoFan):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("PyDreoTowerFan:update_state")
         super().update_state(state)
-        self._windType = self.get_state_update_value(state, WINDTYPE_KEY)
+        self._wind_type = self.get_state_update_value(state, WINDTYPE_KEY)
         self._oscillating = self.get_state_update_value(state, SHAKEHORIZON_KEY)

@@ -62,11 +62,18 @@ class PyDreoAirCirculatorFan(PyDreoFan):
     @property
     def preset_mode(self):
         """Get the current preset mode"""
+        if (self._wind_mode is None):
+            return None
+        
         return self._fan_definition.preset_modes[self._wind_mode - 1]
 
     @preset_mode.setter
     def preset_mode(self, preset_mode: str):
         """Set the preset mode."""
+        if self._wind_mode is None:
+            _LOGGER.error("Attempting to set preset_mode on a device that doesn't support.")
+            return
+    
         _LOGGER.debug("PyDreoAirCirculatorFan:set_preset_mode")        
         if (preset_mode in self.preset_modes):
             self._send_command(AIR_CIRCULATOR_WIND_MODE_KEY, 
