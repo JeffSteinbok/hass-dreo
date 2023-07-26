@@ -6,7 +6,12 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
-from .constant import *
+from .constant import (
+    LOGGER_NAME,
+    REPORTED_KEY,
+    POWERON_KEY,
+    STATE_KEY
+)
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -51,7 +56,9 @@ class PyDreoBaseDevice(object):
 
     def handle_server_update_base(self, message):
         """Initial method called when we get a WebSocket message."""
-        _LOGGER.debug("{}: got {} message **".format(self.name, message))
+        _LOGGER.debug("{%s}: got {%s} message **",
+                      self.name,
+                      message)
 
         # This method exists so that we can run the polymorphic function to process updates, and then
         # run a _do_callbacks() command safely afterwards.
@@ -73,20 +80,24 @@ class PyDreoBaseDevice(object):
             if (keyValObject is not None):
                 return keyValObject[STATE_KEY]
 
-        _LOGGER.error("Expected state value ({0}) not present.  Device: {1}".format(key, self.name))
+        _LOGGER.error("Expected state value (%s) not present.  Device: %s",
+                      key,
+                      self.name)
         return None
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        _LOGGER.debug("pyDreoBaseDevice:update_state: {0}".format(state))
+        _LOGGER.debug("pyDreoBaseDevice:update_state: %s", state)
 
         # TODO: Inconsistent placement of POWERON between BaseDevice and Fan for State/WebSocket
         self._is_on = self.get_state_update_value(state, POWERON_KEY)
 
     def add_attr_callback(self, cb):
+        """Add a callback to be called by _do_callbacks. """
         self._attr_cbs.append(cb)
 
     def _do_callbacks(self):
+        """Run all registered callback"""
         cbs = []
         with self._lock:
             for cb in self._attr_cbs:
@@ -113,3 +124,14 @@ class PyDreoBaseDevice(object):
     def model(self):
         """Returns the device's model number."""
         return self._model
+    
+    def is_feature_supported(self, feature: str) -> bool:
+        """Does this device support a given fature"""
+        property_name = feature
+        if (hasattr(self, property_name)):
+            val = getattr(self, property_name)
+            if (val is not None):
+                return True
+        
+        return False
+
