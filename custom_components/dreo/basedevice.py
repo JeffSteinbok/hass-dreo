@@ -11,6 +11,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(LOGGER)
 
+
 class DreoBaseDeviceHA(Entity):
     """Base class for Dreo Entity Representations."""
 

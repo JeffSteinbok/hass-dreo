@@ -134,4 +134,3 @@ class PyDreoBaseDevice(object):
                 return True
         
         return False
-
