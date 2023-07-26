@@ -10,6 +10,7 @@ from .const import (
     DREO_SENSORS,
     DREO_MANAGER
 )
+
 _LOGGER = logging.getLogger(LOGGER)
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:

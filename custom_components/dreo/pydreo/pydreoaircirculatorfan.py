@@ -124,7 +124,6 @@ class PyDreoAirCirculatorFan(PyDreoFan):
         if (self._vertically_oscillating is None):
             _LOGGER.error("Vertical oscillation is not supported.")
             return
-
         self._send_command(VERTICAL_OSCILLATION_KEY, oscillating)
 
     def set_horizontal_oscillation_angle(self, angle: int) -> None:

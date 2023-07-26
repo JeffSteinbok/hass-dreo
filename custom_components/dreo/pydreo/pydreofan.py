@@ -21,7 +21,6 @@ _LOGGER = logging.getLogger(LOGGER_NAME)
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
-
 class PyDreoFan(PyDreoBaseDevice):
     """Base class for Dreo Fan API Calls."""
 
@@ -44,21 +43,6 @@ class PyDreoFan(PyDreoBaseDevice):
     @property
     def speed_range(self):
         """Get the speed range"""
-    def handle_server_update(self, message):
-        valPoweron = self.get_server_update_key_value(message, POWERON_KEY)
-        if isinstance(valPoweron, bool):
-            self._is_on = valPoweron
-
-        valWindLevel = self.get_server_update_key_value(message, WINDLEVEL_KEY)
-        if isinstance(valWindLevel, int):
-            self._fan_speed = valWindLevel
-
-        valTemperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
-        if isinstance(valTemperature, int):
-            self._temperature = valTemperature
-
-    @property
-    def speed_range(self):
         return self._fan_definition.speed_range
 
     @property
@@ -100,10 +84,6 @@ class PyDreoFan(PyDreoBaseDevice):
     def temperature(self):
         """Get the temperature"""
         return self._temperature
-
-    @property 
-    def supports_preset_modes(self):
-        pass
     
     @property
     def temperature_units(self) -> TemperatureUnit:
@@ -147,7 +127,7 @@ class PyDreoFan(PyDreoBaseDevice):
     def panel_sound(self) -> bool:
         """Is the panel sound on"""
         return self._panel_sound
-
+    
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""

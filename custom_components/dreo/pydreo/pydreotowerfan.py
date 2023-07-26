@@ -88,5 +88,9 @@ class PyDreoTowerFan(PyDreoFan):
         
         self._send_command(SHAKEHORIZON_KEY, value)
 
+    def update_state(self, state: dict) -> None:
+        """Process the state dictionary from the REST API."""
+        _LOGGER.debug("PyDreoTowerFan:update_state")
+        super().update_state(state)
         self._wind_type = self.get_state_update_value(state, WINDTYPE_KEY)
         self._oscillating = self.get_state_update_value(state, SHAKEHORIZON_KEY)
