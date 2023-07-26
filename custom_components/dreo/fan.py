@@ -105,25 +105,24 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     ) -> None:
         """Turn the device on."""
         _LOGGER.debug("DreoFanHA:turn_on")
-        self.device.set_power(True)
+        self.device.is_on = True
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
         _LOGGER.debug("DreoFanHA:turn_off")
-        self.device.set_power(False)
+        self.device.is_on = False
 
     def set_percentage(self, percentage: int) -> None:
         """Set the speed of the device."""
         if percentage == 0:
-            self.device.set_power(False)
+            self.device.is_on = False
             return
 
         if not self.device.is_on:
-            self.device.set_power(True)
+            self.device.is_on = True
 
-        self.device.change_fan_speed(
-            math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
-        )
+        self.device.fan_speed = math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
+        
         self.schedule_update_ha_state()
 
     def set_preset_mode(self, preset_mode: str) -> None:
@@ -135,9 +134,9 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
             )
 
         if not self.device.is_on:
-            self.device.set_power(True)
+            self.device.is_on = True
 
-        self.device.set_preset_mode(preset_mode)
+        self.device.preset_mode = preset_mode
 
         self.schedule_update_ha_state()
 
