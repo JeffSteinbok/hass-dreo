@@ -53,11 +53,6 @@ class PyDreoAirCirculatorFan(PyDreoFan):
         val_vert_oscillaation = self.get_server_update_key_value(message, VERTICAL_OSCILLATION_KEY)
         if isinstance(val_vert_oscillaation, bool):
             self._vertically_oscillating = val_vert_oscillaation
-
-    @property
-    def is_on(self):
-        """Returns `True` if the device is on, `False` otherwise."""
-        return self._is_on
     
     @property
     def preset_mode(self):
