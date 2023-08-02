@@ -1,0 +1,23 @@
+load_devices:
+  data: get
+  headers:
+    acceptLanguage: en
+    method: devices
+    pageNo: '1'
+    pageSize: '100'
+  method: /api/v2/user-device/device/list
+  url: https://app-api-us.dreo-cloud.com
+login:
+  data: post
+  headers:
+    acceptLanguage: en
+    client_id: 7de37c362ee54dcf9c4561812309347a
+    client_secret: 32dfa0764f25451d99f94e1693498791
+    email: EMAIL
+    encrypt: ciphertext
+    grant_type: email-password
+    himei: faede31549d649f58864093158787ec9
+    password: PASSWORD
+    scope: all
+  method: /api/oauth/login
+  url: https://app-api-us.dreo-cloud.com
