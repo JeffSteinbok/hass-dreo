@@ -20,6 +20,7 @@ from .constant import (
     OSCMODE_KEY,
     LIGHTSENSORON_KEY,
     MUTEON_KEY,
+    FIXEDCONF_KEY,
     OscillationMode,
     TemperatureUnit
 )
@@ -59,6 +60,8 @@ class PyDreoFan(PyDreoBaseDevice):
         self._vertically_oscillating = None
         self._light_sensor_on = None
         self._mute_on = None
+
+        self._fixed_conf = None
 
     def __repr__(self):
         # Representation string of object.
@@ -310,6 +313,28 @@ class PyDreoFan(PyDreoBaseDevice):
             _LOGGER.error("Attempting to set panel_sound on a device that doesn't support.")
             return
         
+    @property
+    def horizontal_angle(self) -> int:
+        if (self._fixed_conf is not None):
+            return self._fixed_conf.split(",")[1]
+
+    @horizontal_angle.setter
+    def horizontal_angle(self, value: int) -> None:
+        _LOGGER.debug("PyDreoFan:horizontal_angle.setter")
+        if (self._fixed_conf is not None):  
+            self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{value}")
+
+    @property
+    def vertical_angle(self) -> int:
+        if (self._fixed_conf is not None):
+            return self._fixed_conf.split(",")[0]
+
+    @vertical_angle.setter
+    def vertical_angle(self, value: int) -> None:
+        _LOGGER.debug("PyDreoFan:vertical_angle.setter")
+        if (self._fixed_conf is not None):
+            self._send_command(FIXEDCONF_KEY, f"{value},{self._fixed_conf.split(',')[1]}")
+
     def update_state(self, state: dict) :
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("PyDreoFan:update_state")
@@ -330,6 +355,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
+        self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
 
         
     def handle_server_update(self, message):
@@ -381,3 +407,7 @@ class PyDreoFan(PyDreoBaseDevice):
         val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_mute, bool):
             self._mute_on = val_mute
+
+        val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)  
+        if isinstance(val_fixed_conf, str):
+            self._fixed_conf = val_fixed_conf
