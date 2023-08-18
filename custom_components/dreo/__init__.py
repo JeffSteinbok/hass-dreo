@@ -8,7 +8,8 @@ from .const import (
     DOMAIN,
     DREO_FANS,
     DREO_SENSORS,
-    DREO_MANAGER
+    DREO_MANAGER,
+    CONF_AUTO_RECONNECT
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -20,11 +21,17 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     _LOGGER.debug(config_entry.data.get(CONF_USERNAME))
     username = config_entry.data.get(CONF_USERNAME)
     password = config_entry.data.get(CONF_PASSWORD)
+    auto_reconnect = config_entry.options.get(CONF_AUTO_RECONNECT)
+    if (auto_reconnect is None):
+        _LOGGER.debug("auto_reconnect is None.  Default to True")
+        auto_reconnect = True
+
     region = "us"
 
     from .pydreo import PyDreo # pylint: disable=C0415
 
     manager = PyDreo(username, password, region)
+    manager.auto_reconnect = auto_reconnect
 
     login = await hass.async_add_executor_job(manager.login)
 
@@ -55,7 +62,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.append(Platform.FAN)
         platforms.append(Platform.SENSOR)
         platforms.append(Platform.SWITCH)
-        #platforms.append(Platform.NUMBER)
+        platforms.append(Platform.NUMBER)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True

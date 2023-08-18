@@ -17,8 +17,6 @@ import websockets
 from .constant import *
 from .helpers import Helpers
 from .models import *
-from .pydreotowerfan import PyDreoTowerFan
-from .pydreoaircirculatorfan import PyDreoAirCirculatorFan
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
 
@@ -41,6 +39,7 @@ class PyDreo:  # pylint: disable=function-redefined
             self.redact = redact
         self.username = username
         self.password = password
+        self._auto_reconnect = True
         self.token = None
         self.account_id = None
         self.devices = None
@@ -67,6 +66,17 @@ class PyDreo:  # pylint: disable=function-redefined
             return DREO_API_REGION_EU
         else:
             _LOGGER.error("Invalid Auth Region: {0}".format(self.auth_region))
+
+    @property
+    def auto_reconnect(self) -> bool:
+        """Return auto_reconnect option."""
+        return self._auto_reconnect
+
+    @auto_reconnect.setter
+    def auto_reconnect(self, value: bool) -> None:
+        """Set auto_reconnect option."""
+        _LOGGER.debug("Setting auto_reconnect to %s", value)
+        self._auto_reconnect = value
 
     @property
     def redact(self) -> bool:
@@ -136,12 +146,9 @@ class PyDreo:  # pylint: disable=function-redefined
 
                 if model is None:
                     raise UnknownModelError(model)
-                elif model in SUPPORTED_TOWER_FANS:
-                    _LOGGER.debug(f"{model} is a tower fan")
-                    deviceFan = PyDreoTowerFan(SUPPORTED_TOWER_FANS[model], dev, self)
-                elif model in SUPPORTED_AIR_CIRCULATOR_FANS:
-                    _LOGGER.debug(f"{model} is an air circulator")
-                    deviceFan = PyDreoAirCirculatorFan(SUPPORTED_AIR_CIRCULATOR_FANS[model], dev, self)
+                elif model in SUPPORTED_FANS:
+                    _LOGGER.debug(f"{model} found!")
+                    deviceFan = PyDreoFan(SUPPORTED_FANS[model], dev, self)
                 else:
                     raise UnknownModelError(model)
 
@@ -312,9 +319,13 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.debug("_ws_handler - WebSocket appears closed.")
         for task in pending:
             task.cancel()
-        # Reconnect the WebSocket
-        _LOGGER.debug("_ws_handler - Reconnecting WebSocket")
-        await self._start_websocket()
+        
+        if (self.auto_reconnect):
+            # Reconnect the WebSocket
+            _LOGGER.debug("_ws_handler - Reconnecting WebSocket")
+            await self._start_websocket()
+        else:
+            _LOGGER.error("WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
 
     async def _ws_consumer_handler(self, ws):
         _LOGGER.debug("_ws_consumer_handler")
