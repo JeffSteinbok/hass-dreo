@@ -54,6 +54,12 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 
+from homeassistant.components.number import (
+    NumberDeviceClass,
+    NumberEntity,
+    NumberEntityDescription
+)
+
 from homeassistant.const import (
     TEMPERATURE,
     UnitOfTemperature 

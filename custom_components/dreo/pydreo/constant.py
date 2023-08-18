@@ -22,6 +22,7 @@ VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
 MUTEON_KEY = "muteon"
+FIXEDCONF_KEY = "fixedconf"
 
 DREO_API_URL_FORMAT = (
     "https://app-api-{0}.dreo-cloud.com"  # {0} is the 2 letter region code

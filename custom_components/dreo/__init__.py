@@ -62,7 +62,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.append(Platform.FAN)
         platforms.append(Platform.SENSOR)
         platforms.append(Platform.SWITCH)
-        #platforms.append(Platform.NUMBER)
+        platforms.append(Platform.NUMBER)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True
