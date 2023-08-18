@@ -71,8 +71,10 @@ async def async_setup_entry(
 
     switch_ha_colletion = []
     for fan_entity in manager.fans:
+        _LOGGER.debug("Adding switches for %s", fan_entity.name)
         for switch_definition in SWITCHES:
             if (fan_entity.is_feature_supported(switch_definition.attr_name)):
+                _LOGGER.debug("Adding switch %s", switch_definition.key)
                 switch_ha_colletion.append(DreoSwitchHA(fan_entity,switch_definition))
 
     async_add_entities(switch_ha_colletion)

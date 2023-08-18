@@ -1,4 +1,5 @@
 from .fandefinition import *
+from enum import IntEnum
 
 LOGGER_NAME = "pydreo"
 
@@ -64,8 +65,14 @@ HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
 VERTICAL_OSCILLATION_KEY = "voscon"
 VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 
-AIR_CIRCULATOR_WIND_MODE_KEY = "mode"
+WIND_MODE_KEY = "mode"
 
 class TemperatureUnit(Enum):
     CELCIUS = 0
     FAHRENHEIT = 1
+
+class OscillationMode(IntEnum):
+    OFF = 0,
+    HORIZONTAL = 1,
+    VERTICAL = 2,
+    BOTH = 3

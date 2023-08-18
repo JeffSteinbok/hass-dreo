@@ -32,6 +32,8 @@ class PyDreoBaseDevice(object):
         self._dreo = dreo
         self._is_on = False
 
+        self._feature_key_names : Dict[str, str] = {}
+
         self.raw_state = None
         self._attr_cbs = []
         self._lock = threading.Lock()
@@ -44,7 +46,7 @@ class PyDreoBaseDevice(object):
 
     def get_server_update_key_value(self, message: dict, key: str):
         """Helper method to get values from a WebSocket update in a safe way."""
-        if (message is not None) and (isinstance(message[REPORTED_KEY], dict)):
+        if (message is not None) and (isinstance(message, dict)) and (REPORTED_KEY in message) and (isinstance(message[REPORTED_KEY], dict)):
             reported: dict = message[REPORTED_KEY]
 
             if (reported is not None) and (key in reported):
@@ -80,7 +82,7 @@ class PyDreoBaseDevice(object):
             if (keyValObject is not None):
                 return keyValObject[STATE_KEY]
 
-        _LOGGER.error("Expected state value (%s) not present.  Device: %s",
+        _LOGGER.debug("State value (%s) not present.  Device: %s",
                       key,
                       self.name)
         return None

@@ -10,10 +10,19 @@ from .constant import (
     TEMPERATURE_KEY,
     LEDALWAYSON_KEY,
     VOICEON_KEY,
-    PyDreoFanDefinition,
+    WINDTYPE_KEY,
+    WIND_MODE_KEY,
+    SHAKEHORIZON_KEY,
+    HORIZONTAL_OSCILLATION_KEY,
+    HORIZONTAL_OSCILLATION_ANGLE_KEY,
+    VERTICAL_OSCILLATION_KEY,
+    VERTICAL_OSCILLATION_ANGLE_KEY,
+    OSCMODE_KEY,
+    OscillationMode,
     TemperatureUnit
 )
 
+from .fandefinition import PyDreoFanDefinition
 from .pydreobasedevice import PyDreoBaseDevice
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -30,9 +39,22 @@ class PyDreoFan(PyDreoBaseDevice):
 
         self._fan_definition = fan_definition
         self._fan_speed = None
+
+        self._wind_type = None
+        self._wind_mode = None
+        self._oscillating = None
+        self._osc_mode = None
+
+        self._horizontally_oscillating = None
+        self._vertically_oscillating = None
+
         self._temperature = None
         self._display_auto_off = None
         self._panel_sound = None
+        self._fan_definition = fan_definition
+        self._wind_mode = None
+        self._horizontally_oscillating = None
+        self._vertically_oscillating = None
 
     def __repr__(self):
         # Representation string of object.
@@ -74,12 +96,35 @@ class PyDreoFan(PyDreoBaseDevice):
 
     @property
     def preset_mode(self):
-        """Get the preset mode"""
+        """Return the current preset mode."""
+        mode = self._wind_mode
+        if (mode is None):
+            mode = self._wind_type
+
+        if (mode is None):
+            return None
+        return self.preset_modes[mode - 1]
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
-        """Set the preset mode"""
+        _LOGGER.debug("PyDreoFan:set_preset_mode")  
+        key : str = None
 
+        if self._wind_type is not None:
+            key = WINDTYPE_KEY
+        elif self._wind_mode is not None:
+            key = WIND_MODE_KEY
+        else:
+            _LOGGER.error("Attempting to set preset_mode on a device that doesn't support.")
+            return
+        
+        if value in self.preset_modes:
+            self._send_command(key, self._fan_definition.preset_modes.index(value) + 1)
+        else:
+            _LOGGER.error("Preset mode %s is not in the acceptable list: %s", 
+                          value, 
+                          self._fan_definition.preset_modes)
+            
     @property
     def temperature(self):
         """Get the temperature"""
@@ -101,11 +146,105 @@ class PyDreoFan(PyDreoBaseDevice):
 
     @property
     def oscillating(self) -> bool:
-        """Get if the fan is oscillating"""
+        """Returns `True` if either horizontal or vertical oscillation is on."""
+        if (self._oscillating is not None):
+            return self._oscillating
+        elif (self._horizontally_oscillating is not None):
+            return self._horizontally_oscillating or self._vertically_oscillating
+        elif (self._osc_mode is not None):
+            return self._osc_mode != OscillationMode.OFF
+        else:
+            return None
 
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
-        """Set if the fan is oscillating"""
+
+        """Enable or disable oscillation"""
+        _LOGGER.debug("PyDreoFan:oscillating.setter")
+        
+        if (self._oscillating is not None):
+            self._send_command(SHAKEHORIZON_KEY, value)
+        elif (self._horizontally_oscillating is not None):
+            self.horizontally_oscillating = value
+            self.vertically_oscillating = False
+        elif (self._osc_mode is not None):
+            self._osc_mode = OscillationMode.HORIZONTAL if value else OscillationMode.OFF
+        else:
+            _LOGGER.error("Attempting to set oscillating on a device that doesn't support.")
+            return
+
+    @property
+    def horizontally_oscillating(self) -> bool:
+        if (self._oscillating is not None): 
+            return self._oscillating
+        elif (self._horizontally_oscillating is not None):
+            return self._horizontally_oscillating
+        elif (self._osc_mode is not None):
+            return (self._osc_mode & OscillationMode.HORIZONTAL) != OscillationMode.OFF
+        else:
+            return None
+    
+    @horizontally_oscillating.setter
+    def horizontally_oscillating(self, value: bool) -> None:
+        """Enable or disable vertical oscillation"""
+        _LOGGER.debug("PyDreoFan:horizontally_oscillating.setter")
+        if (self._horizontally_oscillating is not None):
+            self._send_command(HORIZONTAL_OSCILLATION_KEY, value)
+        elif (self._osc_mode is not None):
+            osc_computed = None
+            if (value):
+                osc_computed = self._osc_mode | OscillationMode.HORIZONTAL
+            else:
+                osc_computed = self._osc_mode ^ OscillationMode.HORIZONTAL
+            self._send_command(OSCMODE_KEY, osc_computed)
+        else:
+            _LOGGER.error("Horizontal oscillation is not supported.")
+            return
+        
+    @property
+    def vertically_oscillating(self):
+        _LOGGER.debug("PyDreoFan:vertically_oscillating.getter")
+        if (self._oscillating is not None): 
+            return self._oscillating
+        elif (self._vertically_oscillating is not None):
+            return self._vertically_oscillating
+        elif (self._osc_mode is not None):
+            return self._osc_mode & OscillationMode.VERTICAL != OscillationMode.OFF
+        else:
+            return None
+
+    @vertically_oscillating.setter
+    def vertically_oscillating(self, value: bool) -> None:
+        """Enable or disable vertical oscillation"""
+        if (self._horizontally_oscillating is not None):
+            self._send_command(VERTICAL_OSCILLATION_KEY, value)
+        elif (self._osc_mode is not None):
+            osc_computed = None
+            if (value):
+                osc_computed = self._osc_mode | OscillationMode.VERTICAL
+            else:
+                osc_computed = self._osc_mode ^ OscillationMode.VERTICAL
+            self._send_command(OSCMODE_KEY, osc_computed)
+        else:
+            _LOGGER.error("Vertical oscillation is not supported.")
+            return
+        
+    def set_horizontal_oscillation_angle(self, angle: int) -> None:
+        """Set the horizontal oscillation angle."""
+        _LOGGER.debug("PyDreoAirCirculatorFan:set_horizontal_oscillation_angle")
+        if not self._horizontally_oscillating is None:
+            _LOGGER.error("This device does not support horizontal oscillation")
+            return
+        self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, angle)
+
+    def set_vertical_oscillation_angle(self, angle: int) -> None:
+        """Set the vertical oscillation angle."""
+        _LOGGER.debug("PyDreoAirCirculatorFan:set_vertical_oscillation_angle")
+        if not self._vertically_oscillating is None:
+            _LOGGER.error("This device does not support vertical oscillation")
+            return
+
+        self._send_command(VERTICAL_OSCILLATION_ANGLE_KEY, angle)
 
     @property
     def display_auto_off(self) -> bool:
@@ -144,10 +283,19 @@ class PyDreoFan(PyDreoBaseDevice):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("PyDreoFan:update_state")
         super().update_state(state)
+
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
+        if (self._fan_speed is None):
+            _LOGGER.error("Unable to get fan speed from state.  Check debug logs for more information.")
+
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._display_auto_off = not self.get_state_update_value(state, LEDALWAYSON_KEY)
         self._panel_sound = self.get_state_update_value(state, VOICEON_KEY)
+        self._oscillating = self.get_state_update_value(state, SHAKEHORIZON_KEY)
+        self._wind_mode = self.get_state_update_value(state, WIND_MODE_KEY)
+        self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
+        self._vertically_oscillating = self.get_state_update_value(state, VERTICAL_OSCILLATION_KEY)
+        self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
 
         
     def handle_server_update(self, message):
@@ -173,3 +321,21 @@ class PyDreoFan(PyDreoBaseDevice):
         val_panel_sound = self.get_server_update_key_value(message, VOICEON_KEY)
         if isinstance(val_panel_sound, bool):
             self._panel_sound = val_panel_sound
+
+        val_wind_mode = self.get_server_update_key_value(
+            message, WIND_MODE_KEY
+        )
+        if isinstance(val_wind_mode, int):
+            self._wind_mode = val_wind_mode
+
+        val_horiz_oscillation = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_KEY)
+        if isinstance(val_horiz_oscillation, bool):
+            self._horizontally_oscillating = val_horiz_oscillation
+
+        val_vert_oscillation = self.get_server_update_key_value(message, VERTICAL_OSCILLATION_KEY)
+        if isinstance(val_vert_oscillation, bool):
+            self._vertically_oscillating = val_vert_oscillation
+
+        val_osc_mode = self.get_server_update_key_value(message, OSCMODE_KEY)
+        if isinstance(val_osc_mode, int):
+            self._osc_mode = val_osc_mode
