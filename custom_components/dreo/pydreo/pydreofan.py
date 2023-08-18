@@ -18,6 +18,8 @@ from .constant import (
     VERTICAL_OSCILLATION_KEY,
     VERTICAL_OSCILLATION_ANGLE_KEY,
     OSCMODE_KEY,
+    LIGHTSENSORON_KEY,
+    MUTEON_KEY,
     OscillationMode,
     TemperatureUnit
 )
@@ -49,12 +51,14 @@ class PyDreoFan(PyDreoBaseDevice):
         self._vertically_oscillating = None
 
         self._temperature = None
-        self._display_auto_off = None
-        self._panel_sound = None
+        self._led_always_on = None
+        self._voice_on = None
         self._fan_definition = fan_definition
         self._wind_mode = None
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
+        self._light_sensor_on = None
+        self._mute_on = None
 
     def __repr__(self):
         # Representation string of object.
@@ -175,13 +179,13 @@ class PyDreoFan(PyDreoBaseDevice):
 
     @property
     def horizontally_oscillating(self) -> bool:
-        if (self._oscillating is not None): 
-            return self._oscillating
-        elif (self._horizontally_oscillating is not None):
+        if (self._horizontally_oscillating is not None):
             return self._horizontally_oscillating
         elif (self._osc_mode is not None):
             return (self._osc_mode & OscillationMode.HORIZONTAL) != OscillationMode.OFF
         else:
+            # Note we do not consider a fan with JUST horizontal oscillation to have a seperate
+            # horizontal oscillation switch.
             return None
     
     @horizontally_oscillating.setter
@@ -204,9 +208,7 @@ class PyDreoFan(PyDreoBaseDevice):
     @property
     def vertically_oscillating(self):
         _LOGGER.debug("PyDreoFan:vertically_oscillating.getter")
-        if (self._oscillating is not None): 
-            return self._oscillating
-        elif (self._vertically_oscillating is not None):
+        if (self._vertically_oscillating is not None):
             return self._vertically_oscillating
         elif (self._osc_mode is not None):
             return self._osc_mode & OscillationMode.VERTICAL != OscillationMode.OFF
@@ -249,35 +251,64 @@ class PyDreoFan(PyDreoBaseDevice):
     @property
     def display_auto_off(self) -> bool:
         """Is the display always on?"""
-        return self._display_auto_off
+        if (self._led_always_on is not None):
+            return not self._led_always_on
+        else:
+            return None
     
     @display_auto_off.setter
     def display_auto_off(self, value: bool) -> None:
         """Set if the display is always on"""
         _LOGGER.debug("PyDreoFan:display_auto_off.setter")
         
-        if (self.display_auto_off is None):
+        if (self._led_always_on is not None):
+            self._send_command(LEDALWAYSON_KEY, not value)
+        else:
             _LOGGER.error("Attempting to set display always on on a device that doesn't support.")
             return
         
-        self._send_command(LEDALWAYSON_KEY, not value)
-
+    @property
+    def adaptive_brightness(self) -> bool:
+        """Is the display always on?"""
+        if (self._light_sensor_on is not None):
+            return self._light_sensor_on
+        else:
+            return None
+    
+    @adaptive_brightness.setter
+    def adaptive_brightness(self, value: bool) -> None:
+        """Set if the display is always on"""
+        _LOGGER.debug("PyDreoFan:adaptive_brightness.setter")
+        
+        if (self._light_sensor_on is not None):
+            self._send_command(LIGHTSENSORON_KEY,  value)
+        else:
+            _LOGGER.error("Attempting to set adaptive brightness on on a device that doesn't support.")
+            return
+        
+        
     @property
     def panel_sound(self) -> bool:
         """Is the panel sound on"""
-        return self._panel_sound
+        if (self._voice_on is not None):
+            return self._voice_on
+        elif (self._mute_on is not None):
+            return not self._mute_on
+        else:
+            return None
     
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
         _LOGGER.debug("PyDreoFan:panel_sound.setter")
         
-        if (self.panel_sound is None):
+        if (self._voice_on is not None):
+            self._send_command(VOICEON_KEY, value)
+        elif (self._mute_on is not None):
+            self._send_command(MUTEON_KEY, not value)
+        else:
             _LOGGER.error("Attempting to set panel_sound on a device that doesn't support.")
             return
-        
-        self._send_command(VOICEON_KEY, value)
-        
         
     def update_state(self, state: dict) :
         """Process the state dictionary from the REST API."""
@@ -289,13 +320,16 @@ class PyDreoFan(PyDreoBaseDevice):
             _LOGGER.error("Unable to get fan speed from state.  Check debug logs for more information.")
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
-        self._display_auto_off = not self.get_state_update_value(state, LEDALWAYSON_KEY)
-        self._panel_sound = self.get_state_update_value(state, VOICEON_KEY)
+        self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
+        self._voice_on = self.get_state_update_value(state, VOICEON_KEY)
         self._oscillating = self.get_state_update_value(state, SHAKEHORIZON_KEY)
+        self._wind_type = self.get_state_update_value(state, WINDTYPE_KEY)
         self._wind_mode = self.get_state_update_value(state, WIND_MODE_KEY)
         self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._vertically_oscillating = self.get_state_update_value(state, VERTICAL_OSCILLATION_KEY)
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
+        self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
+        self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
 
         
     def handle_server_update(self, message):
@@ -316,11 +350,11 @@ class PyDreoFan(PyDreoBaseDevice):
 
         val_display_always_on = self.get_server_update_key_value(message, LEDALWAYSON_KEY)
         if isinstance(val_display_always_on, bool):
-            self._display_auto_off = not val_display_always_on
+            self._led_always_on = val_display_always_on
 
         val_panel_sound = self.get_server_update_key_value(message, VOICEON_KEY)
         if isinstance(val_panel_sound, bool):
-            self._panel_sound = val_panel_sound
+            self._voice_on = val_panel_sound
 
         val_wind_mode = self.get_server_update_key_value(
             message, WIND_MODE_KEY
@@ -339,3 +373,11 @@ class PyDreoFan(PyDreoBaseDevice):
         val_osc_mode = self.get_server_update_key_value(message, OSCMODE_KEY)
         if isinstance(val_osc_mode, int):
             self._osc_mode = val_osc_mode
+
+        val_light_sensor = self.get_server_update_key_value(message, LIGHTSENSORON_KEY)
+        if isinstance(val_light_sensor, bool):
+            self._light_sensor_on = val_light_sensor
+
+        val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
+        if isinstance(val_mute, bool):
+            self._mute_on = val_mute

@@ -56,6 +56,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="panel_sound",
         icon="mdi:volume-high"
     ),
+    DreoSwitchEntityDescription(
+        key="Adaptive Brightness",
+        translation_key="adaptive_brightness",
+        attr_name="adaptive_brightness",
+        icon="mdi:monitor"
+    ),
 )
 
 async def async_setup_entry(
