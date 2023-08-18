@@ -202,7 +202,7 @@ class PyDreoFan(PyDreoBaseDevice):
             if (value):
                 osc_computed = self._osc_mode | OscillationMode.HORIZONTAL
             else:
-                osc_computed = self._osc_mode ^ OscillationMode.HORIZONTAL
+                osc_computed = self._osc_mode & ~OscillationMode.HORIZONTAL
             self._send_command(OSCMODE_KEY, osc_computed)
         else:
             _LOGGER.error("Horizontal oscillation is not supported.")
@@ -228,7 +228,7 @@ class PyDreoFan(PyDreoBaseDevice):
             if (value):
                 osc_computed = self._osc_mode | OscillationMode.VERTICAL
             else:
-                osc_computed = self._osc_mode ^ OscillationMode.VERTICAL
+                osc_computed = self._osc_mode & ~OscillationMode.VERTICAL
             self._send_command(OSCMODE_KEY, osc_computed)
         else:
             _LOGGER.error("Vertical oscillation is not supported.")
@@ -322,7 +322,8 @@ class PyDreoFan(PyDreoBaseDevice):
     def horizontal_angle(self, value: int) -> None:
         _LOGGER.debug("PyDreoFan:horizontal_angle.setter")
         if (self._fixed_conf is not None):  
-            self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{value}")
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
+            self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{int(value)}")
 
     @property
     def vertical_angle(self) -> int:
@@ -333,7 +334,8 @@ class PyDreoFan(PyDreoBaseDevice):
     def vertical_angle(self, value: int) -> None:
         _LOGGER.debug("PyDreoFan:vertical_angle.setter")
         if (self._fixed_conf is not None):
-            self._send_command(FIXEDCONF_KEY, f"{value},{self._fixed_conf.split(',')[1]}")
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
+            self._send_command(FIXEDCONF_KEY, f"{int(value)},{self._fixed_conf.split(',')[1]}")
 
     def update_state(self, state: dict) :
         """Process the state dictionary from the REST API."""

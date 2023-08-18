@@ -87,6 +87,9 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):
         self._attr_name = super().name + " " + description.key
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
 
+        self._attr_native_min_value = description.min_value
+        self._attr_native_max_value = description.max_value
+
     @property
     def native_value(self) -> float:
         """Return the state of the number."""
