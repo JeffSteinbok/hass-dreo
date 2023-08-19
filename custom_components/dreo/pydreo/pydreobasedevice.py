@@ -77,10 +77,10 @@ class PyDreoBaseDevice(object):
 
     def get_state_update_value(self, state: dict, key: str):
         """Get a value from the state update in a safe manner."""
-        if (key in state):
-            keyValObject: dict = state[key]
-            if (keyValObject is not None):
-                return keyValObject[STATE_KEY]
+        if key in state:
+            key_val_object: dict = state[key]
+            if key_val_object is not None:
+                return key_val_object[STATE_KEY]
 
         _LOGGER.debug("State value (%s) not present.  Device: %s",
                       key,

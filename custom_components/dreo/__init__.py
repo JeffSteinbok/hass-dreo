@@ -1,13 +1,11 @@
-"""dreo integration."""
+"""Dreo HomeAssistant Integration."""
 import logging
-import threading
 
 from .haimports import * # pylint: disable=W0401,W0614
 from .const import (
     LOGGER,
     DOMAIN,
     DREO_FANS,
-    DREO_SENSORS,
     DREO_MANAGER,
     CONF_AUTO_RECONNECT
 )
@@ -49,7 +47,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     manager.start_monitoring()
 
-    forward_setup = hass.config_entries.async_forward_entry_setup
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DREO_MANAGER] = manager
 

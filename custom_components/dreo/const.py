@@ -1,4 +1,4 @@
-"""Constants for Dreo Component."""
+"""Constants for Dreo Integration for HomeAssistant."""
 LOGGER = "dreo"
 DOMAIN = "dreo"
 DREO_DISCOVERY = "dreo_discovery_{}"
