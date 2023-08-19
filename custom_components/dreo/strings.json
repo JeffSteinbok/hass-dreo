@@ -15,5 +15,16 @@
       "abort": {
         "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]"
       }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Dreo Options",
+          "data": {
+            "auto_reconnect": "Automatically reconnect if the websocket drops."
+          },
+          "description": "Restart Home Assistant after changing these options."
+        }
+      }
     }
   }

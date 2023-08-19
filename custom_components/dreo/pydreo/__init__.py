@@ -7,8 +7,6 @@ import threading
 
 import asyncio
 import json
-import sys
-import time
 from itertools import chain
 from typing import Optional, Tuple
 
@@ -17,8 +15,6 @@ import websockets
 from .constant import *
 from .helpers import Helpers
 from .models import *
-from .pydreotowerfan import PyDreoTowerFan
-from .pydreoaircirculatorfan import PyDreoAirCirculatorFan
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
 
@@ -33,14 +29,20 @@ class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
 
     def __init__(self, username, password, redact=True):
+
+        self._event_thread = None
+        self._ws = None
+
         """Initialize Dreo class with username, password and time zone."""
         self.auth_region = DREO_AUTH_REGION_NA  # Will get the region from the auth call
 
         self._redact = redact
         if redact:
             self.redact = redact
+        self.raw_response = None
         self.username = username
         self.password = password
+        self._auto_reconnect = True
         self.token = None
         self.account_id = None
         self.devices = None
@@ -49,7 +51,7 @@ class PyDreo:  # pylint: disable=function-redefined
         self.last_update_ts = None
         self.in_process = False
         self._dev_list = {}
-        self._deviceListBySn = {}
+        self._device_list_by_sn = {}
         self.fans : list[PyDreoFan] = []
         self._signal_close = False
         self._testonly_signal_interrupt = False
@@ -59,14 +61,25 @@ class PyDreo:  # pylint: disable=function-redefined
         }
 
     @property
-    def apiServerRegion(self) -> str:
+    def api_server_region(self) -> str:
         """Return region."""
         if self.auth_region == DREO_AUTH_REGION_NA:
             return DREO_API_REGION_US
         elif self.auth_region == DREO_AUTH_REGION_EU:
             return DREO_API_REGION_EU
         else:
-            _LOGGER.error("Invalid Auth Region: {0}".format(self.auth_region))
+            _LOGGER.error("Invalid Auth Region: %s", self.auth_region)
+
+    @property
+    def auto_reconnect(self) -> bool:
+        """Return auto_reconnect option."""
+        return self._auto_reconnect
+
+    @auto_reconnect.setter
+    def auto_reconnect(self, value: bool) -> None:
+        """Set auto_reconnect option."""
+        _LOGGER.debug("Setting auto_reconnect to %s", value)
+        self._auto_reconnect = value
 
     @property
     def redact(self) -> bool:
@@ -131,23 +144,20 @@ class PyDreo:  # pylint: disable=function-redefined
             # Get the state of the device...seperate API call...boo
             try:
                 model = dev.get("model", None)
-                _LOGGER.debug(f"found device with model {model}")
+                _LOGGER.debug("found device with model %s", model)
                 deviceFan = None
 
                 if model is None:
                     raise UnknownModelError(model)
-                elif model in SUPPORTED_TOWER_FANS:
-                    _LOGGER.debug(f"{model} is a tower fan")
-                    deviceFan = PyDreoTowerFan(SUPPORTED_TOWER_FANS[model], dev, self)
-                elif model in SUPPORTED_AIR_CIRCULATOR_FANS:
-                    _LOGGER.debug(f"{model} is an air circulator")
-                    deviceFan = PyDreoAirCirculatorFan(SUPPORTED_AIR_CIRCULATOR_FANS[model], dev, self)
+                elif model in SUPPORTED_FANS:
+                    _LOGGER.debug("%s found!", model)
+                    deviceFan = PyDreoFan(SUPPORTED_FANS[model], dev, self)
                 else:
                     raise UnknownModelError(model)
 
                 self.load_device_state(deviceFan)
                 self.fans.append(deviceFan)
-                self._deviceListBySn[deviceFan.sn] = deviceFan
+                self._device_list_by_sn[deviceFan.sn] = deviceFan
             except UnknownModelError as ume:
                 _LOGGER.warning("Unknown fan model: %s", ume)
                 _LOGGER.debug(dev)
@@ -155,6 +165,7 @@ class PyDreo:  # pylint: disable=function-redefined
         return True
 
     def load_devices(self) -> bool:
+        """Load devices from API. This is called once upon initialization."""
         if not self.enabled:
             return False
 
@@ -180,7 +191,8 @@ class PyDreo:  # pylint: disable=function-redefined
         return proc_return
 
     def load_device_state(self, device: PyDreoBaseDevice) -> bool:
-        _LOGGER.debug("load_device_state")
+        """Load device state from API. This is called once upon initialization for each supported device."""
+        _LOGGER.debug("load_device_state: %s", device.name)
         if not self.enabled:
             return False
 
@@ -222,13 +234,11 @@ class PyDreo:  # pylint: disable=function-redefined
 
         if Helpers.code_check(response) and DATA_KEY in response:
             # get the region code from auth
-            authRegion = response[DATA_KEY][REGION_KEY]
-            _LOGGER.info("Dreo Auth reports user region as: {0}".format(authRegion))
-            if authRegion != self.auth_region:
-                _LOGGER.info(
-                    "Dreo Auth reports different region than current; retrying."
-                )
-                self.auth_region = authRegion
+            auth_region = response[DATA_KEY][REGION_KEY]
+            _LOGGER.info("Dreo Auth reports user region as: %s", auth_region)
+            if auth_region != self.auth_region:
+                _LOGGER.info("Dreo Auth reports different region than current; retrying.")
+                self.auth_region = auth_region
                 return self.login()
             else:
                 self.token = response[DATA_KEY][ACCESS_TOKEN_KEY]
@@ -238,24 +248,14 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.error("Error logging in with username and password")
         return False
 
-    def device_time_check(self) -> bool:
-        """Test if update interval has been exceeded."""
-        if (
-            self.last_update_ts is None
-            or (time.time() - self.last_update_ts) > self.update_interval
-        ):
-            return True
-        return False
-
     def call_dreo_api(
         self,
         api: str,
-        json_object: Optional[dict] = None,
-        headers: Optional[dict] = None,
+        json_object: Optional[dict] = None
     ) -> tuple:
-        _LOGGER.debug("Calling Dreo API: {%s}",
-                      api)
-        api_url = DREO_API_URL_FORMAT.format(self.apiServerRegion)
+        """Call the Dreo API. This is used for login and the initial device list and states."""
+        _LOGGER.debug("Calling Dreo API: {%s}", api)
+        api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
 
         if json_object is None:
             json_object = {}
@@ -270,7 +270,7 @@ class PyDreo:  # pylint: disable=function-redefined
             Helpers.req_headers(self),
         )
 
-    def start_monitoring(self):
+    def start_monitoring(self) -> None:
         """Initialize the websocket and start monitoring"""
 
         def start_ws_wrapper():
@@ -281,24 +281,24 @@ class PyDreo:  # pylint: disable=function-redefined
         )
         self._event_thread.setDaemon(True)
         self._event_thread.start()
-        return True
 
-    def stop_monitoring(self):
+    def stop_monitoring(self) -> None:
         '''Close down the monitoring socket'''
         _LOGGER.info("Stopping Monitoring - May take up to 15s")
         self._signal_close = True
 
-    def testonly_interrupt_monitoring(self):
+    def testonly_interrupt_monitoring(self) -> None:
         '''Close down the monitoring socket'''
         _LOGGER.info("Interrupting Monitoring - May take up to 15s")
         self._testonly_signal_interrupt = True
 
-    async def _start_websocket(self):
+    async def _start_websocket(self) -> None:
+        """Start the websocket connection to monitor for device changes and send commands."""
         _LOGGER.info("Starting WebSocket for incoming changes.")
         # open websocket
-        url = f"wss://wsb-{self.apiServerRegion}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={Helpers.api_timestamp()}"
+        url = f"wss://wsb-{self.api_server_region}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={Helpers.api_timestamp()}"
         async with websockets.connect(url) as ws:
-            self.ws = ws
+            self._ws = ws
             _LOGGER.info("WebSocket successfully opened")
             await self._ws_handler(ws)
 
@@ -312,46 +312,52 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.debug("_ws_handler - WebSocket appears closed.")
         for task in pending:
             task.cancel()
-        # Reconnect the WebSocket
-        _LOGGER.debug("_ws_handler - Reconnecting WebSocket")
-        await self._start_websocket()
+        
+        if (self.auto_reconnect):
+            # Reconnect the WebSocket
+            _LOGGER.debug("_ws_handler - Reconnecting WebSocket")
+            await self._start_websocket()
+        else:
+            _LOGGER.error("WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
 
     async def _ws_consumer_handler(self, ws):
         _LOGGER.debug("_ws_consumer_handler")
-        async for message in ws:
-            _LOGGER.debug("_ws_consumer_handler - got message")
-            self._ws_consume_message(json.loads(message))
-        _LOGGER.debug("_ws_consumer_handler - WebSocket appears closed.")            
-        return True
-
+        try:
+            async for message in ws:
+                _LOGGER.debug("_ws_consumer_handler - got message")
+                self._ws_consume_message(json.loads(message))
+        except websockets.exceptions.ConnectionClosedError:
+            _LOGGER.debug("_ws_consumer_handler - WebSocket appears closed.")
+        
     async def _ws_ping_handler(self, ws):
         _LOGGER.debug("_ws_ping_handler")
         while True:
             try:
                 await ws.send('2')
                 await asyncio.sleep(15)
-            except websockets.exceptions.ConnectionClosed:
+            except websockets.exceptions.ConnectionClosedError:
                 _LOGGER.info('Dreo WebSocket Closed - Unless intended, will reconnect')
                 break
 
     def _ws_consume_message(self, message):
-        messageDeviceSn = message["devicesn"]
+        message_device_sn = message["devicesn"]
 
-        if (messageDeviceSn in self._deviceListBySn):
-            device = self._deviceListBySn[messageDeviceSn]
+        if (message_device_sn in self._device_list_by_sn):
+            device = self._device_list_by_sn[message_device_sn]
             device.handle_server_update_base(message)
         else:
             # Message is to an unknown device, log it out just in case...
-            _LOGGER.debug("Received message for unknown or unsupported device. SN: {0}".format(messageDeviceSn))
-            _LOGGER.debug("Message: {0}".format(message))
+            _LOGGER.debug("Received message for unknown or unsupported device. SN: %s", message_device_sn)
+            _LOGGER.debug("Message: %s", message)
 
-    def send_command(self, device: PyDreoBaseDevice, params):
-        fullParams = {
+    def send_command(self, device: PyDreoBaseDevice, params) -> None:
+        """Send a command to Dreo servers via the WebSocket."""
+        full_params = {
             "devicesn": device.sn,
             "method": "control",
             "params": params,
             "timestamp": Helpers.api_timestamp(),
         }
-        content = json.dumps(fullParams)
+        content = json.dumps(full_params)
         _LOGGER.debug(content)
-        asyncio.run(self.ws.send(content))
+        asyncio.run(self._ws.send(content))

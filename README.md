@@ -1,9 +1,11 @@
 # Dreo Smart Device Integration for Home Assistant
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
-HomeAssistant integration for Dreo brand smart devices. 
+HomeAssistant integration for Dreo brand smart devices. Currently supports some models of Tower Fans and Air Circulators. 
 
 This integration is based on the engineering that Gavin Zyonse did for the HomeBridge integration here: https://github.com/zyonse/homebridge-dreo.
+
+> This documentation is intended to be accurate for the branch/tag it's in. If you are installing a specific version (including latest) of the integration, please change current viewing tag in GitHub to see the matching documentation.
 
 ## IMPORTANT NOTE ON CONFIGURATION
 If you used the very early version of this that required editing `configuration.yaml`, you will need to do a 1-time reconfiguration. You can delete the configuration entries you added and go through the configuration flow within the HomeAssistant web site.
@@ -11,6 +13,7 @@ If you used the very early version of this that required editing `configuration.
 ## Table of Contents
 - [Compatability](#compatability)
 - [Installation](#installation)
+- [Options](#options)
 - [Debugging](#debugging)
 - [Adding new Fans](#addingFans)
 - [To Do](#todo)
@@ -45,7 +48,6 @@ Air circulators:
 If you have a different model that you can try, please see instructions [below](#addingfans).
 
 <a name="installation"></a>
-<a name="installation"></a>
 ## Installation
 
 ### HACS (Recommended)
@@ -54,11 +56,20 @@ If you have a different model that you can try, please see instructions [below](
 1. Search for *Dreo Smart Device*, and choose install. 
 1. Reboot Home Assistant and configure from the "Add Integration" flow.
 
+Please note that there is a PR pending to add this to the default HACS repository.
+
 ### Manually
 Copy the `dreo` directory into your `/config/custom_components` directory, then restart your HomeAssistant Core.
 
-<a name="debugging"></a>
-## Debugging
+<a name="options"></a>
+## Options
+This plugin supports configuration from the HomeAssistant UX. The following options are available. 
+|Option|Description|Default|
+|------|-----------|-------|
+|Auto-Reconnect WebSocket|Should the integration try to reconnect if the websocket connection fails. This should not need to be unchecked, but there have been occasional reports of crashes and we think this may be the cause.|True|
+
+Note that at present you need to restart HA when you change an option for it to take effect.
+
 <a name="debugging"></a>
 ## Debugging
 Idealy, use the Diagnostics feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
@@ -68,9 +79,11 @@ This integration logs to two loggers as shown below. To get verbose logs, change
 ```
 logger:
     logs:
-        dreo: info
-        pydreo: info
+        dreo: verbose
+        pydreo: verbose
 ```
+
+You also may consider enabling verbose logging for the `websocket` component.
 
 <a name="addingFans"></a>
 ## Adding New Fans

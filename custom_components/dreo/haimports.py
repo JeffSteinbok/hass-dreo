@@ -12,6 +12,8 @@
 import voluptuous as vol
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_REGION, Platform
 
+from homeassistant import config_entries, core
+
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -23,6 +25,16 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
 from homeassistant.helpers.typing import StateType
+
+from homeassistant.core import callback
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers.entity_registry import async_entries_for_config_entry
+from homeassistant.helpers.selector import (
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
+)
 
 from homeassistant.helpers.entity import (
     DeviceInfo,
@@ -52,6 +64,12 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
+)
+
+from homeassistant.components.number import (
+    NumberDeviceClass,
+    NumberEntity,
+    NumberEntityDescription
 )
 
 from homeassistant.const import (

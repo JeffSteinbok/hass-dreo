@@ -1,3 +1,4 @@
+"""Supported device models for the PyDreo library."""
 from dataclasses import dataclass
 
 from .constant import (
@@ -18,7 +19,7 @@ class DreoFanDetails:
     speed_range: tuple[int, int]
     """Supported speed levels, starting from 1"""
 
-SUPPORTED_TOWER_FANS = {
+SUPPORTED_FANS = {
     "DR-HTF001S": DreoFanDetails(
         preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
         speed_range=(1, 6),
@@ -39,9 +40,6 @@ SUPPORTED_TOWER_FANS = {
         preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
         speed_range=(1, 5),
     ),    
-}
-
-SUPPORTED_AIR_CIRCULATOR_FANS = {
     "DR-HAF001S": DreoFanDetails(
         preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
         speed_range=(1, 4)

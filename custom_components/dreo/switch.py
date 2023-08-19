@@ -6,7 +6,6 @@
 # pylint: disable=W0613
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Any
 from dataclasses import dataclass
 import logging
@@ -56,6 +55,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="panel_sound",
         icon="mdi:volume-high"
     ),
+    DreoSwitchEntityDescription(
+        key="Adaptive Brightness",
+        translation_key="adaptive_brightness",
+        attr_name="adaptive_brightness",
+        icon="mdi:monitor"
+    ),
 )
 
 async def async_setup_entry(
@@ -71,8 +76,10 @@ async def async_setup_entry(
 
     switch_ha_colletion = []
     for fan_entity in manager.fans:
+        _LOGGER.debug("Adding switches for %s", fan_entity.name)
         for switch_definition in SWITCHES:
             if (fan_entity.is_feature_supported(switch_definition.attr_name)):
+                _LOGGER.debug("Adding switch %s", switch_definition.key)
                 switch_ha_colletion.append(DreoSwitchHA(fan_entity,switch_definition))
 
     async_add_entities(switch_ha_colletion)

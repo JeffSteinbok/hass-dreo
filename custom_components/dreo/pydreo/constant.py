@@ -1,7 +1,9 @@
-from .fandefinition import *
+"""Constants for the PyDreo library."""
+from enum import Enum, IntEnum
 
 LOGGER_NAME = "pydreo"
 
+# Various keys read from server JSON responses.
 ACCESS_TOKEN_KEY = "access_token"
 REGION_KEY = "region"
 DATA_KEY = "data"
@@ -19,6 +21,9 @@ OSCMODE_KEY = "oscmode"
 TEMPERATURE_KEY = "temperature"
 VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
+LIGHTSENSORON_KEY = "lightsensoron"
+MUTEON_KEY = "muteon"
+FIXEDCONF_KEY = "fixedconf"
 
 DREO_API_URL_FORMAT = (
     "https://app-api-{0}.dreo-cloud.com"  # {0} is the 2 letter region code
@@ -64,8 +69,16 @@ HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
 VERTICAL_OSCILLATION_KEY = "voscon"
 VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 
-AIR_CIRCULATOR_WIND_MODE_KEY = "mode"
+WIND_MODE_KEY = "mode"
 
 class TemperatureUnit(Enum):
+    """Valid possible temperature units."""
     CELCIUS = 0
     FAHRENHEIT = 1
+
+class OscillationMode(IntEnum):
+    """Possible oscillation modes.  These are bitwise flags."""
+    OFF = 0,
+    HORIZONTAL = 1,
+    VERTICAL = 2,
+    BOTH = 3
