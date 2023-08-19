@@ -1,8 +1,9 @@
-from .fandefinition import *
-from enum import IntEnum
+"""Constants for the PyDreo library."""
+from enum import Enum, IntEnum
 
 LOGGER_NAME = "pydreo"
 
+# Various keys read from server JSON responses.
 ACCESS_TOKEN_KEY = "access_token"
 REGION_KEY = "region"
 DATA_KEY = "data"
@@ -71,10 +72,12 @@ VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 WIND_MODE_KEY = "mode"
 
 class TemperatureUnit(Enum):
+    """Valid possible temperature units."""
     CELCIUS = 0
     FAHRENHEIT = 1
 
 class OscillationMode(IntEnum):
+    """Possible oscillation modes.  These are bitwise flags."""
     OFF = 0,
     HORIZONTAL = 1,
     VERTICAL = 2,

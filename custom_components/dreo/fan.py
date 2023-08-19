@@ -31,11 +31,11 @@ async def async_setup_entry(
 
     manager = hass.data[DOMAIN][DREO_MANAGER]
 
-    fansHAs = []
-    for fanEntity in manager.fans:
-        fansHAs.append(DreoFanHA(fanEntity))
+    fan_entities_ha = []
+    for fan_entity_ha in manager.fans:
+        fan_entities_ha.append(DreoFanHA(fan_entity_ha))
 
-    async_add_entities(fansHAs)
+    async_add_entities(fan_entities_ha)
 
 
 class DreoFanHA(DreoBaseDeviceHA, FanEntity):

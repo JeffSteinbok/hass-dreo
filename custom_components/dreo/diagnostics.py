@@ -1,4 +1,4 @@
-"""Diagnostics support for VeSync."""
+"""Diagnostics support for the Dreo HomeAssistant Integration."""
 
 # Suppress warnings about unused function arguments
 # pylint: disable=W0613
@@ -8,16 +8,13 @@ from __future__ import annotations
 from typing import Any
 
 from .pydreo import PyDreo
-
 from .haimports import * # pylint: disable=W0401,W0614
-
 from .const import (
     DOMAIN,
     DREO_MANAGER
 )
 
 KEYS_TO_REDACT = {"sn", "_sn", "wifi_ssid", "module_hardware_mac"}
-
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry

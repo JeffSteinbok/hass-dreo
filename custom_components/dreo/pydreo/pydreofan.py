@@ -25,8 +25,8 @@ from .constant import (
     TemperatureUnit
 )
 
-from .fandefinition import PyDreoFanDefinition
 from .pydreobasedevice import PyDreoBaseDevice
+from .models import DreoFanDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 class PyDreoFan(PyDreoBaseDevice):
     """Base class for Dreo Fan API Calls."""
 
-    def __init__(self, fan_definition: PyDreoFanDefinition, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(self, fan_definition: DreoFanDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
         super().__init__(details, dreo)
 

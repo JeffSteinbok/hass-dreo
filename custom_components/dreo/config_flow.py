@@ -1,21 +1,14 @@
+"""Config (and Options) flow for Dreo integration."""
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from collections import OrderedDict
-
-from homeassistant import config_entries, core
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_REGION
-from homeassistant.core import callback
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.entity_registry import async_entries_for_config_entry
-from homeassistant.helpers.selector import (
-    TextSelector,
-    TextSelectorConfig,
-    TextSelectorType,
-)
 import voluptuous as vol
-from .const import *
 
+from .haimports import * # pylint: disable=W0401,W0614
+from .const import (
+    DOMAIN,
+    CONF_AUTO_RECONNECT
+)
 from .pydreo import PyDreo
 
 _LOGGER = logging.getLogger("dreo")

@@ -14,11 +14,11 @@ _LOGGER = logging.getLogger(LOGGER)
 class DreoBaseDeviceHA(Entity):
     """Base class for Dreo Entity Representations."""
 
-    def __init__(self, pyDreoBaseDevice: PyDreoBaseDevice) -> None:
+    def __init__(self, pydreo_base_device: PyDreoBaseDevice) -> None:
         """Initialize the Dreo device."""
-        self.device = pyDreoBaseDevice
+        self.device = pydreo_base_device
         self._attr_unique_id = self.device.sn
-        self._attr_name = pyDreoBaseDevice.name
+        self._attr_name = pydreo_base_device.name
 
     @property
     def device_info(self) -> DeviceInfo:
