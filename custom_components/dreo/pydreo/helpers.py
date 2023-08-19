@@ -1,4 +1,4 @@
-"""Helper functions for Dreo API."""
+"""Helper functions for PyDreo library."""
 
 import hashlib
 import logging
@@ -144,8 +144,8 @@ class Helpers:
                 r = requests.put(
                     url + api, json=json_object, headers=headers, timeout=API_TIMEOUT
                 )
-        except requests.exceptions.RequestException as e:
-            _LOGGER.debug(e)
+        except requests.exceptions.RequestException as exception:
+            _LOGGER.debug(exception)
         else:
             if r.status_code == 200:
                 status_code = 200
@@ -160,12 +160,12 @@ class Helpers:
         return response, status_code
 
     @staticmethod
-    def code_check(r: dict) -> bool:
+    def code_check(reponse_dict: dict) -> bool:
         """Test if code == 0 for successful API call."""
-        if r is None:
+        if reponse_dict is None:
             _LOGGER.error("No response from API")
             return False
-        if isinstance(r, dict) and r.get("code") == 0:
+        if isinstance(reponse_dict, dict) and reponse_dict.get("code") == 0:
             return True
         return False
 

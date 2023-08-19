@@ -105,16 +105,17 @@ class PyDreoFan(PyDreoBaseDevice):
     def preset_mode(self):
         """Return the current preset mode."""
         mode = self._wind_mode
-        if (mode is None):
+        if mode is None:
             mode = self._wind_type
 
-        if (mode is None):
+        if mode is None:
             return None
+        
         return self.preset_modes[mode - 1]
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
-        _LOGGER.debug("PyDreoFan:set_preset_mode")  
+        _LOGGER.debug("PyDreoFan:set_preset_mode")
         key : str = None
 
         if self._wind_type is not None:
@@ -124,57 +125,56 @@ class PyDreoFan(PyDreoBaseDevice):
         else:
             _LOGGER.error("Attempting to set preset_mode on a device that doesn't support.")
             return
-        
+
         if value in self.preset_modes:
             self._send_command(key, self._fan_definition.preset_modes.index(value) + 1)
         else:
-            _LOGGER.error("Preset mode %s is not in the acceptable list: %s", 
-                          value, 
+            _LOGGER.error("Preset mode %s is not in the acceptable list: %s",
+                          value,
                           self._fan_definition.preset_modes)
-            
+
     @property
     def temperature(self):
         """Get the temperature"""
         return self._temperature
-    
+
     @property
     def temperature_units(self) -> TemperatureUnit:
         """Get the temperature units."""
         # I'm not sure how the API returns in other regions, so I'm just auto-detecting
         # based on some reasonable range.
-        
+
         # Going to return Celcius as the default.  None of this matters if there is no
         # temperature returned anyway
         if self._temperature is not None:
             if self._temperature > 50:
                 return TemperatureUnit.FAHRENHEIT
-            
+    
         return TemperatureUnit.CELCIUS
 
     @property
     def oscillating(self) -> bool:
         """Returns `True` if either horizontal or vertical oscillation is on."""
-        if (self._oscillating is not None):
+        if self._oscillating is not None:
             return self._oscillating
-        elif (self._horizontally_oscillating is not None):
+        if self._horizontally_oscillating is not None:
             return self._horizontally_oscillating or self._vertically_oscillating
-        elif (self._osc_mode is not None):
+        if self._osc_mode is not None:
             return self._osc_mode != OscillationMode.OFF
-        else:
-            return None
+        return None
 
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
 
         """Enable or disable oscillation"""
         _LOGGER.debug("PyDreoFan:oscillating.setter")
-        
-        if (self._oscillating is not None):
+
+        if self._oscillating is not None:
             self._send_command(SHAKEHORIZON_KEY, value)
-        elif (self._horizontally_oscillating is not None):
+        elif self._horizontally_oscillating is not None:
             self.horizontally_oscillating = value
             self.vertically_oscillating = False
-        elif (self._osc_mode is not None):
+        elif self._osc_mode is not None:
             self._osc_mode = OscillationMode.HORIZONTAL if value else OscillationMode.OFF
         else:
             _LOGGER.error("Attempting to set oscillating on a device that doesn't support.")
@@ -182,24 +182,25 @@ class PyDreoFan(PyDreoBaseDevice):
 
     @property
     def horizontally_oscillating(self) -> bool:
-        if (self._horizontally_oscillating is not None):
+        """Returns `True` if horizontal oscillation is on."""
+        if self._horizontally_oscillating is not None:
             return self._horizontally_oscillating
-        elif (self._osc_mode is not None):
+        if self._osc_mode is not None:
             return (self._osc_mode & OscillationMode.HORIZONTAL) != OscillationMode.OFF
-        else:
-            # Note we do not consider a fan with JUST horizontal oscillation to have a seperate
-            # horizontal oscillation switch.
-            return None
-    
+
+        # Note we do not consider a fan with JUST horizontal oscillation to have a seperate
+        # horizontal oscillation switch.
+        return None
+
     @horizontally_oscillating.setter
     def horizontally_oscillating(self, value: bool) -> None:
         """Enable or disable vertical oscillation"""
         _LOGGER.debug("PyDreoFan:horizontally_oscillating.setter")
-        if (self._horizontally_oscillating is not None):
+        if self._horizontally_oscillating is not None:
             self._send_command(HORIZONTAL_OSCILLATION_KEY, value)
-        elif (self._osc_mode is not None):
+        elif self._osc_mode is not None:
             osc_computed = None
-            if (value):
+            if value:
                 osc_computed = self._osc_mode | OscillationMode.HORIZONTAL
             else:
                 osc_computed = self._osc_mode & ~OscillationMode.HORIZONTAL
@@ -210,22 +211,23 @@ class PyDreoFan(PyDreoBaseDevice):
         
     @property
     def vertically_oscillating(self):
+        """Returns `True` if vertical oscillation is on."""
         _LOGGER.debug("PyDreoFan:vertically_oscillating.getter")
-        if (self._vertically_oscillating is not None):
+        if self._vertically_oscillating is not None:
             return self._vertically_oscillating
-        elif (self._osc_mode is not None):
+        if self._osc_mode is not None:
             return self._osc_mode & OscillationMode.VERTICAL != OscillationMode.OFF
-        else:
-            return None
+
+        return None
 
     @vertically_oscillating.setter
     def vertically_oscillating(self, value: bool) -> None:
         """Enable or disable vertical oscillation"""
-        if (self._horizontally_oscillating is not None):
+        if self._horizontally_oscillating is not None:
             self._send_command(VERTICAL_OSCILLATION_KEY, value)
-        elif (self._osc_mode is not None):
+        elif self._osc_mode is not None:
             osc_computed = None
-            if (value):
+            if value:
                 osc_computed = self._osc_mode | OscillationMode.VERTICAL
             else:
                 osc_computed = self._osc_mode & ~OscillationMode.VERTICAL
@@ -233,7 +235,7 @@ class PyDreoFan(PyDreoBaseDevice):
         else:
             _LOGGER.error("Vertical oscillation is not supported.")
             return
-        
+    
     def set_horizontal_oscillation_angle(self, angle: int) -> None:
         """Set the horizontal oscillation angle."""
         _LOGGER.debug("PyDreoAirCirculatorFan:set_horizontal_oscillation_angle")
@@ -254,22 +256,22 @@ class PyDreoFan(PyDreoBaseDevice):
     @property
     def display_auto_off(self) -> bool:
         """Is the display always on?"""
-        if (self._led_always_on is not None):
+        if self._led_always_on is not None:
             return not self._led_always_on
-        else:
-            return None
+
+        return None
     
     @display_auto_off.setter
     def display_auto_off(self, value: bool) -> None:
         """Set if the display is always on"""
         _LOGGER.debug("PyDreoFan:display_auto_off.setter")
-        
-        if (self._led_always_on is not None):
+
+        if self._led_always_on is not None:
             self._send_command(LEDALWAYSON_KEY, not value)
         else:
             _LOGGER.error("Attempting to set display always on on a device that doesn't support.")
             return
-        
+
     @property
     def adaptive_brightness(self) -> bool:
         """Is the display always on?"""
@@ -277,37 +279,35 @@ class PyDreoFan(PyDreoBaseDevice):
             return self._light_sensor_on
         else:
             return None
-    
+
     @adaptive_brightness.setter
     def adaptive_brightness(self, value: bool) -> None:
         """Set if the display is always on"""
         _LOGGER.debug("PyDreoFan:adaptive_brightness.setter")
-        
-        if (self._light_sensor_on is not None):
+
+        if self._light_sensor_on is not None:
             self._send_command(LIGHTSENSORON_KEY,  value)
         else:
             _LOGGER.error("Attempting to set adaptive brightness on on a device that doesn't support.")
             return
-        
-        
+
     @property
     def panel_sound(self) -> bool:
         """Is the panel sound on"""
-        if (self._voice_on is not None):
+        if self._voice_on is not None:
             return self._voice_on
-        elif (self._mute_on is not None):
+        if self._mute_on is not None:
             return not self._mute_on
-        else:
-            return None
-    
+        return None
+
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
         _LOGGER.debug("PyDreoFan:panel_sound.setter")
-        
-        if (self._voice_on is not None):
+
+        if self._voice_on is not None:
             self._send_command(VOICEON_KEY, value)
-        elif (self._mute_on is not None):
+        elif self._mute_on is not None:
             self._send_command(MUTEON_KEY, not value)
         else:
             _LOGGER.error("Attempting to set panel_sound on a device that doesn't support.")
@@ -315,26 +315,30 @@ class PyDreoFan(PyDreoBaseDevice):
         
     @property
     def horizontal_angle(self) -> int:
+        """Get the current fixed horizontal angle."""
         if (self._fixed_conf is not None):
             return self._fixed_conf.split(",")[1]
 
     @horizontal_angle.setter
     def horizontal_angle(self, value: int) -> None:
+        """Set the horizontal angle."""
         _LOGGER.debug("PyDreoFan:horizontal_angle.setter")
-        if (self._fixed_conf is not None):  
+        if (self._fixed_conf is not None):
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
             self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{int(value)}")
 
     @property
     def vertical_angle(self) -> int:
-        if (self._fixed_conf is not None):
+        """Get the current fixed vertical angle."""
+        if self._fixed_conf is not None:
             return self._fixed_conf.split(",")[0]
 
     @vertical_angle.setter
     def vertical_angle(self, value: int) -> None:
+        """Set the vertical angle."""
         _LOGGER.debug("PyDreoFan:vertical_angle.setter")
-        if (self._fixed_conf is not None):
-            # Note that HA seems to send this in as a float, so we need to convert to int just in case
+        if self._fixed_conf is not None:
+            # Note that HA seems to send this in as a float, we need to convert to int just in case
             self._send_command(FIXEDCONF_KEY, f"{int(value)},{self._fixed_conf.split(',')[1]}")
 
     def update_state(self, state: dict) :
@@ -343,8 +347,8 @@ class PyDreoFan(PyDreoBaseDevice):
         super().update_state(state)
 
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
-        if (self._fan_speed is None):
-            _LOGGER.error("Unable to get fan speed from state.  Check debug logs for more information.")
+        if self._fan_speed is None:
+            _LOGGER.error("Unable to get fan speed from state. Check debug logs for more information.")
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
@@ -359,7 +363,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
 
-        
+
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("PyDreoFan:handle_server_update")
@@ -413,3 +417,4 @@ class PyDreoFan(PyDreoBaseDevice):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)  
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
+    

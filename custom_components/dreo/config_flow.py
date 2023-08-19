@@ -58,7 +58,7 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             title=self._username,
             data={CONF_USERNAME: self._username, CONF_PASSWORD: self._password},
         )
-    
+
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
@@ -79,7 +79,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             _LOGGER.debug("UserInput is not none")
             return self.async_create_entry(title="", data=user_input)
-        
+
         auto_reconnect = self.config_entry.options.get(CONF_AUTO_RECONNECT)
         if auto_reconnect is None:
             _LOGGER.debug("auto_reconnect not set, setting it to True")

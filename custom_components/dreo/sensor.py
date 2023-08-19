@@ -5,7 +5,6 @@
 # Suppress warnings about unused function arguments
 # pylint: disable=W0613
 
-
 from __future__ import annotations
 
 from collections.abc import Callable

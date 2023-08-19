@@ -1,3 +1,4 @@
+"""Supported device models for the PyDreo library."""
 from dataclasses import dataclass
 
 from .constant import (
