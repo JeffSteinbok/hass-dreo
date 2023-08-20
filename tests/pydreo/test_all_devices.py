@@ -19,7 +19,8 @@ import logging
 import call_json
 import call_json_fans
 from imports import * # pylint: disable=W0401,W0614
-from utils import TestBase, assert_test, parse_args
+from utils import assert_test, parse_args
+from testbase import TestBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -66,7 +67,7 @@ class TestGeneralAPI(TestBase):
         print("Test Login")
         self.write_api = True
         self.overwrite = True
-        self.mock_api.return_value = LOGIN_RESPONSE
+        #self.mock_api.return_value = LOGIN_RESPONSE
         self.manager.enabled = False
         assert self.manager.login()
         all_kwargs = parse_args(self.mock_api)
@@ -80,7 +81,7 @@ class TestGeneralAPI(TestBase):
         self.write_api = True
         self.overwrite = True
 
-        self.mock_api.return_value = call_json.LOAD_DEVICES_RESPONSE, 200 #call_json.DeviceList.device_list_response()
+        #self.mock_api.return_value = call_json.LOAD_DEVICES_RESPONSE, 200 #call_json.DeviceList.device_list_response()
         self.manager.load_devices()
         all_kwargs = parse_args(self.mock_api)
         assert assert_test(self.manager.load_devices, all_kwargs, None,

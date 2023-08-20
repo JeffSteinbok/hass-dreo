@@ -1,6 +1,6 @@
 import copy
 import call_json_fans
-from utils import Defaults
+from defaults import Defaults
 
 # DEFAULT_BODY = Standard body for new device calls
 # DEFAULT_HEADER = standard header for most calls
@@ -144,51 +144,11 @@ class DeviceList:
             response_base['result']['total'] += 1
         return response_base, 200
   
-    LIST_CONF_AIR = {
-        'deviceName': 'Name Air Purifier',
-        'cid': 'AIRPUR-CID',
-        'deviceStatus': 'on',
-        'connectionStatus': 'online',
-        'connectionType': 'wifi',
-        'deviceType': 'LV-PUR131S',
-        'type': 'wifi-air',
-        'uuid': 'UUID',
-        'configModule': 'AirPurifier131',
-        'macID': None,
-        'mode': 'manual',
-        'speed': 'low',
-        'extension': None,
-        'currentFirmVersion': None,
-    }
-
-    LIST_CONF_LV131S = {
-        'deviceName': 'LV131S NAME',
-        'cid': 'CID-LV131S',
-        'deviceStatus': 'on',
-        'connectionStatus': 'online',
-        'connectionType': 'wifi',
-        'deviceType': 'LV-PUR131S',
-        'type': 'wifi-air',
-        'uuid': 'UUID-LV131S',
-        'configModule': 'AirPurifier131',
-        'macID': None,
-        'mode': 'auto',
-        'speed': None,
-        'extension': None,
-        'currentFirmVersion': None,
-        'subDeviceNo': None,
-        'subDeviceType': None
-    }
 
 
     API_URL = '/cloud/v1/deviceManaged/devices'
 
     METHOD = 'POST'
-
-    FULL_DEV_LIST = [
-        LIST_CONF_AIR,
-        LIST_CONF_LV131S,
-    ]
 
     @classmethod
     def DEVICE_LIST_RETURN(cls, dev_conf: dict) -> tuple:
@@ -204,9 +164,9 @@ class DeviceList:
             200
         )
 
-    FAN_TEST = ({'code': 0, 'result': {'list': [LIST_CONF_LV131S]}}, 200)
+    FAN_TEST = ({'code': 0, 'result': {'list': []}}, 200)
 
-    DEVLIST_ALL = ({'code': 0, 'result': {'list': FULL_DEV_LIST}}, 200)
+    DEVLIST_ALL = ({'code': 0, 'result': {'list': None}}, 200)
 
 class DeviceDetails:
     """Responses for get_details() method for all devices.
@@ -245,38 +205,6 @@ def get_details_body():
     body = DEFAULT_BODY
     body['method'] = 'deviceDetail'
     return body, 200
-
-
-DETAILS_BADCODE = (
-    {
-        'code': 1,
-        'deviceImg': '',
-        'activeTime': 1,
-        'energy': 1,
-        'power': '1',
-        'voltage': '1',
-    },
-    200,
-)
-
-STATUS_BODY = {
-    'accountID': Defaults.account_id,
-    'token': Defaults.token,
-    'uuid': 'UUID',
-}
-
-
-def off_body():
-    body = STATUS_BODY
-    body['status'] = 'off'
-    return body, 200
-
-
-def on_body():
-    body = STATUS_BODY
-    body['status'] = 'on'
-    return body, 200
-
 
 LOAD_DEVICES_RESPONSE =   {
     "code": 0,
@@ -479,3 +407,105 @@ LOAD_DEVICES_RESPONSE =   {
       ]
     }
   }
+
+GET_DEVICE_RESPONSE = {
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "mcu_hardware_model": {
+                "state": "SC95F8613B",
+                "timestamp": 1686788164
+            },
+            "wifi_ssid": {
+                "state": "steinbok-iot",
+                "timestamp": 1686788164
+            },
+            "windlevel": {
+                "state": 2,
+                "timestamp": 1687064489
+            },
+            "wifi_rssi": {
+                "state": -37,
+                "timestamp": 1686788164
+            },
+            "poweron": {
+                "state": "True",
+                "timestamp": 1687057235
+            },
+            "windtype": {
+                "state": 1,
+                "timestamp": 1686789795
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 7
+                },
+                "timestamp": None
+            },
+            "voiceon": {
+                "state": False,
+                "timestamp": 1686788993
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1686788164
+            },
+            "module_firmware_version": {
+                "state": "2.3.15",
+                "timestamp": 1686788164
+            },
+            "connected": {
+                "state": True,
+                "timestamp": 1686788164
+            },
+            "mcuon": {
+                "state": True,
+                "timestamp": 1686788164
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 7
+                },
+                "timestamp": None
+            },
+            "shakehorizon": {
+                "state": False,
+                "timestamp": 1686811203
+            },
+            "network_latency": {
+                "state": 102,
+                "timestamp": 1686788164
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1686788164
+            },
+            "module_hardware_model": {
+                "state": "HeFi",
+                "timestamp": 1686788164
+            },
+            "mcu_firmware_version": {
+                "state": "1.0.17",
+                "timestamp": 1686788164
+            },
+            "temperature": {
+                "state": 71,
+                "timestamp": 1687062055
+            },
+            "module_hardware_mac": {
+                "state": "001cc263494b",
+                "timestamp": 1686788164
+            },
+            "ledalwayson": {
+                "state": False,
+                "timestamp": 1686788164
+            }
+        },
+        "sn": "1582290393341964289-77f2977b24191a4a: 001: 0000000000b",
+        "productId": "1582290393341964289",
+        "region": "us-east-2"
+    }
+}

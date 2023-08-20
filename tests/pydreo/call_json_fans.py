@@ -33,11 +33,12 @@ METHOD_RESPONSES['DEV_TYPE']['set_status'] = status_response
 METHOD_RESPONSES['DEVTYPE'].default_factory = lambda: ({"code": 0, "msg": "success"}, 200)
 """
 from copy import deepcopy
-from utils import Defaults, FunctionResponses
+from utils import FunctionResponses
+from defaults import Defaults
 
-FANS = ['Core200S', 'Core300S', 'Core400S', 'Core600S', 'LV-PUR131S', 'LV600S',
-        'Classic300S', 'Classic200S', 'Dual200S', 'LV600S']
+FANS = ['DR-HTF008S']
 
+FANS_NUM = len(FANS)
 
 def INNER_RESULT(inner: dict) -> dict:
     return {

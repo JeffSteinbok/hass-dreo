@@ -15,10 +15,15 @@ from pathlib import Path
 from typing import Any
 import pytest
 import yaml
+from typing import Optional, Tuple
 from collections import defaultdict, namedtuple
 from unittest.mock import patch
 from requests.structures import CaseInsensitiveDict
 from imports import * # pylint: disable=W0401,W0614
+
+import defaults
+
+API_DEFAULTS = defaults.API_DEFAULTS
 
 logger = logging.getLogger(__name__)
 
@@ -28,144 +33,6 @@ CALL_API_ARGS = ['url', 'method', 'data', 'headers']
 
 ID_KEYS = ['CID', 'UUID', 'MACID']
 
-class Defaults:
-    """General defaults for API responses and requests.
-
-    Attributes
-    ----------
-    token : str
-        Default token for API requests
-    active_time : str
-        Default active time for API responses
-    account_id : str
-        Default account ID for API responses
-    active_time : str
-        Default active time for API responses
-    color: Color (dataclass)
-        Red=50, Green=100, Blue=225, Hue=223, Saturation=77.78, value=88.24
-        Default Color dataclass
-        contains red, green, blue, hue, saturation and value attributes
-
-    Methods
-    --------
-    name(dev_type='NA')
-        Default device name created from "dev_type-NAME"
-    cid(dev_type='NA')
-        Default device cid created from "dev_type-CID"
-    uuid(dev_type='NA')
-        Default device uuid created from "dev_type-UUID"
-    macid(dev_type='NA')
-        Default device macid created from "dev_type-MACID"
-    """
-
-    token = 'sample_tk'
-    account_id = 'sample_id'
-    trace_id = "TRACE_ID"
-    active_time = 1
-    brightness = 100
-    color_temp = 100
-    bool_toggle = True
-    str_toggle = 'on'
-    bin_toggle = 1
-
-    @staticmethod
-    def name(dev_type: str = 'NA'):
-        """Name of device with format f"{dev_type}-NAME".
-
-        Parameters
-        ----------
-        dev_type : str
-            Device type use to create default name
-
-        Returns
-        -------
-        str
-            Default name for device f"dev_type-NAME"
-        """
-        return f'{dev_type}-NAME'
-
-    @staticmethod
-    def cid(dev_type='NA'):
-        """CID for a device with format f"{dev_type}-CID".
-
-        Parameters
-        ----------
-        dev_type : str
-            Device type use to create default cid
-
-        Returns
-        -------
-        str
-            Default cid for device f"dev_type-CID"
-        """
-        return f'{dev_type}-CID'
-
-    @staticmethod
-    def uuid(dev_type='NA'):
-        """UUID for a device with format f"{dev_type}-UUID".
-
-        Parameters
-        ----------
-        dev_type : str
-            Device type use to create default UUID
-
-        Returns
-        -------
-        str
-            Default uuid for device f"{dev_type}-UUID"
-        """
-        return f'{dev_type}-UUID'
-
-    @staticmethod
-    def macid(dev_type='NA'):
-        """MACID for a device with format f"{dev_type}-MACID".
-
-        Parameters
-        ----------
-        dev_type : str
-            Device type use to create default macid
-
-        Returns
-        -------
-        str
-            Default macID for device f"{dev_type}-MACID"
-        """
-        return f'{dev_type}-MACID'
-
-
-def parse_args(mock_api):
-    """Parse arguments from mock API call.
-
-    Arguments
-    ----------
-    mock_api : mock
-        Mock object used to path call_api() method
-
-    Returns
-    -------
-    dict
-        dictionary of all call_api() arguments
-    """
-    call_args = mock_api.call_args.args
-    call_kwargs = mock_api.call_args.kwargs
-    all_kwargs = dict(zip(CALL_API_ARGS, call_args))
-    all_kwargs.update(call_kwargs)
-    return all_kwargs
-
-
-API_DEFAULTS = CaseInsensitiveDict({
-    'accountID': Defaults.account_id,
-    'token': Defaults.token,
-    "tk": Defaults.token,
-    "traceId": "TRACE_ID",
-    'verifyEmail': 'EMAIL',
-    'nickName': 'NICKNAME',
-    'password': 'PASSWORD',
-    'username': 'EMAIL',
-    'email': 'EMAIL',
-    'deviceName': 'NAME'
-
-})
 
 
 class YAMLWriter:
@@ -321,50 +188,7 @@ def api_scrub(api_dict, device_type=None):
     return nested_dict_iter(api_dict, id_cleaner)
 
 
-class TestBase:
-    """Base class for all tests.
 
-    Contains instantiated Dreo object and mocked
-    API call for call_api() function.
-
-    Attributes
-    ----------
-    self.mock_api : Mock
-        Mock for call_api() function
-    self.manager : Dreo
-        Instantiated Dreo object that is logged in
-    self.caplog : LogCaptureFixture
-        Pytest fixture for capturing logs
-    """
-    overwrite = False
-    write_api = False
-
-    @pytest.fixture(autouse=True, scope='function')
-    def setup(self, caplog):
-        """Fixture to instantiate Dreo object, start logging and start Mock.
-
-        Attributes
-        ----------
-        self.mock_api : Mock
-        self.manager : Dreo
-        self.caplog : LogCaptureFixture
-
-        Yields
-        ------
-        Class instance with mocked call_api() function and Dreo object
-        """
-        self.mock_api_call = patch('pydreo.helpers.Helpers.call_api')
-        self.caplog = caplog
-        self.mock_api = self.mock_api_call.start()
-        self.mock_api.create_autospect()
-        self.mock_api.return_value.ok = True
-        self.manager = PyDreo('EMAIL', 'PASSWORD', redact=True)
-        self.manager.enabled = True
-        self.manager.token = Defaults.token
-        self.manager.account_id = Defaults.account_id
-        caplog.set_level(logging.DEBUG)
-        yield
-        self.mock_api_call.stop()
 
 
 def assert_test(test_func, all_kwargs, dev_type=None,
@@ -423,3 +247,22 @@ def assert_test(test_func, all_kwargs, dev_type=None,
             logger.debug("Not writing API data for %s %s %s", mod, cls_name, method_name)
     assert writer._existing_api == all_kwargs
     return True
+
+def parse_args(mock_api):
+    """Parse arguments from mock API call.
+
+    Arguments
+    ----------
+    mock_api : mock
+        Mock object used to path call_api() method
+
+    Returns
+    -------
+    dict
+        dictionary of all call_api() arguments
+    """
+    call_args = mock_api.call_args.args
+    call_kwargs = mock_api.call_args.kwargs
+    all_kwargs = dict(zip(CALL_API_ARGS, call_args))
+    all_kwargs.update(call_kwargs)
+    return all_kwargs
