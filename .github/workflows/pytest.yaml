@@ -3,11 +3,17 @@
 
 name: PyTest
 
-#on:
-#  push:
-#    branches: [ "main" ]
-#  pull_request:
-#    branches: [ "main" ]
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - beta
+  pull_request:
+    branches:
+      - main
+      - beta
+
 on:
   workflow_dispatch:
   
