@@ -1,17 +1,14 @@
+"""Base class for all tests. Contains a mock for call_api() function and instantiated Dreo object."""
 import logging
-from pathlib import Path
-from typing import Any
 import pytest
-import yaml
 from typing import Optional, Tuple
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 from unittest.mock import patch
 from requests.structures import CaseInsensitiveDict
 from imports import * # pylint: disable=W0401,W0614
 
 import defaults
 import call_json
-import call_json_fans
 
 logger = logging.getLogger(__name__)
 

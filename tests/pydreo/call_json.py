@@ -1,5 +1,4 @@
 import copy
-import call_json_fans
 from defaults import Defaults
 
 # DEFAULT_BODY = Standard body for new device calls
@@ -22,17 +21,6 @@ DEFAULT_HEADER_BYPASS = {
     'Content-Type': 'application/json; charset=UTF-8',
     'User-Agent': 'okhttp/3.12.1'
 }
-
-
-def BYPASS_V1_BODY(cid: str, config_module: str, json_cmd: dict):
-    return {
-        "traceId": Defaults.trace_id,
-        "method": "bypass",
-        "token": Defaults.token,
-        "cid": cid,
-        "configModule": config_module,
-        "jsonCmd": json_cmd
-    }
 
 DEFAULT_BODY = {
     'acceptLanguage': 'en',
@@ -66,145 +54,6 @@ def login_call_body(email, password):
         'userType': '1',
     }
     return json_object
-
-
-class DeviceList:
-    list_response_base = {
-        'code': 0,
-        'msg': 'Success',
-        'result': {
-            'pageNo': 1,
-            'pageSize': 100,
-            'total': 0,
-            'list': [],
-        }
-    }
-    device_list_base = {
-        'extension': None,
-        'isOwner': True,
-        'authKey': None,
-        'deviceStatus': 'on',
-        'connectionStatus': 'online',
-        'connectionType': 'wifi',
-        'mode': None,
-        'speed': None,
-        'deviceProps': None,
-        'configModule': 'ConfigModule',
-    }
-
-    fans = dict.fromkeys(call_json_fans.FANS, "wifi-air")
-
-    @classmethod
-    def device_list_item(cls, model, sub_device_no=0):
-        model_types = {**cls.fans}
-
-        device_dict = cls.device_list_base
-        model_dict = device_dict.copy()
-        model_dict['deviceType'] = model
-        model_dict['deviceName'] = Defaults.name(model)
-        model_dict['type'] = model_types.get(model)
-        model_dict['cid'] = Defaults.cid(model)
-        model_dict['uuid'] = Defaults.uuid(model)
-        model_dict['macID'] = Defaults.macid(model)
-        if model == 'ESO15-TB':
-            model_dict['subDeviceNo'] = 1
-        return model_dict
-
-    @classmethod
-    def device_list_response(cls, device_types=None, _types=None):
-        """Class method that returns the api get_devices response
-
-        Args:
-            _types (list, str, optional): Can be one or list of types of devices.
-                Defaults to None. can be bulb, fans, switches, outlets in list or string
-            device_types (list, str optional): List or string of device_type(s)
-                to return. Defaults to None.
-
-        """
-
-        response_base = copy.deepcopy(cls.list_response_base)
-        if _types is not None:
-            if isinstance(_types, list):
-                full_model_list = {}
-                for _type in _types:
-                    device_types = full_model_list.update(cls.__dict__[_type])
-            else:
-                full_model_list = cls.__dict__[_types]
-        else:
-            full_model_list = {**cls.fans}
-        if device_types is not None:
-            if isinstance(device_types, list):
-                full_model_list = {k: v for k, v in full_model_list.items()
-                                   if k in device_types}
-            else:
-                full_model_list = {k: v for k, v in full_model_list.items()
-                                   if k == device_types}
-        for model in full_model_list:
-            response_base['result']['list'].append(cls.device_list_item(model))
-            response_base['result']['total'] += 1
-        return response_base, 200
-  
-
-
-    API_URL = '/cloud/v1/deviceManaged/devices'
-
-    METHOD = 'POST'
-
-    @classmethod
-    def DEVICE_LIST_RETURN(cls, dev_conf: dict) -> tuple:
-        """Test the fan."""
-        return (
-            {
-                'code': 0,
-                'result':
-                    {
-                        'list': [dev_conf]
-                    }
-            },
-            200
-        )
-
-    FAN_TEST = ({'code': 0, 'result': {'list': []}}, 200)
-
-    DEVLIST_ALL = ({'code': 0, 'result': {'list': None}}, 200)
-
-class DeviceDetails:
-    """Responses for get_details() method for all devices.
-
-    class attributes:
-    outlets : dict
-        Dictionary of outlet responses for each device type.
-    switches : dict
-        Dictionary of switch responses for each device type.
-    bulbs : dict
-        Dictionary of bulb responses for each device type.
-    fans : dict
-        Dictionary of humidifier & air pur responses for each device type.
-    all_devices : dict
-        Dictionary of all device responses for each device type.
-
-    Example
-    -------
-    outlets = {'ESW01-EU': {'switches': [{'outlet': 0, 'switch': 'on'}]}}
-    """
-
-    fans = call_json_fans.DETAILS_RESPONSES
-    all_devices = {
-        'fans': fans,
-        }
-
-
-def get_devices_body():
-    """Build device body dictionary."""
-    body = DEFAULT_BODY
-    body['method'] = 'devices'
-    return body, 200
-
-
-def get_details_body():
-    body = DEFAULT_BODY
-    body['method'] = 'deviceDetail'
-    return body, 200
 
 LOAD_DEVICES_RESPONSE =   {
     "code": 0,

@@ -17,7 +17,6 @@ in order to overwrite the existing YAML file with the new request.
 import logging
 
 import call_json
-import call_json_fans
 from imports import * # pylint: disable=W0401,W0614
 from utils import assert_test, parse_args
 from testbase import TestBase
@@ -86,4 +85,4 @@ class TestGeneralAPI(TestBase):
         all_kwargs = parse_args(self.mock_api)
         assert assert_test(self.manager.load_devices, all_kwargs, None,
                            self.write_api, self.overwrite)
-        assert len(self.manager.fans) == call_json_fans.FANS_NUM
+        assert len(self.manager.fans) == 1
