@@ -10,12 +10,7 @@ name: PyTest
 #    branches: [ "main" ]
 on:
   workflow_dispatch:
-    inputs:
-      input:
-        description: "Manual PyTest Run"
-        required: false
-        default: "World"
-        
+  
 permissions:
   contents: read
 
