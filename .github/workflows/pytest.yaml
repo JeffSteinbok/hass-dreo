@@ -14,9 +14,6 @@ on:
       - main
       - beta
 
-on:
-  workflow_dispatch:
-  
 permissions:
   contents: read
 
