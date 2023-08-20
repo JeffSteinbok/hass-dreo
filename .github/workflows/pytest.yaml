@@ -3,19 +3,17 @@
 
 name: PyTest
 
-#on:
-#  push:
-#    branches: [ "main" ]
-#  pull_request:
-#    branches: [ "main" ]
 on:
   workflow_dispatch:
-    inputs:
-      input:
-        description: "Manual PyTest Run"
-        required: false
-        default: "World"
-        
+  push:
+    branches:
+      - main
+      - beta
+  pull_request:
+    branches:
+      - main
+      - beta
+
 permissions:
   contents: read
 
@@ -35,6 +33,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements.test.txt ]; then pip install -r requirements.test.txt; fi
+        
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
