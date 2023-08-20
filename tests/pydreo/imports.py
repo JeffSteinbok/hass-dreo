@@ -16,10 +16,3 @@ else:
     sys.modules["pydreo"] = pydreo
     spec.loader.exec_module(pydreo)
     from pydreo import PyDreo, PyDreoBaseDevice
-
-def test_test():
-    assert True
-
-def test_test2():
-    x = PyDreo("a", "b")
-    x.login()
