@@ -392,8 +392,9 @@ class PyDreo:  # pylint: disable=function-redefined
         content = json.dumps(full_params)
         _LOGGER.debug(content)
         
-        def send_internal() -> None:
+
+        async def send_internal() -> None:
             with self._ws_send_lock: 
-                self._ws.send(content)
+                await self._ws.send(content)
 
         asyncio.run(send_internal())
