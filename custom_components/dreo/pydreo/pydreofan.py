@@ -388,11 +388,13 @@ class PyDreoFan(PyDreoBaseDevice):
         if isinstance(val_panel_sound, bool):
             self._voice_on = val_panel_sound
 
-        val_wind_mode = self.get_server_update_key_value(
-            message, WIND_MODE_KEY
-        )
+        val_wind_mode = self.get_server_update_key_value(message, WIND_MODE_KEY)
         if isinstance(val_wind_mode, int):
             self._wind_mode = val_wind_mode
+
+        val_wind_type = self.get_server_update_key_value(message, WINDTYPE_KEY)
+        if isinstance(val_wind_type, int):
+            self._wind_type = val_wind_type
 
         val_shakehorizon = self.get_server_update_key_value(message, SHAKEHORIZON_KEY)
         if isinstance(val_shakehorizon, bool):
