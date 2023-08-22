@@ -29,6 +29,7 @@ class PyDreo:  # pylint: disable=function-redefined
 
         self._event_thread = None
         self._ws = None
+        self._ws_send_lock = threading.Lock()
         
         """Initialize Dreo class with username, password and time zone."""
         self.auth_region = DREO_AUTH_REGION_NA  # Will get the region from the auth call
@@ -326,7 +327,7 @@ class PyDreo:  # pylint: disable=function-redefined
         ping_task = asyncio.create_task(self._ws_ping_handler(ws))
         done, pending = await asyncio.wait(
             [consumer_task, ping_task],
-            return_when=asyncio.FIRST_COMPLETED,
+            return_when=asyncio.FIRST_COMPLETED
         )
         _LOGGER.debug("_ws_handler - WebSocket appears closed.")
         for task in pending:
@@ -358,8 +359,8 @@ class PyDreo:  # pylint: disable=function-redefined
                         await ws.close()
                     except CancelledError:
                         pass
-                
-                await ws.send('2')
+                with self._ws_send_lock:
+                    await ws.send('2')
                 await asyncio.sleep(15)
                
             except websockets.exceptions.ConnectionClosedError:
@@ -390,4 +391,9 @@ class PyDreo:  # pylint: disable=function-redefined
         }
         content = json.dumps(full_params)
         _LOGGER.debug(content)
-        asyncio.run(self._ws.send(content))
+        
+        def send_internal() -> None:
+            with self._ws_send_lock: 
+                self._ws.send(content)
+
+        asyncio.run(send_internal())
