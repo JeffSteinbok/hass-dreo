@@ -4,11 +4,13 @@
 # from .pydreo import PyDreo
 import logging
 import threading
+import sys
 
 import asyncio
 import json
 from itertools import chain
 from typing import Optional, Tuple
+from asyncio.exceptions import CancelledError
 
 import websockets
 
@@ -309,11 +311,13 @@ class PyDreo:  # pylint: disable=function-redefined
                 _LOGGER.info("WebSocket successfully opened")
                 await self._ws_handler(ws)
             except websockets.exceptions.ConnectionClosed:
-                if not self._auto_reconnect:
-                    _LOGGER.error("WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
-                    break # This break causes us not to connect
-                else:
-                    continue
+                pass
+
+            if not self._auto_reconnect:
+                _LOGGER.error("WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
+                break # This break causes us not to connect
+            else:
+                continue
 
         _LOGGER.info("Monitoring has been stopped and thread done")  
 
@@ -348,15 +352,21 @@ class PyDreo:  # pylint: disable=function-redefined
                     await ws.close()
 
                 if self._testonly_signal_interrupt:
-                    _LOGGER.debug("_ws_ping_handler - Interrupting WebSocket")
+                    _LOGGER.debug("_ws_ping_handler - Closing WebSocket")
                     self._testonly_signal_interrupt = False
-                    await ws.close()
-
+                    try:
+                        await ws.close()
+                    except CancelledError:
+                        pass
+                
                 await ws.send('2')
                 await asyncio.sleep(15)
                
             except websockets.exceptions.ConnectionClosedError:
                 _LOGGER.info('Dreo WebSocket Closed - Unless intended, will reconnect')
+                break
+            except CancelledError:
+                _LOGGER.info('Dreo WebSocket Cancelled - Unless intended, will reconnect')
                 break
 
     def _ws_consume_message(self, message):
