@@ -18,12 +18,7 @@ from .models import *
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
 
-__version__ = "0.2.0"
-
 _LOGGER = logging.getLogger(LOGGER_NAME)
-
-API_RATE_LIMIT: int = 30
-
 
 class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
@@ -32,7 +27,7 @@ class PyDreo:  # pylint: disable=function-redefined
 
         self._event_thread = None
         self._ws = None
-
+        
         """Initialize Dreo class with username, password and time zone."""
         self.auth_region = DREO_AUTH_REGION_NA  # Will get the region from the auth call
 
@@ -47,7 +42,6 @@ class PyDreo:  # pylint: disable=function-redefined
         self.account_id = None
         self.devices = None
         self.enabled = False
-        self.update_interval = API_RATE_LIMIT
         self.last_update_ts = None
         self.in_process = False
         self._dev_list = {}
@@ -272,6 +266,12 @@ class PyDreo:  # pylint: disable=function-redefined
 
     def start_monitoring(self) -> None:
         """Initialize the websocket and start monitoring"""
+        
+        if self._event_thread is not None and self._event_thread.is_alive():
+            _LOGGER.warning("Monitoring already started")
+            return
+
+        self._signal_close = False
 
         def start_ws_wrapper():
             asyncio.run(self._start_websocket())
@@ -293,14 +293,29 @@ class PyDreo:  # pylint: disable=function-redefined
         self._testonly_signal_interrupt = True
 
     async def _start_websocket(self) -> None:
-        """Start the websocket connection to monitor for device changes and send commands."""
+        """Start the websocket connection to monitor for device changes and send commands.
+        This function exits when monitoring is stopped."""
         _LOGGER.info("Starting WebSocket for incoming changes.")
         # open websocket
         url = f"wss://wsb-{self.api_server_region}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={Helpers.api_timestamp()}"
-        async with websockets.connect(url) as ws:
-            self._ws = ws
-            _LOGGER.info("WebSocket successfully opened")
-            await self._ws_handler(ws)
+        async for ws in websockets.connect(url):
+            
+            if self._signal_close:
+                _LOGGER.info("Monitoring has been stopped")
+                break # This break causes us not to connect
+            
+            try:
+                self._ws = ws
+                _LOGGER.info("WebSocket successfully opened")
+                await self._ws_handler(ws)
+            except websockets.exceptions.ConnectionClosed:
+                if not self._auto_reconnect:
+                    _LOGGER.error("WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
+                    break # This break causes us not to connect
+                else:
+                    continue
+
+        _LOGGER.info("Monitoring has been stopped and thread done")  
 
     async def _ws_handler(self, ws):
         consumer_task = asyncio.create_task(self._ws_consumer_handler(ws))
@@ -313,12 +328,6 @@ class PyDreo:  # pylint: disable=function-redefined
         for task in pending:
             task.cancel()
         
-        if (self.auto_reconnect):
-            # Reconnect the WebSocket
-            _LOGGER.debug("_ws_handler - Reconnecting WebSocket")
-            await self._start_websocket()
-        else:
-            _LOGGER.error("WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
 
     async def _ws_consumer_handler(self, ws):
         _LOGGER.debug("_ws_consumer_handler")
@@ -333,8 +342,19 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.debug("_ws_ping_handler")
         while True:
             try:
+                # Were we told to kill the connection?
+                if (self._signal_close):
+                    _LOGGER.debug("_ws_ping_handler - Closing WebSocket")
+                    await ws.close()
+
+                if self._testonly_signal_interrupt:
+                    _LOGGER.debug("_ws_ping_handler - Interrupting WebSocket")
+                    self._testonly_signal_interrupt = False
+                    await ws.close()
+
                 await ws.send('2')
                 await asyncio.sleep(15)
+               
             except websockets.exceptions.ConnectionClosedError:
                 _LOGGER.info('Dreo WebSocket Closed - Unless intended, will reconnect')
                 break
