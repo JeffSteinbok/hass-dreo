@@ -25,7 +25,7 @@ class PyDreo:  # pylint: disable=function-redefined
 
     def __init__(self, username, password, redact=True):
 
-        self._transport = None
+        self._transport = CommandTransport(self._transport_consume_message)
 
         """Initialize Dreo class with username, password and time zone."""
         self.auth_region = DREO_AUTH_REGION_NA  # Will get the region from the auth call
@@ -261,16 +261,11 @@ class PyDreo:  # pylint: disable=function-redefined
 
     def start_transport(self) -> None:
         """Initialize the websocket and start transport"""
-        self._transport = CommandTransport(self.api_server_region,
-                                           self.token,
-                                           self._transport_consume_message)
-        self._transport.start_transport()
+        self._transport.start_transport(self.api_server_region, self.token)
 
     def stop_transport(self) -> None:
         '''Close down the transport socket'''
         self._transport.stop_transport()
-        self._transport = None
-
 
     def testonly_interrupt_transport(self) -> None:
         '''Close down the transport socket'''

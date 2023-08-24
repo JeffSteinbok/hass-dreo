@@ -23,8 +23,6 @@ class CommandTransport:
     """Command transport class for Dreo API."""
 
     def __init__(self, 
-                 api_server_region: str,
-                 token: str,
                  recv_callback: Callable[[dict], None] ):
 
         self._event_thread = None
@@ -35,8 +33,8 @@ class CommandTransport:
         self._testonly_signal_interrupt = False
         self._auto_reconnect = True
 
-        self._api_server_region = api_server_region
-        self._token = token
+        self._api_server_region = None
+        self._token = None
         self._recv_callback = recv_callback
    
     @property
@@ -51,13 +49,17 @@ class CommandTransport:
         self._auto_reconnect = value
 
 
-    def start_transport(self) -> None:
+    def start_transport(self,
+                        api_server_region: str,
+                        token: str) -> None:
         """Initialize the websocket and start monitoring"""
         
         if self._event_thread is not None and self._event_thread.is_alive():
             _LOGGER.warning("Transport already started")
             return
 
+        self._api_server_region = api_server_region
+        self._token = token
         self._transport_enabled = True
         self._signal_close = False
 
