@@ -1,5 +1,6 @@
 """Dreo HomeAssistant Integration."""
 import logging
+import time
 
 from .haimports import * # pylint: disable=W0401,W0614
 from .const import (
@@ -45,8 +46,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     device_dict = process_devices(manager)
 
-    manager.start_monitoring()
-
+    manager.start_transport()
+    
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DREO_MANAGER] = manager
 

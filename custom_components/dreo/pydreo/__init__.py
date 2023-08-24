@@ -4,34 +4,28 @@
 # from .pydreo import PyDreo
 import logging
 import threading
+import sys
 
-import asyncio
 import json
 from itertools import chain
 from typing import Optional, Tuple
-
-import websockets
+from asyncio.exceptions import CancelledError
 
 from .constant import *
 from .helpers import Helpers
 from .models import *
+from .commandtransport import CommandTransport
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
 
-__version__ = "0.2.0"
-
 _LOGGER = logging.getLogger(LOGGER_NAME)
-
-API_RATE_LIMIT: int = 30
-
 
 class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
 
     def __init__(self, username, password, redact=True):
 
-        self._event_thread = None
-        self._ws = None
+        self._transport = CommandTransport(self._transport_consume_message)
 
         """Initialize Dreo class with username, password and time zone."""
         self.auth_region = DREO_AUTH_REGION_NA  # Will get the region from the auth call
@@ -42,19 +36,14 @@ class PyDreo:  # pylint: disable=function-redefined
         self.raw_response = None
         self.username = username
         self.password = password
-        self._auto_reconnect = True
         self.token = None
         self.account_id = None
         self.devices = None
         self.enabled = False
-        self.update_interval = API_RATE_LIMIT
-        self.last_update_ts = None
         self.in_process = False
         self._dev_list = {}
         self._device_list_by_sn = {}
         self.fans : list[PyDreoFan] = []
-        self._signal_close = False
-        self._testonly_signal_interrupt = False
 
         self._dev_list = {
             "fans": self.fans,
@@ -73,13 +62,13 @@ class PyDreo:  # pylint: disable=function-redefined
     @property
     def auto_reconnect(self) -> bool:
         """Return auto_reconnect option."""
-        return self._auto_reconnect
+        return self._transport.auto_reconnect
 
     @auto_reconnect.setter
     def auto_reconnect(self, value: bool) -> None:
         """Set auto_reconnect option."""
         _LOGGER.debug("Setting auto_reconnect to %s", value)
-        self._auto_reconnect = value
+        self._transport.auto_reconnect = value
 
     @property
     def redact(self) -> bool:
@@ -270,76 +259,19 @@ class PyDreo:  # pylint: disable=function-redefined
             Helpers.req_headers(self),
         )
 
-    def start_monitoring(self) -> None:
-        """Initialize the websocket and start monitoring"""
+    def start_transport(self) -> None:
+        """Initialize the websocket and start transport"""
+        self._transport.start_transport(self.api_server_region, self.token)
 
-        def start_ws_wrapper():
-            asyncio.run(self._start_websocket())
+    def stop_transport(self) -> None:
+        '''Close down the transport socket'''
+        self._transport.stop_transport()
 
-        self._event_thread = threading.Thread(
-            name="DreoWebSocketStream", target=start_ws_wrapper, args=()
-        )
-        self._event_thread.setDaemon(True)
-        self._event_thread.start()
+    def testonly_interrupt_transport(self) -> None:
+        '''Close down the transport socket'''
+        self._transport.testonly_interrupt_transport()
 
-    def stop_monitoring(self) -> None:
-        '''Close down the monitoring socket'''
-        _LOGGER.info("Stopping Monitoring - May take up to 15s")
-        self._signal_close = True
-
-    def testonly_interrupt_monitoring(self) -> None:
-        '''Close down the monitoring socket'''
-        _LOGGER.info("Interrupting Monitoring - May take up to 15s")
-        self._testonly_signal_interrupt = True
-
-    async def _start_websocket(self) -> None:
-        """Start the websocket connection to monitor for device changes and send commands."""
-        _LOGGER.info("Starting WebSocket for incoming changes.")
-        # open websocket
-        url = f"wss://wsb-{self.api_server_region}.dreo-cloud.com/websocket?accessToken={self.token}&timestamp={Helpers.api_timestamp()}"
-        async with websockets.connect(url) as ws:
-            self._ws = ws
-            _LOGGER.info("WebSocket successfully opened")
-            await self._ws_handler(ws)
-
-    async def _ws_handler(self, ws):
-        consumer_task = asyncio.create_task(self._ws_consumer_handler(ws))
-        ping_task = asyncio.create_task(self._ws_ping_handler(ws))
-        done, pending = await asyncio.wait(
-            [consumer_task, ping_task],
-            return_when=asyncio.FIRST_COMPLETED,
-        )
-        _LOGGER.debug("_ws_handler - WebSocket appears closed.")
-        for task in pending:
-            task.cancel()
-        
-        if (self.auto_reconnect):
-            # Reconnect the WebSocket
-            _LOGGER.debug("_ws_handler - Reconnecting WebSocket")
-            await self._start_websocket()
-        else:
-            _LOGGER.error("WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
-
-    async def _ws_consumer_handler(self, ws):
-        _LOGGER.debug("_ws_consumer_handler")
-        try:
-            async for message in ws:
-                _LOGGER.debug("_ws_consumer_handler - got message")
-                self._ws_consume_message(json.loads(message))
-        except websockets.exceptions.ConnectionClosedError:
-            _LOGGER.debug("_ws_consumer_handler - WebSocket appears closed.")
-        
-    async def _ws_ping_handler(self, ws):
-        _LOGGER.debug("_ws_ping_handler")
-        while True:
-            try:
-                await ws.send('2')
-                await asyncio.sleep(15)
-            except websockets.exceptions.ConnectionClosedError:
-                _LOGGER.info('Dreo WebSocket Closed - Unless intended, will reconnect')
-                break
-
-    def _ws_consume_message(self, message):
+    def _transport_consume_message(self, message):
         message_device_sn = message["devicesn"]
 
         if (message_device_sn in self._device_list_by_sn):
@@ -360,4 +292,5 @@ class PyDreo:  # pylint: disable=function-redefined
         }
         content = json.dumps(full_params)
         _LOGGER.debug(content)
-        asyncio.run(self._ws.send(content))
+        
+        self._transport.send_message(content)
