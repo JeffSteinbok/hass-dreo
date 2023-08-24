@@ -46,9 +46,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     device_dict = process_devices(manager)
 
-    manager.start_monitoring()
-    time.sleep(5)
-
+    manager.start_transport()
+    
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DREO_MANAGER] = manager
 

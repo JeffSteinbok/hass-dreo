@@ -14,7 +14,18 @@ from .const import (
     DREO_MANAGER
 )
 
-KEYS_TO_REDACT = {"sn", "_sn", "wifi_ssid", "module_hardware_mac"}
+KEYS_TO_REDACT = {
+    "sn", 
+    "_sn", 
+    "wifi_ssid", 
+    "module_hardware_mac",
+    "password",
+    "_password",
+    "username",
+    "_username",
+    "token",
+    "_token"
+}
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
