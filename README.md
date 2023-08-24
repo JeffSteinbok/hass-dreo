@@ -79,8 +79,8 @@ This integration logs to two loggers as shown below. To get verbose logs, change
 ```
 logger:
     logs:
-        dreo: verbose
-        pydreo: verbose
+        dreo: debug
+        pydreo: debug
 ```
 
 You also may consider enabling verbose logging for the `websocket` component.
