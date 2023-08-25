@@ -92,13 +92,17 @@ class PyDreoFan(PyDreoBaseDevice):
 
     @property
     def fan_speed(self):
-        """Return the curretn fan speed"""
+        """Return the current fan speed"""
         return self._fan_speed
 
     @fan_speed.setter
     def fan_speed(self, fan_speed : int) :
         """Set the fan speed."""
-        # TODO: Make sure fan speed in range
+        if fan_speed < 1 or fan_speed > self._fan_definition.speed_range[1]:
+            _LOGGER.error("Fan speed %s is not in the acceptable range: %s",
+                          fan_speed,
+                          self._fan_definition.speed_range)
+            return
         self._send_command(WINDLEVEL_KEY, fan_speed)
 
     @property
@@ -110,6 +114,10 @@ class PyDreoFan(PyDreoBaseDevice):
 
         if mode is None:
             return None
+        
+        # If we can't match the preset mode, just return the first one.
+        if mode > len(self.preset_modes):
+            return self.preset_modes[0]
         
         return self.preset_modes[mode - 1]
 
