@@ -109,8 +109,6 @@ Depending on answers, I may reach out and need you to pull some debug logs.
 2023-06-29 01:02:25,312 - pydreo - DEBUG - Message: {'method': 'control-report', 'devicesn': 'XXX0393341964289-77f2977b24191a4a:001:0000000000b', 'messageid': 'bdf23a1f-c8e1-4e22-8ad3-dc0cd5dfdc7c', 'timestamp': 1688025746, 'reported': {'windtype': 1}}
 ```
 
-<a name="todo"></a>
-## To Do
 <a name="addingFans"></a>
 ## Adding New Fans
 Don't see your model listed above? Let me know in the Issues and I'll add it. Please make sure to include:
