@@ -3,6 +3,8 @@
 
 HomeAssistant integration for Dreo brand smart devices. Currently supports some models of Tower Fans and Air Circulators. 
 
+You can purchase these devices from Amazon. Feel free to use this link; if you do, I'll get a small commission: [Dreo Fans on Amazon](https://www.amazon.com/gp/search?ie=UTF8&tag=jeffsteinbok-20&linkCode=ur2&linkId=264bf9285db76a172f81bad93760d162&camp=1789&creative=9325&index=hpc&keywords=Dreo%20Smart%20Fan)
+
 This integration is based on the engineering that Gavin Zyonse did for the HomeBridge integration here: https://github.com/zyonse/homebridge-dreo.
 
 > This documentation is intended to be accurate for the branch/tag it's in. If you are installing a specific version (including latest) of the integration, please change current viewing tag in GitHub to see the matching documentation.
