@@ -24,7 +24,7 @@ class Helpers:
     def req_headers(manager) -> dict:
         """Build header for api requests."""
         headers = {
-            "ua": "dreo/2.0.7 (sdk_gphone64_x86_64;android 13;Scale/2.625)",
+            "ua": "dreo/2.5.12 (sdk_gphone64_arm64;android 13;Scale/2.625)",
             "lang": "en",
             "content-type": "application/json; charset=UTF-8",
             "accept-encoding": "gzip",
