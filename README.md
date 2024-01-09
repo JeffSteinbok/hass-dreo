@@ -1,5 +1,5 @@
 # Dreo Smart Device Integration for Home Assistant
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 HomeAssistant integration for Dreo brand smart devices. Currently supports some models of Tower Fans and Air Circulators. 
 
@@ -19,6 +19,7 @@ If you used the very early version of this that required editing `configuration.
 - [Debugging](#debugging)
 - [Adding new Fans](#addingFans)
 - [To Do](#todo)
+- [Contributing](contributing.md)
     
 <a name="compatability"></a>
 ## IMPORTANT NOTE ON CONFIGURATION
@@ -55,7 +56,7 @@ If you have a different model that you can try, please see instructions [below](
 
 ### HACS (Recommended)
 
-1. Add this repository to HACS *AS A CUSTOM REPOSITORY*.
+1. Add this repository from HACS
 1. Search for *Dreo Smart Device*, and choose install. 
 1. Reboot Home Assistant and configure from the "Add Integration" flow.
 
