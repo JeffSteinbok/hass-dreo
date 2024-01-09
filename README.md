@@ -19,6 +19,7 @@ If you used the very early version of this that required editing `configuration.
 - [Debugging](#debugging)
 - [Adding new Fans](#addingFans)
 - [To Do](#todo)
+- [Contributing](contributing.md)
     
 <a name="compatability"></a>
 ## IMPORTANT NOTE ON CONFIGURATION
