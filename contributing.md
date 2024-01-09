@@ -44,12 +44,31 @@ The Dreo app uses certificate pinning. You can use *Frida* to get around that.  
     ```
     oSession.oRequest["ua"] = "dreo/2.5.12 (sdk_gphone64_arm64;android 13;Scale/2.625)";
     ```
-1. Get the Fiddler root CA from the options and use certutil.exe to get the PEM version.  You'll need it later.
+1. Get the Fiddler root CA from the Fiddler Options and use certutil.exe to get the PEM version.  You'll need it later.
    
+    ```
+    certutil -encode c:\in.cer c:\out.pem
+    ```
+           
 ### Frida to Defeat Certificate Pinning - Part 2
 1. Clone the following repo which contains a bunch of handy scripts: https://github.com/httptoolkit/frida-interception-and-unpinning
 1. Navigate to that cloned repo
-1. Modify `config.js` appropriately. Note you'll need the base 64 cert from Fiddler.
+1. Modify `config.js` appropriately. Note you'll need the base 64 cert from Fiddler. My file looks something like this...
+
+   ```js
+        // Put your CA certificate data here in PEM format:
+        const CERT_PEM = `-----BEGIN CERTIFICATE-----
+        MIIDozCCAougAwIabcxyzabcxyzabcxyzabcxayzaa
+        abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzabcxyz
+        abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzabcxyz
+        abcxyzabcxyzabcxyzabcxyzabcxyzabcxyzxpOyo=
+        -----END CERTIFICATE-----`;
+        
+        // Put your intercepting proxy's address here:
+        const PROXY_HOST = '192.168.xx.yy';
+        const PROXY_PORT = 8888;
+   ```
+   
 1. Start Frida on your PC.  This will cause the app on the emulator to restart with correct settings.
 
     ```
