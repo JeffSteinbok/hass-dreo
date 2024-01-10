@@ -56,11 +56,7 @@ If you have a different model that you can try, please see instructions [below](
 
 ### HACS (Recommended)
 
-1. Add this repository from HACS
-1. Search for *Dreo Smart Device*, and choose install. 
-1. Reboot Home Assistant and configure from the "Add Integration" flow.
-
-Please note that there is a PR pending to add this to the default HACS repository.
+Dreo is now part of the default HACS store. If you're not interested in development branches this is the easiest way to install.
 
 ### Manually
 Copy the `dreo` directory into your `/config/custom_components` directory, then restart your HomeAssistant Core.
