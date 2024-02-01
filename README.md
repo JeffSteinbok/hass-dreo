@@ -63,8 +63,8 @@ Copy the `dreo` directory into your `/config/custom_components` directory, then 
 
 ## Initial Configuration
 
-> [!IMPORTANT] > **IMPORTANT NOTE ON CONFIGURATION**
-> If you used the very early version of this that required editing `configuration.yaml`, you will need to do a one-time reconfiguration. You can delete the configuration entries you added and go through the configuration flow within the HomeAssistant web site.
+> [!IMPORTANT]
+> If you used the very early version of this that required editing `configuration.yaml`, you will need to do a one-time reconfiguration. Delete the configuration entries you added and then go through the configuration flow within HomeAssistant.
 
 1. In HA, open `Settings`
 2. Click `Devices & services`
