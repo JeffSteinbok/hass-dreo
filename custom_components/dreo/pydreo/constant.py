@@ -17,6 +17,9 @@ POWERON_KEY = "poweron"
 WINDTYPE_KEY = "windtype"
 WINDLEVEL_KEY = "windlevel"
 SHAKEHORIZON_KEY = "shakehorizon"
+MODE_KEY = "mode"
+HTALEVEL_KEY = "htalevel"
+OSCON_KEY = "oscon"
 OSCMODE_KEY = "oscmode"
 TEMPERATURE_KEY = "temperature"
 VOICEON_KEY = "voiceon"
@@ -24,6 +27,18 @@ LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
 MUTEON_KEY = "muteon"
 FIXEDCONF_KEY = "fixedconf"
+DEVON_KEY = "devon"
+TIMERON_KEY = "timeron"
+COOLDOWN_KEY = "cooldown"
+PTCON_KEY = "ptcon"
+LIGHTON_KEY = "lighton"
+CTLSTATUS_KEY = "ctlstatus"
+TIMEROFF_KEY = "timeroff"
+ECOLEVEL_KEY = "ecolevel"
+ECOLEVEL_RANGE_KEY = "ecolevel_range"
+CHILDLOCKON_KEY = "childlockon"
+TEMPOFFSET_KEY = "tempoffset"
+
 
 DREO_API_URL_FORMAT = (
     "https://app-api-{0}.dreo-cloud.com"  # {0} is the 2 letter region code
@@ -62,6 +77,29 @@ FAN_MODE_NATURAL = "natural"
 FAN_MODE_AUTO = "auto"
 FAN_MODE_SLEEP = "sleep"
 FAN_MODE_TURBO = "turbo"
+HEATER_MODE_COOLAIR = "coolair"
+HEATER_MODE_HOTAIR = "hotair"
+HEATER_MODE_ECO = "eco"
+HEATER_MODE_OFF = "off"
+
+MODE_LEVEL_MAP = {
+    "H1" : 1,
+    "H2" : 2,
+    "H3" : 3
+}
+
+LEVEL_MODE_MAP = {
+    1 : "H1",
+    2 : "H2",
+    3 : "H3"
+}
+
+HEATER_MODES = [
+    HEATER_MODE_COOLAIR,
+    HEATER_MODE_HOTAIR,
+    HEATER_MODE_ECO,
+    HEATER_MODE_OFF
+]
 
 HORIZONTAL_OSCILLATION_KEY = "hoscon"
 HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
@@ -69,7 +107,13 @@ HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
 VERTICAL_OSCILLATION_KEY = "voscon"
 VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 
+OSCILLATION_KEY = "oscon"
+
 WIND_MODE_KEY = "mode"
+
+SPEED_RANGE = "speed_range"
+HEAT_RANGE = "heat_range"
+ECOLEVEL_RANGE = "ecolevel_range"
 
 class TemperatureUnit(Enum):
     """Valid possible temperature units."""

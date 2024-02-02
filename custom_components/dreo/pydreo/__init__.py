@@ -17,6 +17,7 @@ from .models import *
 from .commandtransport import CommandTransport
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
+from .pydreoheater import PyDreoHeater
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -44,9 +45,11 @@ class PyDreo:  # pylint: disable=function-redefined
         self._dev_list = {}
         self._device_list_by_sn = {}
         self.fans : list[PyDreoFan] = []
+        self.heaters : list[PyDreoHeater] = []
 
         self._dev_list = {
             "fans": self.fans,
+            "heaters" : self.heaters
         }
 
     @property
@@ -106,6 +109,40 @@ class PyDreo:  # pylint: disable=function-redefined
                 devices = [i for j, i in enumerate(devices) if j not in dev_rem]
         return devices
 
+    # TODO - finish this off to make it able to deal with multiple different
+    # device types and replace the code in _process_devices with a call to this.
+    # will need to eliminate _self.fans and _self.heaters and references to those 
+    # in other modules.
+    def _process_device(self, dev: PyDreoBaseDevice):
+        model = dev.get["model", None]
+
+        if model is None:
+            raise UnknownModelError(model)
+
+        #category = dev["productName"]
+
+        for (category, l) in SUPPORTED_DEVICES:
+            if model in l:
+                _LOGGER.debug("%s %s found!", category, model)
+                devtype = globals()[PRODUCT_TO_DEVICE_TYPE[category]]
+                device = devtype(SUPPORTED_DEVICES[model], dev, self)
+            else:
+                raise UnknownModelError(model)
+
+        self.load_device_state(device)
+        if isinstance(device, PyDreoFan):
+            self.fans.append(device)
+        if isinstance(device, PyDreoHeater):
+            self.heaters.append(device)
+
+        self._device_list_by_sn[device.sn] = device
+
+        if model in SUPPORTED_HEATERS:
+            _LOGGER.debug("Heater %s found!", model)
+            device = PyDreoHeater(SUPPORTED_HEATERS[model], dev, self)
+        else:
+            raise UnknownModelError(model)
+
     def _process_devices(self, dev_list: list) -> bool:
         """Instantiate Device Objects."""
         devices = self.set_dev_id(dev_list)
@@ -130,25 +167,32 @@ class PyDreo:  # pylint: disable=function-redefined
         # detail_keys = ['deviceType', 'deviceName', 'deviceStatus']
         for dev in devices:
             # For now, let's keep this simple and just support fans...
-            # Get the state of the device...seperate API call...boo
+            # Get the state of the device...separate API call...boo
             try:
                 model = dev.get("model", None)
                 _LOGGER.debug("found device with model %s", model)
-                deviceFan = None
+                device = None
 
                 if model is None:
                     raise UnknownModelError(model)
                 elif model in SUPPORTED_FANS:
-                    _LOGGER.debug("%s found!", model)
-                    deviceFan = PyDreoFan(SUPPORTED_FANS[model], dev, self)
+                    _LOGGER.debug("Fan %s found!", model)
+                    device = PyDreoFan(SUPPORTED_FANS[model], dev, self)
+                elif model in SUPPORTED_HEATERS:
+                    _LOGGER.debug("Heater %s found!", model)
+                    device = PyDreoHeater(SUPPORTED_HEATERS[model], dev, self)
                 else:
                     raise UnknownModelError(model)
 
-                self.load_device_state(deviceFan)
-                self.fans.append(deviceFan)
-                self._device_list_by_sn[deviceFan.sn] = deviceFan
+                self.load_device_state(device)
+                if isinstance(device, PyDreoFan):
+                    self.fans.append(device)
+                if isinstance(device, PyDreoHeater):
+                    self.heaters.append(device)
+
+                self._device_list_by_sn[device.sn] = device
             except UnknownModelError as ume:
-                _LOGGER.warning("Unknown fan model: %s", ume)
+                _LOGGER.warning("Unknown fan, heater or heater model: %s", ume)
                 _LOGGER.debug(dev)
 
         return True
@@ -181,7 +225,7 @@ class PyDreo:  # pylint: disable=function-redefined
 
     def load_device_state(self, device: PyDreoBaseDevice) -> bool:
         """Load device state from API. This is called once upon initialization for each supported device."""
-        _LOGGER.debug("load_device_state: %s", device.name)
+        _LOGGER.debug("load_device_state: %s, enabled: %s", device.name, self.enabled)
         if not self.enabled:
             return False
 

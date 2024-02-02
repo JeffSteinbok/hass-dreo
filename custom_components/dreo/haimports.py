@@ -46,7 +46,7 @@ from homeassistant.core import callback #type:ignore
 from homeassistant.util.percentage import (
     int_states_in_range,
     percentage_to_ranged_value,
-    ranged_value_to_percentage,
+    ranged_value_to_percentage
 ) 
 
 from homeassistant.components.fan import (
@@ -54,16 +54,24 @@ from homeassistant.components.fan import (
     FanEntityFeature
 )
 
+from homeassistant.components.climate import (
+    ClimateEntity,
+    ClimateEntityFeature,
+    ClimateEntityDescription,
+    FAN_ON,
+    FAN_OFF
+)
+
 from homeassistant.components.switch import (
     SwitchEntity,
-    SwitchEntityDescription,
+    SwitchEntityDescription
 )
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
-    SensorStateClass,
+    SensorStateClass
 )
 
 from homeassistant.components.number import (

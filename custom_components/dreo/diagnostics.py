@@ -5,13 +5,16 @@
 
 from __future__ import annotations
 
+import logging
+
 from typing import Any
 
 from .pydreo import PyDreo
 from .haimports import * # pylint: disable=W0401,W0614
 from .const import (
     DOMAIN,
-    DREO_MANAGER
+    DREO_MANAGER,
+    LOGGER
 )
 
 KEYS_TO_REDACT = {
@@ -27,6 +30,8 @@ KEYS_TO_REDACT = {
     "_token"
 }
 
+_LOGGER = logging.getLogger(LOGGER)
+
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
@@ -36,10 +41,12 @@ async def async_get_config_entry_diagnostics(
     data = {
         DOMAIN: {
             "fan_count": len(manager.fans),
+            "heater_count": len(manager.heaters),
             "raw_devicelist": _redact_values(manager.raw_response),
         },
         "devices": {
             "fans": [_redact_values(device.__dict__) for device in manager.fans],
+            "heaters": [_redact_values(device.__dict__) for device in manager.heaters]
         },
     }
 
