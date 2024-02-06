@@ -154,7 +154,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def preset_mode(self):
         """Return the current preset mode."""
-        return self._mode
+        return LEVEL_MODE_MAP[self._htalevel]
 
     @property
     def mode(self):
