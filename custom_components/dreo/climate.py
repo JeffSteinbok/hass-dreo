@@ -284,11 +284,14 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         # Temperature changes are only valid in ECO/AUTO mode
         if (self._attr_hvac_mode == HVACMode.AUTO):
             self.device.ecolevel = self._attr_target_temperature = kwargs.get(ATTR_TEMPERATURE)
+        else:
+            self._attr_target_temperature = 4 #self.device.temperature
+            self.schedule_update_ha_state()
 
 
     @property
     def target_temperature(self) -> float | None:
-        return self.device.ecolevel if self._attr_hvac_mode == HVACMode.AUTO else self._attr_current_temperature
+        return self.device.ecolevel if self._attr_hvac_mode == HVACMode.AUTO else self.device.temperature
 
     @property
     def min_temp(self) -> float | None:
