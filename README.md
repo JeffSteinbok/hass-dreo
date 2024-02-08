@@ -47,8 +47,6 @@ Currently supported models are listed below.
 -   DR-HSH004S
 -   DR-HSH009S / WH719S (no schedule support, no oscillation angle support as of 02/08/24)
 
-If you have a different model that you can try, please see instructions [below](#addingfans).
-
 Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
 
 
@@ -90,6 +88,11 @@ Heaters are modeled as climate devices, which enables the ability to put a therm
         <td></td>
     </tr>
 </table>
+
+#### Different models
+
+If you have a different model that you can try, please see instructions [below](#addingfans).
+
 
 ## Installation
 
