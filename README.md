@@ -45,8 +45,51 @@ Currently supported models are listed below.
 #### Space Heaters
 
 -   DR-HSH004S
+-   DR-HSH009S / WH719S (no schedule support, no oscillation angle support as of 02/08/24)
 
 If you have a different model that you can try, please see instructions [below](#addingfans).
+
+Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
+
+
+<table>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/andy-cooper/hass-dreo/d1e67331ba1be79a8635a6c3aaa54ac279e7a243/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/heat-mode-thermostat.png?raw=true" width="300" alt="heat mode thermostat"></td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/fan-mode-thermostat.png?raw=true" width="300" alt="fan mode thermostat"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/off-mode-thermostat.png?raw=true" width="300" alt="off mode thermostat"</td>
+    </tr>
+    <tr>
+        <td>Auto/Eco Mode</td>
+        <td>Heat Mode</td>
+        <td>Fan Mode</td>
+        <td>Off</td>
+    </tr>
+    <tr>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/mode-list.png?raw=true" width="200" alt="HVAC mode list"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/fan-mode-list.png?raw=true" width="200" alt="fan mode list"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/preset-mode-list.png?raw=true" width="200" alt="preset mode list"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/swing-mode-list.png?raw=true" width="200" alt="swing mode list"</td>
+    </tr>
+    <tr>
+        <td>HVAC Modes</td>
+        <td>Fan Modes</td>
+        <td>Preset Modes</td>
+        <td>Swing Modes</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/heater-entities.png?raw=true" width="200" alt="heater entities"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/compact-thermostat.png?raw=true" width="200" alt="compact-thermostat"</td> 
+        <td></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>Heater Entities</td>
+        <td>Compact Thermostat View</td>
+        <td></td>
+    </tr>
+</table>
 
 ## Installation
 
