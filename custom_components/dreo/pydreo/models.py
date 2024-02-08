@@ -80,10 +80,27 @@ SUPPORTED_HEATERS = {
         preset_modes=["H1", "H2", "H3"],
         range = { 
                     HEAT_RANGE: (1,3),
-                    ECOLEVEL_RANGE: (41,85) 
+                    ECOLEVEL_RANGE: (41,9) 
                 },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF]
-        )
+        ),
+        "DR-HSH009S": DreoDeviceDetails(
+        preset_modes=["H1", "H2", "H3"],
+        range = { 
+                    HEAT_RANGE: (1,3),
+                    ECOLEVEL_RANGE: (41,95) 
+                },
+        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF]
+        ),
+        "WH719S": DreoDeviceDetails(
+        preset_modes=["H1", "H2", "H3"],
+        range = { 
+                    HEAT_RANGE: (1,3),
+                    ECOLEVEL_RANGE: (41,95) 
+                },
+        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF]
+        ),
+
 }
 
 SUPPORTED_DEVICES = [ 
