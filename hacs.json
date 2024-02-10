@@ -1,5 +1,5 @@
 {
-    "name": "Dreo Smart Device Integration with Heaters",
+    "name": "Dreo Smart Device Integration",
     "homeassistant": "2023.5.1",
     "render_readme": true
   }

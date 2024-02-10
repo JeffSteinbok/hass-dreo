@@ -1,7 +1,7 @@
 {
   "domain": "dreo",
   "name": "Dreo",
-  "codeowners": ["@jeffsteinbok"],
+  "codeowners": ["@jeffsteinbok", "@andy-cooper"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/jeffsteinbok/hass-dreo/blob/master/README.md",

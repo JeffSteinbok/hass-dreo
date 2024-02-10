@@ -13,7 +13,6 @@ import logging
 from .haimports import * # pylint: disable=W0401,W0614
 from .basedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
-from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo import (
     PyDreoHeater,
     HEATER_MODE_OFF,
@@ -22,37 +21,9 @@ from .pydreo import (
     HEATER_MODE_ECO,
     MODE_LEVEL_MAP,
     LEVEL_MODE_MAP,
-    HEAT_RANGE,
     ECOLEVEL_RANGE
 )
 
-from homeassistant.components.climate import (
-    ATTR_TEMPERATURE,
-    FAN_ON,
-    FAN_OFF,
-    PRESET_ECO,
-    SWING_OFF,
-    SWING_ON,
-    ClimateEntity,
-    ClimateEntityFeature,
-    HVACAction,
-    HVACMode,
-)
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    ATTR_ENTITY_ID,
-    ATTR_TEMPERATURE,
-    PRECISION_HALVES,
-    PRECISION_TENTHS,
-    PRECISION_WHOLE,
-    STATE_OFF,
-    STATE_ON,
-    UnitOfTemperature,
-)
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.helpers import entity_platform
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.temperature import display_temp as show_temp
 
 from .const import (
     LOGGER,

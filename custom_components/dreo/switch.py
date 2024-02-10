@@ -145,6 +145,7 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
+        _LOGGER.debug("DreoSwitchHA:is_on")
         attr = getattr(self.device, self.entity_description.attr_name)
         return attr
 

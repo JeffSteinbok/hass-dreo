@@ -82,5 +82,27 @@ from homeassistant.components.number import (
 
 from homeassistant.const import (
     TEMPERATURE,
-    UnitOfTemperature 
+    ATTR_ENTITY_ID,
+    ATTR_TEMPERATURE,
+    PRECISION_HALVES,
+    PRECISION_TENTHS,
+    PRECISION_WHOLE,
+    STATE_OFF,
+    STATE_ON,
+    UnitOfTemperature)
+
+from homeassistant.components.climate import (
+    ATTR_TEMPERATURE,
+    FAN_ON,
+    FAN_OFF,
+    PRESET_ECO,
+    SWING_OFF,
+    SWING_ON,
+    ClimateEntity,
+    ClimateEntityFeature,
+    HVACAction,
+    HVACMode,
 )
+from homeassistant.config_entries import ConfigEntry
+
+from homeassistant.helpers import entity_platform

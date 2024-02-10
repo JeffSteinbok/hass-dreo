@@ -57,7 +57,6 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     heaters = hass.data[DOMAIN][DREO_HEATERS] = []
     platforms = []
 
-    _LOGGER.debug("Device dict: %s", device_dict)
     if device_dict[DREO_FANS]:
         fans.extend(device_dict[DREO_FANS])
         platforms.append(Platform.FAN)
