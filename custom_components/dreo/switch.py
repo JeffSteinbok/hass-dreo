@@ -61,7 +61,57 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="adaptive_brightness",
         icon="mdi:monitor"
     ),
+    DreoSwitchEntityDescription(
+        key="Device Power",
+        translation_key="poweron",
+        attr_name="poweron",
+        icon="mdi:power"
+    ),
+    DreoSwitchEntityDescription(
+        key="Panel Mute",
+        translation_key="mute_on",
+        attr_name="mute_on",
+        icon="mdi:volume-high"
+    ),
+    DreoSwitchEntityDescription(
+        key="Oscillating",
+        translation_key="oscon",
+        attr_name="oscon",
+        icon="mdi:rotate-360"
+    ),
+    DreoSwitchEntityDescription(
+        key="PTC",
+        translation_key="ptcon",
+        attr_name="ptcon",
+        icon="mdi:help"
+    ),
+    DreoSwitchEntityDescription(
+        key="Display Auto Off",
+        translation_key="lighton",
+        attr_name="lighton",
+        icon="mdi:led-on"
+    ),
+    DreoSwitchEntityDescription(
+        key="Child Lock",
+        translation_key="childlockon",
+        attr_name="childlockon",
+        icon="mdi:lock"
+    )
 )
+
+
+def add_device_entries(devices) -> []:
+    switch_ha_collection = []
+    
+    for de in devices:
+        _LOGGER.debug("Adding switches for %s", de.name)
+        for switch_definition in SWITCHES:
+            if (de.is_feature_supported(switch_definition.attr_name)):
+                _LOGGER.debug("Adding switch %s", switch_definition.key)
+                switch_ha_collection.append(DreoSwitchHA(de,switch_definition))
+    
+    return switch_ha_collection
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -70,19 +120,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Dreo Switch platform."""
     _LOGGER.info("Starting Dreo Switch Platform")
-    _LOGGER.debug("Dreo Switch:async_setup_platform")
 
     manager : PyDreo = hass.data[DOMAIN][DREO_MANAGER]
 
-    switch_ha_colletion = []
-    for fan_entity in manager.fans:
-        _LOGGER.debug("Adding switches for %s", fan_entity.name)
-        for switch_definition in SWITCHES:
-            if (fan_entity.is_feature_supported(switch_definition.attr_name)):
-                _LOGGER.debug("Adding switch %s", switch_definition.key)
-                switch_ha_colletion.append(DreoSwitchHA(fan_entity,switch_definition))
-
-    async_add_entities(switch_ha_colletion)
+    async_add_entities(add_device_entries(manager.fans))
+    async_add_entities(add_device_entries(manager.heaters))
 
 
 class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
@@ -104,7 +146,9 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
     def is_on(self) -> bool:
         """Return True if device is on."""
         _LOGGER.debug("DreoSwitchHA:is_on")
-        return getattr(self.device, self.entity_description.attr_name)
+        attr = getattr(self.device, self.entity_description.attr_name)
+        return attr
+
 
     def turn_on(
         self,
@@ -113,10 +157,8 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
         **kwargs: Any,
     ) -> None:
         """Turn the device on."""
-        _LOGGER.debug("DreoSwitchHA:turn_on")
         return setattr(self.device, self.entity_description.attr_name, True)
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        _LOGGER.debug("DreoSwitchHA:turn_off")
         return setattr(self.device, self.entity_description.attr_name, False)

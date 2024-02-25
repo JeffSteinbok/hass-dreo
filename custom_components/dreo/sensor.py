@@ -29,9 +29,9 @@ _LOGGER = logging.getLogger(LOGGER)
 @dataclass
 class DreoSensorEntityDescription(SensorEntityDescription):
     """Describe Dreo sensor entity."""
-    value_fn: Callable[[DreoFanHA], StateType] = None
-    exists_fn: Callable[[DreoFanHA], bool] = None
-    native_unit_of_measurement_fn: Callable[[DreoFanHA], str] = None
+    value_fn: Callable[[DreoBaseDeviceHA], StateType] = None
+    exists_fn: Callable[[DreoBaseDeviceHA], bool] = None
+    native_unit_of_measurement_fn: Callable[[DreoBaseDeviceHA], str] = None
 
 SENSORS: tuple[DreoSensorEntityDescription, ...] = (
     DreoSensorEntityDescription(
@@ -52,7 +52,6 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Dreo sensor platform."""
     _LOGGER.info("Starting Dreo Sensor Platform")
-    _LOGGER.debug("Dreo Sensor:async_setup_platform")
 
     manager = hass.data[DOMAIN][DREO_MANAGER]
 
@@ -61,6 +60,10 @@ async def async_setup_entry(
         # Really ugly hack since there is just one sensor for now...
         sensorsHAs.append(DreoSensorHA(fanEntity, SENSORS[0]))
 
+    for heaterEntity in manager.heaters:
+        # Really ugly hack since there is just one sensor for now...
+        sensorsHAs.append(DreoSensorHA(heaterEntity, SENSORS[0]))
+
     async_add_entities(sensorsHAs)
 
 
@@ -68,8 +71,8 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
     """Representation of a sensor describing a read-only property of a Dreo device."""
 
     def __init__(self, 
-                 pyDreoDevice: PyDreoBaseDevice,
-                 description: DreoSensorEntityDescription) -> None:
+                    pyDreoDevice: PyDreoBaseDevice,
+                    description: DreoSensorEntityDescription) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
         

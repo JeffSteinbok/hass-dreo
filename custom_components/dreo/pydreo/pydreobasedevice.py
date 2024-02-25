@@ -13,6 +13,8 @@ from .constant import (
     STATE_KEY
 )
 
+from .models import DreoDeviceDetails
+
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 class UnknownModelError(Exception):
@@ -24,11 +26,22 @@ class PyDreoBaseDevice(object):
     Has code to handle providing common attributes and comment event handling.
     """
 
-    def __init__(self, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+        self._device_definition = device_definition
         self._name = details.get("deviceName", None)
         self._device_id = details.get("deviceId", None)
         self._sn = details.get("sn", None)
+        self._brand = details.get("brand", None)
         self._model = details.get("model", None)
+        self._productId = details.get("productId", None)
+        self._productName = details.get("productName", None)
+        self._deviceName = details.get("deviceName", None)
+        self._shared = details.get("shared", None)
+        self._series = details.get("series", None)
+        self._seriesName = details.get("seriesName", None)
+        self._color = details.get("color", None)
+        #self._temperatureUnit = details['controlsConf']['preference']
+
         self._dreo = dreo
         self._is_on = False
 
@@ -58,9 +71,7 @@ class PyDreoBaseDevice(object):
 
     def handle_server_update_base(self, message):
         """Initial method called when we get a WebSocket message."""
-        _LOGGER.debug("{%s}: got {%s} message **",
-                      self.name,
-                      message)
+        _LOGGER.debug("{%s}: got {%s} message **", self.name, message)
 
         # This method exists so that we can run the polymorphic function to process updates, and then
         # run a _do_callbacks() command safely afterwards.
@@ -82,9 +93,7 @@ class PyDreoBaseDevice(object):
             if key_val_object is not None:
                 return key_val_object[STATE_KEY]
 
-        _LOGGER.debug("State value (%s) not present.  Device: %s",
-                      key,
-                      self.name)
+        _LOGGER.debug("State value (%s) not present.  Device: %s", key, self.name)
         return None
 
     def update_state(self, state: dict):
@@ -108,9 +117,19 @@ class PyDreoBaseDevice(object):
             cb()
 
     @property
+    def device_definition(self):
+        """Returns the device definition."""
+        return self._device_definition
+        
+    @property
     def name(self):
         """Returns the device name."""
         return self._name
+
+    @property
+    def deviceId(self):
+        """Returns the device ID"""
+        return self._device_id
 
     @property
     def device_id(self):
@@ -123,16 +142,65 @@ class PyDreoBaseDevice(object):
         return self._sn
 
     @property
+    def serialNumber(self):
+        """Returns the device's serial number."""
+        return self._sn
+
+    @property
+    def brand(self):
+        """Returns the device's manufacturer."""
+
+    @property
     def model(self):
         """Returns the device's model number."""
         return self._model
+
+    @property
+    def productId(self):
+        """Returns the device's product ID."""
+        return self._productId
+
+    @property
+    def productName(self):
+        """Return's the device's product name."""
+        return self._productName
+
+    @property
+    def deviceName(self):
+        """Returns the device's name"""
+        return self._deviceName
+
+    @property
+    def shared(self):
+        """Returns true if the device is shared"""
+        return self._shared
+
+    @property
+    def series(self):
+        """Returns the series of the model of the device"""
+        return self._series
+
+    @property
+    def seriesName(self):
+        """Returns the series name of the device model"""
+        return self._seriesName
+
+    @property
+    def color(self):
+        """Returns the color of the device. Maybe use for an image at some point"""
+        return self._color
+
     
     def is_feature_supported(self, feature: str) -> bool:
-        """Does this device support a given fature"""
+        """Does this device support a given feature"""
+        _LOGGER.debug("Checking if %s supports feature %s", self, feature)
+        for att in dir(self):
+            _LOGGER.debug(att, getattr(self,att))
         property_name = feature
         if (hasattr(self, property_name)):
             val = getattr(self, property_name)
             if (val is not None):
+                _LOGGER.debug("found attribute for %s --> %s", property_name, val)
                 return True
         
         return False

@@ -113,3 +113,6 @@ custom_components/aarlo/pyaarlo/main.py
 
 # Stuff Jeff Added for now
 ignore
+
+# IntelliJ projects
+**/*.iml

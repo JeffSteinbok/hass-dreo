@@ -7,6 +7,7 @@ from .const import (
     LOGGER,
     DOMAIN,
     DREO_FANS,
+    DREO_HEATERS,
     DREO_MANAGER,
     CONF_AUTO_RECONNECT
 )
@@ -45,6 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         return False
 
     device_dict = process_devices(manager)
+    _LOGGER.debug("Device dict is: %s", device_dict)
 
     manager.start_transport()
     
@@ -52,15 +54,25 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data[DOMAIN][DREO_MANAGER] = manager
 
     fans = hass.data[DOMAIN][DREO_FANS] = []
+    heaters = hass.data[DOMAIN][DREO_HEATERS] = []
     platforms = []
 
-    _LOGGER.debug(device_dict)
     if device_dict[DREO_FANS]:
         fans.extend(device_dict[DREO_FANS])
         platforms.append(Platform.FAN)
         platforms.append(Platform.SENSOR)
         platforms.append(Platform.SWITCH)
         platforms.append(Platform.NUMBER)
+
+    if device_dict[DREO_HEATERS]:
+        heaters.extend(device_dict[DREO_HEATERS])
+        platforms.append(Platform.CLIMATE)
+        platforms.append(Platform.SENSOR)
+        platforms.append(Platform.SWITCH)
+        platforms.append(Platform.NUMBER)
+
+
+    _LOGGER.debug("Platforms are: %s", platforms)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True
@@ -69,10 +81,15 @@ def process_devices(manager) -> dict:
     """Assign devices to proper component."""
     devices = {}
     devices[DREO_FANS] = []
+    devices[DREO_HEATERS] = []
 
     if manager.fans:
         devices[DREO_FANS].extend(manager.fans)
         # Expose fan sensors separately
         _LOGGER.info("%d Dreo fans found", len(manager.fans))
+        
+    if manager.heaters:
+        devices[DREO_HEATERS].extend(manager.heaters)
+        _LOGGER.info("%d Dreo heaters found", len(manager.heaters))
 
     return devices

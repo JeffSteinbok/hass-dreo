@@ -2,7 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
-HomeAssistant integration for Dreo brand smart devices. Currently supports some models of Tower Fans and Air Circulators.
+HomeAssistant integration for Dreo brand smart devices. Currently supports some models of Tower Fans, Air Circulators and Space Heaters.
 
 You can purchase these devices from Amazon: [Dreo Fans on Amazon](https://www.amazon.com/gp/search?ie=UTF8&tag=jeffsteinbok-20&linkCode=ur2&linkId=264bf9285db76a172f81bad93760d162&camp=1789&creative=9325&index=hpc&keywords=Dreo%20Smart%20Fan)
 
@@ -42,7 +42,57 @@ Currently supported models are listed below.
 
 -   No humidifiers are supported at this time, but possible support in the future is being discussed in [issue #60](https://github.com/JeffSteinbok/hass-dreo/issues/60)
 
+#### Space Heaters
+
+-   DR-HSH004S
+-   DR-HSH009S / WH719S (no schedule support, no oscillation angle support as of 02/08/24)
+
+Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
+
+
+<table>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/andy-cooper/hass-dreo/d1e67331ba1be79a8635a6c3aaa54ac279e7a243/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/heat-mode-thermostat.png?raw=true" width="300" alt="heat mode thermostat"></td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/fan-mode-thermostat.png?raw=true" width="300" alt="fan mode thermostat"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/off-mode-thermostat.png?raw=true" width="300" alt="off mode thermostat"</td>
+    </tr>
+    <tr>
+        <td>Auto/Eco Mode</td>
+        <td>Heat Mode</td>
+        <td>Fan Mode</td>
+        <td>Off</td>
+    </tr>
+    <tr>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/mode-list.png?raw=true" width="200" alt="HVAC mode list"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/fan-mode-list.png?raw=true" width="200" alt="fan mode list"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/preset-mode-list.png?raw=true" width="200" alt="preset mode list"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/swing-mode-list.png?raw=true" width="200" alt="swing mode list"</td>
+    </tr>
+    <tr>
+        <td>HVAC Modes</td>
+        <td>Fan Modes</td>
+        <td>Preset Modes</td>
+        <td>Swing Modes</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/heater-entities.png?raw=true" width="200" alt="heater entities"</td>
+        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/compact-thermostat.png?raw=true" width="200" alt="compact-thermostat"</td> 
+        <td></td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>Heater Entities</td>
+        <td>Compact Thermostat View</td>
+        <td></td>
+    </tr>
+</table>
+
+#### Different models
+
 If you have a different model that you can try, please see instructions [below](#addingfans).
+
 
 ## Installation
 

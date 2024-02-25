@@ -26,7 +26,7 @@ from .constant import (
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoFanDetails
+from .models import DreoDeviceDetails, SPEED_RANGE
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -36,11 +36,10 @@ if TYPE_CHECKING:
 class PyDreoFan(PyDreoBaseDevice):
     """Base class for Dreo Fan API Calls."""
 
-    def __init__(self, fan_definition: DreoFanDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
-        super().__init__(details, dreo)
+        super().__init__(device_definition, details, dreo)
 
-        self._fan_definition = fan_definition
         self._fan_speed = None
 
         self._wind_type = None
@@ -54,7 +53,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._temperature = None
         self._led_always_on = None
         self._voice_on = None
-        self._fan_definition = fan_definition
+        self._device_definition = device_definition
         self._wind_mode = None
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
@@ -72,12 +71,12 @@ class PyDreoFan(PyDreoBaseDevice):
     @property
     def speed_range(self):
         """Get the speed range"""
-        return self._fan_definition.speed_range
+        return self._device_definition.range[SPEED_RANGE]
 
     @property
     def preset_modes(self):
         """Get the list of preset modes"""
-        return self._fan_definition.preset_modes
+        return self._device_definition.preset_modes
 
     @property
     def is_on(self):
@@ -98,10 +97,10 @@ class PyDreoFan(PyDreoBaseDevice):
     @fan_speed.setter
     def fan_speed(self, fan_speed : int) :
         """Set the fan speed."""
-        if fan_speed < 1 or fan_speed > self._fan_definition.speed_range[1]:
+        if fan_speed < 1 or fan_speed > self._device_definition.range[SPEED_RANGE][1]:
             _LOGGER.error("Fan speed %s is not in the acceptable range: %s",
                           fan_speed,
-                          self._fan_definition.speed_range)
+                          self._device_definition.range[SPEED_RANGE])
             return
         self._send_command(WINDLEVEL_KEY, fan_speed)
 
@@ -123,7 +122,6 @@ class PyDreoFan(PyDreoBaseDevice):
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
-        _LOGGER.debug("PyDreoFan:set_preset_mode")
         key : str = None
 
         if self._wind_type is not None:
@@ -135,11 +133,11 @@ class PyDreoFan(PyDreoBaseDevice):
             return
 
         if value in self.preset_modes:
-            self._send_command(key, self._fan_definition.preset_modes.index(value) + 1)
+            self._send_command(key, self._device_definition.preset_modes.index(value) + 1)
         else:
             _LOGGER.error("Preset mode %s is not in the acceptable list: %s",
                           value,
-                          self._fan_definition.preset_modes)
+                          self._device_definition.preset_modes)
 
     @property
     def temperature(self):
@@ -220,7 +218,6 @@ class PyDreoFan(PyDreoBaseDevice):
     @property
     def vertically_oscillating(self):
         """Returns `True` if vertical oscillation is on."""
-        _LOGGER.debug("PyDreoFan:vertically_oscillating.getter")
         if self._vertically_oscillating is not None:
             return self._vertically_oscillating
         if self._osc_mode is not None:
