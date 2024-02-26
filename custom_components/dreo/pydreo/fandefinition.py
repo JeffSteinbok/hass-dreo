@@ -5,6 +5,14 @@ class OscillationSupport(Enum):
     HORIZONTAL = 1
     BOTH = 2
 
+
+class HeaterOscillationAngles(Enum):
+    OSC = 0
+    SIXTY = 60
+    NINETY = 90
+    ONE_TWENTY = 120
+
+
 class PyDreoFanDefinition():
 
     def __init__(self, 
@@ -15,13 +23,14 @@ class PyDreoFanDefinition():
                 self.speed_range = speed_range
                 self.oscillation_support = oscillation_support
 
+
 class PyDreoHeaterDefinition():
 
     def __init__(self, 
                 preset_modes: list, 
                 heat_range: range,
                 ecolevel_range: range,
-                oscillation_support: OscillationSupport):
+                oscillation_support: HeaterOscillationAngles):
                 self.preset_modes = preset_modes
                 self.heat_range = heat_range
                 self.ecolevel_range = ecolevel_range

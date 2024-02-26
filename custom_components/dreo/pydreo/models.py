@@ -13,7 +13,13 @@ from .constant import (
     HEATER_MODE_OFF,
     SPEED_RANGE,
     HEAT_RANGE,
-    ECOLEVEL_RANGE
+    ECOLEVEL_RANGE,
+    HeaterOscillationAngles
+)
+
+from ..haimports import (
+    SWING_ON,
+    SWING_OFF
 )
 
 @dataclass
@@ -29,10 +35,15 @@ class DreoDeviceDetails:
     hvac_modes: list[str]
     """List of possible HVAC mode names"""
 
-    def __init__(self, preset_modes: list[str], range: dict, hvac_modes: list[str] = None):
+    swing_modes: list[str]
+    """List of possible swing modes"""
+
+    def __init__(self, preset_modes: list[str], range: dict, hvac_modes: list[str] = None,
+                 swing_modes: list[str] = None):
         self.preset_modes = preset_modes
         self.range = range
         self.hvac_modes = hvac_modes
+        self.swing_modes = swing_modes
 
 
 SUPPORTED_FANS = {
@@ -76,38 +87,42 @@ SUPPORTED_FANS = {
 
 
 SUPPORTED_HEATERS = {
-        "DR-HSH004S": DreoDeviceDetails(
+    "DR-HSH004S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
-        range = { 
-                    HEAT_RANGE: (1,3),
-                    ECOLEVEL_RANGE: (41,85) 
-                },
-        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF]
-        ),
-        "DR-HSH009S": DreoDeviceDetails(
+        range={
+            HEAT_RANGE: (1,3),
+            ECOLEVEL_RANGE: (41,85)
+        },
+        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
+        swing_modes = [SWING_OFF, SWING_ON]
+),
+    "DR-HSH009S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
-        range = { 
-                    HEAT_RANGE: (1,3),
-                    ECOLEVEL_RANGE: (41,95) 
-                },
-        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF]
-        ),
-        "WH719S": DreoDeviceDetails(
+        range={
+            HEAT_RANGE: (1,3),
+            ECOLEVEL_RANGE: (41,95)
+        },
+        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
+        swing_modes = [SWING_OFF, SWING_ON, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+    ),
+    "WH719S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
-        range = { 
-                    HEAT_RANGE: (1,3),
-                    ECOLEVEL_RANGE: (41,95) 
-                },
-        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF]
-        ),
-        "WH739S": DreoDeviceDetails(
+        range={
+            HEAT_RANGE: (1,3),
+            ECOLEVEL_RANGE: (41,95)
+        },
+        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
+        swing_modes = [SWING_OFF, SWING_ON, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+    ),
+    "WH739S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
-        range = { 
-                    HEAT_RANGE: (1,3),
-                    ECOLEVEL_RANGE: (41,95) 
-                },
-        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF]
-        )
+        range={
+            HEAT_RANGE: (1,3),
+            ECOLEVEL_RANGE: (41,95)
+        },
+        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
+        swing_modes = [SWING_OFF, SWING_ON, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+    )
 }
 
 SUPPORTED_DEVICES = [ 

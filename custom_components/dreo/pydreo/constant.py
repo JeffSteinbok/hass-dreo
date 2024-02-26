@@ -1,5 +1,5 @@
 """Constants for the PyDreo library."""
-from enum import Enum, IntEnum
+from enum import Enum, IntEnum, StrEnum
 
 LOGGER_NAME = "pydreo"
 
@@ -21,6 +21,7 @@ MODE_KEY = "mode"
 HTALEVEL_KEY = "htalevel"
 OSCON_KEY = "oscon"
 OSCMODE_KEY = "oscmode"
+OSCANGLE_KEY = "oscangle"
 TEMPERATURE_KEY = "temperature"
 VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
@@ -101,13 +102,30 @@ HEATER_MODES = [
     HEATER_MODE_OFF
 ]
 
+OSCANGLE_ANGLE_MAP = {
+    "off" : 0,
+    "on" : 0,
+    "60°" : 60,
+    "90°" : 90,
+    "120°" : 120
+}
+
+ANGLE_OSCANGLE_MAP = {
+    0: "on",
+    60 : "60°",
+    90 : "90°",
+    120 : "120°"
+}
+
 HORIZONTAL_OSCILLATION_KEY = "hoscon"
 HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
 
 VERTICAL_OSCILLATION_KEY = "voscon"
 VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 
+# Heater oscillation
 OSCILLATION_KEY = "oscon"
+OSCILLATION_ANGLE_KEY = "oscangle"
 
 WIND_MODE_KEY = "mode"
 
@@ -120,9 +138,17 @@ class TemperatureUnit(Enum):
     CELCIUS = 0
     FAHRENHEIT = 1
 
+# Fan oscillation modes
 class OscillationMode(IntEnum):
     """Possible oscillation modes.  These are bitwise flags."""
     OFF = 0,
     HORIZONTAL = 1,
     VERTICAL = 2,
     BOTH = 3
+
+# Heater oscillation modes
+class HeaterOscillationAngles(StrEnum):
+        """Possible Heater oscillation angles"""
+        SIXTY = "60°",
+        NINETY = "90°",
+        ONE_TWENTY = "120°"

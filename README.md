@@ -45,17 +45,23 @@ Currently supported models are listed below.
 #### Space Heaters
 
 -   DR-HSH004S
--   DR-HSH009S / WH719S (no schedule support, no oscillation angle support as of 02/08/24)
+-   DR-HSH009S
+-   WH719S
+-   WH739S
 
-Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
+Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below. 
+
+Oscillation is now supported, but shown under "swing mode" since this is how the climate device models that. Note that for all heaters, to satisfy UL listings the
+remote control is disabled if it has not been used for 24 hours, which will then necessitate a quick tap on the WiFi button on the physical heater to resume the ability
+to control the device remotely via either the Dreo app or this HA integration.
 
 
 <table>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/andy-cooper/hass-dreo/d1e67331ba1be79a8635a6c3aaa54ac279e7a243/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/heat-mode-thermostat.png?raw=true" width="300" alt="heat mode thermostat"></td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/fan-mode-thermostat.png?raw=true" width="300" alt="fan mode thermostat"</td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/off-mode-thermostat.png?raw=true" width="300" alt="off mode thermostat"</td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/heat-mode-thermostat.png" width="300" alt="heat mode thermostat"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/fan-mode-thermostat.png" width="300" alt="fan mode thermostat"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/off-mode-thermostat.png" width="300" alt="off mode thermostat"></td>
     </tr>
     <tr>
         <td>Auto/Eco Mode</td>
@@ -64,10 +70,10 @@ Heaters are modeled as climate devices, which enables the ability to put a therm
         <td>Off</td>
     </tr>
     <tr>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/mode-list.png?raw=true" width="200" alt="HVAC mode list"</td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/fan-mode-list.png?raw=true" width="200" alt="fan mode list"</td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/preset-mode-list.png?raw=true" width="200" alt="preset mode list"</td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/swing-mode-list.png?raw=true" width="200" alt="swing mode list"</td>
+        <td><img src="https://raw.githubusercontent/jeffsteinbok/hass-dreo/main/mode-list.png" width="200" alt="HVAC mode list"></td>
+        <td><img src="https://raw.githubusercontent/jeffsteinbok/hass-dreo/main/fan-mode-list.png" width="200" alt="fan mode list"></td>
+        <td><img src="https://raw.githubusercontent/jeffsteinbok/hass-dreo/main/preset-mode-list.png" width="200" alt="preset mode list"></td>
+        <td><img src="https://raw.githubusercontent/jeffsteinbok/hass-dreo/main/swing-mode-list.png" width="200" alt="swing mode list"></td>
     </tr>
     <tr>
         <td>HVAC Modes</td>
@@ -77,8 +83,8 @@ Heaters are modeled as climate devices, which enables the ability to put a therm
     </tr>
     <tr>
         <td></td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/heater-entities.png?raw=true" width="200" alt="heater entities"</td>
-        <td><img src="https://github.com/andy-cooper/hass-dreo/blob/main/compact-thermostat.png?raw=true" width="200" alt="compact-thermostat"</td> 
+        <td><img src="https://raw.githubusercontent/jeffsteinbok/hass-dreo/main/heater-entities.png" width="200" alt="heater entities"></td>
+        <td><img src="https://raw.githubusercontent/jeffsteinbok/hass-dreo/main/compact-thermostat.png" width="200" alt="compact-thermostat"></td> 
         <td></td>
     </tr>
     <tr>
