@@ -1,5 +1,8 @@
 """Constants for the PyDreo library."""
-from enum import Enum, IntEnum, StrEnum
+from enum import Enum, IntEnum
+# python 3.10 does not have StrEnum. Use the strenum package instead. When this moves to python > 3.10, substitute
+# the built-in StrEnum by importing it from enum
+from strenum import StrEnum
 
 LOGGER_NAME = "pydreo"
 

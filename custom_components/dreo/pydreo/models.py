@@ -17,7 +17,9 @@ from .constant import (
     HeaterOscillationAngles
 )
 
-from ..haimports import (
+# Since pytest seems to be problematic w.r.t. relative parent includes, instead of using ..haimports we have
+# to use from homeassistant.components.climate directly here.
+from homeassistant.components.climate import (
     SWING_ON,
     SWING_OFF
 )
