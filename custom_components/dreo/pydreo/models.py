@@ -17,7 +17,7 @@ from .constant import (
     HeaterOscillationAngles
 )
 
-from ..haimports import (
+from homeassistant.components.climate import (
     SWING_ON,
     SWING_OFF
 )
@@ -103,7 +103,7 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
     ),
     "WH719S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
@@ -112,7 +112,7 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
     ),
     "WH739S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
@@ -121,7 +121,7 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
     )
 }
 
