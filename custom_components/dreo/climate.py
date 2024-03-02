@@ -94,6 +94,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     _attr_hvac_mode = HVACMode.OFF
     _attr_hvac_modes = None
     _last_hvac_mode = HVACMode.OFF
+    _enable_turn_on_off_backwards_compatibility = False
 
     def __init__(self, pyDreoDevice: PyDreoHeater) -> None:
         super().__init__(pyDreoDevice)
@@ -197,6 +198,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             supported_features |= ClimateEntityFeature.SWING_MODE
         if (self.device.fan_mode is not None):
             supported_features |= ClimateEntityFeature.FAN_MODE
+        if self.device.poweron is not None:
+            supported_features |= ClimateEntityFeature.TURN_OFF
+            supported_features |= ClimateEntityFeature.TURN_ON
 
         return supported_features
 
