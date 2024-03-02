@@ -93,7 +93,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     _attr_has_entity_name = True
     _attr_hvac_mode = HVACMode.OFF
     _attr_hvac_modes = None
-    _attr_swing_modes = SWING_MODES
     _last_hvac_mode = HVACMode.OFF
 
     def __init__(self, pyDreoDevice: PyDreoHeater) -> None:
@@ -108,7 +107,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_preset_mode = LEVEL_MODE_MAP[self.device.htalevel]
         self._attr_target_temperature = self.device.ecolevel
         self._attr_current_temperature = self.device.temperature
-        self._attr_swing_mode = SWING_ON if self.device.oscon else SWING_OFF
+        self._attr_swing_mode = self.device.device_definition.swing_modes[0]
         self._attr_swing_modes = self.device.device_definition.swing_modes
         self._attr_hvac_mode = HEATER_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
         self._attr_preset_modes = pyDreoDevice.preset_modes
@@ -155,9 +154,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.oscon
 
     @property
-    def oscangle(self) -> str:
+    def oscangle(self) -> str | None:
         """Retrieve and map the value of the oscillation angle"""
-        return ANGLE_OSCANGLE_MAP[self.device.oscangle]
+        return ANGLE_OSCANGLE_MAP[self.device.oscangle] if self.device.oscangle in ANGLE_OSCANGLE_MAP else None
 
     @property
     def htalevels_count(self) -> int:
@@ -319,9 +318,11 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         return self._attr_swing_modes
 
     @property
-    def swing_mode(self):
-        if self.device.oscon is True:
-            self._attr_swing_mode = ANGLE_OSCANGLE_MAP[self.device.oscangle] if self.device.oscangle is not None else SWING_ON
+    def swing_mode(self) -> str | None:
+        if self.device.oscon is not None and self.device.oscon is True:
+            self._attr_swing_mode = SWING_ON
+        elif self.device.oscangle is not None:
+            self._attr_swing_mode = ANGLE_OSCANGLE_MAP[self.device.oscangle]
         else:
             self._attr_swing_mode = SWING_OFF
         return self._attr_swing_mode
@@ -329,6 +330,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def set_swing_mode(self, swing_mode: str) -> None:
         """Set new target swing operation."""
         _LOGGER.debug("DreoHeaterHA:set_swing_mode(%s) -> %s", self.device.name, swing_mode)
-        self.oscon = False if swing_mode != SWING_ON else True
-        if swing_mode not in [ SWING_ON, SWING_OFF ]:
+
+        if self.device.oscon is not None:
+            self.oscon = False if swing_mode != SWING_ON and swing_mode in self._attr_swing_modes else True
+        elif self.device.oscangle is not None:
             self.oscangle = swing_mode

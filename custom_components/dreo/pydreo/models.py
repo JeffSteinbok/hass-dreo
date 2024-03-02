@@ -17,9 +17,7 @@ from .constant import (
     HeaterOscillationAngles
 )
 
-# Since pytest seems to be problematic w.r.t. relative parent includes, instead of using ..haimports we have
-# to use from homeassistant.components.climate directly here.
-from homeassistant.components.climate import (
+from ..haimports import (
     SWING_ON,
     SWING_OFF
 )
@@ -105,7 +103,7 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [SWING_OFF, SWING_ON, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
     ),
     "WH719S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
@@ -114,7 +112,7 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [SWING_OFF, SWING_ON, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
     ),
     "WH739S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
@@ -123,7 +121,7 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [SWING_OFF, SWING_ON, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
     )
 }
 
