@@ -9,6 +9,7 @@ from .constant import (
     TEMPERATURE_KEY,
     MODE_KEY,
     OSCON_KEY,
+    OSCANGLE_KEY,
     MUTEON_KEY,
     POWERON_KEY,
     DEVON_KEY,
@@ -24,12 +25,12 @@ from .constant import (
     FIXEDCONF_KEY,
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
-    HEATER_MODE_ECO,
     HEATER_MODE_OFF,
     HEATER_MODES,
     MODE_LEVEL_MAP,
     LEVEL_MODE_MAP,
-    TemperatureUnit
+    TemperatureUnit,
+    HeaterOscillationAngles
 )
 
 from homeassistant.components.climate import (
@@ -55,6 +56,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._mode = None
         self._htalevel = None
         self._oscon = None
+        self._oscangle = None
         self._temperature = None
         self._mute_on = None
         self._fixed_conf = None
@@ -225,6 +227,20 @@ class PyDreoHeater(PyDreoBaseDevice):
             return
 
     @property
+    def oscangle(self) -> HeaterOscillationAngles:
+        return self._oscangle
+
+    @oscangle.setter
+    def oscangle(self, value: int) -> None:
+        "Set the oscillation angle. I assume 0 means it oscillates"
+        _LOGGER.debug("PyDreoHeater:oscangle.setter(%s) -> %d", self.name, value)
+        if self._oscangle is not None:
+            self._send_command(OSCANGLE_KEY, value)
+        else:
+            _LOGGER.error("Attempting to set oscillation angle on a device that doesn't support it.")
+            return
+
+    @property
     def ptcon(self) -> bool:
         """Returns `True` if PTC is on."""
         return self._ptc_on
@@ -320,6 +336,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._mode = self.get_state_update_value(state, MODE_KEY)
         self._oscon = self.get_state_update_value(state, OSCON_KEY)
+        self._oscangle = self.get_state_update_value(state, OSCANGLE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
         timeron = self.get_state_update_value(state, TIMERON_KEY)
@@ -364,6 +381,10 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_oscon = self.get_server_update_key_value(message, OSCON_KEY)
         if isinstance(val_oscon, bool):
             self._oscon = val_oscon
+
+        val_oscangle = self.get_server_update_key_value(message, OSCANGLE_KEY)
+        if isinstance(val_oscangle, int):
+            self._oscangle = val_oscangle
 
         val_muteon = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_muteon, bool):
