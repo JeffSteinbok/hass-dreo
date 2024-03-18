@@ -62,6 +62,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
     )
 )
 
+
 def add_entries(devices) -> []:
     number_ha_collection = []
     
@@ -69,18 +70,19 @@ def add_entries(devices) -> []:
         _LOGGER.debug("Number:add_entries: Adding Numbers for %s", de.name)
         for number_definition in NUMBERS:
             _LOGGER.debug("Number:add_entries: checking attribute: %s on %s", number_definition.attr_name, de.name)
-            if (de.is_feature_supported(number_definition.attr_name)):
+            if de.is_feature_supported(number_definition.attr_name):
                 _LOGGER.debug("Number:add_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
-                if (de.device_definition.range[number_definition.attr_name+"_range"] is not None):
-                    range = de.device_definition.range[number_definition.attr_name+"_range"]
-                    _LOGGER.debug("Number:add_entries: range %s is %s", number_definition.attr_name+"_range", range)
-                    if isinstance(range, tuple):
+                if hasattr(de.device_definition.range, number_definition.attr_name + "_range") and \
+                        de.device_definition.range[number_definition.attr_name + "_range"] is not None:
+                    n_range = de.device_definition.range[number_definition.attr_name + "_range"]
+                    _LOGGER.debug("Number:add_entries: range %s is %s", number_definition.attr_name + "_range", n_range)
+                    if isinstance(n_range, tuple):
                         dned = DreoNumberEntityDescription(key=number_definition.key,
-                                                            translation_key=number_definition.translation_key,
-                                                            attr_name=number_definition.attr_name,
-                                                            icon=number_definition.icon,
-                                                            min_value=range[0],
-                                                            max_value=range[1])
+                                                           translation_key=number_definition.translation_key,
+                                                           attr_name=number_definition.attr_name,
+                                                           icon=number_definition.icon,
+                                                           min_value=n_range[0],
+                                                           max_value=n_range[1])
                         number_ha_collection.append(DreoNumberHA(de, dned))
                 else:
                     number_ha_collection.append(DreoNumberHA(de,number_definition))
