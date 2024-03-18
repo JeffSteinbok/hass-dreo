@@ -52,6 +52,7 @@ class PyDreo:  # pylint: disable=function-redefined
             "heaters" : self.heaters
         }
 
+
     @property
     def api_server_region(self) -> str:
         """Return region."""
@@ -192,7 +193,7 @@ class PyDreo:  # pylint: disable=function-redefined
 
                 self._device_list_by_sn[device.sn] = device
             except UnknownModelError as ume:
-                _LOGGER.warning("Unknown fan, heater or heater model: %s", ume)
+                _LOGGER.warning("Unknown fan or heater model: %s", ume)
                 _LOGGER.debug(dev)
 
         return True

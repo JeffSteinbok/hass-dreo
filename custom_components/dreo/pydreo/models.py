@@ -95,7 +95,7 @@ SUPPORTED_HEATERS = {
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
         swing_modes = [SWING_OFF, SWING_ON]
-),
+    ),
     "DR-HSH009S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
         range={
@@ -103,7 +103,18 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY,
+                       HeaterOscillationAngles.ONE_TWENTY]
+    ),
+    "DR-HSH009AS": DreoDeviceDetails(
+        preset_modes=["H1", "H2", "H3"],
+        range={
+            HEAT_RANGE: (1, 3),
+            ECOLEVEL_RANGE: (41, 95)
+        },
+        hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
+        swing_modes=[HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY,
+                     HeaterOscillationAngles.ONE_TWENTY]
     ),
     "WH719S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
@@ -112,7 +123,8 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY,
+                       HeaterOscillationAngles.ONE_TWENTY]
     ),
     "WH739S": DreoDeviceDetails(
         preset_modes=["H1", "H2", "H3"],
@@ -121,7 +133,8 @@ SUPPORTED_HEATERS = {
             ECOLEVEL_RANGE: (41,95)
         },
         hvac_modes=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
-        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY, HeaterOscillationAngles.ONE_TWENTY]
+        swing_modes = [HeaterOscillationAngles.OSC, HeaterOscillationAngles.SIXTY, HeaterOscillationAngles.NINETY,
+                       HeaterOscillationAngles.ONE_TWENTY]
     )
 }
 
