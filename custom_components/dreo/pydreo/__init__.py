@@ -52,7 +52,6 @@ class PyDreo:  # pylint: disable=function-redefined
             "heaters" : self.heaters
         }
 
-        _LOGGER.info("Running andy-cooper/hass-dreo v0.0.7")
 
     @property
     def api_server_region(self) -> str:
