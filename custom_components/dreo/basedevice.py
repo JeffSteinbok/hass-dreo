@@ -50,6 +50,6 @@ class DreoBaseDeviceHA(Entity):
         @callback
         def update_state():
             # Tell HA we're ready to update
-            self.async_schedule_update_ha_state(True)
+            self.schedule_update_ha_state(True)
 
         self.device.add_attr_callback(update_state)

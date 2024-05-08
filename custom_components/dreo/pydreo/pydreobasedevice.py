@@ -194,8 +194,6 @@ class PyDreoBaseDevice(object):
     def is_feature_supported(self, feature: str) -> bool:
         """Does this device support a given feature"""
         _LOGGER.debug("Checking if %s supports feature %s", self, feature)
-        for att in dir(self):
-            _LOGGER.debug(att, getattr(self,att))
         property_name = feature
         if (hasattr(self, property_name)):
             val = getattr(self, property_name)
