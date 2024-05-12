@@ -70,7 +70,11 @@ SUPPORTED_FANS = {
     "DR-HTF008S": DreoDeviceDetails(
         preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
         range = {SPEED_RANGE: (1, 5)}
-    ),    
+    ),   
+    "DR-HTF009S": DreoDeviceDetails(
+    preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO],
+    range = {SPEED_RANGE: (1, 9)}
+    ), 
     "DR-HAF001S": DreoDeviceDetails(
         preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
         range = {SPEED_RANGE: (1, 4)}
