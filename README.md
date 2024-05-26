@@ -31,6 +31,7 @@ Currently supported models are listed below.
 -   DR-HTF005S
 -   DR-HTF007S
 -   DR-HTF008S
+-   DR-HTF009S
 
 #### Air circulators
 
