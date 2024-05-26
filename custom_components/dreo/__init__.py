@@ -8,6 +8,7 @@ from .const import (
     DOMAIN,
     DREO_FANS,
     DREO_HEATERS,
+    DREO_ACS,
     DREO_MANAGER,
     CONF_AUTO_RECONNECT
 )
@@ -55,6 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     fans = hass.data[DOMAIN][DREO_FANS] = []
     heaters = hass.data[DOMAIN][DREO_HEATERS] = []
+    acs = hass.data[DOMAIN][DREO_ACS] = []
     platforms = []
 
     if device_dict[DREO_FANS]:
@@ -71,6 +73,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.append(Platform.SWITCH)
         platforms.append(Platform.NUMBER)
 
+    if device_dict[DREO_ACS]:
+        acs.extend(device_dict[DREO_ACS])
+        platforms.append(Platform.CLIMATE)
+        platforms.append(Platform.SENSOR)
+        platforms.append(Platform.SWITCH)
+        platforms.append(Platform.NUMBER)
 
     _LOGGER.debug("Platforms are: %s", platforms)
 
@@ -82,6 +90,7 @@ def process_devices(manager) -> dict:
     devices = {}
     devices[DREO_FANS] = []
     devices[DREO_HEATERS] = []
+    devices[DREO_ACS] = []
 
     if manager.fans:
         devices[DREO_FANS].extend(manager.fans)
@@ -91,5 +100,9 @@ def process_devices(manager) -> dict:
     if manager.heaters:
         devices[DREO_HEATERS].extend(manager.heaters)
         _LOGGER.info("%d Dreo heaters found", len(manager.heaters))
+
+    if manager.acs:
+        devices[DREO_ACS].extend(manager.acs)
+        _LOGGER.info("%d Dreo air conditioners found", len(manager.acs))
 
     return devices

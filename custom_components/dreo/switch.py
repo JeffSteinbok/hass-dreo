@@ -125,6 +125,7 @@ async def async_setup_entry(
 
     async_add_entities(add_device_entries(manager.fans))
     async_add_entities(add_device_entries(manager.heaters))
+    async_add_entities(add_device_entries(manager.acs))
 
 
 class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):

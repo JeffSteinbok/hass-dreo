@@ -11,10 +11,16 @@ from .constant import (
     HEATER_MODE_HOTAIR,
     HEATER_MODE_ECO,
     HEATER_MODE_OFF,
+    AC_MODE_COOL,
+    AC_MODE_FAN,
+    AC_MODE_DRY,
+    AC_MODE_AUTO,
+    AC_MODE_ECO,
     SPEED_RANGE,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
-    HeaterOscillationAngles
+    HeaterOscillationAngles,
+    TEMPERATURE_KEY
 )
 
 from homeassistant.components.climate import (
@@ -138,8 +144,19 @@ SUPPORTED_HEATERS = {
     )
 }
 
+SUPPORTED_ACS = {
+    "DR-HAC005S": DreoDeviceDetails(
+        preset_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_AUTO],
+        range={
+            TEMPERATURE_KEY: (16, 30),
+        },
+        hvac_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_AUTO],
+        swing_modes=[SWING_OFF, SWING_ON]
+    )
+}
+
 SUPPORTED_DEVICES = [ 
     ("PyDreoFan", SUPPORTED_FANS), 
-    ("PyDreoHeater", SUPPORTED_HEATERS)
+    ("PyDreoHeater", SUPPORTED_HEATERS),
+    ("PyDreoAc", SUPPORTED_ACS)
 ]
-

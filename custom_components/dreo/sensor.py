@@ -64,6 +64,10 @@ async def async_setup_entry(
         # Really ugly hack since there is just one sensor for now...
         sensorsHAs.append(DreoSensorHA(heaterEntity, SENSORS[0]))
 
+    for acEntity in manager.acs:
+        # Really ugly hack since there is just one sensor for now...
+        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[0]))
+
     async_add_entities(sensorsHAs)
 
 
