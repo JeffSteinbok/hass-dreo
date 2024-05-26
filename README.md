@@ -10,6 +10,9 @@ This integration is based on the engineering that Gavin Zyonse did for the HomeB
 
 > This documentation is intended to be accurate for the branch/tag it's in. If you are installing a specific version (including latest) of the integration, please change current viewing tag in GitHub to see the matching documentation.
 
+## Interested in Contributing?
+I'm always happy to have people add features via Pull Request. More info on how to capture network traces and what not can be found on: [Contributing](contributing.md).
+
 ## Table of Contents
 
 -   [Compatibility](#compatibility)
