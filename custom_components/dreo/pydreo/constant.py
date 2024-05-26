@@ -97,10 +97,10 @@ HEATER_MODE_COOLAIR = "coolair"
 HEATER_MODE_HOTAIR = "hotair"
 HEATER_MODE_ECO = "eco"
 HEATER_MODE_OFF = "off"
+AC_MODE_OFF = "off"
 AC_MODE_COOL = "cool"
 AC_MODE_FAN = "fan"
 AC_MODE_DRY = "dry"
-AC_MODE_AUTO = "auto"
 AC_MODE_ECO = "eco"
 
 MODE_LEVEL_MAP = {
@@ -123,10 +123,10 @@ HEATER_MODES = [
 ]
 
 AC_MODES = [
+    AC_MODE_OFF,
     AC_MODE_COOL,
     AC_MODE_FAN,
     AC_MODE_DRY,
-    AC_MODE_AUTO,
     AC_MODE_ECO
 ]
 

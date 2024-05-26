@@ -14,7 +14,6 @@ from .constant import (
     AC_MODE_COOL,
     AC_MODE_FAN,
     AC_MODE_DRY,
-    AC_MODE_AUTO,
     AC_MODE_ECO,
     SPEED_RANGE,
     HEAT_RANGE,
@@ -146,11 +145,11 @@ SUPPORTED_HEATERS = {
 
 SUPPORTED_ACS = {
     "DR-HAC005S": DreoDeviceDetails(
-        preset_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_AUTO],
+        preset_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_ECO],
         range={
             TEMPERATURE_KEY: (16, 30),
         },
-        hvac_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_AUTO],
+        hvac_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_ECO],
         swing_modes=[SWING_OFF, SWING_ON]
     )
 }

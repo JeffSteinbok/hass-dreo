@@ -25,7 +25,6 @@ from .constant import (
     AC_MODE_COOL,
     AC_MODE_FAN,
     AC_MODE_DRY,
-    AC_MODE_AUTO,
     AC_MODE_ECO,
     AC_MODES,
     TemperatureUnit,
@@ -257,6 +256,11 @@ class PyDreoAC(PyDreoBaseDevice):
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("PyDreoAC:handle_server_update(%s): %s", self.name, message)
+
+        val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        if isinstance(val_poweron, bool):
+            self._is_on = val_poweron  # Ensure poweron state is updated
+            _LOGGER.debug("PyDreoAC:handle_server_update - poweron is %s", self._is_on)
 
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):

@@ -50,39 +50,41 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     _LOGGER.debug("Device dict is: %s", device_dict)
 
     manager.start_transport()
-    
+
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][DREO_MANAGER] = manager
 
     fans = hass.data[DOMAIN][DREO_FANS] = []
     heaters = hass.data[DOMAIN][DREO_HEATERS] = []
     acs = hass.data[DOMAIN][DREO_ACS] = []
-    platforms = []
+    platforms = set()
 
     if device_dict[DREO_FANS]:
         fans.extend(device_dict[DREO_FANS])
-        platforms.append(Platform.FAN)
-        platforms.append(Platform.SENSOR)
-        platforms.append(Platform.SWITCH)
-        platforms.append(Platform.NUMBER)
+        platforms.add(Platform.FAN)
+        platforms.add(Platform.SENSOR)
+        platforms.add(Platform.SWITCH)
+        platforms.add(Platform.NUMBER)
 
     if device_dict[DREO_HEATERS]:
         heaters.extend(device_dict[DREO_HEATERS])
-        platforms.append(Platform.CLIMATE)
-        platforms.append(Platform.SENSOR)
-        platforms.append(Platform.SWITCH)
-        platforms.append(Platform.NUMBER)
+        platforms.add(Platform.CLIMATE)
+        platforms.add(Platform.SENSOR)
+        platforms.add(Platform.SWITCH)
+        platforms.add(Platform.NUMBER)
 
     if device_dict[DREO_ACS]:
         acs.extend(device_dict[DREO_ACS])
-        platforms.append(Platform.CLIMATE)
-        platforms.append(Platform.SENSOR)
-        platforms.append(Platform.SWITCH)
-        platforms.append(Platform.NUMBER)
+        platforms.add(Platform.CLIMATE)
+        platforms.add(Platform.SENSOR)
+        platforms.add(Platform.SWITCH)
+        platforms.add(Platform.NUMBER)
 
     _LOGGER.debug("Platforms are: %s", platforms)
 
-    await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
+    for platform in platforms:
+        await hass.config_entries.async_forward_entry_setup(config_entry, platform)
+
     return True
 
 def process_devices(manager) -> dict:
@@ -96,13 +98,13 @@ def process_devices(manager) -> dict:
         devices[DREO_FANS].extend(manager.fans)
         # Expose fan sensors separately
         _LOGGER.info("%d Dreo fans found", len(manager.fans))
-        
+
     if manager.heaters:
         devices[DREO_HEATERS].extend(manager.heaters)
         _LOGGER.info("%d Dreo heaters found", len(manager.heaters))
 
     if manager.acs:
         devices[DREO_ACS].extend(manager.acs)
-        _LOGGER.info("%d Dreo air conditioners found", len(manager.acs))
+        _LOGGER.info("%d Dreo ACs found", len(manager.acs))
 
     return devices
