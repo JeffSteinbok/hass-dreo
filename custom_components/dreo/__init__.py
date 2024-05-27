@@ -86,6 +86,14 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     _LOGGER.debug("Platforms are: %s", platforms)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
+
+    async def _update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
+        """Handle options update."""
+        await hass.config_entries.async_reload(config_entry.entry_id)
+
+    ## Create update listener
+    config_entry.async_on_unload(config_entry.add_update_listener(_update_listener))
+
     return True
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
