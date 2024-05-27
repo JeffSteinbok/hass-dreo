@@ -55,7 +55,7 @@ class Helpers:
             body["himei"] = "faede31549d649f58864093158787ec9"
             body["password"] = cls.hash_password(manager.password)
             body["scope"] = "all"
-            print(body)
+            # print(body)
 
         elif type_ == "devicelist":
             body = {**cls.req_body_base(manager)}
