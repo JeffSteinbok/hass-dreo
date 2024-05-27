@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Dict
 from .constant import (
     LOGGER_NAME,
     TEMPERATURE_KEY,
+    TARGET_TEMPERATURE_KEY,
     MODE_KEY,
     OSCON_KEY,
     OSCANGLE_KEY,
@@ -34,7 +35,7 @@ from .constant import (
 AC_MODES = [
     1, # AC_MODE_COOL,
     2, # AC_MODE_DRY,
-    2, # AC_MODE_FAN,
+    3, # AC_MODE_FAN,
     5, # AC_MODE_ECO
 ]
 
@@ -60,6 +61,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
         self._mode = None
         self._temperature = None
+        self._target_temperature = None
         self._mute_on = None
         self._fixed_conf = None
         self._dev_on = None
@@ -160,6 +162,11 @@ class PyDreoAC(PyDreoBaseDevice):
         return TemperatureUnit.CELCIUS
 
     @property
+    def target_temperature(self):
+        """Get the temperature"""
+        return self._target_temperature
+
+    @property
     def oscon(self) -> bool:
         """Returns `True` if oscillation is on."""
         return self._oscon
@@ -243,6 +250,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
         _LOGGER.debug("update_state: %s", state)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
+        self._target_temperature = self.get_state_update_value(state, TARGET_TEMPERATURE_KEY)
         self._mode = self.get_state_update_value(state, MODE_KEY)
         self._oscon = self.get_state_update_value(state, OSCON_KEY)
         self._oscangle = self.get_state_update_value(state, OSCANGLE_KEY)
@@ -273,12 +281,17 @@ class PyDreoAC(PyDreoBaseDevice):
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):
             self._temperature = val_temperature
+        
+        val_target_temperature = self.get_server_update_key_value(message, TARGET_TEMPERATURE_KEY)
+        if isinstance(val_target_temperature, int):
+            self._target_temperature = val_target_temperature
 
         # Reported mode can be an empty string if the AC is off. Deal with that by
         # explicitly setting that to off.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
-        if isinstance(val_mode, str):
+        if isinstance(val_mode, int):
             self._mode = val_mode if val_mode in AC_MODES else AC_MODE_OFF
+            _LOGGER.debug("PyDreoAC:handle_server_update - mode is %s", self._mode)
 
         val_oscon = self.get_server_update_key_value(message, OSCON_KEY)
         if isinstance(val_oscon, bool):

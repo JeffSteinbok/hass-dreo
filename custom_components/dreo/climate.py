@@ -9,7 +9,7 @@ from typing import Any
 from dataclasses import dataclass
 import logging
 
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 from .basedevice import DreoBaseDeviceHA
 from .pydreo import (
     PyDreo,
@@ -34,7 +34,7 @@ from .pydreo import (
 from .const import (
     LOGGER,
     DOMAIN,
-    DREO_MANAGER
+    DREO_MANAGER,
 )
 
 HVAC_MODE_MAP = {
@@ -384,13 +384,13 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
             "DreoACHA:__init__(%s) shows pyDreoDevice as: current_temp(%s), target_temp(%s), mode(%s)",
             pyDreoDevice.name,
             pyDreoDevice.temperature,
-            pyDreoDevice.temperature,
+            pyDreoDevice.target_temperature,
             pyDreoDevice.mode,
         )
 
         self._attr_name = "Air Conditioner"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
-        self._attr_target_temperature = self.device.temperature
+        self._attr_target_temperature = self.device.target_temperature
         self._attr_current_temperature = self.device.temperature
         self._attr_swing_mode = self.device.device_definition.swing_modes[0]
         self._attr_swing_modes = self.device.device_definition.swing_modes
@@ -422,6 +422,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def fan_mode(self) -> str:
         """Return the current fan mode - if on, it means that we're in 'coolair' mode"""
+        _LOGGER.debug("DreoACHA:fan_mode(%s): %s", self.device.name, self.device.fan_mode)
         return self.device.fan_mode
 
     @property
@@ -442,6 +443,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def preset_modes(self) -> list[str]:
         """Get the list of available preset modes."""
+        _LOGGER.debug("DreoACHA:preset_mode(%s): %s", self.device.name, self.device.preset_mode)
         return self.device.preset_modes
 
     @property
@@ -462,7 +464,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def supported_features(self) -> int:
         """Return the list of supported features."""
         supported_features = 0
-        if self.device.temperature is not None:
+        if self.device.target_temperature is not None:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self.device.preset_mode is not None:
             supported_features |= ClimateEntityFeature.PRESET_MODE
@@ -473,6 +475,8 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF
             supported_features |= ClimateEntityFeature.TURN_ON
+        
+        _LOGGER.debug("DreoACHA:supported_features(%s): %s", self.device.name, supported_features)
 
         return supported_features
 
@@ -480,8 +484,8 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         """Turn the device on."""
         _LOGGER.debug("DreoACHA:turn_on(%s)", self.device.name)
         self.device.poweron = True
-        self.device.mode = HVAC_AC_MODE_MAP[AC_MODE_FAN]
-        self.device._attr_hvac_mode = HVACMode.COOL
+        self.device.mode = HVAC_AC_MODE_MAP[self._last_hvac_mode]
+        self.device._attr_hvac_mode = self._last_hvac_mode
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
@@ -531,7 +535,8 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         self.device.temperature = kwargs.get(ATTR_TEMPERATURE)
-        self._attr_target_temperature = self.device.temperature
+        _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", self.device.name, self._attr_target_temperature, self.device.temperature)
+        self._attr_target_temperature = self.device.target_temperature
         self.schedule_update_ha_state()
 
     @property
@@ -554,6 +559,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def hvac_mode(self):
         # ensure hvac_mode is actually in sync with the device's mode
         self._attr_hvac_mode = AC_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
+        _LOGGER.debug("DreoACHA:hvac_mode(%s): %s (device.mode: %s)", self.device.name, self._attr_hvac_mode, self.device.mode)
         return self._attr_hvac_mode
 
     @property
