@@ -100,7 +100,6 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fixed_conf = None
         self.preset_mode = None # TODO
 
-        self._vertically_oscillating = None # TODO
         self._humidity = None # TODO
         self._target_humidity = None # TODO
         self._osc_mode = None # TODO
@@ -208,7 +207,7 @@ class PyDreoAC(PyDreoBaseDevice):
     @property
     def oscon(self) -> bool:
         """Returns `True` if oscillation is on."""
-        return self._osc_mode is not None and self._osc_mode > 0
+        return self._osc_mode is not None and self._osc_mode == AC_OSC_ON
 
     @oscon.setter
     def oscon(self, value: bool) -> None:
@@ -283,7 +282,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._target_temperature = self.get_state_update_value(state, TARGET_TEMPERATURE_KEY)
         self._mode = self.get_state_update_value(state, MODE_KEY)
-        self._oscon = self.get_state_update_value(state, OSCMODE_KEY)
+        self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
         timeron = self.get_state_update_value(state, TIMERON_KEY)
