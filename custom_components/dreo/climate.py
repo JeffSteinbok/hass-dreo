@@ -24,10 +24,6 @@ from .pydreo import (
     ECOLEVEL_RANGE,
     ANGLE_OSCANGLE_MAP,
     OSCANGLE_ANGLE_MAP,
-    AC_MODE_COOL,
-    AC_MODE_FAN,
-    AC_MODE_DRY,
-    AC_MODE_ECO,
     TEMPERATURE_KEY,
     TEMP_RANGE,
     TEMP_RANGE_ECO,
@@ -44,8 +40,6 @@ HVAC_MODE_MAP = {
     HVACMode.FAN_ONLY: HEATER_MODE_COOLAIR,
     HVACMode.AUTO: HEATER_MODE_ECO,
     HVACMode.HEAT: HEATER_MODE_HOTAIR,
-    HVACMode.COOL: AC_MODE_COOL,
-    HVACMode.DRY: AC_MODE_DRY,
 }
 
 HEATER_MODE_MAP = {
@@ -59,20 +53,17 @@ AC_MODE_MAP = {
     1: HVACMode.COOL,
     2: HVACMode.DRY,
     3: HVACMode.FAN_ONLY,
-    5: HVACMode.AUTO,
-    AC_MODE_COOL: HVACMode.COOL,
-    AC_MODE_DRY: HVACMode.DRY,
-    AC_MODE_FAN: HVACMode.FAN_ONLY,
-    AC_MODE_ECO: HVACMode.AUTO,
+    5: HVACMode.COOL,
+    HVACMode.COOL: 1,
+    HVACMode.DRY: 2,
+    HVACMode.FAN_ONLY: 3,
 }
 
 HVAC_AC_MODE_MAP = {
     HVACMode.COOL: 1,
     HVACMode.DRY: 2,
     HVACMode.FAN_ONLY: 3,
-    HVACMode.AUTO: 5,
 }
-
 
 from homeassistant.components.climate import (
     SWING_ON,
@@ -82,6 +73,12 @@ from homeassistant.components.climate import (
     FAN_MEDIUM,
     FAN_HIGH,
     PRESET_ECO,
+    PRESET_NONE,
+    HVACMode,
+)
+
+from .pydreo.pydreoac import (
+    DREO_AC_MODE_COOL,
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -405,7 +402,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_swing_mode = self.device.device_definition.swing_modes[0]
         self._attr_swing_modes = self.device.device_definition.swing_modes
         self._attr_hvac_mode = AC_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
-        self._attr_hvac_modes = [AC_MODE_MAP[h] for h in self.device.device_definition.hvac_modes]
+        self._attr_hvac_modes = self.device.device_definition.hvac_modes
         self._attr_preset_modes = self.device.device_definition.preset_modes
         self._attr_fan_modes = self.device.device_definition.fan_modes
         self._attr_fan_mode = self.device.fan_mode
@@ -443,8 +440,8 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def set_fan_mode(self, fan_mode: str) -> None:
         """Set new target fan mode."""
         _LOGGER.debug("DreoACHA:set_fan_mode(%s) --> %s", self.device.name, fan_mode)
-        # self.device.fan_mode = True if fan_mode == FAN_ON else False
-        # self._last_hvac_mode = self._attr_hvac_mode
+        self.device.fan_mode = fan_mode
+        self._attr_fan_mode = fan_mode
 
     @property
     def is_on(self) -> bool:
@@ -472,6 +469,17 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         """Get the current preset mode."""
         return self.device.preset_mode
 
+    def set_preset_mode(self, preset_mode: str) -> None:
+        """Set the preset mode of the device."""
+        _LOGGER.debug("DreoACHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
+        if preset_mode == PRESET_ECO:
+            self.device.mode = DREO_AC_MODE_COOL
+            self.device.preset_mode = preset_mode
+        else:
+            self.device.preset_mode = PRESET_NONE
+
+        self._attr_preset_mode = preset_mode
+
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the air conditioner."""
@@ -487,11 +495,11 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         supported_features = 0
         if self.device.target_temperature is not None:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if self.device.preset_mode is not None:
+        if self.device.preset_mode is not None or self.device.device_definition.preset_modes is not None:
             supported_features |= ClimateEntityFeature.PRESET_MODE
         if self.device.oscon is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
-        if self.device.fan_mode is not None:
+        if self.device.fan_mode is not None or self.device.device_definition.fan_modes is not None:
             supported_features |= ClimateEntityFeature.FAN_MODE
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF
@@ -513,20 +521,6 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         _LOGGER.debug("DreoACHA:turn_off(%s)", self.device.name)
         self.device.poweron = False
         self._last_hvac_mode = self._attr_hvac_mode
-
-    def set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the device."""
-        _LOGGER.debug("DreoACHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
-        self._last_hvac_mode = self._attr_hvac_mode
-        if not self.device.poweron:
-            self.device.poweron = True
-
-        if preset_mode not in self.preset_modes:
-            raise ValueError(f"{preset_mode} is not one of the valid preset modes: {self.preset_modes}")
-
-        self.device.preset_mode = preset_mode
-        self.device.acalevel = MODE_LEVEL_MAP[preset_mode]
-        self.device.mode = preset_mode
 
     @oscon.setter
     def oscon(self, oscon: bool) -> None:
@@ -558,7 +552,6 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         self.device.temperature = kwargs.get(ATTR_TEMPERATURE)
         _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", self.device.name, self._attr_target_temperature, self.device.temperature)
         self._attr_target_temperature = self.device.target_temperature
-        self.schedule_update_ha_state()
 
     @property
     def target_temperature(self) -> float | None:

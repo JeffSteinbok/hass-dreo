@@ -9,8 +9,6 @@ from .constant import (
     TARGET_TEMPERATURE_KEY,
     MODE_KEY,
     OSCMODE_KEY,
-    # OSCON_KEY, TODO remove
-    # OSCANGLE_KEY, TODO remove
     MUTEON_KEY,
     POWERON_KEY,
     DEVON_KEY,
@@ -24,11 +22,6 @@ from .constant import (
     CHILDLOCKON_KEY,
     TEMPOFFSET_KEY,
     FIXEDCONF_KEY,
-    AC_MODE_OFF,
-    AC_MODE_COOL,
-    AC_MODE_FAN,
-    AC_MODE_DRY,
-    AC_MODE_ECO,
     TemperatureUnit,
     WINDLEVEL_KEY,
     HUMIDITY_KEY,
@@ -42,26 +35,32 @@ from homeassistant.components.climate import (
     FAN_LOW,
     FAN_MEDIUM,
     FAN_HIGH,
-    PRESET_ECO,
     PRESET_NONE,
+    PRESET_ECO,
 )
 
-AC_MODES = [
-    1, # AC_MODE_COOL,
-    2, # AC_MODE_DRY,
-    3, # AC_MODE_FAN,
-    5, # AC_MODE_ECO
+
+DREO_AC_MODE_COOL = 1
+DREO_AC_MODE_DRY = 2
+DREO_AC_MODE_FAN = 3
+DREO_AC_MODE_ECO = 5
+
+DREO_AC_MODES = [
+    DREO_AC_MODE_COOL,
+    DREO_AC_MODE_FAN,
+    DREO_AC_MODE_DRY,
+    DREO_AC_MODE_ECO,
 ]
 
-AC_FAN_MODE_MAP = {
-    1 : FAN_LOW,
-    2 : FAN_MEDIUM,
-    3 : FAN_HIGH,
-    4 : FAN_AUTO,
-    FAN_LOW : 1,
-    FAN_MEDIUM : 2,
-    FAN_HIGH : 3,
-    FAN_AUTO : 4,
+DREO_AC_FAN_MODE_MAP = {
+    1: FAN_LOW,
+    2: FAN_MEDIUM,
+    3: FAN_HIGH,
+    4: FAN_AUTO,
+    FAN_LOW: 1,
+    FAN_MEDIUM: 2,
+    FAN_HIGH: 3,
+    FAN_AUTO: 4,
 }
 
 AC_OSC_ON = 2
@@ -82,7 +81,7 @@ class PyDreoAC(PyDreoBaseDevice):
         """Initialize air conditioner devices."""
         super().__init__(device_definition, details, dreo)
 
-        self._mode = None # Fan Mode # TODO
+        self._mode = None # TODO Fan Mode 
         self._temperature = None
         self._target_temperature = None
         self._mute_on = None
@@ -98,7 +97,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._childlockon = None
         self._tempoffset = None
         self._fixed_conf = None
-        self.preset_mode = None # TODO
+        self._preset_mode = None
 
         self._humidity = None # TODO
         self._target_humidity = None # TODO
@@ -173,7 +172,7 @@ class PyDreoAC(PyDreoBaseDevice):
         """Set fan mode if requested"""
         _LOGGER.debug("PyDreoAC:fan_mode.setter(%s) %s --> %s", self.name, self._fan_mode, mode)
         self._fan_mode = mode
-        self._send_command(WINDLEVEL_KEY, mode)
+        self._send_command(WINDLEVEL_KEY, DREO_AC_FAN_MODE_MAP[mode])
 
     @property
     def temperature(self):
@@ -208,7 +207,7 @@ class PyDreoAC(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) --> %s", self.name, value)
         self._target_temperature = value
         self._send_command(TARGET_TEMPERATURE_KEY, value)
-    
+
     @property
     def humidity(self):
         """Get the humidity"""
@@ -288,6 +287,23 @@ class PyDreoAC(PyDreoBaseDevice):
         """Set if the panel sound"""
         _LOGGER.debug("PyDreoAC:panel_sound.setter(%s) --> %s", self.name, value)
         self._send_command(MUTEON_KEY, not value)
+        
+    @property
+    def preset_mode(self) -> str:
+        """Return the current preset mode."""
+        return self._preset_mode
+
+    @preset_mode.setter
+    def preset_mode(self, mode: str) -> None:
+        """Set the preset mode."""
+        _LOGGER.debug("PyDreoAC:preset_mode.setter(%s) %s --> %s", self.name, self._preset_mode, mode)
+        
+        if mode == PRESET_ECO:
+            self._send_command(MODE_KEY, DREO_AC_MODE_ECO)
+        else:
+            self._send_command(MODE_KEY, DREO_AC_MODE_COOL)
+        
+        self._preset_mode = mode
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -296,7 +312,16 @@ class PyDreoAC(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoAC(%s):update_state: %s", self.name, state)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._target_temperature = self.get_state_update_value(state, TARGET_TEMPERATURE_KEY)
-        self._mode = self.get_state_update_value(state, MODE_KEY)
+        
+        mode = self.get_state_update_value(state, MODE_KEY)
+        if mode == DREO_AC_MODE_ECO:
+            mode = DREO_AC_MODE_COOL
+            self._preset_mode = PRESET_ECO
+        else:
+            self._preset_mode = PRESET_NONE
+        self._mode = mode
+        
+        self._fan_mode = DREO_AC_FAN_MODE_MAP[self.get_state_update_value(state, WINDLEVEL_KEY)]
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
@@ -314,7 +339,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
-        #TODO ecopauserate, worktime
+        # TODO ecopauserate, worktime
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -328,7 +353,7 @@ class PyDreoAC(PyDreoBaseDevice):
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):
             self._temperature = val_temperature
-        
+
         val_target_temperature = self.get_server_update_key_value(message, TARGET_TEMPERATURE_KEY)
         if isinstance(val_target_temperature, int):
             self._target_temperature = val_target_temperature
@@ -337,14 +362,20 @@ class PyDreoAC(PyDreoBaseDevice):
         # explicitly setting that to off.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
-            target_mode = val_mode if val_mode in AC_MODES else AC_MODE_OFF
+            target_mode = val_mode
             if target_mode == 5:
-                target_mode = AC_MODE_COOL
-                self.preset_mode = PRESET_ECO
+                target_mode = DREO_AC_MODE_COOL
+                self._preset_mode = PRESET_ECO
             else:
-                self.preset_mode = PRESET_NONE
-            self._mode = val_mode if val_mode in AC_MODES else AC_MODE_OFF
-            _LOGGER.debug("PyDreoAC:handle_server_update - mode is %s", self._mode)
+                self._preset_mode = PRESET_NONE
+            _LOGGER.debug("PyDreoAC(%s):handle_server_update - mode: %s --> %s", self, self._mode, target_mode)
+            self._mode = target_mode
+
+        val_fan_mode = self.get_server_update_key_value(message, WINDLEVEL_KEY)
+        if isinstance(val_fan_mode, int):
+            val_fan_mode = DREO_AC_FAN_MODE_MAP[val_fan_mode]
+            _LOGGER.debug("PyDreoAC(%s):handle_server_update - fan_mode: %s --> %s", self, self._fan_mode, val_fan_mode)
+            self._fan_mode = val_fan_mode
 
         val_osc_mode = self.get_server_update_key_value(message, OSCMODE_KEY)
         if isinstance(val_osc_mode, int):

@@ -11,10 +11,6 @@ from .constant import (
     HEATER_MODE_HOTAIR,
     HEATER_MODE_ECO,
     HEATER_MODE_OFF,
-    AC_MODE_COOL,
-    AC_MODE_FAN,
-    AC_MODE_DRY,
-    AC_MODE_ECO,
     SPEED_RANGE,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
@@ -32,7 +28,9 @@ from homeassistant.components.climate import (
     FAN_LOW,
     FAN_MEDIUM,
     FAN_HIGH,
+    PRESET_NONE,
     PRESET_ECO,
+    HVACMode,
 )
 
 @dataclass
@@ -160,9 +158,9 @@ SUPPORTED_ACS = {
             HUMIDITY_RANGE: (30, 80),
         },
         # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)
-        hvac_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY],
+        hvac_modes=[HVACMode.COOL, HVACMode.FAN_ONLY, HVACMode.DRY],
         swing_modes=[SWING_OFF, SWING_ON],
-        preset_modes=[PRESET_ECO],
+        preset_modes=[PRESET_NONE, PRESET_ECO],
         # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
         fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
     )

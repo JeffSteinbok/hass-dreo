@@ -83,6 +83,7 @@ class PyDreoBaseDevice(object):
 
     def _send_command(self, commandKey: str, value):
         """Send a command to the Dreo servers via WebSocket."""
+        _LOGGER.debug("pyDreoBaseDevice(%s):send_command: %s-> %s", self, commandKey, value)
         params: dict = {commandKey: value}
         self._dreo.send_command(self, params)
 

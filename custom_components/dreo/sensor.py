@@ -47,8 +47,8 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: device.is_feature_supported("temperature")
     ),
     DreoSensorEntityDescription(
-        key=HUMIDITY_KEY,
-        translation_key=HUMIDITY_KEY,
+        key="humidity",
+        translation_key="humidity",
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "%",
