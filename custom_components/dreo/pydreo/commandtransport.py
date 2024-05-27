@@ -120,6 +120,12 @@ class CommandTransport:
         _LOGGER.debug("CommandTransport::_ws_handler - WebSocket appears closed.")
         for task in pending:
             task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+        for task in done:
+            task.exception()
         
     async def _ws_consumer_handler(self, ws):
         _LOGGER.debug("CommandTransport::_ws_consumer_handler")
