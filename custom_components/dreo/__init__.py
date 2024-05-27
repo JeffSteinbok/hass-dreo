@@ -10,6 +10,7 @@ from .const import (
     DREO_HEATERS,
     DREO_ACS,
     DREO_MANAGER,
+    DREO_PLATFORMS,
     CONF_AUTO_RECONNECT
 )
 
@@ -80,10 +81,24 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
+    hass.data[DOMAIN][DREO_PLATFORMS] = platforms
+
     _LOGGER.debug("Platforms are: %s", platforms)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
     return True
+
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    manager = hass.data[DOMAIN][DREO_MANAGER]
+    if unload_ok := await hass.config_entries.async_unload_platforms(
+        config_entry,
+        hass.data[DOMAIN][DREO_PLATFORMS],
+    ):
+        hass.data.pop(DOMAIN)
+
+    manager.stop_transport()
+    return unload_ok
 
 def process_devices(manager) -> dict:
     """Assign devices to proper component."""
