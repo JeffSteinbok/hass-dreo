@@ -22,8 +22,7 @@
           "title": "Dreo Options",
           "data": {
             "auto_reconnect": "Automatically reconnect if the websocket drops."
-          },
-          "description": "Restart Home Assistant after changing these options."
+          }
         }
       }
     }
