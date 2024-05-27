@@ -18,13 +18,21 @@ from .constant import (
     SPEED_RANGE,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
+    TEMP_RANGE,
+    TEMP_RANGE_ECO,
     HeaterOscillationAngles,
-    TEMPERATURE_KEY
+    TEMPERATURE_KEY,
+    HUMIDITY_RANGE,
 )
 
 from homeassistant.components.climate import (
     SWING_ON,
-    SWING_OFF
+    SWING_OFF,
+    FAN_AUTO,
+    FAN_LOW,
+    FAN_MEDIUM,
+    FAN_HIGH,
+    PRESET_ECO,
 )
 
 @dataclass
@@ -44,11 +52,12 @@ class DreoDeviceDetails:
     """List of possible swing modes"""
 
     def __init__(self, preset_modes: list[str], range: dict, hvac_modes: list[str] = None,
-                 swing_modes: list[str] = None):
+                 swing_modes: list[str] = None, fan_modes: list[str] = None):
         self.preset_modes = preset_modes
         self.range = range
         self.hvac_modes = hvac_modes
         self.swing_modes = swing_modes
+        self.fan_modes = fan_modes
 
 
 SUPPORTED_FANS = {
@@ -145,12 +154,17 @@ SUPPORTED_HEATERS = {
 
 SUPPORTED_ACS = {
     "DR-HAC005S": DreoDeviceDetails(
-        preset_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_ECO],
         range={
-            TEMPERATURE_KEY: (16, 30),
+            TEMP_RANGE: (64, 86),
+            TEMP_RANGE_ECO: (75, 86),
+            HUMIDITY_RANGE: (30, 80),
         },
-        hvac_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY, AC_MODE_ECO],
-        swing_modes=[SWING_OFF, SWING_ON]
+        # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)
+        hvac_modes=[AC_MODE_COOL, AC_MODE_FAN, AC_MODE_DRY],
+        swing_modes=[SWING_OFF, SWING_ON],
+        preset_modes=[PRESET_ECO],
+        # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
+        fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
     )
 }
 

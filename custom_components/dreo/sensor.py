@@ -14,14 +14,17 @@ import logging
 from .basedevice import DreoBaseDeviceHA
 from .fan import DreoFanHA
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .pydreo.constant import TemperatureUnit
+from .pydreo.constant import (
+    TemperatureUnit,
+    HUMIDITY_KEY,
+)
 
 from .haimports import * # pylint: disable=W0401,W0614
 
 from .const import (
     LOGGER,
     DOMAIN,
-    DREO_MANAGER
+    DREO_MANAGER,
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -42,6 +45,15 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         native_unit_of_measurement_fn=lambda device: UnitOfTemperature.CELSIUS if (device.temperature_units == TemperatureUnit.CELCIUS) else UnitOfTemperature.FAHRENHEIT,
         value_fn=lambda device: device.temperature,
         exists_fn=lambda device: device.is_feature_supported("temperature")
+    ),
+    DreoSensorEntityDescription(
+        key=HUMIDITY_KEY,
+        translation_key=HUMIDITY_KEY,
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.humidity,
+        exists_fn=lambda device: device.is_feature_supported(HUMIDITY_KEY)
     ),
 )
 
@@ -67,6 +79,7 @@ async def async_setup_entry(
     for acEntity in manager.acs:
         # Really ugly hack since there is just one sensor for now...
         sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[0]))
+        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[1]))
 
     async_add_entities(sensorsHAs)
 

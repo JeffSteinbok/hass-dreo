@@ -8,8 +8,9 @@ from .constant import (
     TEMPERATURE_KEY,
     TARGET_TEMPERATURE_KEY,
     MODE_KEY,
-    OSCON_KEY,
-    OSCANGLE_KEY,
+    OSCMODE_KEY,
+    # OSCON_KEY, TODO remove
+    # OSCANGLE_KEY, TODO remove
     MUTEON_KEY,
     POWERON_KEY,
     DEVON_KEY,
@@ -29,7 +30,18 @@ from .constant import (
     AC_MODE_DRY,
     AC_MODE_ECO,
     TemperatureUnit,
-    HeaterOscillationAngles
+    WINDLEVEL_KEY,
+    HUMIDITY_KEY,
+    TARGET_HUMIDITY_KEY,
+)
+
+from homeassistant.components.climate import (
+    FAN_ON,
+    FAN_OFF,
+    FAN_AUTO,
+    FAN_LOW,
+    FAN_MEDIUM,
+    FAN_HIGH,
 )
 
 AC_MODES = [
@@ -39,10 +51,19 @@ AC_MODES = [
     5, # AC_MODE_ECO
 ]
 
-from homeassistant.components.climate import (
-    FAN_ON,
-    FAN_OFF
-)
+AC_FAN_MODE_MAP = {
+    1 : FAN_LOW,
+    2 : FAN_MEDIUM,
+    3 : FAN_HIGH,
+    4 : FAN_AUTO,
+    FAN_LOW : 1,
+    FAN_MEDIUM : 2,
+    FAN_HIGH : 3,
+    FAN_AUTO : 4,
+}
+
+AC_OSC_ON = 2
+AC_OSC_OFF = 0
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
@@ -59,7 +80,7 @@ class PyDreoAC(PyDreoBaseDevice):
         """Initialize air conditioner devices."""
         super().__init__(device_definition, details, dreo)
 
-        self._mode = None
+        self._mode = None # Fan Mode # TODO
         self._temperature = None
         self._target_temperature = None
         self._mute_on = None
@@ -71,11 +92,17 @@ class PyDreoAC(PyDreoBaseDevice):
         self._light_on = None
         self._ctlstatus = None
         self._timer_off = None
-        self._ecolevel = None
+        self._ecolevel = None # TODO
         self._childlockon = None
         self._tempoffset = None
         self._fixed_conf = None
-        self.preset_mode = None
+        self.preset_mode = None # TODO
+
+        self._vertically_oscillating = None # TODO
+        self._humidity = None # TODO
+        self._target_humidity = None # TODO
+        self._osc_mode = None # TODO
+        self._fan_mode = None # TODO
 
     def __repr__(self):
         # Representation string of object.
@@ -137,14 +164,15 @@ class PyDreoAC(PyDreoBaseDevice):
 
     @property
     def fan_mode(self) -> str:
-        """Return the current fan mode - if on, it means that we're in 'coolair' mode"""
-        if self._mode is not None:
-            return FAN_ON if self._mode == AC_MODE_FAN else FAN_OFF
+        """Return the current fan mode"""
+        return self._fan_mode
 
     @fan_mode.setter
-    def fan_mode(self, mode: bool) -> None:
+    def fan_mode(self, mode: str) -> None:
         """Set fan mode if requested"""
-        self.mode = AC_MODE_FAN if mode is True else AC_MODE_COOL
+        _LOGGER.debug("PyDreoAC:fan_mode.setter(%s) %s --> %s", self.name, self._fan_mode, mode)
+        self._fan_mode = mode
+        self._send_command(WINDLEVEL_KEY, mode)
 
     @property
     def temperature(self):
@@ -165,27 +193,28 @@ class PyDreoAC(PyDreoBaseDevice):
     def target_temperature(self):
         """Get the temperature"""
         return self._target_temperature
+    
+    @property
+    def humidity(self):
+        """Get the humidity"""
+        return self._humidity
+    @property
+    def target_humidity(self):
+        """Get the target_humidity"""
+        return self._target_humidity
 
     @property
     def oscon(self) -> bool:
         """Returns `True` if oscillation is on."""
-        return self._oscon
+        return self._osc_mode is not None and self._osc_mode > 0
 
     @oscon.setter
     def oscon(self, value: bool) -> None:
         """Enable or disable oscillation"""
-        _LOGGER.debug("PyDreoAC:oscon.setter(%s) -> %s", self.name, value)
-        self._send_command(OSCON_KEY, value)
-
-    @property
-    def oscangle(self) -> HeaterOscillationAngles:
-        return self._oscangle
-
-    @oscangle.setter
-    def oscangle(self, value: int) -> None:
-        """Set the oscillation angle. I assume 0 means it oscillates"""
-        _LOGGER.debug("PyDreoAC:oscangle.setter(%s) -> %d", self.name, value)
-        self._send_command(OSCANGLE_KEY, value)
+        set_val = AC_OSC_ON if value else AC_OSC_OFF
+        _LOGGER.debug("PyDreoAC:oscon.setter(%s) -> %s (%s)", self.name, value, set_val)
+        self._osc_mode = set_val
+        self._send_command(OSCMODE_KEY, set_val)
 
     @property
     def ptcon(self) -> bool:
@@ -248,12 +277,11 @@ class PyDreoAC(PyDreoBaseDevice):
         """Process the state dictionary from the REST API."""
         super().update_state(state)  # handles _is_on
 
-        _LOGGER.debug("update_state: %s", state)
+        _LOGGER.debug("PyDreoAC(%s):update_state: %s", self.name, state)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._target_temperature = self.get_state_update_value(state, TARGET_TEMPERATURE_KEY)
         self._mode = self.get_state_update_value(state, MODE_KEY)
-        self._oscon = self.get_state_update_value(state, OSCON_KEY)
-        self._oscangle = self.get_state_update_value(state, OSCANGLE_KEY)
+        self._oscon = self.get_state_update_value(state, OSCMODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
         timeron = self.get_state_update_value(state, TIMERON_KEY)
@@ -268,6 +296,9 @@ class PyDreoAC(PyDreoBaseDevice):
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
+        self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
+        self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
+        #TODO ecopauserate, worktime
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -293,13 +324,9 @@ class PyDreoAC(PyDreoBaseDevice):
             self._mode = val_mode if val_mode in AC_MODES else AC_MODE_OFF
             _LOGGER.debug("PyDreoAC:handle_server_update - mode is %s", self._mode)
 
-        val_oscon = self.get_server_update_key_value(message, OSCON_KEY)
-        if isinstance(val_oscon, bool):
-            self._oscon = val_oscon
-
-        val_oscangle = self.get_server_update_key_value(message, OSCANGLE_KEY)
-        if isinstance(val_oscangle, int):
-            self._oscangle = val_oscangle
+        val_osc_mode = self.get_server_update_key_value(message, OSCMODE_KEY)
+        if isinstance(val_osc_mode, int):
+            self._osc_mode = val_osc_mode
 
         val_muteon = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_muteon, bool):

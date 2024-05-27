@@ -55,6 +55,8 @@ ECOLEVEL_KEY = "ecolevel"
 ECOLEVEL_RANGE_KEY = "ecolevel_range"
 CHILDLOCKON_KEY = "childlockon"
 TEMPOFFSET_KEY = "tempoffset"
+HUMIDITY_KEY = "rh"
+TARGET_HUMIDITY_KEY = "rhlevel"
 
 
 DREO_API_URL_FORMAT = (
@@ -158,6 +160,9 @@ WIND_MODE_KEY = "mode"
 SPEED_RANGE = "speed_range"
 HEAT_RANGE = "heat_range"
 ECOLEVEL_RANGE = "ecolevel_range"
+TEMP_RANGE = "temp_range"
+TEMP_RANGE_ECO = "temp_range_eco"
+HUMIDITY_RANGE = "humidity_range"
 
 class TemperatureUnit(Enum):
     """Valid possible temperature units."""
