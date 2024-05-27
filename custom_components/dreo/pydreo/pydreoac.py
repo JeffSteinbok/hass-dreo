@@ -42,6 +42,8 @@ from homeassistant.components.climate import (
     FAN_LOW,
     FAN_MEDIUM,
     FAN_HIGH,
+    PRESET_ECO,
+    PRESET_NONE,
 )
 
 AC_MODES = [
@@ -321,6 +323,12 @@ class PyDreoAC(PyDreoBaseDevice):
         # explicitly setting that to off.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
+            target_mode = val_mode if val_mode in AC_MODES else AC_MODE_OFF
+            if target_mode == 5:
+                target_mode = AC_MODE_COOL
+                self.preset_mode = PRESET_ECO
+            else:
+                self.preset_mode = PRESET_NONE
             self._mode = val_mode if val_mode in AC_MODES else AC_MODE_OFF
             _LOGGER.debug("PyDreoAC:handle_server_update - mode is %s", self._mode)
 
