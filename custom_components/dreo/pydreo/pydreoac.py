@@ -139,7 +139,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
     @devon.setter
     def devon(self, value: bool):
-        _LOGGER.debug("PyDreoAC:dev_on.setter - %s", value)
+        _LOGGER.debug("PyDreoAC:devon.setter - %s", value)
         self._send_command(DEVON_KEY, value)
 
     @property
@@ -180,6 +180,13 @@ class PyDreoAC(PyDreoBaseDevice):
         """Get the temperature"""
         return self._temperature
 
+    @temperature.setter
+    def temperature(self, value: int) -> None:
+        """Set the temperature"""
+        _LOGGER.debug("PyDreoAC:temperature.setter(%s) --> %s", self.name, value)
+        self._temperature = value
+        self._send_command(TARGET_TEMPERATURE_KEY, value)
+
     @property
     def temperature_units(self) -> TemperatureUnit:
         """Get the temperature units."""
@@ -194,11 +201,19 @@ class PyDreoAC(PyDreoBaseDevice):
     def target_temperature(self):
         """Get the temperature"""
         return self._target_temperature
+
+    @target_temperature.setter
+    def target_temperature(self, value: int) -> None:
+        """Set the target temperature"""
+        _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) --> %s", self.name, value)
+        self._target_temperature = value
+        self._send_command(TARGET_TEMPERATURE_KEY, value)
     
     @property
     def humidity(self):
         """Get the humidity"""
         return self._humidity
+
     @property
     def target_humidity(self):
         """Get the target_humidity"""
