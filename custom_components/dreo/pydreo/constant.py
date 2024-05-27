@@ -99,8 +99,8 @@ HEATER_MODE_ECO = "eco"
 HEATER_MODE_OFF = "off"
 AC_MODE_OFF = "off"
 AC_MODE_COOL = "cool"
-AC_MODE_FAN = "fan"
 AC_MODE_DRY = "dry"
+AC_MODE_FAN = "coolair"
 AC_MODE_ECO = "eco"
 
 MODE_LEVEL_MAP = {
@@ -122,13 +122,11 @@ HEATER_MODES = [
     HEATER_MODE_OFF
 ]
 
-AC_MODES = [
-    AC_MODE_OFF,
-    AC_MODE_COOL,
-    AC_MODE_FAN,
-    AC_MODE_DRY,
-    AC_MODE_ECO
-]
+AC_ECO_LEVEL_MAP = {
+    1 : "10%",
+    2 : "20%",
+    3 : "30%"
+}
 
 OSCANGLE_ANGLE_MAP = {
     "Oscillate" : 0,

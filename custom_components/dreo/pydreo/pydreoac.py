@@ -22,14 +22,21 @@ from .constant import (
     CHILDLOCKON_KEY,
     TEMPOFFSET_KEY,
     FIXEDCONF_KEY,
+    AC_MODE_OFF,
     AC_MODE_COOL,
     AC_MODE_FAN,
     AC_MODE_DRY,
     AC_MODE_ECO,
-    AC_MODES,
     TemperatureUnit,
     HeaterOscillationAngles
 )
+
+AC_MODES = [
+    1, # AC_MODE_COOL,
+    2, # AC_MODE_DRY,
+    2, # AC_MODE_FAN,
+    5, # AC_MODE_ECO
+]
 
 from homeassistant.components.climate import (
     FAN_ON,
@@ -66,6 +73,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._childlockon = None
         self._tempoffset = None
         self._fixed_conf = None
+        self.preset_mode = None
 
     def __repr__(self):
         # Representation string of object.
