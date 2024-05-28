@@ -552,10 +552,11 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         self.device.target_temperature = kwargs.get(ATTR_TEMPERATURE)
         _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", self.device.name, self._attr_target_temperature, self.device.target_temperature)
         self._attr_target_temperature = self.device.target_temperature
+        self.schedule_update_ha_state()
 
     @property
     def target_temperature(self) -> float | None:
-        return self.device.temperature
+        return self.device.target_temperature
 
     @property
     def min_temp(self) -> float | None:
