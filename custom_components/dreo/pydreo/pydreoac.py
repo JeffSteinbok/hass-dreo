@@ -18,7 +18,6 @@ from .constant import (
     LIGHTON_KEY,
     CTLSTATUS_KEY,
     TIMEROFF_KEY,
-    ECOLEVEL_KEY,
     CHILDLOCKON_KEY,
     TEMPOFFSET_KEY,
     FIXEDCONF_KEY,
@@ -93,7 +92,6 @@ class PyDreoAC(PyDreoBaseDevice):
         self._light_on = None
         self._ctlstatus = None
         self._timer_off = None
-        self._ecolevel = None # TODO
         self._childlockon = None
         self._tempoffset = None
         self._fixed_conf = None
@@ -140,17 +138,6 @@ class PyDreoAC(PyDreoBaseDevice):
     def devon(self, value: bool):
         _LOGGER.debug("PyDreoAC:devon.setter - %s", value)
         self._send_command(DEVON_KEY, value)
-
-    @property
-    def ecolevel(self):
-        """Return the current target temperature"""
-        return self._ecolevel
-
-    @ecolevel.setter
-    def ecolevel(self, ecolevel: int):
-        """Set the target temperature."""
-        _LOGGER.debug("PyDreoAC:ecolevel(%s)", ecolevel)
-        self._send_command(ECOLEVEL_KEY, ecolevel)
 
     @property
     def mode(self):
@@ -217,6 +204,13 @@ class PyDreoAC(PyDreoBaseDevice):
     def target_humidity(self):
         """Get the target_humidity"""
         return self._target_humidity
+
+    @target_humidity.setter
+    def target_humidity(self, value: int) -> None:
+        """Set the target humidity"""
+        _LOGGER.debug("PyDreoAC:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
+        self._target_humidity = value
+        self._send_command(TARGET_HUMIDITY_KEY, value)
 
     @property
     def oscon(self) -> bool:
@@ -333,7 +327,6 @@ class PyDreoAC(PyDreoBaseDevice):
         self._ctlstatus = self.get_state_update_value(state, CTLSTATUS_KEY)
         timeroff = self.get_state_update_value(state, TIMEROFF_KEY)
         self._timer_off = timeroff["du"]
-        self._ecolevel = self.get_state_update_value(state, ECOLEVEL_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
@@ -413,10 +406,6 @@ class PyDreoAC(PyDreoBaseDevice):
         val_timer_off = self.get_server_update_key_value(message, TIMEROFF_KEY)
         if isinstance(val_timer_off, int):
             self._timer_off = val_timer_off
-
-        val_ecolevel = self.get_server_update_key_value(message, ECOLEVEL_KEY)
-        if isinstance(val_ecolevel, int):
-            self._ecolevel = val_ecolevel
 
         val_childlockon = self.get_server_update_key_value(message, CHILDLOCKON_KEY)
         if isinstance(val_childlockon, bool):

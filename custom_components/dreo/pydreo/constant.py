@@ -156,7 +156,8 @@ SPEED_RANGE = "speed_range"
 HEAT_RANGE = "heat_range"
 ECOLEVEL_RANGE = "ecolevel_range"
 TEMP_RANGE = "temp_range"
-TEMP_RANGE_ECO = "temp_range_eco"
+TARGET_TEMP_RANGE = "target_temp_range"
+TARGET_TEMP_RANGE_ECO = "target_temp_range_eco"
 HUMIDITY_RANGE = "humidity_range"
 
 class TemperatureUnit(Enum):

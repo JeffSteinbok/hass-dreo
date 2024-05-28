@@ -15,7 +15,8 @@ from .constant import (
     HEAT_RANGE,
     ECOLEVEL_RANGE,
     TEMP_RANGE,
-    TEMP_RANGE_ECO,
+    TARGET_TEMP_RANGE,
+    TARGET_TEMP_RANGE_ECO,
     HeaterOscillationAngles,
     TEMPERATURE_KEY,
     HUMIDITY_RANGE,
@@ -153,8 +154,9 @@ SUPPORTED_HEATERS = {
 SUPPORTED_ACS = {
     "DR-HAC005S": DreoDeviceDetails(
         range={
-            TEMP_RANGE: (64, 86),
-            TEMP_RANGE_ECO: (75, 86),
+            TEMP_RANGE: (60, 95),
+            TARGET_TEMP_RANGE: (64, 86),
+            TARGET_TEMP_RANGE_ECO: (75, 86),
             HUMIDITY_RANGE: (30, 80),
         },
         # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)

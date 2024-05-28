@@ -26,7 +26,9 @@ from .pydreo import (
     OSCANGLE_ANGLE_MAP,
     TEMPERATURE_KEY,
     TEMP_RANGE,
-    TEMP_RANGE_ECO,
+    TARGET_TEMP_RANGE,
+    TARGET_TEMP_RANGE_ECO,
+    HUMIDITY_RANGE,
 )
 
 from .const import (
@@ -546,7 +548,15 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def current_temperature(self) -> float:
         return self.device.temperature
+    
+    @property
+    def min_temp(self) -> float | None:
+        return self.device.device_definition.range[TEMP_RANGE][0]
 
+    @property
+    def max_temp(self) -> float | None:
+        return self.device.device_definition.range[TEMP_RANGE][1]
+    
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         self.device.target_temperature = kwargs.get(ATTR_TEMPERATURE)
@@ -557,9 +567,9 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def target_temperature(self) -> float | None:
         return self.device.target_temperature
-
+    
     @property
-    def min_temp(self) -> float | None:
+    def target_temperature_low(self) -> float | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TEMP_RANGE_ECO
         else:
@@ -567,16 +577,35 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.range[range_key][0]
 
     @property
-    def max_temp(self) -> float | None:
+    def target_temperature_high(self) -> float | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TEMP_RANGE_ECO
         else:
             range_key = TEMP_RANGE
         return self.device.device_definition.range[range_key][1]
-
+    
     @property
     def target_temperature_step(self) -> float | None:
         return 1
+
+    def set_humidity(self, humidity: int) -> None:
+        """Set new target humidity."""
+        _LOGGER.debug("DreoACHA::set_humidity(%s) %s --> %s", self.device.name, self._attr_target_humidity, humidity)
+        self.device.target_humidity = humidity
+        self._attr_target_humidity = humidity
+        self.schedule_update_ha_state()
+
+    @property
+    def target_humidity(self) -> int | None:
+        return self.device.target_humidity
+    
+    @property
+    def min_humidity(self) -> float | None:
+        return self.device.device_definition.range[HUMIDITY_RANGE][0]
+
+    @property
+    def max_humidity(self) -> float | None:
+        return self.device.device_definition.range[HUMIDITY_RANGE][1]
 
     @property
     def hvac_mode(self):
@@ -595,6 +624,11 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         _LOGGER.debug("DreoACHA:set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
         self._last_hvac_mode = self._attr_hvac_mode
         self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
+
+        if hvac_mode == HVACMode.DRY:
+            self._attr_supported_features |= ClimateEntityFeature.TARGET_HUMIDITY
+        else:
+            self._attr_supported_features &= ~ClimateEntityFeature.TARGET_HUMIDITY
 
         if hvac_mode != HVACMode.OFF:
             self.device.poweron = True
