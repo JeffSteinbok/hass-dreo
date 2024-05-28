@@ -83,6 +83,7 @@ class PyDreoBaseDevice(object):
 
     def _send_command(self, commandKey: str, value):
         """Send a command to the Dreo servers via WebSocket."""
+        _LOGGER.debug("pyDreoBaseDevice(%s):send_command: %s-> %s", self, commandKey, value)
         params: dict = {commandKey: value}
         self._dreo.send_command(self, params)
 
@@ -91,6 +92,7 @@ class PyDreoBaseDevice(object):
         if key in state:
             key_val_object: dict = state[key]
             if key_val_object is not None:
+                _LOGGER.debug("pyDreoBaseDevice(%s):get_state_update_value: %s-> %s", self, key, key_val_object[STATE_KEY])
                 return key_val_object[STATE_KEY]
 
         _LOGGER.debug("State value (%s) not present.  Device: %s", key, self.name)
@@ -198,7 +200,7 @@ class PyDreoBaseDevice(object):
         if (hasattr(self, property_name)):
             val = getattr(self, property_name)
             if (val is not None):
-                _LOGGER.debug("found attribute for %s --> %s", property_name, val)
+                _LOGGER.debug("%s found attribute for %s --> %s", self, property_name, val)
                 return True
         
         return False

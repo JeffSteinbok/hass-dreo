@@ -1,4 +1,4 @@
-"""Support additionl switches for some Dreo devices"""
+"""Support additional switches for some Dreo devices"""
 # Suppress warnings about DataClass constructors
 # pylint: disable=E1123
 
@@ -10,11 +10,10 @@ from typing import Any
 from dataclasses import dataclass
 import logging
 
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 from .basedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-
 
 from .const import (
     LOGGER,
@@ -23,6 +22,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(LOGGER)
+
 
 @dataclass
 class DreoSwitchEntityDescription(SwitchEntityDescription):
@@ -106,9 +106,9 @@ def add_device_entries(devices) -> []:
     for de in devices:
         _LOGGER.debug("Adding switches for %s", de.name)
         for switch_definition in SWITCHES:
-            if (de.is_feature_supported(switch_definition.attr_name)):
+            if de.is_feature_supported(switch_definition.attr_name):
                 _LOGGER.debug("Adding switch %s", switch_definition.key)
-                switch_ha_collection.append(DreoSwitchHA(de,switch_definition))
+                switch_ha_collection.append(DreoSwitchHA(de, switch_definition))
     
     return switch_ha_collection
 
@@ -121,10 +121,11 @@ async def async_setup_entry(
     """Set up the Dreo Switch platform."""
     _LOGGER.info("Starting Dreo Switch Platform")
 
-    manager : PyDreo = hass.data[DOMAIN][DREO_MANAGER]
+    manager: PyDreo = hass.data[DOMAIN][DREO_MANAGER]
 
     async_add_entities(add_device_entries(manager.fans))
     async_add_entities(add_device_entries(manager.heaters))
+    async_add_entities(add_device_entries(manager.acs))
 
 
 class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
@@ -145,10 +146,8 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
-        _LOGGER.debug("DreoSwitchHA:is_on")
-        attr = getattr(self.device, self.entity_description.attr_name)
-        return attr
-
+        _LOGGER.debug("DreoSwitchHA:is_on for %s %s is %s", self.device.name, self.entity_description.key, getattr(self.device, self.entity_description.attr_name))
+        return getattr(self.device, self.entity_description.attr_name)
 
     def turn_on(
         self,
@@ -157,8 +156,10 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
         **kwargs: Any,
     ) -> None:
         """Turn the device on."""
-        return setattr(self.device, self.entity_description.attr_name, True)
+        _LOGGER.debug("Turning on %s %s", self.device.name, self.entity_description.key)
+        setattr(self.device, self.entity_description.attr_name, True)
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        return setattr(self.device, self.entity_description.attr_name, False)
+        _LOGGER.debug("Turning off %s %s", self.device.name, self.entity_description.key)
+        setattr(self.device, self.entity_description.attr_name, False)

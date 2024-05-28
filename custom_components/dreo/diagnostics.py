@@ -42,11 +42,13 @@ async def async_get_config_entry_diagnostics(
         DOMAIN: {
             "fan_count": len(manager.fans),
             "heater_count": len(manager.heaters),
+            "acs_count": len(manager.acs),
             "raw_devicelist": _redact_values(manager.raw_response),
         },
         "devices": {
             "fans": [_redact_values(device.__dict__) for device in manager.fans],
-            "heaters": [_redact_values(device.__dict__) for device in manager.heaters]
+            "heaters": [_redact_values(device.__dict__) for device in manager.heaters],
+            "acs": [_redact_values(device.__dict__) for device in manager.acs]
         },
     }
 
