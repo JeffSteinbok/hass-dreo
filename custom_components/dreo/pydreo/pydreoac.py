@@ -179,12 +179,12 @@ class PyDreoAC(PyDreoBaseDevice):
         """Get the temperature"""
         return self._temperature
 
-    @temperature.setter
-    def temperature(self, value: int) -> None:
-        """Set the temperature"""
-        _LOGGER.debug("PyDreoAC:temperature.setter(%s) --> %s", self.name, value)
-        self._temperature = value
-        self._send_command(TARGET_TEMPERATURE_KEY, value)
+    # @temperature.setter
+    # def temperature(self, value: int) -> None:
+    #     """Set the temperature"""
+    #     _LOGGER.debug("PyDreoAC:temperature.setter(%s) --> %s", self.name, value)
+    #     self._temperature = value
+    #     self._send_command(TARGET_TEMPERATURE_KEY, value)
 
     @property
     def temperature_units(self) -> TemperatureUnit:
@@ -204,7 +204,7 @@ class PyDreoAC(PyDreoBaseDevice):
     @target_temperature.setter
     def target_temperature(self, value: int) -> None:
         """Set the target temperature"""
-        _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) --> %s", self.name, value)
+        _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) %s --> %s", self, self._target_temperature, value)
         self._target_temperature = value
         self._send_command(TARGET_TEMPERATURE_KEY, value)
 
@@ -356,6 +356,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
         val_target_temperature = self.get_server_update_key_value(message, TARGET_TEMPERATURE_KEY)
         if isinstance(val_target_temperature, int):
+            _LOGGER.debug("PyDreoAC(%s):handle_server_update - target_temperature: %s --> %s", self, self._target_temperature, val_target_temperature)
             self._target_temperature = val_target_temperature
 
         # Reported mode can be an empty string if the AC is off. Deal with that by
@@ -428,3 +429,4 @@ class PyDreoAC(PyDreoBaseDevice):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
+

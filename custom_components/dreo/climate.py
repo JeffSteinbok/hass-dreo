@@ -88,7 +88,7 @@ def add_device_entries(devices) -> []:
     ha_collection = []
 
     for de in devices:
-        _LOGGER.debug("Adding climate entity for %s", de.name)
+        _LOGGER.debug("Adding climate entity for %s", de)
         if isinstance(de, PyDreoHeater):
             ha_collection.append(DreoHeaterHA(de))
         elif isinstance(de, PyDreoAC):
@@ -485,8 +485,8 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         """Return the state attributes of the air conditioner."""
         return {
             "current_temperature": self.device.temperature,
+            "target_temperature": self.device.target_temperature,
             "model": self.device.model,
-            "ecolevel": self.device.ecolevel,
         }
 
     @property
@@ -549,8 +549,8 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        self.device.temperature = kwargs.get(ATTR_TEMPERATURE)
-        _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", self.device.name, self._attr_target_temperature, self.device.temperature)
+        self.device.target_temperature = kwargs.get(ATTR_TEMPERATURE)
+        _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", self.device.name, self._attr_target_temperature, self.device.target_temperature)
         self._attr_target_temperature = self.device.target_temperature
 
     @property
@@ -559,13 +559,19 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def min_temp(self) -> float | None:
-        # TODO handle eco mode range
-        return self.device.device_definition.range[TEMP_RANGE][0]
+        if self.device.preset_mode == PRESET_ECO:
+            range_key = TEMP_RANGE_ECO
+        else:
+            range_key = TEMP_RANGE
+        return self.device.device_definition.range[range_key][0]
 
     @property
     def max_temp(self) -> float | None:
-        # TODO handle eco mode range
-        return self.device.device_definition.range[TEMP_RANGE][1]
+        if self.device.preset_mode == PRESET_ECO:
+            range_key = TEMP_RANGE_ECO
+        else:
+            range_key = TEMP_RANGE
+        return self.device.device_definition.range[range_key][1]
 
     @property
     def target_temperature_step(self) -> float | None:
