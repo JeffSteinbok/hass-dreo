@@ -81,6 +81,7 @@ from homeassistant.components.climate import (
 
 from .pydreo.pydreoac import (
     DREO_AC_MODE_COOL,
+    DREO_AC_MODE_DRY,
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -495,9 +496,9 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def supported_features(self) -> int:
         """Return the list of supported features."""
         supported_features = 0
-        if self.device.target_temperature is not None:
+        if self.device.target_temperature is not None and self.device.mode == DREO_AC_MODE_COOL:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if self.device.preset_mode is not None or self.device.device_definition.preset_modes is not None:
+        if (self.device.preset_mode is not None or self.device.device_definition.preset_modes is not None) and self.device.mode == DREO_AC_MODE_COOL:
             supported_features |= ClimateEntityFeature.PRESET_MODE
         if self.device.oscon is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
@@ -506,8 +507,10 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF
             supported_features |= ClimateEntityFeature.TURN_ON
-        if self.device.target_humidity is not None:
+        if self.device.target_humidity is not None and self.device.mode == DREO_AC_MODE_DRY:
             supported_features |= ClimateEntityFeature.TARGET_HUMIDITY
+        
+        _LOGGER.debug("DreoACHA:supported_features(%s): %s (device.mode: %s)", self, supported_features, self.device.mode)
         
         return supported_features
 
@@ -625,15 +628,12 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         self._last_hvac_mode = self._attr_hvac_mode
         self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
 
-        if hvac_mode == HVACMode.DRY:
-            self._attr_supported_features |= ClimateEntityFeature.TARGET_HUMIDITY
-        else:
-            self._attr_supported_features &= ~ClimateEntityFeature.TARGET_HUMIDITY
-
         if hvac_mode != HVACMode.OFF:
             self.device.poweron = True
         else:
             self.device.poweron = False
+            
+        self.schedule_update_ha_state()
 
     @property
     def swing_modes(self) -> list[str] | None:
