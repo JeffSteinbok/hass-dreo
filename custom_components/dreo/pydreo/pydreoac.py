@@ -65,6 +65,8 @@ DREO_AC_FAN_MODE_MAP = {
 AC_OSC_ON = 2
 AC_OSC_OFF = 0
 
+WORK_TIME = "worktime"
+
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 
@@ -80,7 +82,7 @@ class PyDreoAC(PyDreoBaseDevice):
         """Initialize air conditioner devices."""
         super().__init__(device_definition, details, dreo)
 
-        self._mode = None # TODO Fan Mode 
+        self._mode = None
         self._temperature = None
         self._target_temperature = None
         self._mute_on = None
@@ -97,10 +99,11 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fixed_conf = None
         self._preset_mode = None
 
-        self._humidity = None # TODO
-        self._target_humidity = None # TODO
-        self._osc_mode = None # TODO
-        self._fan_mode = None # TODO
+        self._humidity = None
+        self._target_humidity = None
+        self._osc_mode = None
+        self._fan_mode = None
+        self.work_time = None
 
     def __repr__(self):
         # Representation string of object.
@@ -332,7 +335,8 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
-        # TODO ecopauserate, worktime
+        self.work_time = self.get_state_update_value(state, WORK_TIME)
+        # TODO ecopauserate
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -418,4 +422,8 @@ class PyDreoAC(PyDreoBaseDevice):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
+
+        val_work_time = self.get_server_update_key_value(message, WORK_TIME)
+        if isinstance(val_work_time, int):
+            self.work_time = val_work_time
 

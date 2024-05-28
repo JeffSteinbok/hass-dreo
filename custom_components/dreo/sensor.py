@@ -27,6 +27,10 @@ from .const import (
     DREO_MANAGER,
 )
 
+from .pydreo.pydreoac import (
+    WORK_TIME,
+)
+
 _LOGGER = logging.getLogger(LOGGER)
 
 @dataclass
@@ -55,6 +59,15 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         value_fn=lambda device: device.humidity,
         exists_fn=lambda device: device.is_feature_supported(HUMIDITY_KEY)
     ),
+    DreoSensorEntityDescription(
+        key="Use since cleaning",
+        translation_key="use_hours",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "h",
+        value_fn=lambda device: device.work_time,
+        exists_fn=lambda device: device.is_feature_supported(WORK_TIME)
+    ),
 )
 
 async def async_setup_entry(
@@ -80,6 +93,7 @@ async def async_setup_entry(
         # Really ugly hack since there is just one sensor for now...
         sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[0]))
         sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[1]))
+        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[2]))
 
     async_add_entities(sensorsHAs)
 
