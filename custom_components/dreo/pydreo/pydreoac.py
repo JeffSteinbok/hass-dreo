@@ -66,6 +66,7 @@ AC_OSC_ON = 2
 AC_OSC_OFF = 0
 
 WORK_TIME = "worktime"
+TEMP_TARGET_REACHED = "reachtarget"
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
@@ -104,6 +105,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._osc_mode = None
         self._fan_mode = None
         self.work_time = None
+        self.temp_target_reached = None
 
     def __repr__(self):
         # Representation string of object.
@@ -336,6 +338,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
         self.work_time = self.get_state_update_value(state, WORK_TIME)
+        self.temp_target_reached = "Yes" if self.get_state_update_value(state, TEMP_TARGET_REACHED) > 0 else "No"
         # TODO ecopauserate
 
     def handle_server_update(self, message):
@@ -426,4 +429,8 @@ class PyDreoAC(PyDreoBaseDevice):
         val_work_time = self.get_server_update_key_value(message, WORK_TIME)
         if isinstance(val_work_time, int):
             self.work_time = val_work_time
+
+        val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED)
+        if isinstance(val_work_time, int):
+            self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"
 

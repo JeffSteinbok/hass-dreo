@@ -29,6 +29,7 @@ from .const import (
 
 from .pydreo.pydreoac import (
     WORK_TIME,
+    TEMP_TARGET_REACHED,
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -68,6 +69,14 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         value_fn=lambda device: device.work_time,
         exists_fn=lambda device: device.is_feature_supported(WORK_TIME)
     ),
+    DreoSensorEntityDescription(
+        key="Target temp reached",
+        translation_key="reach_target_temp",
+        device_class=SensorDeviceClass.ENUM,
+        options=["Yes", "No"],
+        value_fn=lambda device: device.temp_target_reached,
+        exists_fn=lambda device: device.is_feature_supported(TEMP_TARGET_REACHED)
+    ),
 )
 
 async def async_setup_entry(
@@ -90,10 +99,11 @@ async def async_setup_entry(
         sensorsHAs.append(DreoSensorHA(heaterEntity, SENSORS[0]))
 
     for acEntity in manager.acs:
-        # Really ugly hack since there is just one sensor for now...
+        # Really ugly hack...
         sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[0]))
         sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[1]))
         sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[2]))
+        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[3]))
 
     async_add_entities(sensorsHAs)
 
@@ -111,7 +121,10 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
         self.entity_description = description
         self._attr_name = super().name + " " + description.key
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
-        self._attr_native_unit_of_measurement = description.native_unit_of_measurement_fn(self.device)
+        if description.native_unit_of_measurement_fn is not None:
+            self._attr_native_unit_of_measurement = description.native_unit_of_measurement_fn(self.device)
+        if description.options is not None:
+            self._attr_options = description.options
         
     @property
     def native_value(self) -> StateType:
