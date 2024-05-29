@@ -10,12 +10,8 @@ import logging
 from typing import Any
 
 from .pydreo import PyDreo
-from .haimports import * # pylint: disable=W0401,W0614
-from .const import (
-    DOMAIN,
-    DREO_MANAGER,
-    LOGGER
-)
+from .haimports import *  # pylint: disable=W0401,W0614
+from .const import DOMAIN, DREO_MANAGER, LOGGER
 
 KEYS_TO_REDACT = {
     "sn",

@@ -15,11 +15,7 @@ from .basedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 
-from .const import (
-    LOGGER,
-    DOMAIN,
-    DREO_MANAGER
-)
+from .const import LOGGER, DOMAIN, DREO_MANAGER
 
 _LOGGER = logging.getLogger(LOGGER)
 
@@ -82,10 +78,7 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         icon="mdi:rotate-360",
     ),
     DreoSwitchEntityDescription(
-        key="PTC",
-        translation_key="ptcon",
-        attr_name="ptcon",
-        icon="mdi:help"
+        key="PTC", translation_key="ptcon", attr_name="ptcon", icon="mdi:help"
     ),
     DreoSwitchEntityDescription(
         key="Display Auto Off",
@@ -104,6 +97,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         translation_key="power_switch",
         attr_name="is_on",
         icon="mdi:power",
+    ),
+    DreoSwitchEntityDescription(
+        key="Light",
+        translation_key="light",
+        attr_name="ledpotkepton",
+        icon="mdi:led-on",
     ),
 )
 

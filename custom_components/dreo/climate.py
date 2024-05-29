@@ -468,7 +468,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         return DeviceInfo(
             identifiers={(DOMAIN, self.device.serialNumber)},
             manufacturer=self.device.brand,
-            model=f"{self.device.seriesName} ({self.device.model}) {self.device.productName}",
+            model=self.device.model,
             name=self.device.deviceName,
         )
 
