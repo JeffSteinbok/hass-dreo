@@ -591,6 +591,10 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def target_temperature_step(self) -> float | None:
         return 1
 
+    @property
+    def current_humidity(self) -> float:
+        return self.device.humidity
+    
     def set_humidity(self, humidity: int) -> None:
         """Set new target humidity."""
         _LOGGER.debug("DreoACHA::set_humidity(%s) %s --> %s", self.device.name, self._attr_target_humidity, humidity)
