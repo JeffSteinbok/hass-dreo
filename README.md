@@ -145,7 +145,7 @@ Note that at present you need to restart HA when you change an option for it to 
 
 ## Debugging
 
-Use the Diagnostics feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
+Use the **Diagnostics** feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
 
 In your `configuration.yaml` file, add this:
 
@@ -159,6 +159,7 @@ logger:
 Now restart HomeAssistant. Perform the actions needed to generate some debugging info.
 
 ##### Download the full logs
+Note that these may contain sensitive information, so do always check before sending them to someone.
 
 1. In HA, open `Settings`
 2. Click `System`
