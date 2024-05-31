@@ -95,8 +95,8 @@ class Helpers:
                         '(?<=accountId": ")|',
                         '(?<=authKey": ")|',
                         '(?<=uuid": ")|',
-                        '(?<=cid": "))|',
-                        '(?<=authorization": "))',                        
+                        '(?<=cid": ")|',
+                        '(?<=authorization": "))',               
                         '[^"]+',
                     )
                 ),
