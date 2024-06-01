@@ -269,25 +269,11 @@ class PyDreoFan(PyDreoBaseDevice):
         """Set the top vertical oscillation angle."""
         _LOGGER.debug("PyDreoFan:vertical_osc_angle_top.setter")
         if self._cruise_conf is not None:
-            # Note that HA seems to send this in as a float, we need to convert to int just in case
+            bottom_angle = int(self._cruise_conf.split(",")[2])
+            if value < bottom_angle:
+                raise ValueError("Top angle cannot be less than bottom angle")
             cruise_conf_values = self._cruise_conf.split(',')
             cruise_conf_values[0] = int(value)
-            self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
-
-    @property
-    def horizontal_osc_angle_right(self) -> int:
-        """Get the current right horizontal oscillation angle."""
-        if self._cruise_conf is not None:
-            return self._cruise_conf.split(",")[1]
-
-    @horizontal_osc_angle_right.setter
-    def horizontal_osc_angle_right(self, value: int) -> None:
-        """Set the right horizontal oscillation angle."""
-        _LOGGER.debug("PyDreoFan:horizontal_osc_angle_left.setter")
-        if self._cruise_conf is not None:
-            # Note that HA seems to send this in as a float, we need to convert to int just in case
-            cruise_conf_values = self._cruise_conf.split(',')
-            cruise_conf_values[1] = int(value)
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
@@ -301,9 +287,29 @@ class PyDreoFan(PyDreoBaseDevice):
         """Set the bottom vertical oscillation angle."""
         _LOGGER.debug("PyDreoFan:vertical_osc_angle_bottom.setter")
         if self._cruise_conf is not None:
-            # Note that HA seems to send this in as a float, we need to convert to int just in case
+            top_angle = int(self._cruise_conf.split(",")[0])
+            if value > top_angle:
+                raise ValueError("Bottom angle cannot be greater than top angle")
             cruise_conf_values = self._cruise_conf.split(',')
             cruise_conf_values[2] = int(value)
+            self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
+
+    @property
+    def horizontal_osc_angle_right(self) -> int:
+        """Get the current right horizontal oscillation angle."""
+        if self._cruise_conf is not None:
+            return self._cruise_conf.split(",")[1]
+
+    @horizontal_osc_angle_right.setter
+    def horizontal_osc_angle_right(self, value: int) -> None:
+        """Set the right horizontal oscillation angle."""
+        _LOGGER.debug("PyDreoFan:horizontal_osc_angle_right.setter")
+        if self._cruise_conf is not None:
+            left_angle = int(self._cruise_conf.split(",")[3])
+            if value < left_angle:
+                raise ValueError("Right angle cannot be less than left angle")
+            cruise_conf_values = self._cruise_conf.split(',')
+            cruise_conf_values[1] = int(value)
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
@@ -315,9 +321,11 @@ class PyDreoFan(PyDreoBaseDevice):
     @horizontal_osc_angle_left.setter
     def horizontal_osc_angle_left(self, value: int) -> None:
         """Set the left horizontal oscillation angle."""
-        _LOGGER.debug("PyDreoFan:horizontal_osc_angle_right.setter")
+        _LOGGER.debug("PyDreoFan:horizontal_osc_angle_left.setter")
         if self._cruise_conf is not None:
-            # Note that HA seems to send this in as a float, we need to convert to int just in case
+            right_angle = int(self._cruise_conf.split(",")[1])
+            if value > right_angle:
+                raise ValueError("Left angle cannot be greater than right angle")
             cruise_conf_values = self._cruise_conf.split(',')
             cruise_conf_values[3] = int(value)
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
