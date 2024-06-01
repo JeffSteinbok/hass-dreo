@@ -8,8 +8,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 
-import HomeAssistant
-
 from .haimports import * # pylint: disable=W0401,W0614
 from .basedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
