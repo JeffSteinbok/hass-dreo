@@ -275,14 +275,14 @@ class PyDreoFan(PyDreoBaseDevice):
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
-    def horizontal_osc_angle_left(self) -> int:
-        """Get the current left horizontal oscillation angle."""
+    def horizontal_osc_angle_right(self) -> int:
+        """Get the current right horizontal oscillation angle."""
         if self._cruise_conf is not None:
             return self._cruise_conf.split(",")[1]
 
-    @horizontal_osc_angle_left.setter
-    def horizontal_osc_angle_left(self, value: int) -> None:
-        """Set the left horizontal oscillation angle."""
+    @horizontal_osc_angle_right.setter
+    def horizontal_osc_angle_right(self, value: int) -> None:
+        """Set the right horizontal oscillation angle."""
         _LOGGER.debug("PyDreoFan:horizontal_osc_angle_left.setter")
         if self._cruise_conf is not None:
             # Note that HA seems to send this in as a float, we need to convert to int just in case
@@ -307,14 +307,14 @@ class PyDreoFan(PyDreoBaseDevice):
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
-    def horizontal_osc_angle_right(self) -> int:
-        """Get the current right horizontal oscillation angle."""
+    def horizontal_osc_angle_left(self) -> int:
+        """Get the current left horizontal oscillation angle."""
         if self._cruise_conf is not None:
             return self._cruise_conf.split(",")[3]
 
-    @horizontal_osc_angle_right.setter
-    def horizontal_osc_angle_right(self, value: int) -> None:
-        """Set the right horizontal oscillation angle."""
+    @horizontal_osc_angle_left.setter
+    def horizontal_osc_angle_left(self, value: int) -> None:
+        """Set the left horizontal oscillation angle."""
         _LOGGER.debug("PyDreoFan:horizontal_osc_angle_right.setter")
         if self._cruise_conf is not None:
             # Note that HA seems to send this in as a float, we need to convert to int just in case
@@ -418,7 +418,6 @@ class PyDreoFan(PyDreoBaseDevice):
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
         if self._fan_speed is None:
             _LOGGER.error("Unable to get fan speed from state. Check debug logs for more information.")
-            _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: state=%s", state)
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
@@ -429,9 +428,6 @@ class PyDreoFan(PyDreoBaseDevice):
         self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._vertically_oscillating = self.get_state_update_value(state, VERTICAL_OSCILLATION_KEY)
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
-        _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: CRUISECONF_KEY=%s", CRUISECONF_KEY)
-        _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: FIXEDCONF_KEY=%s", FIXEDCONF_KEY)
-        # self._cruise_conf = self.get_state_update_value(state, CRUISECONF_KEY)
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
