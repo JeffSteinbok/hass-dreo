@@ -17,6 +17,7 @@ from .constant import (
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
     VERTICAL_OSCILLATION_KEY,
     VERTICAL_OSCILLATION_ANGLE_KEY,
+    CRUISECONF_KEY,
     OSCMODE_KEY,
     LIGHTSENSORON_KEY,
     MUTEON_KEY,
@@ -46,6 +47,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._wind_mode = None
         self._shakehorizon = None
         self._osc_mode = None
+        self._cruiseconf = None
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
@@ -54,9 +56,6 @@ class PyDreoFan(PyDreoBaseDevice):
         self._led_always_on = None
         self._voice_on = None
         self._device_definition = device_definition
-        self._wind_mode = None
-        self._horizontally_oscillating = None
-        self._vertically_oscillating = None
         self._light_sensor_on = None
         self._mute_on = None
 
@@ -259,6 +258,16 @@ class PyDreoFan(PyDreoBaseDevice):
         self._send_command(VERTICAL_OSCILLATION_ANGLE_KEY, angle)
 
     @property
+    def cruiseconf(self):
+        """Get the cruiseconf"""
+        return self._cruiseconf
+
+    @cruiseconf.setter
+    def cruiseconf(self, value):
+        """Set the cruiseconf"""
+        self._send_command(CRUISECONF_KEY, value)
+
+    @property
     def display_auto_off(self) -> bool:
         """Is the display always on?"""
         if self._led_always_on is not None:
@@ -364,6 +373,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._vertically_oscillating = self.get_state_update_value(state, VERTICAL_OSCILLATION_KEY)
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
+        self._cruiseconf = self.get_state_update_value(state, CRUISECONF_KEY)
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
@@ -416,6 +426,12 @@ class PyDreoFan(PyDreoBaseDevice):
         val_osc_mode = self.get_server_update_key_value(message, OSCMODE_KEY)
         if isinstance(val_osc_mode, int):
             self._osc_mode = val_osc_mode
+
+        val_cruiseconf = self.get_server_update_key_value(message, CRUISECONF_KEY)
+        # TODO REMOVE
+        _LOGGER.debug("Datentyp von cruiseconf: %s", type(val_cruiseconf))
+        if isinstance(val_cruiseconf, str):
+            self._cruiseconf = val_cruiseconf
 
         val_light_sensor = self.get_server_update_key_value(message, LIGHTSENSORON_KEY)
         if isinstance(val_light_sensor, bool):

@@ -8,6 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 
+import HomeAssistant
+
 from .haimports import * # pylint: disable=W0401,W0614
 from .basedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
@@ -59,6 +61,38 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:temperature",
         min_value=0,
         max_value=100
+    ),
+    DreoNumberEntityDescription(
+        key="Horizontal OscAngle Left",
+        translation_key="horizontal_osc_angle_left",
+        attr_name="horizontal_osc_angle_left",
+        icon="mdi:angle-acute",
+        min_value=-60,
+        max_value=60,
+    ),
+    DreoNumberEntityDescription(
+        key="Horizontal OscAngle Right",
+        translation_key="horizontal_osc_angle_right",
+        attr_name="horizontal_osc_angle_right",
+        icon="mdi:angle-acute",
+        min_value=-60,
+        max_value=60,
+    ),
+    DreoNumberEntityDescription(
+        key="Vertical OscAngle Top",
+        translation_key="vertical_osc_angle_top",
+        attr_name="vertical_osc_angle_top",
+        icon="mdi:angle-acute",
+        min_value=-15,
+        max_value=90
+    ),
+    DreoNumberEntityDescription(
+        key="Vertical OscAngle Bottom",
+        translation_key="vertical_osc_angle_bottom",
+        attr_name="vertical_osc_angle_bottom",
+        icon="mdi:angle-acute",
+        min_value=-15,
+        max_value=90
     )
 )
 

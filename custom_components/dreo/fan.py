@@ -64,6 +64,11 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         return self.device.oscillating
 
     @property
+    def cruiseconf(self):
+        """Return the cruiseconf"""
+        return self.device.cruiseconf
+
+    @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return int_states_in_range(self.device.speed_range)
@@ -81,9 +86,11 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the fan."""
-        attr = {"temperature": self.device.temperature,
+        attr = {
+            "temperature": self.device.temperature,
             'model': self.device.model,
-            'sn': self.device.sn}
+            'sn': self.device.sn,
+        }
         return attr
 
     @property

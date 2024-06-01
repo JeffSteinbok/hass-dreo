@@ -37,6 +37,7 @@ HTALEVEL_KEY = "htalevel"
 OSCON_KEY = "oscon"
 OSCMODE_KEY = "oscmode"
 OSCANGLE_KEY = "oscangle"
+CRUISECONF_KEY = "cruiseconf"
 TEMPERATURE_KEY = "temperature"
 VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
@@ -130,6 +131,13 @@ ANGLE_OSCANGLE_MAP = {
     90 : "90°",
     120 : "120°"
 }
+
+# TODO: DELETE
+CRUISECONF_KEY = [(x, y, z, w)
+                  for x in range(-60, 65, 5)
+                  for y in range(-60, 65, 5)
+                  for z in range(-15, 95, 5)
+                  for w in range(-15, 95, 5)]
 
 HORIZONTAL_OSCILLATION_KEY = "hoscon"
 HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
