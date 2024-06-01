@@ -270,9 +270,11 @@ class PyDreoFan(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFan:vertical_osc_angle_top.setter")
         if self._cruise_conf is not None:
             bottom_angle = int(self._cruise_conf.split(",")[2])
-            if value < bottom_angle:
-                raise ValueError("Top angle cannot be less than bottom angle")
+            # 30 deg is the minimum top-bottom and left-right difference for the tested fan (DR-HAF003S)
+            if value - bottom_angle < 30:
+                raise ValueError("Top angle must be at least 30 greater than bottom angle")
             cruise_conf_values = self._cruise_conf.split(',')
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
             cruise_conf_values[0] = int(value)
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
@@ -288,9 +290,11 @@ class PyDreoFan(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFan:vertical_osc_angle_bottom.setter")
         if self._cruise_conf is not None:
             top_angle = int(self._cruise_conf.split(",")[0])
-            if value > top_angle:
-                raise ValueError("Bottom angle cannot be greater than top angle")
+            # 30 deg is the minimum top-bottom and left-right difference for the tested fan (DR-HAF003S)
+            if top_angle - value < 30:
+                raise ValueError("Bottom angle must be at least 30 less than top angle")
             cruise_conf_values = self._cruise_conf.split(',')
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
             cruise_conf_values[2] = int(value)
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
@@ -306,9 +310,11 @@ class PyDreoFan(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFan:horizontal_osc_angle_right.setter")
         if self._cruise_conf is not None:
             left_angle = int(self._cruise_conf.split(",")[3])
-            if value < left_angle:
-                raise ValueError("Right angle cannot be less than left angle")
+            # 30 deg is the minimum top-bottom and left-right difference for the tested fan (DR-HAF003S)
+            if value - left_angle < 30:
+                raise ValueError("Right angle must be at least 30 greater than left angle")
             cruise_conf_values = self._cruise_conf.split(',')
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
             cruise_conf_values[1] = int(value)
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
@@ -324,9 +330,11 @@ class PyDreoFan(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFan:horizontal_osc_angle_left.setter")
         if self._cruise_conf is not None:
             right_angle = int(self._cruise_conf.split(",")[1])
-            if value > right_angle:
-                raise ValueError("Left angle cannot be greater than right angle")
+            # 30 deg is the minimum top-bottom and left-right difference for the tested fan (DR-HAF003S)
+            if right_angle - value < 30:
+                raise ValueError("Left angle must be at least 30 less than right angle")
             cruise_conf_values = self._cruise_conf.split(',')
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
             cruise_conf_values[3] = int(value)
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
