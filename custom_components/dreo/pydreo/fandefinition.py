@@ -35,3 +35,16 @@ class PyDreoHeaterDefinition():
                 self.heat_range = heat_range
                 self.ecolevel_range = ecolevel_range
                 self.oscillation_support = oscillation_support
+
+
+class PyDreoACDefinition():
+
+    def __init__(self, 
+                 preset_modes: list, 
+                 temperature_range: range,
+                 fan_speed_range: range,
+                 oscillation_support: OscillationSupport):
+        self.preset_modes = preset_modes
+        self.temperature_range = temperature_range
+        self.fan_speed_range = fan_speed_range
+        self.oscillation_support = oscillation_support

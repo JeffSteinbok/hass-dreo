@@ -38,6 +38,7 @@ OSCON_KEY = "oscon"
 OSCMODE_KEY = "oscmode"
 OSCANGLE_KEY = "oscangle"
 TEMPERATURE_KEY = "temperature"
+TARGET_TEMPERATURE_KEY = "templevel"
 VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
@@ -54,6 +55,8 @@ ECOLEVEL_KEY = "ecolevel"
 ECOLEVEL_RANGE_KEY = "ecolevel_range"
 CHILDLOCKON_KEY = "childlockon"
 TEMPOFFSET_KEY = "tempoffset"
+HUMIDITY_KEY = "rh"
+TARGET_HUMIDITY_KEY = "rhlevel"
 
 
 DREO_API_URL_FORMAT = (
@@ -117,6 +120,12 @@ HEATER_MODES = [
     HEATER_MODE_OFF
 ]
 
+AC_ECO_LEVEL_MAP = {
+    1 : "10%",
+    2 : "20%",
+    3 : "30%"
+}
+
 OSCANGLE_ANGLE_MAP = {
     "Oscillate" : 0,
     "60°" : 60,
@@ -146,6 +155,10 @@ WIND_MODE_KEY = "mode"
 SPEED_RANGE = "speed_range"
 HEAT_RANGE = "heat_range"
 ECOLEVEL_RANGE = "ecolevel_range"
+TEMP_RANGE = "temp_range"
+TARGET_TEMP_RANGE = "target_temp_range"
+TARGET_TEMP_RANGE_ECO = "target_temp_range_eco"
+HUMIDITY_RANGE = "humidity_range"
 
 class TemperatureUnit(Enum):
     """Valid possible temperature units."""
