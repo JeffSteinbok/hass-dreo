@@ -66,7 +66,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def cruiseconf(self):
         """Return the cruiseconf"""
-        return self.device.cruiseconf
+        return self.device.cruise_conf
 
     @property
     def speed_count(self) -> int:
