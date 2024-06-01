@@ -49,7 +49,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         translation_key="vertical_angle",
         attr_name="vertical_angle",
         icon="mdi:angle-acute",
-        min_value=0,
+        min_value=-15,
         max_value=90
     ),
     DreoNumberEntityDescription(
