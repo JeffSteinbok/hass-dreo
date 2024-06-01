@@ -64,11 +64,6 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         return self.device.oscillating
 
     @property
-    def cruiseconf(self):
-        """Return the cruiseconf"""
-        return self.device.cruise_conf
-
-    @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
         return int_states_in_range(self.device.speed_range)
@@ -86,11 +81,9 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the fan."""
-        attr = {
-            "temperature": self.device.temperature,
+        attr = {"temperature": self.device.temperature,
             'model': self.device.model,
-            'sn': self.device.sn,
-        }
+            'sn': self.device.sn}
         return attr
 
     @property
@@ -129,7 +122,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
             self.device.is_on = True
 
         self.device.fan_speed = math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
-        
+
         self.schedule_update_ha_state()
 
     def set_preset_mode(self, preset_mode: str) -> None:
