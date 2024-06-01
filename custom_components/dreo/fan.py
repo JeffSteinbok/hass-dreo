@@ -122,7 +122,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
             self.device.is_on = True
 
         self.device.fan_speed = math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
-
+        
         self.schedule_update_ha_state()
 
     def set_preset_mode(self, preset_mode: str) -> None:
