@@ -428,9 +428,9 @@ class PyDreoFan(PyDreoBaseDevice):
         self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._vertically_oscillating = self.get_state_update_value(state, VERTICAL_OSCILLATION_KEY)
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
+        _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: state=%s", state)
+        _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: CRUISECONF_KEY=%s", CRUISECONF_KEY)
         # self._cruise_conf = self.get_state_update_value(state, CRUISECONF_KEY)
-        # if self._cruise_conf is None:
-        #    _LOGGER.error("Unable to get cruise_conf from state. Check debug logs for more information.")
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
