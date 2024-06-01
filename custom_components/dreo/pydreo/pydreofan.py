@@ -418,6 +418,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
         if self._fan_speed is None:
             _LOGGER.error("Unable to get fan speed from state. Check debug logs for more information.")
+            _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: state=%s", state)
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
@@ -428,12 +429,13 @@ class PyDreoFan(PyDreoBaseDevice):
         self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._vertically_oscillating = self.get_state_update_value(state, VERTICAL_OSCILLATION_KEY)
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
-        _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: state=%s", state)
         _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: CRUISECONF_KEY=%s", CRUISECONF_KEY)
+        _LOGGER.debug(f"TESTING_CRUISECONF_ERROR: FIXEDCONF_KEY=%s", FIXEDCONF_KEY)
         # self._cruise_conf = self.get_state_update_value(state, CRUISECONF_KEY)
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
+        self._cruise_conf = self.get_state_update_value(state, CRUISECONF_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
