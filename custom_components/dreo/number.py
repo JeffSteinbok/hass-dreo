@@ -102,6 +102,7 @@ async def async_setup_entry(
 
     async_add_entities(add_entries(manager.fans))
     async_add_entities(add_entries(manager.heaters))
+    async_add_entities(add_entries(manager.acs))
 
 
 class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):

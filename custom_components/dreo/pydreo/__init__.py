@@ -18,6 +18,7 @@ from .commandtransport import CommandTransport
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
 from .pydreoheater import PyDreoHeater
+from .pydreoac import PyDreoAC
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -46,10 +47,12 @@ class PyDreo:  # pylint: disable=function-redefined
         self._device_list_by_sn = {}
         self.fans : list[PyDreoFan] = []
         self.heaters : list[PyDreoHeater] = []
+        self.acs : list[PyDreoAC] = []
 
         self._dev_list = {
             "fans": self.fans,
-            "heaters" : self.heaters
+            "heaters" : self.heaters,
+            "acs" : self.acs,
         }
 
 
@@ -135,12 +138,20 @@ class PyDreo:  # pylint: disable=function-redefined
             self.fans.append(device)
         if isinstance(device, PyDreoHeater):
             self.heaters.append(device)
+        if isinstance(device, PyDreoAC):
+            self.acs.append(device)
 
         self._device_list_by_sn[device.sn] = device
 
         if model in SUPPORTED_HEATERS:
             _LOGGER.debug("Heater %s found!", model)
             device = PyDreoHeater(SUPPORTED_HEATERS[model], dev, self)
+        else:
+            raise UnknownModelError(model)
+
+        if model in SUPPORTED_ACS:
+            _LOGGER.debug("AC %s found!", model)
+            device = PyDreoAC(SUPPORTED_ACS[model], dev, self)
         else:
             raise UnknownModelError(model)
 
@@ -182,6 +193,9 @@ class PyDreo:  # pylint: disable=function-redefined
                 elif model in SUPPORTED_HEATERS:
                     _LOGGER.debug("Heater %s found!", model)
                     device = PyDreoHeater(SUPPORTED_HEATERS[model], dev, self)
+                elif model in SUPPORTED_ACS:
+                    _LOGGER.debug("AC %s found!", model)
+                    device = PyDreoAC(SUPPORTED_ACS[model], dev, self)
                 else:
                     raise UnknownModelError(model)
 
@@ -190,10 +204,12 @@ class PyDreo:  # pylint: disable=function-redefined
                     self.fans.append(device)
                 if isinstance(device, PyDreoHeater):
                     self.heaters.append(device)
+                if isinstance(device, PyDreoAC):
+                    self.acs.append(device)
 
                 self._device_list_by_sn[device.sn] = device
             except UnknownModelError as ume:
-                _LOGGER.warning("Unknown fan or heater model: %s", ume)
+                _LOGGER.warning("Unknown device model: %s", ume)
                 _LOGGER.debug(dev)
 
         return True
