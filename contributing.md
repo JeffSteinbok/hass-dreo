@@ -13,7 +13,7 @@ There are a few steps you need to follow to get this all to work...
 
 ### Frida to Defeat Certificate Pinning - Part 1
 The Dreo app uses certificate pinning. You can use *Frida* to get around that.  Full instructions are here: https://httptoolkit.com/blog/frida-certificate-pinning. The following are the steps I followed:
-. Download and extract the Frida Android Server from here:  https://github.com/frida/frida/releases1.
+. Download and extract the Frida Android Server from here:  https://github.com/frida/frida/releases.
 1. Windows can extract the `.xz` archive format.
 1. Copy the binary and start Frida on your device as follows:
     ```bat
