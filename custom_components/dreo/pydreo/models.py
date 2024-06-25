@@ -18,6 +18,7 @@ from .constant import (
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
     HeaterOscillationAngles,
+    FanOscillationAngles,
     TEMPERATURE_KEY,
     HUMIDITY_RANGE,
 )
@@ -99,6 +100,12 @@ SUPPORTED_FANS = {
     "DR-HAF004S": DreoDeviceDetails(
         preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
         range = {SPEED_RANGE: (1, 9)}
+    ),
+    "DR-HPF002S": DreoDeviceDetails(
+        preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
+        range = {SPEED_RANGE: (1, 8)},
+        swing_modes = [FanOscillationAngles.OSC, FanOscillationAngles.THIRTY, FanOscillationAngles.SIXTY, FanOscillationAngles.NINETY,
+                       FanOscillationAngles.ONE_TWENTY]
     )
 }
 
