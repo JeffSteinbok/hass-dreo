@@ -24,7 +24,7 @@ class PyDreoFanDefinition():
     def __init__(self, 
                 preset_modes: list, 
                 speed_range: range,
-                oscillation_support: OscillationSupport):
+                oscillation_support: FanOscillationAngles):
                 self.preset_modes = preset_modes
                 self.speed_range = speed_range
                 self.oscillation_support = oscillation_support
