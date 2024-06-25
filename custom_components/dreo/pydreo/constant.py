@@ -183,7 +183,7 @@ class HeaterOscillationAngles(StrEnum):
 
 # Heater oscillation modes
 class FanOscillationAngles(StrEnum):
-        """Possible Heater oscillation angles"""
+        """Possible Fan oscillation angles"""
         OSC = "Oscillate"
         THIRTY = "30°"
         SIXTY = "60°",
