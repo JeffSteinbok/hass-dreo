@@ -41,6 +41,8 @@ Currently supported models are listed below.
 -   DR-HAF001S
 -   DR-HAF003S
 -   DR-HAF004S
+-   DR-HPF002S
+
 
 #### Humidifiers
 
