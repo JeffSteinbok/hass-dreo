@@ -146,7 +146,7 @@ HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
 VERTICAL_OSCILLATION_KEY = "voscon"
 VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
 
-# Heater oscillation
+# Heater/Fan oscillation
 OSCILLATION_KEY = "oscon"
 OSCILLATION_ANGLE_KEY = "oscangle"
 
@@ -181,7 +181,7 @@ class HeaterOscillationAngles(StrEnum):
         NINETY = "90°",
         ONE_TWENTY = "120°"
 
-# Heater oscillation modes
+# Fan oscillation modes
 class FanOscillationAngles(StrEnum):
         """Possible Fan oscillation angles"""
         OSC = "Oscillate"
