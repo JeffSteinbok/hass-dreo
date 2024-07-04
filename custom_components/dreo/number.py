@@ -64,7 +64,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         key="Horizontal Oscillation Angle Left",
         translation_key="horizontal_osc_angle_left",
         attr_name="horizontal_osc_angle_left",
-        icon="mdi:angle-acute",
+        icon="mdi:vector-radius",
         min_value=-60,
         max_value=60,
     ),
@@ -72,7 +72,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         key="Horizontal Oscillation Angle Right",
         translation_key="horizontal_osc_angle_right",
         attr_name="horizontal_osc_angle_right",
-        icon="mdi:angle-acute",
+        icon="mdi:vector-radius",
         min_value=-60,
         max_value=60,
     ),
@@ -80,7 +80,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         key="Vertical Oscillation Angle Top",
         translation_key="vertical_osc_angle_top",
         attr_name="vertical_osc_angle_top",
-        icon="mdi:angle-acute",
+        icon="mdi:vector-radius",
         min_value=0,
         max_value=90
     ),
@@ -88,7 +88,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         key="Vertical Oscillation Angle Bottom",
         translation_key="vertical_osc_angle_bottom",
         attr_name="vertical_osc_angle_bottom",
-        icon="mdi:angle-acute",
+        icon="mdi:vector-radius",
         min_value=0,
         max_value=90
     )
