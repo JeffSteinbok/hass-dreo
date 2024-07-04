@@ -30,8 +30,7 @@ from .constant import (
     MODE_LEVEL_MAP,
     LEVEL_MODE_MAP,
     TemperatureUnit,
-    HeaterOscillationAngles,
-    FanOscillationAngles
+    HeaterOscillationAngles
 )
 
 from homeassistant.components.climate import (
@@ -230,11 +229,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def oscangle(self) -> HeaterOscillationAngles:
         return self._oscangle
-
-    @property
-    def oscangle(self) -> FanOscillationAngles:
-        return self._oscangle
-
+        
     @oscangle.setter
     def oscangle(self, value: int) -> None:
         "Set the oscillation angle. I assume 0 means it oscillates"
