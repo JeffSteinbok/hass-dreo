@@ -229,7 +229,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def oscangle(self) -> HeaterOscillationAngles:
         return self._oscangle
-
+        
     @oscangle.setter
     def oscangle(self, value: int) -> None:
         "Set the oscillation angle. I assume 0 means it oscillates"

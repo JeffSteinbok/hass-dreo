@@ -99,6 +99,10 @@ SUPPORTED_FANS = {
     "DR-HAF004S": DreoDeviceDetails(
         preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
         range = {SPEED_RANGE: (1, 9)}
+    ),
+    "DR-HPF002S": DreoDeviceDetails(
+        preset_modes=[FAN_MODE_NORMAL, FAN_MODE_NATURAL, FAN_MODE_SLEEP, FAN_MODE_AUTO, FAN_MODE_TURBO],
+        range = {SPEED_RANGE: (1, 8)}
     )
 }
 
