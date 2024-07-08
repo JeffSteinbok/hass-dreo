@@ -513,7 +513,3 @@ class PyDreoFan(PyDreoBaseDevice):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
-
-    @property
-    def cruise_conf(self):
-        return self._cruise_conf
