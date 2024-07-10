@@ -88,10 +88,8 @@ to control the device remotely via either the Dreo app or this HA integration.
         <td>Swing Modes</td>
     </tr>
     <tr>
-        <td></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/heater-entities.png" width="200" alt="heater entities"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/compact-thermostat.png" width="200" alt="compact-thermostat"></td> 
-        <td></td>
+        <td colspan="2"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/heater-entities.png" width="200" alt="heater entities"></td>
+        <td colspan="2"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/compact-thermostat.png" width="200" alt="compact-thermostat"></td> 
     </tr>
     <tr>
         <td></td>
