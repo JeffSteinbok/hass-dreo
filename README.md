@@ -27,7 +27,7 @@ I'm always happy to have people add features via Pull Request. More info on how 
 
 Currently supported models are listed below.
 
-#### Tower fans
+#### Tower Fans
 
 - DR-HTF001S
 - DR-HTF002S
@@ -36,15 +36,20 @@ Currently supported models are listed below.
 - DR-HTF007S
 - DR-HTF008S
 - DR-HTF009S
+- DR-HTF010S
 
-#### Air circulators
+#### Air Circulators
 
--   DR-HAF001S
--   DR-HAF003S
--   DR-HAF004S
--   DR-HPF001S
--   DR-HPF002S
--   DR-HPF004S
+- DR-HAF001S
+- DR-HAF003S
+- DR-HAF004S
+- DR-HPF001S
+- DR-HPF002S
+- DR-HPF004S
+- DR-HPF005S
+
+#### Ceiling Fans
+-   DR-HCF001S - No Light Support
 
 #### Humidifiers
 
@@ -54,6 +59,7 @@ Currently supported models are listed below.
 
 - DR-HSH004S
 - DR-HSH009S
+- DR-HSH009AS
 - WH719S
 - WH739S
 
