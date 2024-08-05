@@ -37,6 +37,7 @@ HTALEVEL_KEY = "htalevel"
 OSCON_KEY = "oscon"
 OSCMODE_KEY = "oscmode"
 OSCANGLE_KEY = "oscangle"
+CRUISECONF_KEY = "cruiseconf"
 TEMPERATURE_KEY = "temperature"
 TARGET_TEMPERATURE_KEY = "templevel"
 VOICEON_KEY = "voiceon"
@@ -145,6 +146,8 @@ HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
 
 VERTICAL_OSCILLATION_KEY = "voscon"
 VERTICAL_OSCILLATION_ANGLE_KEY = "voscangle"
+
+MIN_OSC_ANGLE_DIFFERENCE = 30
 
 # Heater oscillation
 OSCILLATION_KEY = "oscon"
