@@ -39,11 +39,12 @@ Currently supported models are listed below.
 
 #### Air circulators
 
-- DR-HAF001S
-- DR-HAF003S
-- DR-HAF004S
-- DR-HPF002S
-- DR-HPF004S
+-   DR-HAF001S
+-   DR-HAF003S
+-   DR-HAF004S
+-   DR-HPF001S
+-   DR-HPF002S
+-   DR-HPF004S
 
 #### Humidifiers
 
