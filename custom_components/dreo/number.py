@@ -91,6 +91,15 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:vector-radius",
         min_value=0,
         max_value=90
+    ),
+    DreoNumberEntityDescription(
+        key="Oscillation Angle",
+        translation_key="osc_angle",
+        attr_name="shakehorizonangle",
+        icon="mdi:angle-acute",
+        min_value=30,
+        max_value=120,
+        step = 30
     )
 )
 
@@ -154,6 +163,7 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):
 
         self._attr_native_min_value = description.min_value
         self._attr_native_max_value = description.max_value
+        self._attr_native_step = description.step
 
     @property
     def native_value(self) -> float:

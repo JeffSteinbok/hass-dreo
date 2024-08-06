@@ -13,6 +13,7 @@ from .constant import (
     WINDTYPE_KEY,
     WIND_MODE_KEY,
     SHAKEHORIZON_KEY,
+    SHAKEHORIZONANGLE_KEY,
     HORIZONTAL_OSCILLATION_KEY,
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
     VERTICAL_OSCILLATION_KEY,
@@ -48,6 +49,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._wind_type = None
         self._wind_mode = None
         self._shakehorizon = None
+        self._shakehorizonangle = None
         self._osc_mode = None
         self._cruise_conf = None
 
@@ -340,6 +342,20 @@ class PyDreoFan(PyDreoBaseDevice):
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
+    def shakehorizonangle(self) -> int:
+        """Get the current oscillation angle"""
+        if self._shakehorizonangle is not None:
+            return self._shakehorizonangle
+
+    @shakehorizonangle.setter
+    def shakehorizonangle(self, value: int) -> None:
+        """Set the oscillation angle."""
+        _LOGGER.debug("PyDreoFan:shakehorizonangle.setter")
+        if self._shakehorizonangle is not None:
+            self._send_command(SHAKEHORIZONANGLE_KEY, value)            
+
+
+    @property
     def display_auto_off(self) -> bool:
         """Is the display always on?"""
         if self._led_always_on is not None:
@@ -440,6 +456,7 @@ class PyDreoFan(PyDreoBaseDevice):
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
         self._voice_on = self.get_state_update_value(state, VOICEON_KEY)
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
+        self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
         self._wind_type = self.get_state_update_value(state, WINDTYPE_KEY)
         self._wind_mode = self.get_state_update_value(state, WIND_MODE_KEY)
         self._horizontally_oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
@@ -485,6 +502,10 @@ class PyDreoFan(PyDreoBaseDevice):
         val_shakehorizon = self.get_server_update_key_value(message, SHAKEHORIZON_KEY)
         if isinstance(val_shakehorizon, bool):
             self._shakehorizon = val_shakehorizon
+
+        val_shakehorizonangle = self.get_server_update_key_value(message, SHAKEHORIZONANGLE_KEY)
+        if isinstance(val_shakehorizonangle, int):
+            self._shakehorizonangle = val_shakehorizonangle
 
         val_horiz_oscillation = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_KEY)
         if isinstance(val_horiz_oscillation, bool):
