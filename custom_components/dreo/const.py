@@ -9,5 +9,6 @@ DREO_HEATERS = "heaters"
 DREO_ACS = "acs"
 DREO_SENSORS = "sensors"
 DREO_MANAGER = "manager"
+DREO_PLATFORMS = "platforms"
 
 CONF_AUTO_RECONNECT = "auto_reconnect"
