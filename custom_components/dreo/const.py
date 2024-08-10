@@ -7,7 +7,7 @@ SERVICE_UPDATE_DEVS = "update_devices"
 
 DREO_FANS = "fans"
 DREO_HEATERS = "heaters"
-DREO_ACS = "acs"
+DREO_AIRCONDITIONERS = "airconditioners"
 DREO_COOKERS = "cookers"
 DREO_SENSORS = "sensors"
 DREO_MANAGER = "manager"
