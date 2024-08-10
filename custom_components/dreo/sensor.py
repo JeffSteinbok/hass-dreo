@@ -96,6 +96,32 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
     ),
+    DreoSensorEntityDescription(
+        key="humidity",
+        translation_key="humidity",
+        device_class=SensorDeviceClass.HUMIDITY,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.humidity,
+        exists_fn=lambda device: device.is_feature_supported(HUMIDITY_KEY)
+    ),
+    DreoSensorEntityDescription(
+        key="Use since cleaning",
+        translation_key="use_hours",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "h",
+        value_fn=lambda device: device.work_time,
+        exists_fn=lambda device: device.is_feature_supported(WORK_TIME)
+    ),
+    DreoSensorEntityDescription(
+        key="Target temp reached",
+        translation_key="reach_target_temp",
+        device_class=SensorDeviceClass.ENUM,
+        options=["Yes", "No"],
+        value_fn=lambda device: device.temp_target_reached,
+        exists_fn=lambda device: device.is_feature_supported(TEMP_TARGET_REACHED)
+    ),
 )
 
 
