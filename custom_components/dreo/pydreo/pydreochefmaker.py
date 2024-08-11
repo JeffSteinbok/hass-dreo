@@ -15,6 +15,7 @@ LIGHT_KEY = "ledpotkepton"
 MODE_KEY = "mode"
 MODE_STANDBY = "standby"
 MODE_COOKING = "cooking"
+MODE_PAUSED = "ckpause"
 MODE_OFF = "off"
 
 from .models import DreoDeviceDetails

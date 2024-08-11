@@ -36,6 +36,7 @@ from .pydreo.pydreochefmaker import (
     MODE_OFF,
     MODE_COOKING,
     MODE_STANDBY,
+    MODE_PAUSED,
 )
 
 _LOGGER = logging.getLogger(LOGGER)
