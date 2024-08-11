@@ -63,6 +63,14 @@ Currently supported models are listed below.
 - WH719S
 - WH739S
 
+#### Air Conditioners
+
+- DR-HAC005S
+
+#### Cookers
+
+- DR-KCM001S
+
 Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
 
 Oscillation is now supported, but shown under "swing mode" since this is how the climate device models that. Note that for all heaters, to satisfy UL listings the
