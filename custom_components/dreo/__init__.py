@@ -10,6 +10,7 @@ from .const import (
     DREO_HEATERS,
     DREO_ACS,
     DREO_MANAGER,
+    DREO_PLATFORMS,
     CONF_AUTO_RECONNECT
 )
 
@@ -80,12 +81,32 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
+    hass.data[DOMAIN][DREO_PLATFORMS] = platforms
+
     _LOGGER.debug("Platforms are: %s", platforms)
 
-    for platform in platforms:
-        await hass.config_entries.async_forward_entry_setup(config_entry, platform)
+    await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
+
+    async def _update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
+        """Handle options update."""
+        await hass.config_entries.async_reload(config_entry.entry_id)
+
+    ## Create update listener
+    config_entry.async_on_unload(config_entry.add_update_listener(_update_listener))
 
     return True
+
+async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
+    manager = hass.data[DOMAIN][DREO_MANAGER]
+    if unload_ok := await hass.config_entries.async_unload_platforms(
+        config_entry,
+        hass.data[DOMAIN][DREO_PLATFORMS],
+    ):
+        hass.data.pop(DOMAIN)
+
+    manager.stop_transport()
+    return unload_ok
 
 def process_devices(manager) -> dict:
     """Assign devices to proper component."""
