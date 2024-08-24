@@ -12,6 +12,7 @@ class HeaterOscillationAngles(Enum):
     NINETY = 90
     ONE_TWENTY = 120
 
+
 class PyDreoFanDefinition():
 
     def __init__(self, 

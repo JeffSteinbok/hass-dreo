@@ -18,9 +18,9 @@ from .const import (
 )
 
 KEYS_TO_REDACT = {
-    "sn", 
-    "_sn", 
-    "wifi_ssid", 
+    "sn",
+    "_sn",
+    "wifi_ssid",
     "module_hardware_mac",
     "password",
     "_password",
@@ -31,6 +31,7 @@ KEYS_TO_REDACT = {
 }
 
 _LOGGER = logging.getLogger(LOGGER)
+
 
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
@@ -43,12 +44,14 @@ async def async_get_config_entry_diagnostics(
             "fan_count": len(manager.fans),
             "heater_count": len(manager.heaters),
             "acs_count": len(manager.acs),
+            "cookers_count": len(manager.cookers),
             "raw_devicelist": _redact_values(manager.raw_response),
         },
         "devices": {
             "fans": [_redact_values(device.__dict__) for device in manager.fans],
             "heaters": [_redact_values(device.__dict__) for device in manager.heaters],
-            "acs": [_redact_values(device.__dict__) for device in manager.acs]
+            "acs": [_redact_values(device.__dict__) for device in manager.acs],
+            "cookers": [_redact_values(device.__dict__) for device in manager.cookers],
         },
     }
 

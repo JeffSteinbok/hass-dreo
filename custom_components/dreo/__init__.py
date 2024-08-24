@@ -1,20 +1,23 @@
 """Dreo HomeAssistant Integration."""
+
 import logging
 import time
 
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 from .const import (
     LOGGER,
     DOMAIN,
     DREO_FANS,
     DREO_HEATERS,
-    DREO_ACS,
+    DREO_AIRCONDITIONERS,
+    DREO_COOKERS,
     DREO_MANAGER,
     DREO_PLATFORMS,
-    CONF_AUTO_RECONNECT
+    CONF_AUTO_RECONNECT,
 )
 
 _LOGGER = logging.getLogger(LOGGER)
+
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     "HomeAssistant EntryPoint"
@@ -57,7 +60,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     fans = hass.data[DOMAIN][DREO_FANS] = []
     heaters = hass.data[DOMAIN][DREO_HEATERS] = []
-    acs = hass.data[DOMAIN][DREO_ACS] = []
+    acs = hass.data[DOMAIN][DREO_AIRCONDITIONERS] = []
+    cookers = hass.data[DOMAIN][DREO_COOKERS] = []
     platforms = set()
 
     if device_dict[DREO_FANS]:
@@ -74,13 +78,19 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if device_dict[DREO_ACS]:
-        acs.extend(device_dict[DREO_ACS])
+    if device_dict[DREO_AIRCONDITIONERS]:
+        acs.extend(device_dict[DREO_AIRCONDITIONERS])
         platforms.add(Platform.CLIMATE)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
+    if device_dict[DREO_COOKERS]:
+        cookers.extend(device_dict[DREO_COOKERS])
+        platforms.add(Platform.SENSOR)
+        platforms.add(Platform.SWITCH)
+        platforms.add(Platform.NUMBER)
+        
     hass.data[DOMAIN][DREO_PLATFORMS] = platforms
 
     _LOGGER.debug("Platforms are: %s", platforms)
@@ -113,7 +123,8 @@ def process_devices(manager) -> dict:
     devices = {}
     devices[DREO_FANS] = []
     devices[DREO_HEATERS] = []
-    devices[DREO_ACS] = []
+    devices[DREO_AIRCONDITIONERS] = []
+    devices[DREO_COOKERS] = []
 
     if manager.fans:
         devices[DREO_FANS].extend(manager.fans)
@@ -125,7 +136,11 @@ def process_devices(manager) -> dict:
         _LOGGER.info("%d Dreo heaters found", len(manager.heaters))
 
     if manager.acs:
-        devices[DREO_ACS].extend(manager.acs)
+        devices[DREO_AIRCONDITIONERS].extend(manager.acs)
         _LOGGER.info("%d Dreo ACs found", len(manager.acs))
+
+    if manager.cookers:
+        devices[DREO_COOKERS].extend(manager.cookers)
+        _LOGGER.info("%d Dreo cookers found", len(manager.cookers))
 
     return devices
