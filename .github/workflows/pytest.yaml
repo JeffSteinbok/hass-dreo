@@ -34,9 +34,9 @@ jobs:
         pip install pytest pylint
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements.test.txt ]; then pip install -r requirements.test.txt; fi
-    - name: Lint with pylint
+    - name: Lint with pylint - Errors only
       run: |
-        pylint --recursive=yes --fail-under=8  --reports=yes --disable=W,C,R .   
+        pylint --recursive=yes  --reports=yes --disable=W,C,R .   
     - name: Test with pytest
       run: |
         pytest
