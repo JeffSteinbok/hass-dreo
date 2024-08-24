@@ -115,56 +115,6 @@ class PyDreo:  # pylint: disable=function-redefined
                 devices = [i for j, i in enumerate(devices) if j not in dev_rem]
         return devices
 
-    # TODO - finish this off to make it able to deal with multiple different
-    # device types and replace the code in _process_devices with a call to this.
-    # will need to eliminate _self.fans and _self.heaters and references to those
-    # in other modules.
-    def _process_device(self, dev: PyDreoBaseDevice):
-        model = dev.get["model", None]
-
-        if model is None:
-            raise UnknownModelError(model)
-
-        # category = dev["productName"]
-
-        for category, l in SUPPORTED_DEVICES:
-            if model in l:
-                _LOGGER.debug("%s %s found!", category, model)
-                devtype = globals()[PRODUCT_TO_DEVICE_TYPE[category]]
-                device = devtype(SUPPORTED_DEVICES[model], dev, self)
-            else:
-                raise UnknownModelError(model)
-
-        self.load_device_state(device)
-        if isinstance(device, PyDreoFan):
-            self.fans.append(device)
-        if isinstance(device, PyDreoHeater):
-            self.heaters.append(device)
-        if isinstance(device, PyDreoAC):
-            self.acs.append(device)
-        if isinstance(device, PyDreoChefMaker):
-            self.cookers.append(device)
-
-        self._device_list_by_sn[device.sn] = device
-
-        if model in SUPPORTED_HEATERS:
-            _LOGGER.debug("Heater %s found!", model)
-            device = PyDreoHeater(SUPPORTED_HEATERS[model], dev, self)
-        else:
-            raise UnknownModelError(model)
-
-        if model in SUPPORTED_ACS:
-            _LOGGER.debug("AC %s found!", model)
-            device = PyDreoAC(SUPPORTED_ACS[model], dev, self)
-        else:
-            raise UnknownModelError(model)
-
-        if model in SUPPORTED_COOKERS:
-            _LOGGER.debug("Cooker %s found!", model)
-            device = PyDreoChefMaker(SUPPORTED_COOKERS[model], dev, self)
-        else:
-            raise UnknownModelError(model)
-
     def _process_devices(self, dev_list: list) -> bool:
         """Instantiate Device Objects."""
         devices = self.set_dev_id(dev_list)

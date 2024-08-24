@@ -13,15 +13,17 @@ TestBase: class
 import logging
 from pathlib import Path
 from typing import Any
-import pytest
+from typing import TYPE_CHECKING
+from collections import defaultdict
 import yaml
-from typing import Optional, Tuple
-from collections import defaultdict, namedtuple
-from unittest.mock import patch
-from requests.structures import CaseInsensitiveDict
-from imports import * # pylint: disable=W0401,W0614
 
-import defaults
+if TYPE_CHECKING:
+    from . import defaults
+    from .imports import * # pylint: disable=W0401,W0614
+else:
+    import defaults
+    from imports import * # pylint: disable=W0401,W0614
+
 
 API_DEFAULTS = defaults.API_DEFAULTS
 
@@ -32,8 +34,6 @@ FunctionResponses: defaultdict = defaultdict(lambda: ({"code": 0, "msg": None}, 
 CALL_API_ARGS = ['url', 'method', 'data', 'headers']
 
 ID_KEYS = ['CID', 'UUID', 'MACID']
-
-
 
 class YAMLWriter:
     """Read and Write API request data to YAML files.

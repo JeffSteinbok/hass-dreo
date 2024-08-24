@@ -15,11 +15,19 @@ in order to overwrite the existing YAML file with the new request.
 """
 # import utils
 import logging
+from typing import TYPE_CHECKING
 
-import call_json
-from imports import * # pylint: disable=W0401,W0614
-from utils import assert_test, parse_args
-from testbase import TestBase
+if TYPE_CHECKING:
+    from  .imports import PyDreo
+    from . import call_json
+    from .utils import assert_test, parse_args
+    from .testbase import TestBase
+else:
+    from imports import * # pylint: disable=W0401,W0614
+    import call_json
+    from utils import assert_test, parse_args
+    from testbase import TestBase
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -80,9 +88,11 @@ class TestGeneralAPI(TestBase):
         self.write_api = True
         self.overwrite = True
 
-        #self.mock_api.return_value = call_json.LOAD_DEVICES_RESPONSE, 200 #call_json.DeviceList.device_list_response()
+        self.mock_api.return_value = call_json.LOAD_DEVICES_RESPONSE, 200 #call_json.DeviceList.device_list_response()
         self.manager.load_devices()
         all_kwargs = parse_args(self.mock_api)
         assert assert_test(self.manager.load_devices, all_kwargs, None,
                            self.write_api, self.overwrite)
         assert len(self.manager.fans) == 1
+        assert self.manager.fans[0].speed_range == (1, 5)
+        assert self.manager.fans[0].preset_modes == ['normal', 'natural', 'sleep', 'auto']

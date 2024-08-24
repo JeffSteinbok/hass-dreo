@@ -17,6 +17,7 @@ from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import (
     TemperatureUnit,
     HUMIDITY_KEY,
+    MODE_KEY
 )
 
 from .haimports import *  # pylint: disable=W0401,W0614
