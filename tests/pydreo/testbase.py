@@ -1,14 +1,17 @@
 """Base class for all tests. Contains a mock for call_api() function and instantiated Dreo object."""
 import logging
-import pytest
-from typing import Optional, Tuple
-from collections import defaultdict
+from typing import Optional, TYPE_CHECKING
 from unittest.mock import patch
-from requests.structures import CaseInsensitiveDict
-from imports import * # pylint: disable=W0401,W0614
+import pytest
 
-import defaults
-import call_json
+if TYPE_CHECKING:
+    from  .imports import * # pylint: disable=W0401,W0614
+    from . import defaults
+    from . import call_json
+else:
+    from imports import * # pylint: disable=W0401,W0614
+    import defaults
+    import call_json
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +56,7 @@ class TestBase:
         self.mock_api.side_effect = self.call_dreo_api
         self.mock_api.create_autospect()
         self.mock_api.return_value.ok = True
-        self.manager = PyDreo('EMAIL', 'PASSWORD', redact=True)
+        self.manager = PyDreo('EMAIL', 'PASSWORD', redact=True) # pylint: disable=E0601
         self.manager.enabled = True
         self.manager.token = Defaults.token
         self.manager.account_id = Defaults.account_id
@@ -65,10 +68,11 @@ class TestBase:
     def call_dreo_api(self,
         api: str,
         json_object: Optional[dict] = None):
+        """Call Dreo REST API"""
         print(f'API call: {api} {json_object}')
         logger.debug(f'API call: {api} {json_object}')
 
-        if (api == "login"):
+        if api == "login":
             return (
                 {
                     'traceId': Defaults.trace_id,
@@ -84,3 +88,4 @@ class TestBase:
             return (call_json.LOAD_DEVICES_RESPONSE, 200)
         if api == "devicestate":
             return (call_json.GET_DEVICE_RESPONSE, 200)
+        

@@ -1,11 +1,6 @@
 #from custom_components.dreo.pydreo import PyDreo
-
-import time
 import sys
 import importlib.util
-import sys
-
-from typing import Dict
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

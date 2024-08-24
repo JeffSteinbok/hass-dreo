@@ -1,13 +1,11 @@
-import logging
-from pathlib import Path
-from typing import Any
-import pytest
-import yaml
-from typing import Optional, Tuple
-from collections import defaultdict, namedtuple
-from unittest.mock import patch
+"""PyDreo Test Defaults"""
+from typing import TYPE_CHECKING
 from requests.structures import CaseInsensitiveDict
-from imports import * # pylint: disable=W0401,W0614
+
+if TYPE_CHECKING:
+    from .imports import * # pylint: disable=W0401,W0614
+else:
+    from imports import * # pylint: disable=W0401,W0614
 
 class Defaults:
     """General defaults for API responses and requests.
