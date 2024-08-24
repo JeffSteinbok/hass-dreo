@@ -25,6 +25,7 @@ from .const import (
     LOGGER,
     DOMAIN,
     DREO_MANAGER,
+    MODE_KEY
 )
 
 from .pydreo.pydreoac import (
