@@ -150,7 +150,7 @@ class Helpers:
         except requests.exceptions.RequestException as exception:
             _LOGGER.debug(exception)
         else:
-            if r.status_code == 200:
+            if r.status_code == 200: # pylint: disable=E0606
                 status_code = 200
                 if r.content:
                     response = r.json()
