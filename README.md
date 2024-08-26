@@ -27,6 +27,18 @@ I'm always happy to have people add features via Pull Request. More info on how 
 
 Currently supported models are listed below.
 
+### Fans
+
+The following fans types are supported. Not all variants have been tested.
+
+| Fan Type | Model Prefix(es) | Notes |
+| -------- | ------------ | ------ |
+| Tower Fans | DR-HTF | |
+| Air Circulators | DR-HAF, DR-HPF | |
+| Ceiling Fans | DR-HCF | No light support. |
+
+Models that have been specifically tested can be found below.
+
 #### Tower Fans
 
 - DR-HTF001S
@@ -51,11 +63,11 @@ Currently supported models are listed below.
 #### Ceiling Fans
 -   DR-HCF001S - No Light Support
 
-#### Humidifiers
+### Humidifiers
 
 - No humidifiers are supported at this time, but possible support in the future is being discussed in [issue #60](https://github.com/JeffSteinbok/hass-dreo/issues/60)
 
-#### Space Heaters
+### Space Heaters
 
 - DR-HSH004S
 - DR-HSH009S
@@ -63,11 +75,11 @@ Currently supported models are listed below.
 - WH719S
 - WH739S
 
-#### Air Conditioners
+### Air Conditioners
 
 - DR-HAC005S
 
-#### Cookers
+### Cookers
 
 - DR-KCM001S
 

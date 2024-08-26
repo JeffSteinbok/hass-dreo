@@ -60,7 +60,7 @@ class TestPyDreoFan(TestBase):
         fan = self.manager.fans[0]
 
         assert fan.speed_range == (1, 9)
-        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto', 'turbo']
+        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto', 'turbo', 'custom']
 
         with patch('pydreo.PyDreo.send_command') as mock_send_command:
             fan.is_on = True

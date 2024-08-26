@@ -145,6 +145,15 @@ class PyDreo:  # pylint: disable=function-redefined
                 _LOGGER.debug("found device with model %s", model)
                 device = None
 
+                # Get the prefix of the model number to match against the supported devices.
+                # Not all models will have known prefixes.
+                model_prefix = None
+                for prefix in SUPPORTED_MODEL_PREFIXES:
+                    if model[:len(prefix):] == prefix:
+                        model_prefix = prefix
+                        _LOGGER.debug("Prefix %s assigned from model %s", model_prefix, model)
+                        break
+
                 if model is None:
                     raise UnknownModelError(model)
                 elif model in SUPPORTED_FANS:
@@ -156,9 +165,15 @@ class PyDreo:  # pylint: disable=function-redefined
                 elif model in SUPPORTED_ACS:
                     _LOGGER.debug("AC %s found!", model)
                     device = PyDreoAC(SUPPORTED_ACS[model], dev, self)
-                elif model in SUPPORTED_COOKERS:
-                    _LOGGER.debug("Cooker %s found!", model)
-                    device = PyDreoChefMaker(SUPPORTED_COOKERS[model], dev, self)
+                elif model_prefix is not None and model_prefix in SUPPORTED_FANS:
+                    _LOGGER.debug("Fan %s found! via prefix %s", model, model_prefix)
+                    device = PyDreoFan(SUPPORTED_FANS[model_prefix], dev, self)
+                elif model_prefix is not None and model_prefix in SUPPORTED_HEATERS:
+                    _LOGGER.debug("Heater %s found! via prefix %s", model, model_prefix)
+                    device = PyDreoHeater(SUPPORTED_HEATERS[model_prefix], dev, self)
+                elif model_prefix is not None and model_prefix in SUPPORTED_ACS:
+                    _LOGGER.debug("AC %s found! via prefix %s", model, model_prefix)
+                    device = PyDreoHeater(SUPPORTED_ACS[model_prefix], dev, self)
                 else:
                     raise UnknownModelError(model)
 
