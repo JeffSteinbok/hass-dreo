@@ -1,4 +1,4 @@
-"""Base class for all tests. Contains a mock for call_api() function and instantiated Dreo object."""
+"""Base class for all tests. Contains a mock for call_dreo_api() function and instantiated Dreo object."""
 import logging
 from typing import Optional, TYPE_CHECKING
 from unittest.mock import patch
@@ -21,7 +21,7 @@ Defaults = defaults.Defaults
 class TestBase:
     """Base class for all tests.
 
-    Contains instantiated Dreo object and mocked
+    Contains instantiated PyDreo object and mocked
     API call for call_api() function.
 
     Attributes
@@ -33,8 +33,16 @@ class TestBase:
     self.caplog : LogCaptureFixture
         Pytest fixture for capturing logs
     """
-    overwrite = False
-    write_api = False
+    _getDevicesFileName = None
+    
+
+    @property
+    def getDevicesFileName(self):
+        return self._getDevicesFileName
+
+    @getDevicesFileName.setter
+    def getDevicesFileName(self, value: str):
+        self._getDevicesFileName = value
 
     @pytest.fixture(autouse=True, scope='function')
     def setup(self, caplog):
@@ -85,7 +93,7 @@ class TestBase:
                 },
                 200)
         if api == "devicelist":
-            return (call_json.LOAD_DEVICES_RESPONSE, 200)
+            return (call_json.get_response_from_file(self.getDevicesFileName), 200)
         if api == "devicestate":
-            return (call_json.GET_DEVICE_RESPONSE, 200)
-        
+            logger.debug("API call: %s %s", api, json_object)
+            return (call_json.get_response_from_file(f"get_device_state_{json_object['deviceSn']}.json"), 200)

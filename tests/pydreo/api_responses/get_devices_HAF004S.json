@@ -1,0 +1,210 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "currentPage": 1,
+        "pageSize": 100,
+        "totalNum": 1,
+        "totalPage": 1,
+        "list": [
+            {
+                "deviceId": "1234",
+                "sn": "HAF004S_1",
+                "brand": "Dreo",
+                "model": "DR-HAF004S",
+                "productId": "1572127914365333506",
+                "productName": "Air Circulator",
+                "deviceName": "Kitchen Fan",
+                "shared": false,
+                "series": null,
+                "seriesName": "Falcon S",
+                "controlsConf": {
+                    "template": "DR-HAF004S",
+                    "lottie": {
+                        "key": "poweron",
+                        "frames": [
+                            {
+                                "value": 0,
+                                "frame": [
+                                    0
+                                ]
+                            },
+                            {
+                                "value": 1,
+                                "frame": [
+                                    2
+                                ]
+                            }
+                        ]
+                    },
+                    "cards": [
+                        {
+                            "type": 2,
+                            "title": "device_control_temp",
+                            "icon": "",
+                            "image": "",
+                            "url": "",
+                            "show": true
+                        },
+                        {
+                            "type": 6,
+                            "title": "device_settings_title",
+                            "icon": "ic_setting",
+                            "image": "",
+                            "url": "dreo://nav/device/setting?deviceSn=${sn}",
+                            "show": true,
+                            "key": "setting"
+                        }
+                    ],
+                    "preference": [
+                        {
+                            "id": "200",
+                            "type": "Panel Sound",
+                            "title": "device_control_panelsound",
+                            "image": "ic_mute",
+                            "reverse": true,
+                            "cmd": "muteon"
+                        },
+                        {
+                            "id": "210",
+                            "type": "Light Detection",
+                            "title": "device_control_lightdetection",
+                            "image": "ic_lightsensoron",
+                            "reverse": false,
+                            "cmd": "lightsensoron"
+                        },
+                        {
+                            "id": "220",
+                            "type": "Child Lock",
+                            "title": "device_control_childlock",
+                            "image": "ic_child_lock",
+                            "reverse": false,
+                            "cmd": "childlockon"
+                        },
+                        {
+                            "id": "230",
+                            "type": "Oscillation Calibration",
+                            "title": "device_control_calibration",
+                            "image": "ic_osc_cal"
+                        },
+                        {
+                            "id": "240",
+                            "type": "Temperature Unit",
+                            "title": "device_control_temp_unit",
+                            "image": "ic_temp_unit"
+                        }
+                    ],
+                    "control": [
+                        {
+                            "id": "100",
+                            "type": "Mode",
+                            "title": "device_mode",
+                            "items": [
+                                {
+                                    "text": "device_fans_mode_straight",
+                                    "textColors": [
+                                        "#D5D6D7",
+                                        "#D5D6D7"
+                                    ],
+                                    "image": "ic_normal_wind",
+                                    "imageColors": [
+                                        "#D5D6D7",
+                                        "#25D7E4"
+                                    ],
+                                    "cmd": "mode",
+                                    "value": 1
+                                },
+                                {
+                                    "text": "device_fans_mode_natural",
+                                    "textColors": [
+                                        "#D5D6D7",
+                                        "#D5D6D7"
+                                    ],
+                                    "image": "ic_natural_wind",
+                                    "imageColors": [
+                                        "#D5D6D7",
+                                        "#2CDD96"
+                                    ],
+                                    "cmd": "mode",
+                                    "value": 2
+                                },
+                                {
+                                    "text": "device_control_mode_sleep",
+                                    "textColors": [
+                                        "#D5D6D7",
+                                        "#D5D6D7"
+                                    ],
+                                    "image": "ic_sleep_wind",
+                                    "imageColors": [
+                                        "#D5D6D7",
+                                        "#6249DF"
+                                    ],
+                                    "cmd": "mode",
+                                    "value": 3
+                                },
+                                {
+                                    "text": "device_control_mode_auto",
+                                    "textColors": [
+                                        "#D5D6D7",
+                                        "#D5D6D7"
+                                    ],
+                                    "image": "ic_auto_wind",
+                                    "imageColors": [
+                                        "#D5D6D7",
+                                        "#0A80F5"
+                                    ],
+                                    "cmd": "mode",
+                                    "value": 4
+                                }
+                            ]
+                        },
+                        {
+                            "id": "110",
+                            "type": "Speed",
+                            "title": "device_control_speed",
+                            "items": [
+                                {
+                                    "text": "1",
+                                    "cmd": "windlevel",
+                                    "value": 1
+                                },
+                                {
+                                    "text": "9",
+                                    "cmd": "windlevel",
+                                    "value": 9
+                                }
+                            ]
+                        },
+                        {
+                            "id": "130",
+                            "type": "DPad",
+                            "step": 5
+                        }
+                    ],
+                    "category": "Air Circulators",
+                    "version": {
+                        "minControlVer": "2.0.7",
+                        "minPairingVer": "2.0.7"
+                    },
+                    "updateMcuVersion": ""
+                },
+                "mainConf": {
+                    "isSmart": true,
+                    "isWifi": true,
+                    "isBluetooth": true,
+                    "isVoiceControl": true
+                },
+                "resourcesConf": {
+                    "imageSmallSrc": "https://resources.dreo-cloud.com/app/202302/15b4a846f9849144729e6d3a9fe6592d95.png",
+                    "imageFullSrc": "https://resources.dreo-cloud.com/app/202302/158b6be82ae48e45fbb41e8d73af5e32e8.zip"
+                },
+                "servicesConf": [
+                    {
+                        "key": "user_manual",
+                        "value": "https://resources.dreo-cloud.com/app/202302/15dd1913e68d1148188a8bf366feb0fd2f.pdf"
+                    }
+                ]
+            }
+        ]
+    }
+}
