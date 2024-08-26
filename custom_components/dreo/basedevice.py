@@ -17,7 +17,7 @@ class DreoBaseDeviceHA(Entity):
     def __init__(self, pydreo_base_device: PyDreoBaseDevice) -> None:
         """Initialize the Dreo device."""
         self.device = pydreo_base_device
-        self._attr_unique_id = self.device.sn
+        self._attr_unique_id = self.device.serial_number
         self._attr_name = pydreo_base_device.name
 
     @property
@@ -27,7 +27,7 @@ class DreoBaseDeviceHA(Entity):
         return DeviceInfo(
             identifiers={
                 # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.device.sn)
+                (DOMAIN, self.device.serial_number)
             },
             name=self.device.name,
             manufacturer="Dreo",

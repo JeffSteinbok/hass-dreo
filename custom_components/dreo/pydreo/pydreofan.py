@@ -67,9 +67,7 @@ class PyDreoFan(PyDreoBaseDevice):
 
     def __repr__(self):
         # Representation string of object.
-        return "<{0}:{1}:{2}>".format(
-            self.__class__.__name__, self._device_id, self._name
-        )
+        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
 
     @property
     def speed_range(self):
@@ -212,7 +210,6 @@ class PyDreoFan(PyDreoBaseDevice):
             self._send_command(OSCMODE_KEY, osc_computed)
         else:
             raise NotImplementedError("Horizontal oscillation is not supported.")
-            return
 
     @property
     def vertically_oscillating(self):

@@ -135,27 +135,27 @@ async def async_setup_entry(
 
     manager = hass.data[DOMAIN][DREO_MANAGER]
 
-    sensorsHAs = []
+    sensor_has = []
     for fanEntity in manager.fans:
         # Really ugly hack since there is just one sensor for now...
-        sensorsHAs.append(DreoSensorHA(fanEntity, SENSORS[0]))
+        sensor_has.append(DreoSensorHA(fanEntity, SENSORS[0]))
 
-    for heaterEntity in manager.heaters:
+    for heater_entity in manager.heaters:
         # Really ugly hack since there is just one sensor for now...
-        sensorsHAs.append(DreoSensorHA(heaterEntity, SENSORS[0]))
+        sensor_has.append(DreoSensorHA(heater_entity, SENSORS[0]))
 
-    for acEntity in manager.acs:
+    for ac_entity in manager.acs:
         # Really ugly hack...
-        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[0]))
-        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[1]))
-        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[2]))
-        sensorsHAs.append(DreoSensorHA(acEntity, SENSORS[3]))
+        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[0]))
+        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[1]))
+        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[2]))
+        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[3]))
 
-    for cookingEntity in manager.cookers:
+    for cooking_entity in manager.cookers:
         # Really ugly hack...
-        sensorsHAs.append(DreoSensorHA(cookingEntity, SENSORS[4]))
+        sensor_has.append(DreoSensorHA(cooking_entity, SENSORS[4]))
 
-    async_add_entities(sensorsHAs)
+    async_add_entities(sensor_has)
 
 
 class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):

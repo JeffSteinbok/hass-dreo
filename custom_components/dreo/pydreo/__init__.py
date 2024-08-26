@@ -172,7 +172,7 @@ class PyDreo:  # pylint: disable=function-redefined
                 if isinstance(device, PyDreoChefMaker):
                     self.cookers.append(device)
 
-                self._device_list_by_sn[device.sn] = device
+                self._device_list_by_sn[device.serial_number] = device
             except UnknownModelError as ume:
                 _LOGGER.warning("Unknown device model: %s", ume)
                 _LOGGER.debug(dev)
@@ -214,7 +214,7 @@ class PyDreo:  # pylint: disable=function-redefined
         self.in_process = True
         proc_return = False
         response, _ = self.call_dreo_api(
-            DREO_API_DEVICESTATE, {DEVICESN_KEY: device.sn}
+            DREO_API_DEVICESTATE, {DEVICESN_KEY: device.serial_number}
         )
 
         # stash the raw return value from the devicestate api call
@@ -312,7 +312,7 @@ class PyDreo:  # pylint: disable=function-redefined
     def send_command(self, device: PyDreoBaseDevice, params) -> None:
         """Send a command to Dreo servers via the WebSocket."""
         full_params = {
-            "devicesn": device.sn,
+            "devicesn": device.serial_number,
             "method": "control",
             "params": params,
             "timestamp": Helpers.api_timestamp(),
