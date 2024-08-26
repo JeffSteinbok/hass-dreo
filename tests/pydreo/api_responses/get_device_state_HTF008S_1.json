@@ -1,70 +1,4 @@
-"""Helper file for calling JSON APIs from the tests."""
-from typing import TYPE_CHECKING
-import json
-
-if TYPE_CHECKING:
-    from .defaults import Defaults
-else:
-    from defaults import Defaults
-
-# DEFAULT_BODY = Standard body for new device calls
-# DEFAULT_HEADER = standard header for most calls
-# DEFAULT_HEADER_BYPASS = standard header for most calls api V2
-# ENERGY_HISTORY = standard outlet energy history response
-#-------------------------------------------------------
-# login_call_body(email, pass) = body of login call
-# LOGIN_RET_BODY = return of login call
-#-------------------------------------------------------
-# get_devices_body() = body of call to get device list
-# LIST_CONF_AIR = device list entry for air purifier
-
-DEFAULT_HEADER = {
-    'accept-language': 'en',
-    'accountId': Defaults.account_id,
-}
-
-DEFAULT_HEADER_BYPASS = {
-    'Content-Type': 'application/json; charset=UTF-8',
-    'User-Agent': 'okhttp/3.12.1'
-}
-
-DEFAULT_BODY = {
-    'acceptLanguage': 'en',
-    'accountID': Defaults.account_id,
-    'token': Defaults.token,
-    'traceId': Defaults.trace_id,
-}
-
-LOGIN_RET_BODY = (
-    {
-        'traceId': Defaults.trace_id,
-        'msg': '',
-        'data': {
-            'region': 'NA',
-            'access_token': Defaults.token,
-        },
-        'code': 0,
-    },
-    200,
-)
-
-def get_response_from_file(filename: str) -> json:
-    with open("tests/pydreo/api_responses/" + filename, 'r') as file:
-        return json.load(file)
-
-def login_call_body(email, password):
-    json_object = {
-        'acceptLanguage': 'en',
-        'devToken': '',
-        'email': email,
-        'method': 'login',
-        'password': password,
-        'traceId': Defaults.trace_id,
-        'userType': '1',
-    }
-    return json_object
-
-GET_DEVICE_RESPONSE = {
+{
     "code": 0,
     "msg": "OK",
     "data": {
@@ -74,7 +8,7 @@ GET_DEVICE_RESPONSE = {
                 "timestamp": 1686788164
             },
             "wifi_ssid": {
-                "state": "steinbok-iot",
+                "state": "REDACTED",
                 "timestamp": 1686788164
             },
             "windlevel": {
@@ -86,7 +20,7 @@ GET_DEVICE_RESPONSE = {
                 "timestamp": 1686788164
             },
             "poweron": {
-                "state": "True",
+                "state": "true",
                 "timestamp": 1687057235
             },
             "windtype": {
@@ -98,10 +32,10 @@ GET_DEVICE_RESPONSE = {
                     "du": 0,
                     "ts": 7
                 },
-                "timestamp": None
+                "timestamp": null
             },
             "voiceon": {
-                "state": False,
+                "state": false,
                 "timestamp": 1686788993
             },
             "wrong": {
@@ -113,11 +47,11 @@ GET_DEVICE_RESPONSE = {
                 "timestamp": 1686788164
             },
             "connected": {
-                "state": True,
+                "state": true,
                 "timestamp": 1686788164
             },
             "mcuon": {
-                "state": True,
+                "state": true,
                 "timestamp": 1686788164
             },
             "timeroff": {
@@ -125,10 +59,10 @@ GET_DEVICE_RESPONSE = {
                     "du": 0,
                     "ts": 7
                 },
-                "timestamp": None
+                "timestamp": null
             },
             "shakehorizon": {
-                "state": False,
+                "state": false,
                 "timestamp": 1686811203
             },
             "network_latency": {
@@ -156,11 +90,11 @@ GET_DEVICE_RESPONSE = {
                 "timestamp": 1686788164
             },
             "ledalwayson": {
-                "state": False,
+                "state": false,
                 "timestamp": 1686788164
             }
         },
-        "sn": "1582290393341964289-77f2977b24191a4a: 001: 0000000000b",
+        "sn": "HTF008S_1",
         "productId": "1582290393341964289",
         "region": "us-east-2"
     }

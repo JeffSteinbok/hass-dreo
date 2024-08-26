@@ -1,6 +1,0 @@
-load_devices:
-  method:
-    deviceSn: 1582290393341964289-77f2977b24191a4a:001:0000000000b
-  url: devicestate
-login:
-  url: login

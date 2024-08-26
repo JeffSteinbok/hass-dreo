@@ -1,4 +1,5 @@
-"""Base class for all tests. Contains a mock for call_api() function and instantiated Dreo object."""
+"""Base class for all tests. Contains a mock for call_dreo_api() function and instantiated Dreo object."""
+# pylint: disable=W0201
 import logging
 from typing import Optional, TYPE_CHECKING
 from unittest.mock import patch
@@ -21,20 +22,18 @@ Defaults = defaults.Defaults
 class TestBase:
     """Base class for all tests.
 
-    Contains instantiated Dreo object and mocked
-    API call for call_api() function.
+    Contains instantiated PyDreo object and mocked
+    API call for call_api() function."""
 
-    Attributes
-    ----------
-    self.mock_api : Mock
-        Mock for call_api() function
-    self.manager : Dreo
-        Instantiated Dreo object that is logged in
-    self.caplog : LogCaptureFixture
-        Pytest fixture for capturing logs
-    """
-    overwrite = False
-    write_api = False
+    @property
+    def get_devices_file_name(self):
+        """Get the file name for the devices file."""
+        return self._get_devices_file_name
+
+    @get_devices_file_name.setter
+    def get_devices_file_name(self, value: str):
+        """Set the file name for the devices file."""
+        self._get_devices_file_name = value
 
     @pytest.fixture(autouse=True, scope='function')
     def setup(self, caplog):
@@ -50,6 +49,7 @@ class TestBase:
         ------
         Class instance with mocked call_api() function and Dreo object
         """
+        self._get_devices_file_name = None
         self.mock_api_call = patch('pydreo.PyDreo.call_dreo_api')
         self.caplog = caplog
         self.mock_api = self.mock_api_call.start()
@@ -70,7 +70,7 @@ class TestBase:
         json_object: Optional[dict] = None):
         """Call Dreo REST API"""
         print(f'API call: {api} {json_object}')
-        logger.debug(f'API call: {api} {json_object}')
+        logger.debug('API call: %s %s', api, json_object)
 
         if api == "login":
             return (
@@ -85,7 +85,7 @@ class TestBase:
                 },
                 200)
         if api == "devicelist":
-            return (call_json.LOAD_DEVICES_RESPONSE, 200)
+            return (call_json.get_response_from_file(self.get_devices_file_name), 200)
         if api == "devicestate":
-            return (call_json.GET_DEVICE_RESPONSE, 200)
-        
+            logger.debug("API call: %s %s", api, json_object)
+            return (call_json.get_response_from_file(f"get_device_state_{json_object['deviceSn']}.json"), 200)
