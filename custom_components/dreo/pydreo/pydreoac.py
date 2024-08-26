@@ -28,8 +28,6 @@ from .constant import (
 )
 
 from homeassistant.components.climate import (
-    FAN_ON,
-    FAN_OFF,
     FAN_AUTO,
     FAN_LOW,
     FAN_MEDIUM,
@@ -37,7 +35,6 @@ from homeassistant.components.climate import (
     PRESET_NONE,
     PRESET_ECO,
 )
-
 
 DREO_AC_MODE_COOL = 1
 DREO_AC_MODE_DRY = 2
@@ -433,4 +430,3 @@ class PyDreoAC(PyDreoBaseDevice):
         val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED)
         if isinstance(val_work_time, int):
             self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"
-

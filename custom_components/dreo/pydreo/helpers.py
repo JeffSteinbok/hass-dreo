@@ -35,7 +35,7 @@ class Helpers:
         return headers
 
     @staticmethod
-    def req_body_base(manager) -> dict:
+    def req_body_base() -> dict:
         """Return universal keys for body of api requests."""
         return {"acceptLanguage": "en"}
 
@@ -46,7 +46,7 @@ class Helpers:
 
         # These magic headers are needed to make the Dreo API do what we want it to do
         if type_ == "login":
-            body = {**cls.req_body_base(manager)}
+            body = {**cls.req_body_base()}
             body["client_id"] = "7de37c362ee54dcf9c4561812309347a"
             body["client_secret"] = "32dfa0764f25451d99f94e1693498791"
             body["email"] = manager.username
@@ -58,7 +58,7 @@ class Helpers:
             print(body)
 
         elif type_ == "devicelist":
-            body = {**cls.req_body_base(manager)}
+            body = {**cls.req_body_base()}
             body["method"] = "devices"
             body["pageNo"] = "1"
             body["pageSize"] = "100"
@@ -150,7 +150,7 @@ class Helpers:
         except requests.exceptions.RequestException as exception:
             _LOGGER.debug(exception)
         else:
-            if r.status_code == 200: # pylint: disable=possibly-used-before-assignment
+            if r.status_code == 200: # pylint: disable=E0606
                 status_code = 200
                 if r.content:
                     response = r.json()
@@ -184,7 +184,7 @@ class Helpers:
             if val == value:
                 return name
         return None
-    
+
     @staticmethod
     def value_from_name(name_value_list : list[tuple], name) -> any:
         """Return value from list of tuples."""

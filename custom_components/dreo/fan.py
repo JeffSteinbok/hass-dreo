@@ -83,7 +83,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         """Return the state attributes of the fan."""
         attr = {"temperature": self.device.temperature,
             'model': self.device.model,
-            'sn': self.device.sn}
+            'sn': self.device.serial_number}
         return attr
 
     @property

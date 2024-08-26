@@ -4,7 +4,6 @@
 # from .pydreo import PyDreo
 import logging
 import threading
-import sys
 
 import asyncio
 import json
@@ -13,9 +12,9 @@ from collections.abc import Callable
 
 import websockets
 
-from .constant import *
+from .constant import * # pylint: disable=W0401,W0614
 from .helpers import Helpers
-from .models import *
+from .models import * # pylint: disable=W0401,W0614
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 

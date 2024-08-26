@@ -24,7 +24,6 @@ from .pydreo import (
     ECOLEVEL_RANGE,
     ANGLE_OSCANGLE_MAP,
     OSCANGLE_ANGLE_MAP,
-    TEMPERATURE_KEY,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
@@ -177,10 +176,10 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def device_info(self) -> DeviceInfo:
         """Return device information for this heater."""
         return DeviceInfo(
-            identifiers={(DOMAIN, self.device.serialNumber)},
+            identifiers={(DOMAIN, self.device.serial_number)},
             manufacturer=self.device.brand,
-            model=f"{self.device.seriesName} ({self.device.model}) {self.device.productName}",
-            name=self.device.deviceName,
+            model=f"{self.device.series_name} ({self.device.model}) {self.device.product_name}",
+            name=self.device.device_name,
         )
 
     @property
@@ -459,10 +458,10 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def device_info(self) -> DeviceInfo:
         """Return device information for this air conditioner."""
         return DeviceInfo(
-            identifiers={(DOMAIN, self.device.serialNumber)},
+            identifiers={(DOMAIN, self.device.serial_number)},
             manufacturer=self.device.brand,
-            model=f"{self.device.seriesName} ({self.device.model}) {self.device.productName}",
-            name=self.device.deviceName,
+            model=f"{self.device.series_name} ({self.device.model}) {self.device.product_name}",
+            name=self.device.device_name,
         )
 
     @property
@@ -594,7 +593,10 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         self.device.target_temperature = kwargs.get(ATTR_TEMPERATURE)
-        _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", self.device.name, self._attr_target_temperature, self.device.target_temperature)
+        _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", 
+                      self.device.name, 
+                      self._attr_target_temperature, 
+                      self.device.target_temperature)
         self._attr_target_temperature = self.device.target_temperature
         self.schedule_update_ha_state()
 
@@ -617,7 +619,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
         else:
             range_key = TARGET_TEMP_RANGE
         return self.device.device_definition.range[range_key][1]
-    
+
     @property
     def target_temperature_step(self) -> float | None:
         return 1
@@ -625,7 +627,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def current_humidity(self) -> float:
         return self.device.humidity
-    
+
     def set_humidity(self, humidity: int) -> None:
         """Set new target humidity."""
         _LOGGER.debug("DreoACHA::set_humidity(%s) %s --> %s", self.device.name, self._attr_target_humidity, humidity)
@@ -636,7 +638,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def target_humidity(self) -> int | None:
         return self.device.target_humidity
-    
+
     @property
     def min_humidity(self) -> float | None:
         return self.device.device_definition.range[HUMIDITY_RANGE][0]
@@ -649,7 +651,10 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     def hvac_mode(self):
         # ensure hvac_mode is actually in sync with the device's mode
         self._attr_hvac_mode = AC_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
-        _LOGGER.debug("DreoACHA:hvac_mode(%s): %s (device.mode: %s)", self.device.name, self._attr_hvac_mode, self.device.mode)
+        _LOGGER.debug("DreoACHA:hvac_mode(%s): %s (device.mode: %s)", 
+                      self.device.name, 
+                      self._attr_hvac_mode,
+                      self.device.mode)
         return self._attr_hvac_mode
 
     @property
