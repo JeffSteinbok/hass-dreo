@@ -34,7 +34,7 @@ class TestGeneralAPI(TestBase):
         """Test get_devices() method request and API response."""
         print("Test Device List")
 
-        self.getDevicesFileName = "get_devices_HTF008S.json"
+        self.get_devices_file_name = "get_devices_HTF008S.json"
         self.manager.load_devices()
         assert len(self.manager.fans) == 1
         assert self.manager.fans[0].speed_range == (1, 5)

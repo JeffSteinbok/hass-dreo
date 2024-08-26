@@ -1,20 +1,5 @@
 """Constants for the PyDreo library."""
-import sys
-from enum import Enum, IntEnum
-
-if sys.version_info.minor >= 11:
-    # Needs Python 3.11
-    from enum import StrEnum  # # pylint: disable=no-name-in-module
-else:
-    try:
-        # https://github.com/home-assistant/core/blob/dev/homeassistant/backports/enum.py
-        # Considered internal to Home Assistant, can be removed whenever.
-        from homeassistant.backports.enum import StrEnum
-    except ImportError:
-        from enum import Enum
-
-        class StrEnum(str, Enum):
-            pass
+from enum import Enum, IntEnum, StrEnum
 
 LOGGER_NAME = "pydreo"
 
@@ -179,8 +164,8 @@ class OscillationMode(IntEnum):
 
 # Heater oscillation modes
 class HeaterOscillationAngles(StrEnum):
-        """Possible Heater oscillation angles"""
-        OSC = "Oscillate"
-        SIXTY = "60°",
-        NINETY = "90°",
-        ONE_TWENTY = "120°"
+    """Possible Heater oscillation angles"""
+    OSC = "Oscillate"
+    SIXTY = "60°",
+    NINETY = "90°",
+    ONE_TWENTY = "120°"

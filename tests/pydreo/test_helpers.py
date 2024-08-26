@@ -31,3 +31,4 @@ class TestHelpers:
         name_value_collection = [("on", True), ("off", False)]
         assert Helpers.get_name_list(name_value_collection)[0] is "on" # pylint: disable=E0601
         assert Helpers.get_name_list(name_value_collection)[1] is "off"
+    

@@ -1,6 +1,6 @@
+"""Helper file for calling JSON APIs from the tests."""
 from typing import TYPE_CHECKING
 import json
-import os
 
 if TYPE_CHECKING:
     from .defaults import Defaults

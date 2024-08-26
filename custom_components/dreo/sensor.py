@@ -12,7 +12,6 @@ from dataclasses import dataclass
 import logging
 
 from .basedevice import DreoBaseDeviceHA
-from .fan import DreoFanHA
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import (
     TemperatureUnit,
@@ -36,8 +35,7 @@ from .pydreo.pydreoac import (
 from .pydreo.pydreochefmaker import (
     MODE_OFF,
     MODE_COOKING,
-    MODE_STANDBY,
-    MODE_PAUSED,
+    MODE_STANDBY
 )
 
 _LOGGER = logging.getLogger(LOGGER)
