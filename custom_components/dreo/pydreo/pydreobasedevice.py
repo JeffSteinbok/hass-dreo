@@ -1,17 +1,16 @@
+"""Base class for all Dreo devices."""
 import threading
 import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
+from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY
+from .models import DreoDeviceDetails
+
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
-from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY
-
-from .models import DreoDeviceDetails
-
 _LOGGER = logging.getLogger(LOGGER_NAME)
-
 
 class UnknownModelError(Exception):
     """Exception thrown when we don't recognize a model of a device."""

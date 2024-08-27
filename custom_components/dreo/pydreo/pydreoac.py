@@ -25,15 +25,12 @@ from .constant import (
     WINDLEVEL_KEY,
     HUMIDITY_KEY,
     TARGET_HUMIDITY_KEY,
-)
-
-from homeassistant.components.climate import (
     FAN_AUTO,
     FAN_LOW,
     FAN_MEDIUM,
     FAN_HIGH,
     PRESET_NONE,
-    PRESET_ECO,
+    PRESET_ECO
 )
 
 DREO_AC_MODE_COOL = 1
@@ -106,9 +103,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
     def __repr__(self):
         # Representation string of object.
-        return "<{0}:{1}:{2}>".format(
-            self.__class__.__name__, self._device_id, self._name
-        )
+        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
 
     @property
     def poweron(self):
@@ -353,7 +348,10 @@ class PyDreoAC(PyDreoBaseDevice):
 
         val_target_temperature = self.get_server_update_key_value(message, TARGET_TEMPERATURE_KEY)
         if isinstance(val_target_temperature, int):
-            _LOGGER.debug("PyDreoAC(%s):handle_server_update - target_temperature: %s --> %s", self, self._target_temperature, val_target_temperature)
+            _LOGGER.debug("PyDreoAC(%s):handle_server_update - target_temperature: %s --> %s", 
+                          self, 
+                          self._target_temperature, 
+                          val_target_temperature)
             self._target_temperature = val_target_temperature
 
         # Reported mode can be an empty string if the AC is off. Deal with that by
@@ -366,7 +364,10 @@ class PyDreoAC(PyDreoBaseDevice):
                 self._preset_mode = PRESET_ECO
             else:
                 self._preset_mode = PRESET_NONE
-            _LOGGER.debug("PyDreoAC(%s):handle_server_update - mode: %s --> %s", self, self._mode, target_mode)
+            _LOGGER.debug("PyDreoAC(%s):handle_server_update - mode: %s --> %s", 
+                          self, 
+                          self._mode, 
+                          target_mode)
             self._mode = target_mode
 
         val_fan_mode = self.get_server_update_key_value(message, WINDLEVEL_KEY)
@@ -389,7 +390,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
         val_timeron = self.get_server_update_key_value(message, TIMERON_KEY)
         if isinstance(val_timeron, int):
-            self._timeron = val_timeron
+            self._timer_on = val_timeron
 
         val_cooldown = self.get_server_update_key_value(message, COOLDOWN_KEY)
         if isinstance(val_cooldown, int):

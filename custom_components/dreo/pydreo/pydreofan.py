@@ -25,11 +25,12 @@ from .constant import (
     MUTEON_KEY,
     FIXEDCONF_KEY,
     OscillationMode,
-    TemperatureUnit
+    TemperatureUnit,
+    SPEED_RANGE
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoDeviceDetails, SPEED_RANGE
+from .models import DreoDeviceDetails
 from .helpers import Helpers
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -88,9 +89,9 @@ class PyDreoFan(PyDreoBaseDevice):
                 for control_item in control:
                     if (control_item is not None):
                         if control_item.get("type", None) == "Speed":
-                            lowSpeed = control_item.get("items", None)[0].get("value", None)
-                            highSpeed = control_item.get("items", None)[1].get("value", None)
-                            speed_range = (lowSpeed, highSpeed)
+                            speed_low = control_item.get("items", None)[0].get("value", None)
+                            speed_high = control_item.get("items", None)[1].get("value", None)
+                            speed_range = (speed_low, speed_high)
                             _LOGGER.debug("PyDreoFan:Detected speed range - %s", speed_range)
                             return speed_range
 
