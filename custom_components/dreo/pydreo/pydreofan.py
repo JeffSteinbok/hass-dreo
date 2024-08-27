@@ -96,6 +96,7 @@ class PyDreoFan(PyDreoBaseDevice):
 
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
+        preset_modes = []
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             control = controls_conf.get("control", None)
@@ -103,7 +104,6 @@ class PyDreoFan(PyDreoBaseDevice):
                 for control_item in control:
                     if (control_item is not None):
                         if control_item.get("type", None) == "Mode":
-                            preset_modes = []
                             for mode_item in control_item.get("items", None):
                                 text = mode_item.get("image", None).split("_")[1]
                                 value = mode_item.get("value", None)
@@ -118,7 +118,10 @@ class PyDreoFan(PyDreoBaseDevice):
                         if (text, value) not in preset_modes:
                             preset_modes.append((text, value))
 
-        preset_modes.sort(key=lambda tup: tup[1])  # sorts in place                    
+        preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
+        if (preset_modes.count is 0):
+            _LOGGER.debug("PyDreoFan:No preset modes detected")
+            preset_modes = None
         _LOGGER.debug("PyDreoFan:Detected preset modes - %s", preset_modes)
         return preset_modes
                         
