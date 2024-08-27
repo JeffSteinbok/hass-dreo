@@ -72,9 +72,7 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     def __repr__(self):
         # Representation string of object.
-        return "<{0}:{1}:{2}>".format(
-            self.__class__.__name__, self._device_id, self._name
-        )
+        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
 
     @property
     def poweron(self):
@@ -121,7 +119,9 @@ class PyDreoHeater(PyDreoBaseDevice):
     def htalevel(self, htalevel : int) :
         """Set the heat level."""
         _LOGGER.debug("PyDreoHeater:htalevel.setter(%s, %s)", self.name, htalevel)
-        if htalevel < self._device_definition.range[HEAT_RANGE][0] or htalevel > self._device_definition.range[HEAT_RANGE][1]:
+        # TODO: Change to in range check
+        if (htalevel < self._device_definition.range[HEAT_RANGE][0] or 
+            htalevel > self._device_definition.range[HEAT_RANGE][1]):
             _LOGGER.error("Heat level %s is not in the acceptable range: %s",
                             htalevel,
                             self._device_definition.range[HEAT_RANGE])
@@ -143,6 +143,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def ecolevel(self, ecolevel : int):
         """Set the target temperature."""
         _LOGGER.debug("PyDreoHeater:ecolevel(%s)", ecolevel)
+        # TODO: Change to in range check
         if ecolevel < self._device_definition.range[ECOLEVEL_RANGE][0] or ecolevel > self._device_definition.range[ECOLEVEL_RANGE][1]:
             _LOGGER.error("Target Temperature %s is not in the acceptable range: %s",
                             ecolevel,
@@ -186,7 +187,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     @fan_mode.setter
     def fan_mode(self, mode: bool) -> None:
         """Set coolair mode if requested"""
-        """TODO: set the state back to what it was before it was turned on (i.e., hotair or eco)"""
+        # TODO: set the state back to what it was before it was turned on (i.e., hotair or eco)
         self.mode = HEATER_MODE_COOLAIR if mode is True else HEATER_MODE_HOTAIR
 
     @property
@@ -227,6 +228,7 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @property
     def oscangle(self) -> HeaterOscillationAngles:
+        """Get the oscillation angle"""
         return self._oscangle
 
     @oscangle.setter
@@ -393,6 +395,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         if isinstance(val_devon, bool):
             self._dev_on = val_devon
 
+        # TODO: This seems wrong; unsure if we need to parse DU out of this like we do in the intial state.
         val_timeron = self.get_server_update_key_value(message, TIMERON_KEY)
         if isinstance(val_timeron, int):
             self._timeron = val_timeron
@@ -403,7 +406,7 @@ class PyDreoHeater(PyDreoBaseDevice):
 
         val_ptc_on = self.get_server_update_key_value(message, PTCON_KEY)
         if isinstance(val_ptc_on, bool):
-            self._ptcon = val_ptc_on
+            self._ptc_on = val_ptc_on
 
         val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_light_on, bool):

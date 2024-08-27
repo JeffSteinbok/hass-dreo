@@ -182,7 +182,9 @@ class CommandTransport:
                     break
                 except:
                     retry_count += 1
-                    _LOGGER.error("Error sending command. Retrying in %s seconds. Retry count: %s", RETRY_DELAY, retry_count)
+                    _LOGGER.error("Error sending command. Retrying in %s seconds. Retry count: %s", 
+                                  RETRY_DELAY, 
+                                  retry_count)
                     await asyncio.sleep(RETRY_DELAY)
 
         asyncio.run(send_internal())

@@ -116,6 +116,7 @@ class Helpers:
         """Make API calls by passing endpoint, header and body."""
         response = None
         status_code = None
+        r = None # Response object
         try:
             _LOGGER.debug("=======call_api=============================")
             _LOGGER.debug("[%s] calling '%s' api", method, api)
@@ -150,7 +151,7 @@ class Helpers:
         except requests.exceptions.RequestException as exception:
             _LOGGER.debug(exception)
         else:
-            if r.status_code == 200: # pylint: disable=E0606
+            if r.status_code == 200:
                 status_code = 200
                 if r.content:
                     response = r.json()
