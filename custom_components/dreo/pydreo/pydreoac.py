@@ -25,15 +25,12 @@ from .constant import (
     WINDLEVEL_KEY,
     HUMIDITY_KEY,
     TARGET_HUMIDITY_KEY,
-)
-
-from homeassistant.components.climate import (
     FAN_AUTO,
     FAN_LOW,
     FAN_MEDIUM,
     FAN_HIGH,
     PRESET_NONE,
-    PRESET_ECO,
+    PRESET_ECO
 )
 
 DREO_AC_MODE_COOL = 1

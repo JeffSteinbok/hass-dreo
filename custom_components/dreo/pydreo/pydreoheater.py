@@ -30,11 +30,8 @@ from .constant import (
     MODE_LEVEL_MAP,
     LEVEL_MODE_MAP,
     TemperatureUnit,
-    HeaterOscillationAngles
-)
-
-from homeassistant.components.climate import (
-    FAN_ON, 
+    HeaterOscillationAngles,
+    FAN_ON,
     FAN_OFF
 )
 

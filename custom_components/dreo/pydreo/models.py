@@ -3,16 +3,10 @@
 from dataclasses import dataclass
 
 from .constant import (
-    FAN_MODE_AUTO,
-    FAN_MODE_NATURAL,
-    FAN_MODE_NORMAL,
-    FAN_MODE_SLEEP,
-    FAN_MODE_TURBO,
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
     HEATER_MODE_ECO,
     HEATER_MODE_OFF,
-    SPEED_RANGE,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
     TEMP_RANGE,
@@ -20,9 +14,6 @@ from .constant import (
     TARGET_TEMP_RANGE_ECO,
     HeaterOscillationAngles,
     HUMIDITY_RANGE,
-)
-
-from homeassistant.components.climate import (
     SWING_ON,
     SWING_OFF,
     FAN_AUTO,
@@ -31,9 +22,8 @@ from homeassistant.components.climate import (
     FAN_HIGH,
     PRESET_NONE,
     PRESET_ECO,
-    HVACMode,
+    HVACMode
 )
-
 
 @dataclass
 class DreoDeviceDetails:
