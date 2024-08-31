@@ -1,0 +1,1467 @@
+    {
+    "deviceId": "1669136175370137602",
+    "sn": "REDACTED",
+    "brand": "Dreo",
+    "model": "DR-HTF008S",
+    "productId": "1582290393341964289",
+    "productName": "Tower Fan",
+    "deviceName": "Main Bedroom Fan",
+    "shared": false,
+    "series": null,
+    "seriesName": "Cruiser Pro T3 S",
+    "type": 0,
+    "owner": true,
+    "familyId": null,
+    "familyName": null,
+    "roomId": null,
+    "roomName": null,
+    "roomNameI18Key": "",
+    "color": "b",
+    "controlsConf": {
+        "template": "DR-HTF008S",
+        "lottie": {
+        "key": "poweron",
+        "frames": [
+            {
+            "value": 0,
+            "frame": [
+                0
+            ]
+            },
+            {
+            "value": 1,
+            "frame": [
+                2
+            ]
+            }
+        ]
+        },
+        "schedule": {
+        "modes": [
+            {
+            "icon": "ic_normal_wind_color",
+            "title": "device_fans_mode_straight",
+            "cmd": "windtype",
+            "value": 1,
+            "valueType": 1,
+            "isSelected": true,
+            "attention": [
+                "windtype",
+                "windlevel",
+                "poweron",
+                "shakehorizon"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#1FD3E0",
+                "endColor": "#4663F7",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 4,
+                "valueType": 1,
+                "startValue": 1,
+                "endValue": 5,
+                "groupId": 0,
+                "icon": "ic_sch_wind_speed",
+                "isSelected": false
+                }
+            ]
+            },
+            {
+            "icon": "ic_natural_wind_color",
+            "title": "device_fans_mode_natural",
+            "cmd": "windtype",
+            "value": 2,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "windtype",
+                "windlevel",
+                "poweron",
+                "shakehorizon"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "valueType": 1,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#1FD3E0",
+                "endColor": "#4663F7",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 4,
+                "startValue": 1,
+                "endValue": 5,
+                "groupId": 0,
+                "icon": "ic_sch_wind_speed",
+                "isSelected": false
+                }
+            ]
+            },
+            {
+            "icon": "ic_sleep_wind_color",
+            "title": "device_fans_mode_sleep",
+            "cmd": "windtype",
+            "value": 3,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "windtype",
+                "windlevel",
+                "poweron",
+                "shakehorizon"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#1FD3E0",
+                "endColor": "#4663F7",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 4,
+                "valueType": 1,
+                "startValue": 1,
+                "endValue": 5,
+                "groupId": 0,
+                "isSelected": false,
+                "icon": "ic_sch_wind_speed"
+                }
+            ]
+            },
+            {
+            "icon": "ic_auto_wind_color",
+            "title": "device_control_mode_auto",
+            "cmd": "windtype",
+            "value": 4,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "windtype",
+                "windlevel",
+                "poweron",
+                "shakehorizon"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#1FD3E0",
+                "endColor": "#4663F7",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 4,
+                "valueType": 1,
+                "startValue": 1,
+                "endValue": 5,
+                "groupId": 0,
+                "isSelected": false,
+                "icon": "device_control_wind"
+                }
+            ]
+            }
+        ]
+        },
+        "cards": [
+        {
+            "type": 2,
+            "title": "device_control_temp",
+            "icon": "",
+            "image": "",
+            "url": "",
+            "show": true
+        },
+        {
+            "type": 8,
+            "title": "",
+            "icon": "",
+            "image": "",
+            "url": "dreo://nav/device/schedule?deviceSn={sn}",
+            "show": true,
+            "key": "",
+            "minVersion": "2.5.0"
+        },
+        {
+            "type": 6,
+            "title": "device_settings_title",
+            "icon": "ic_setting",
+            "image": "",
+            "url": "dreo://nav/device/setting?deviceSn=${sn}",
+            "show": true,
+            "key": "setting"
+        },
+        {
+            "type": 6,
+            "title": "base_clean_tutorial",
+            "icon": "https://resources.dreo-cloud.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
+            "image": "",
+            "url": "https://fe.dreo.com/guides/product-clean/cruiser-pro-t3s",
+            "show": true,
+            "minVersion": "2.6.8"
+        }
+        ],
+        "feature": {
+        "schedule": {
+            "enable": true,
+            "localSupport": true,
+            "module": [
+            {
+                "type": "HeFi",
+                "version": "3.2.2"
+            }
+            ]
+        }
+        },
+        "preference": [
+        {
+            "id": "200",
+            "type": "Panel Sound",
+            "title": "device_control_panelsound",
+            "image": "ic_mute",
+            "reverse": false,
+            "cmd": "voiceon"
+        },
+        {
+            "id": "210",
+            "type": "Display Auto Off",
+            "title": "device_fans_mode_auto_display",
+            "image": "ic_display",
+            "reverse": true,
+            "cmd": "ledalwayson"
+        },
+        {
+            "id": "230",
+            "type": "Temperature Unit",
+            "title": "device_control_temp_unit",
+            "image": "ic_temp_unit"
+        },
+        {
+            "id": "250",
+            "type": "Temperature Calibration",
+            "title": "device_control_temp_calibration",
+            "image": "ic_temp_cal"
+        }
+        ],
+        "control": [
+        {
+            "id": "100",
+            "type": "Mode",
+            "title": "device_mode",
+            "items": [
+            {
+                "text": "device_fans_mode_straight",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_normal_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#25D7E4"
+                ],
+                "cmd": "windtype",
+                "value": 1
+            },
+            {
+                "text": "device_fans_mode_natural",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_natural_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#2CDD96"
+                ],
+                "cmd": "windtype",
+                "value": 2
+            },
+            {
+                "text": "device_control_mode_sleep",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_sleep_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#6249DF"
+                ],
+                "cmd": "windtype",
+                "value": 3
+            },
+            {
+                "text": "device_control_mode_auto",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_auto_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#0A80F5"
+                ],
+                "cmd": "windtype",
+                "value": 4
+            }
+            ]
+        },
+        {
+            "id": "110",
+            "type": "Speed",
+            "title": "device_control_speed",
+            "items": [
+            {
+                "text": "1",
+                "cmd": "windlevel",
+                "value": 1
+            },
+            {
+                "text": "5",
+                "cmd": "windlevel",
+                "value": 5
+            }
+            ]
+        },
+        {
+            "id": "120",
+            "type": "Oscillation",
+            "title": "device_control_oscillation",
+            "items": [],
+            "cmd": "shakehorizon"
+        }
+        ],
+        "category": "Tower Fan",
+        "setting": [
+        {
+            "text": "Firmware Version",
+            "image": "image.png",
+            "value": "1.0.0",
+            "url": "dreo://control"
+        }
+        ]
+    },
+    "mainConf": {
+        "isSmart": true,
+        "isWifi": true,
+        "isBluetooth": true,
+        "isVoiceControl": true
+    },
+    "resourcesConf": {
+        "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202405/23c882f6b9447346098e969f510df9a671.png",
+        "imageFullSrc": "https://resources.dreo-cloud.com/app/202309/79995154d962047b896f09618c2d3a08c.zip",
+        "imageSmallDarkSrc": "",
+        "imageFullDarkSrc": ""
+    },
+    "servicesConf": [
+        {
+        "key": "user_manual",
+        "value": "https://resources.dreo-cloud.com/app/202310/123e61ee7e41bb4ecd889bbf45e42368e0.pdf"
+        }
+    ],
+    "userManuals": [
+        {
+        "url": "https://resources.dreo-cloud.com/app/202310/123e61ee7e41bb4ecd889bbf45e42368e0.pdf",
+        "icon": null,
+        "desc": "User Manual",
+        "lang": "en"
+        }
+    ]
+    },
+    {
+    "deviceId": "1692009631610630146",
+    "sn": "1572127914365333506-cfc1eb539b1a0f89:001:0000000000s",
+    "brand": "Dreo",
+    "model": "DR-HAF004S",
+    "productId": "1572127914365333506",
+    "productName": "Air Circulator",
+    "deviceName": "Bonus Room Fan",
+    "shared": false,
+    "series": null,
+    "seriesName": "CF714S/CF814S",
+    "type": 0,
+    "owner": true,
+    "familyId": null,
+    "familyName": null,
+    "roomId": null,
+    "roomName": null,
+    "roomNameI18Key": "",
+    "color": "s",
+    "controlsConf": {
+        "template": "DR-HAF004S",
+        "lottie": {
+        "key": "poweron",
+        "frames": [
+            {
+            "value": 0,
+            "frame": [
+                0
+            ]
+            },
+            {
+            "value": 1,
+            "frame": [
+                2
+            ]
+            }
+        ]
+        },
+        "cards": [
+        {
+            "type": 2,
+            "title": "device_control_temp",
+            "icon": "",
+            "image": "",
+            "url": "",
+            "show": true
+        },
+        {
+            "type": 8,
+            "title": "",
+            "icon": "",
+            "image": "",
+            "url": "dreo://nav/device/schedule?deviceSn={sn}",
+            "show": true,
+            "key": ""
+        },
+        {
+            "type": 6,
+            "title": "device_settings_title",
+            "icon": "ic_setting",
+            "image": "",
+            "url": "dreo://nav/device/setting?deviceSn=${sn}",
+            "show": true,
+            "key": "setting"
+        },
+        {
+            "type": 6,
+            "title": "base_clean_tutorial",
+            "icon": "https://resources.dreo-cloud.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
+            "image": "",
+            "url": "https://m.dreo.com/guides/product-clean/air-circulator-fan/cf714s?utm_source=device_card",
+            "show": true,
+            "minVersion": "2.6.8"
+        }
+        ],
+        "resource": {
+        "shakeImageFiles": "https://resources.dreo-cloud.com/app/202312/19/8a475a5ef6fe40368d961209ca2ac935.zip"
+        },
+        "extraConfigs": [
+        {
+            "key": "preference",
+            "value": [
+            {
+                "id": "210",
+                "type": "Light Detection",
+                "title": "dev_ctrl_display",
+                "image": "ic_display",
+                "reverse": false,
+                "cmd": "lightmode"
+            }
+            ],
+            "firmware": {
+            "minMcuVer": "1.0.4",
+            "minModuleVer": "3.2.9",
+            "mcuModel": "",
+            "moduleModel": ""
+            }
+        },
+        {
+            "key": "schedule",
+            "value": {
+            "modes": [
+                {
+                "icon": "ic_normal_wind_color",
+                "title": "device_fans_mode_straight",
+                "cmd": "mode",
+                "value": 1,
+                "valueType": 1,
+                "isSelected": true,
+                "attention": [
+                    "mode",
+                    "windlevel",
+                    "poweron",
+                    "cruiseconf",
+                    "oscmode"
+                ],
+                "controls": [
+                    {
+                    "type": 0,
+                    "title": "device_control_mode_manual_level",
+                    "startColor": "#0051CF",
+                    "endColor": "#0051CF",
+                    "cmd": [
+                        "windlevel"
+                    ],
+                    "value": 7,
+                    "valueType": 1,
+                    "startValue": 1,
+                    "endValue": 9,
+                    "groupId": 0,
+                    "icon": "ic_sch_wind_speed",
+                    "isSelected": false
+                    }
+                ]
+                },
+                {
+                "icon": "ic_natural_wind_color",
+                "title": "device_fans_mode_natural",
+                "cmd": "mode",
+                "value": 2,
+                "valueType": 1,
+                "isSelected": false,
+                "attention": [
+                    "mode",
+                    "windlevel",
+                    "poweron",
+                    "cruiseconf",
+                    "oscmode"
+                ],
+                "controls": [
+                    {
+                    "type": 0,
+                    "valueType": 1,
+                    "title": "device_control_mode_manual_level",
+                    "startColor": "#0051CF",
+                    "endColor": "#0051CF",
+                    "cmd": [
+                        "windlevel"
+                    ],
+                    "value": 7,
+                    "startValue": 1,
+                    "endValue": 9,
+                    "groupId": 0,
+                    "icon": "ic_sch_wind_speed",
+                    "isSelected": false
+                    }
+                ]
+                },
+                {
+                "icon": "ic_sleep_wind_color",
+                "title": "device_fans_mode_sleep",
+                "cmd": "mode",
+                "value": 3,
+                "valueType": 1,
+                "isSelected": false,
+                "attention": [
+                    "mode",
+                    "windlevel",
+                    "poweron",
+                    "cruiseconf",
+                    "oscmode"
+                ],
+                "controls": [
+                    {
+                    "type": 0,
+                    "title": "device_control_mode_manual_level",
+                    "startColor": "#0051CF",
+                    "endColor": "#0051CF",
+                    "cmd": [
+                        "windlevel"
+                    ],
+                    "value": 7,
+                    "valueType": 1,
+                    "startValue": 1,
+                    "endValue": 9,
+                    "groupId": 0,
+                    "isSelected": false,
+                    "icon": "ic_sch_wind_speed"
+                    }
+                ]
+                },
+                {
+                "icon": "ic_auto_wind_color",
+                "title": "device_control_mode_auto",
+                "cmd": "mode",
+                "value": 4,
+                "valueType": 1,
+                "isSelected": false,
+                "attention": [
+                    "mode",
+                    "windlevel",
+                    "poweron",
+                    "cruiseconf",
+                    "oscmode"
+                ],
+                "controls": [
+                    {
+                    "type": 0,
+                    "title": "device_control_mode_manual_level",
+                    "startColor": "#0051CF",
+                    "endColor": "#0051CF",
+                    "cmd": [
+                        "windlevel"
+                    ],
+                    "value": 7,
+                    "valueType": 1,
+                    "startValue": 1,
+                    "endValue": 9,
+                    "groupId": 0,
+                    "isSelected": false,
+                    "icon": "ic_sch_wind_speed"
+                    }
+                ]
+                },
+                {
+                "icon": "ic_turbo_wind_color",
+                "title": "device_control_mode_turbo",
+                "cmd": "mode",
+                "value": 5,
+                "valueType": 1,
+                "isSelected": false,
+                "attention": [
+                    "mode",
+                    "poweron",
+                    "cruiseconf",
+                    "oscmode"
+                ],
+                "controls": []
+                },
+                {
+                "icon": "ic_custom_wind",
+                "title": "device_control_custom",
+                "cmd": "mode",
+                "value": 6,
+                "valueType": 1,
+                "isSelected": false,
+                "attention": [
+                    "mode",
+                    "windlevel",
+                    "poweron",
+                    "cruiseconf",
+                    "oscmode"
+                ],
+                "controls": []
+                }
+            ]
+            },
+            "firmware": {
+            "minMcuVer": "",
+            "minModuleVer": "",
+            "mcuModel": "",
+            "moduleModel": "HeFi"
+            }
+        }
+        ],
+        "preference": [
+        {
+            "id": "200",
+            "type": "Panel Sound",
+            "title": "device_control_panelsound",
+            "image": "ic_mute",
+            "reverse": true,
+            "cmd": "muteon"
+        },
+        {
+            "id": "210",
+            "type": "Light Detection",
+            "title": "device_control_lightdetection",
+            "image": "ic_lightsensoron",
+            "reverse": false,
+            "cmd": "lightsensoron"
+        },
+        {
+            "id": "220",
+            "type": "Child Lock",
+            "title": "device_control_childlock",
+            "image": "ic_child_lock",
+            "reverse": false,
+            "cmd": "childlockon"
+        },
+        {
+            "id": "230",
+            "type": "Oscillation Calibration",
+            "title": "device_control_calibration",
+            "image": "ic_osc_cal"
+        },
+        {
+            "id": "240",
+            "type": "Temperature Unit",
+            "title": "device_control_temp_unit",
+            "image": "ic_temp_unit"
+        }
+        ],
+        "control": [
+        {
+            "id": "100",
+            "type": "Mode",
+            "title": "device_mode",
+            "items": [
+            {
+                "text": "device_fans_mode_straight",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_normal_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#25D7E4"
+                ],
+                "cmd": "mode",
+                "value": 1
+            },
+            {
+                "text": "device_control_mode_auto",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_auto_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#0A80F5"
+                ],
+                "cmd": "mode",
+                "value": 4
+            },
+            {
+                "text": "device_control_mode_sleep",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_sleep_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#6249DF"
+                ],
+                "cmd": "mode",
+                "value": 3
+            },
+            {
+                "text": "device_fans_mode_natural",
+                "textColors": [
+                "#D5D6D7",
+                "#D5D6D7"
+                ],
+                "image": "ic_natural_wind",
+                "imageColors": [
+                "#D5D6D7",
+                "#2CDD96"
+                ],
+                "cmd": "mode",
+                "value": 2
+            }
+            ]
+        },
+        {
+            "id": "110",
+            "type": "Speed",
+            "title": "device_control_speed",
+            "items": [
+            {
+                "text": "1",
+                "cmd": "windlevel",
+                "value": 1
+            },
+            {
+                "text": "9",
+                "cmd": "windlevel",
+                "value": 9
+            }
+            ]
+        },
+        {
+            "id": "130",
+            "type": "DPad",
+            "step": 5
+        }
+        ],
+        "version": {
+        "minControlVer": "2.6.10",
+        "minPairingVer": "2.0.7"
+        },
+        "updateMcuVersion": "0.6.6",
+        "schedule": {
+        "modes": [
+            {
+            "icon": "ic_normal_wind_color",
+            "title": "device_fans_mode_straight",
+            "cmd": "mode",
+            "value": 1,
+            "valueType": 1,
+            "isSelected": true,
+            "attention": [
+                "windlevel",
+                "poweron",
+                "mode"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#0051CF",
+                "endColor": "#0051CF",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 2,
+                "valueType": 1,
+                "startValue": 1,
+                "endValue": 9,
+                "groupId": 0,
+                "isSelected": false,
+                "icon": ""
+                }
+            ]
+            },
+            {
+            "icon": "ic_natural_wind_color",
+            "title": "device_fans_mode_natural",
+            "cmd": "mode",
+            "value": 2,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "windlevel",
+                "poweron",
+                "mode"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#0051CF",
+                "endColor": "#0051CF",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 2,
+                "valueType": 1,
+                "startValue": 1,
+                "endValue": 9,
+                "groupId": 0,
+                "isSelected": false,
+                "icon": ""
+                }
+            ]
+            },
+            {
+            "icon": "ic_sleep_wind_color",
+            "title": "device_fans_mode_sleep",
+            "cmd": "mode",
+            "value": 3,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "windlevel",
+                "poweron",
+                "mode"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#0051CF",
+                "endColor": "#0051CF",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 2,
+                "valueType": 1,
+                "startValue": 1,
+                "endValue": 9,
+                "groupId": 0,
+                "isSelected": false,
+                "icon": ""
+                }
+            ]
+            },
+            {
+            "icon": "ic_auto_wind_color",
+            "title": "device_fans_mode_auto",
+            "cmd": "mode",
+            "value": 4,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "windlevel",
+                "poweron",
+                "mode"
+            ],
+            "controls": [
+                {
+                "type": 0,
+                "title": "device_control_mode_manual_level",
+                "startColor": "#0051CF",
+                "endColor": "#0051CF",
+                "cmd": [
+                    "windlevel"
+                ],
+                "value": 2,
+                "valueType": 1,
+                "startValue": 1,
+                "endValue": 9,
+                "groupId": 0,
+                "isSelected": false,
+                "icon": ""
+                }
+            ]
+            },
+            {
+            "icon": "ic_turbo_wind_color",
+            "title": "device_control_mode_turbo",
+            "cmd": "mode",
+            "value": 5,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "poweron",
+                "mode"
+            ],
+            "controls": []
+            },
+            {
+            "icon": "ic_custom_wind",
+            "title": "device_control_custom",
+            "cmd": "mode",
+            "value": 6,
+            "valueType": 1,
+            "isSelected": false,
+            "attention": [
+                "poweron",
+                "mode"
+            ],
+            "controls": []
+            }
+        ]
+        },
+        "feature": {
+        "schedule": {
+            "enable": "",
+            "localSupport": true,
+            "module": [
+            {
+                "type": "HeFi",
+                "version": "0.0.1"
+            }
+            ]
+        }
+        },
+        "swingAngle": {
+        "fixedAngle": {
+            "verAngle": 120,
+            "horAngle": 120,
+            "verZeroAngle": 30,
+            "horZeroAngle": 60,
+            "imgColumn": 9,
+            "imgRow": 9
+        },
+        "horSwingAngle": {
+            "angle": 120,
+            "dottedLines": [
+            30,
+            150
+            ],
+            "quickStep": [
+            30,
+            60,
+            90,
+            120
+            ]
+        },
+        "verSwingAngle": {
+            "startAngle": 150,
+            "sweepAngle": 120,
+            "stepAngle": 5,
+            "dottedLines": [
+            150,
+            270
+            ],
+            "quickStep": [
+            30,
+            60,
+            90,
+            120
+            ]
+        }
+        },
+        "category": "Air Circulators"
+    },
+    "mainConf": {
+        "isSmart": true,
+        "isWifi": true,
+        "isBluetooth": true,
+        "isVoiceControl": true
+    },
+    "resourcesConf": {
+        "imageSmallSrc": "https://resources.dreo-cloud.com/app/202302/15b4a846f9849144729e6d3a9fe6592d95.png",
+        "imageFullSrc": "https://resources.dreo-cloud.com/app/202307/25b3cedbbe8ec14cb29fe4a24b99c1be65.zip",
+        "imageSmallDarkSrc": "",
+        "imageFullDarkSrc": ""
+    },
+    "servicesConf": [
+        {
+        "key": "user_manual",
+        "value": "https://resources.dreo-cloud.com/app/202404/10/945c492652a2470a93157b0958152de2.pdf"
+        }
+    ],
+    "userManuals": [
+        {
+        "url": "https://resources.dreo-cloud.com/app/202404/10/945c492652a2470a93157b0958152de2.pdf",
+        "icon": null,
+        "desc": "User Manual",
+        "lang": "en"
+        }
+    ]
+    }
+]
+}
+}
+},
+"devices": {
+"fans": [
+{
+"_device_definition": {
+    "__type": "<class 'custom_components.dreo.pydreo.models.DreoDeviceDetails'>",
+    "repr": "DreoDeviceDetails(preset_modes=None, range=None, hvac_modes=None, swing_modes=None, cooking_modes=None, cooking_range=None)"
+},
+"_name": "Main Bedroom Fan",
+"_device_id": "1669136175370137602",
+"_sn": "**REDACTED**",
+"_brand": "Dreo",
+"_model": "DR-HTF008S",
+"_product_id": "1582290393341964289",
+"_product_name": "Tower Fan",
+"_device_name": "Main Bedroom Fan",
+"_shared": false,
+"_series": null,
+"_series_name": "Cruiser Pro T3 S",
+"_color": "b",
+"_dreo": {
+    "__type": "<class 'custom_components.dreo.pydreo.PyDreo'>",
+    "repr": "<custom_components.dreo.pydreo.PyDreo object at 0xffff77510590>"
+},
+"_is_on": true,
+"_feature_key_names": {},
+"raw_state": {
+    "code": 0,
+    "msg": "OK",
+    "data": {
+    "mixed": {
+        "wifi_ssid": "**REDACTED**",
+        "mcu_hardware_model": {
+        "state": "SC95F8613B",
+        "timestamp": 1724497220
+        },
+        "windlevel": {
+        "state": 2,
+        "timestamp": 1724653301
+        },
+        "wifi_rssi": {
+        "state": -40,
+        "timestamp": 1724497220
+        },
+        "windtype": {
+        "state": 1,
+        "timestamp": 1724497220
+        },
+        "poweron": {
+        "state": false,
+        "timestamp": 1724697416
+        },
+        "scheid": {
+        "state": 0,
+        "timestamp": 1724497220
+        },
+        "timeron": {
+        "state": {
+            "du": 0,
+            "ts": 0
+        },
+        "timestamp": null
+        },
+        "scheon": {
+        "state": false,
+        "timestamp": 1724497220
+        },
+        "voiceon": {
+        "state": false,
+        "timestamp": 1724497220
+        },
+        "wrong": {
+        "state": 0,
+        "timestamp": 1724497220
+        },
+        "module_firmware_version": {
+        "state": "3.0.9",
+        "timestamp": 1724497220
+        },
+        "mcuon": {
+        "state": true,
+        "timestamp": 1724497220
+        },
+        "connected": {
+        "state": true,
+        "timestamp": 1724497220
+        },
+        "timeroff": {
+        "state": {
+            "du": 0,
+            "ts": 0
+        },
+        "timestamp": null
+        },
+        "shakehorizon": {
+        "state": false,
+        "timestamp": 1724497220
+        },
+        "network_latency": {
+        "state": 33,
+        "timestamp": 1724497220
+        },
+        "_ota": {
+        "state": 0,
+        "timestamp": 1724497220
+        },
+        "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1724497220
+        },
+        "mcu_firmware_version": {
+        "state": "1.0.21",
+        "timestamp": 1724497220
+        },
+        "temperature": {
+        "state": 77,
+        "timestamp": 1724696749
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "ledalwayson": {
+        "state": false,
+        "timestamp": 1724497220
+        }
+    },
+    "sn": "**REDACTED**",
+    "productId": "1582290393341964289",
+    "region": "us-east-2/emq"
+    }
+},
+"_attr_cbs": [
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bcae0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bcc20>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd620>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd6c0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd8a0>"
+    }
+],
+"_lock": {
+    "__type": "<class '_thread.lock'>",
+    "repr": "<unlocked _thread.lock object at 0xffff60320b00>"
+},
+"_speed_range": [
+    1,
+    5
+],
+"_preset_modes": [
+    [
+    "normal",
+    1
+    ],
+    [
+    "natural",
+    2
+    ],
+    [
+    "sleep",
+    3
+    ],
+    [
+    "auto",
+    4
+    ]
+],
+"_fan_speed": 1,
+"_wind_type": 1,
+"_wind_mode": null,
+"_shakehorizon": false,
+"_shakehorizonangle": null,
+"_osc_mode": null,
+"_cruise_conf": null,
+"_horizontally_oscillating": null,
+"_vertically_oscillating": null,
+"_temperature": 75,
+"_led_always_on": false,
+"_voice_on": false,
+"_light_sensor_on": null,
+"_mute_on": null,
+"_fixed_conf": null
+},
+{
+"_device_definition": {
+    "__type": "<class 'custom_components.dreo.pydreo.models.DreoDeviceDetails'>",
+    "repr": "DreoDeviceDetails(preset_modes=None, range=None, hvac_modes=None, swing_modes=None, cooking_modes=None, cooking_range=None)"
+},
+"_name": "Bonus Room Fan",
+"_device_id": "1692009631610630146",
+"_sn": "**REDACTED**",
+"_brand": "Dreo",
+"_model": "DR-HAF004S",
+"_product_id": "1572127914365333506",
+"_product_name": "Air Circulator",
+"_device_name": "Bonus Room Fan",
+"_shared": false,
+"_series": null,
+"_series_name": "CF714S/CF814S",
+"_color": "s",
+"_dreo": {
+    "__type": "<class 'custom_components.dreo.pydreo.PyDreo'>",
+    "repr": "<custom_components.dreo.pydreo.PyDreo object at 0xffff77510590>"
+},
+"_is_on": false,
+"_feature_key_names": {},
+"raw_state": {
+    "code": 0,
+    "msg": "OK",
+    "data": {
+    "mixed": {
+        "wifi_rssi": {
+        "state": -46,
+        "timestamp": 1724349717
+        },
+        "poweron": {
+        "state": false,
+        "timestamp": 1724697409
+        },
+        "hoscadj": {
+        "state": 5,
+        "timestamp": 1720935176
+        },
+        "cruiseconf": {
+        "state": "60,45,0,-45",
+        "timestamp": 1724349717
+        },
+        "timeron": {
+        "state": {
+            "du": 0,
+            "ts": 1724349717
+        },
+        "timestamp": null
+        },
+        "fixedconf": {
+        "state": "0,0",
+        "timestamp": 1724349717
+        },
+        "mode": {
+        "state": 1,
+        "timestamp": 1724697393
+        },
+        "mcuon": {
+        "state": true,
+        "timestamp": 1724349717
+        },
+        "network_latency": {
+        "state": 238,
+        "timestamp": 1724349717
+        },
+        "module_hardware_model": {
+        "state": "PAI-051",
+        "timestamp": 1724349717
+        },
+        "turboon": {
+        "state": false,
+        "timestamp": 1724349717
+        },
+        "mcu_firmware_version": {
+        "state": "0.6.8",
+        "timestamp": 1724349717
+        },
+        "lightsensoron": {
+        "state": true,
+        "timestamp": 1724349717
+        },
+        "customconf": {
+        "state": "temp:23333334444446666668888889",
+        "timestamp": 1724349717
+        },
+        "oscmode": {
+        "state": 2,
+        "timestamp": 1724349717
+        },
+        "temperature": {
+        "state": 75,
+        "timestamp": 1724725868
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "alignon": {
+        "state": true,
+        "timestamp": 1724349717
+        },
+        "muteon": {
+        "state": true,
+        "timestamp": 1724349717
+        },
+        "mcu_hardware_model": {
+        "state": "SC95F8613B",
+        "timestamp": 1724349717
+        },
+        "wifi_ssid": "**REDACTED**",
+        "windlevel": {
+        "state": 4,
+        "timestamp": 1724697404
+        },
+        "wrong": {
+        "state": 0,
+        "timestamp": 1724349717
+        },
+        "module_firmware_version": {
+        "state": "1.2.17",
+        "timestamp": 1724349717
+        },
+        "connected": {
+        "state": true,
+        "timestamp": 1724349717
+        },
+        "timeroff": {
+        "state": {
+            "du": 0,
+            "ts": 1724349717
+        },
+        "timestamp": null
+        },
+        "voscadj": {
+        "state": -5,
+        "timestamp": 1723859101
+        },
+        "childlockon": {
+        "state": false,
+        "timestamp": 1724349717
+        }
+    },
+    "sn": "**REDACTED**",
+    "productId": "1572127914365333506",
+    "region": "us-east-2"
+    }
+},
+"_attr_cbs": [
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bca40>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bce00>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bcea0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bcfe0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd120>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd260>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd3a0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd4e0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bd9e0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bdb20>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bdc60>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bdda0>"
+    },
+    {
+    "__type": "<class 'function'>",
+    "repr": "<function DreoBaseDeviceHA.async_added_to_hass.<locals>.update_state at 0xffff567bdee0>"
+    }
+],
+"_lock": {
+    "__type": "<class '_thread.lock'>",
+    "repr": "<unlocked _thread.lock object at 0xffff58cac780>"
+},
+"_speed_range": [
+    1,
+    9
+],
+"_preset_modes": [
+    [
+    "normal",
+    1
+    ],
+    [
+    "natural",
+    2
+    ],
+    [
+    "sleep",
+    3
+    ],
+    [
+    "auto",
+    4
+    ],
+    [
+    "turbo",
+    5
+    ],
+    [
+    "custom",
+    6
+    ]
+],
+"_fan_speed": 4,
+"_wind_type": null,
+"_wind_mode": 1,
+"_shakehorizon": null,
+"_shakehorizonangle": null,
+"_osc_mode": 2,
+"_cruise_conf": "60,45,0,-45",
+"_horizontally_oscillating": null,
+"_vertically_oscillating": null,
+"_temperature": 74,
+"_led_always_on": null,
+"_voice_on": null,
+"_light_sensor_on": true,
+"_mute_on": true,
+"_fixed_conf": "0,0"
+}
+],
+"heaters": [],
+"acs": [],
+"cookers": []
+}
+}
+}

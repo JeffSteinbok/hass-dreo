@@ -1,24 +1,16 @@
 """Tests for Dreo Fans"""
 # pylint: disable=used-before-assignment
 import logging
-from typing import TYPE_CHECKING
 from unittest.mock import patch, call
 import pytest
-
-if TYPE_CHECKING:
-    from  .imports import * # pylint: disable=W0401,W0614
-    from . import call_json
-    from .testbase import TestBase
-else:
-    from imports import * # pylint: disable=W0401,W0614
-    import call_json
-    from testbase import TestBase
+from  .imports import * # pylint: disable=W0401,W0614
+from . import call_json
+from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 LOGIN_RESPONSE = call_json.LOGIN_RET_BODY
-
 
 class TestPyDreoHeater(TestBase):
     """Test PyDreoHeater class."""
@@ -33,11 +25,11 @@ class TestPyDreoHeater(TestBase):
         assert heater.heat_range == (1, 3)
         assert heater.preset_modes == ['H1', 'H2', 'H3']
 
-        with patch('pydreo.PyDreo.send_command') as mock_send_command:
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
             mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
 
-        with (patch('pydreo.PyDreo.send_command') as mock_send_command):
+        with (patch(PATCH_SEND_COMMAND) as mock_send_command):
             heater.preset_mode = 'H1'
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
 

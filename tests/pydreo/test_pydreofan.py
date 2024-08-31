@@ -1,18 +1,11 @@
 """Tests for Dreo Fans"""
 # pylint: disable=used-before-assignment
 import logging
-from typing import TYPE_CHECKING
 from unittest.mock import patch
 import pytest
-
-if TYPE_CHECKING:
-    from  .imports import * # pylint: disable=W0401,W0614
-    from . import call_json
-    from .testbase import TestBase
-else:
-    from imports import * # pylint: disable=W0401,W0614
-    import call_json
-    from testbase import TestBase
+from  .imports import * # pylint: disable=W0401,W0614
+from . import call_json
+from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -32,18 +25,18 @@ class TestPyDreoFan(TestBase):
         assert fan.speed_range == (1, 5)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
 
-        with patch('pydreo.PyDreo.send_command') as mock_send_command:
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
 
-        with patch('pydreo.PyDreo.send_command') as mock_send_command:
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'normal'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'
 
-        with patch('pydreo.PyDreo.send_command') as mock_send_command:
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 3
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 3})
 
@@ -62,18 +55,18 @@ class TestPyDreoFan(TestBase):
         assert fan.speed_range == (1, 9)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto', 'turbo', 'custom']
 
-        with patch('pydreo.PyDreo.send_command') as mock_send_command:
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
 
-        with patch('pydreo.PyDreo.send_command') as mock_send_command:
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'normal'
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 1})
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'
 
-        with patch('pydreo.PyDreo.send_command') as mock_send_command:
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 3
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 3})
 

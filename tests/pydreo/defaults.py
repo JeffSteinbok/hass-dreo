@@ -2,10 +2,7 @@
 from typing import TYPE_CHECKING
 from requests.structures import CaseInsensitiveDict
 
-if TYPE_CHECKING:
-    from .imports import * # pylint: disable=W0401,W0614
-else:
-    from imports import * # pylint: disable=W0401,W0614
+from .imports import * # pylint: disable=W0401,W0614
 
 class Defaults:
     """General defaults for API responses and requests.

@@ -2,10 +2,7 @@
 from typing import TYPE_CHECKING
 import json
 
-if TYPE_CHECKING:
-    from .defaults import Defaults
-else:
-    from defaults import Defaults
+from .defaults import Defaults
 
 # DEFAULT_BODY = Standard body for new device calls
 # DEFAULT_HEADER = standard header for most calls
