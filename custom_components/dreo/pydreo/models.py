@@ -91,12 +91,7 @@ SUPPORTED_FANS = {
     "DR-HTF": DreoDeviceDetails(),
     "DR-HAF": DreoDeviceDetails(),
     "DR-HPF": DreoDeviceDetails(),
-    "DR-HCF": DreoDeviceDetails(),
-    "DR-HTF005S": DreoDeviceDetails(
-        range={
-            SPEED_RANGE: (1, 12)
-        }
-    ),
+    "DR-HCF": DreoDeviceDetails()
 }
 
 SUPPORTED_HEATERS = {
