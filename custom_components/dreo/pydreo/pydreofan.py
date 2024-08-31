@@ -25,11 +25,12 @@ from .constant import (
     MUTEON_KEY,
     FIXEDCONF_KEY,
     OscillationMode,
-    TemperatureUnit
+    TemperatureUnit,
+    SPEED_RANGE
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoDeviceDetails, SPEED_RANGE
+from .models import DreoDeviceDetails
 from .helpers import Helpers
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
