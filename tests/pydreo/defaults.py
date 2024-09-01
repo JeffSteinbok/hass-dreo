@@ -1,5 +1,4 @@
 """PyDreo Test Defaults"""
-from typing import TYPE_CHECKING
 from requests.structures import CaseInsensitiveDict
 
 from .imports import * # pylint: disable=W0401,W0614

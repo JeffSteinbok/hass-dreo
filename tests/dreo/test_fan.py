@@ -1,7 +1,5 @@
-import pytest
 from unittest.mock import patch
 #from homeassistant.helpers import Entity
-from homeassistant.components.fan import FanEntityFeature
 
 from custom_components.dreo import fan
 
