@@ -8,14 +8,9 @@ and methods needed to run the tests.
 import logging
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from  .imports import PyDreo
-    from . import call_json
-    from .testbase import TestBase
-else:
-    from imports import * # pylint: disable=W0401,W0614
-    import call_json
-    from testbase import TestBase
+from .imports import PyDreo
+from . import call_json
+from .testbase import TestBase
 
 
 logger = logging.getLogger(__name__)

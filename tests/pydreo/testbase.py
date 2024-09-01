@@ -4,18 +4,15 @@ import logging
 from typing import Optional, TYPE_CHECKING
 from unittest.mock import patch
 import pytest
-
-if TYPE_CHECKING:
-    from  .imports import * # pylint: disable=W0401,W0614
-    from . import defaults
-    from . import call_json
-else:
-    from imports import * # pylint: disable=W0401,W0614
-    import defaults
-    import call_json
+from  .imports import * # pylint: disable=W0401,W0614
+from . import defaults
+from . import call_json
 
 logger = logging.getLogger(__name__)
 
+PATCH_BASE_PATH = 'custom_components.dreo.pydreo'
+PATCH_SEND_COMMAND = f'{PATCH_BASE_PATH}.PyDreo.send_command'
+PATCH_CALL_DREO_API = f'{PATCH_BASE_PATH}.PyDreo.call_dreo_api'
 
 Defaults = defaults.Defaults
 
@@ -50,7 +47,7 @@ class TestBase:
         Class instance with mocked call_api() function and Dreo object
         """
         self._get_devices_file_name = None
-        self.mock_api_call = patch('pydreo.PyDreo.call_dreo_api')
+        self.mock_api_call = patch(PATCH_CALL_DREO_API)
         self.caplog = caplog
         self.mock_api = self.mock_api_call.start()
         self.mock_api.side_effect = self.call_dreo_api

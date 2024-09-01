@@ -1,2 +1,5 @@
 websockets
 strenum
+requests
+voluptuous
+homeassistant
