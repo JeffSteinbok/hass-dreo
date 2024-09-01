@@ -25,11 +25,12 @@ from .constant import (
     MUTEON_KEY,
     FIXEDCONF_KEY,
     OscillationMode,
-    TemperatureUnit
+    TemperatureUnit,
+    SPEED_RANGE
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoDeviceDetails, SPEED_RANGE
+from .models import DreoDeviceDetails
 from .helpers import Helpers
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -81,19 +82,39 @@ class PyDreoFan(PyDreoBaseDevice):
 
     def parse_speed_range(self, details: Dict[str, list]) -> tuple[int, int]:
         """Parse the speed range from the details."""
+        # There are a bunch of different places this could be, so we're going to look in
+        # multiple places.
+        speed_range : tuple[int, int] = None
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
-            control = controls_conf.get("control", None)
-            if (control is not None):
-                for control_item in control:
-                    if (control_item is not None):
-                        if control_item.get("type", None) == "Speed":
-                            lowSpeed = control_item.get("items", None)[0].get("value", None)
-                            highSpeed = control_item.get("items", None)[1].get("value", None)
-                            speed_range = (lowSpeed, highSpeed)
-                            _LOGGER.debug("PyDreoFan:Detected speed range - %s", speed_range)
+            extra_configs = controls_conf.get("extraConfigs")
+            if (extra_configs is not None):
+                _LOGGER.debug("PyDreoFan:Detected extraConfigs")
+                for extra_config_item in extra_configs:
+                    if extra_config_item.get("key", None) == "control":
+                        _LOGGER.debug("PyDreoFan:Detected extraConfigs/control")
+                        speed_range = self.parse_speed_range_from_control_node(extra_config_item.get("value", None))
+                        if (speed_range is not None):
+                            _LOGGER.debug("PyDreoFan:Detected speed range from extraConfig - %s", speed_range)
                             return speed_range
 
+            control_node = controls_conf.get("control", None)
+            if (control_node is not None):
+                speed_range = self.parse_speed_range_from_control_node(control_node)
+                _LOGGER.debug("PyDreoFan:Detected speed range from controlsConf - %s", speed_range)
+                return speed_range
+        return None
+
+    def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
+        """Parse the speed range from a control node"""
+        for control_item in control_node:
+            if control_item.get("type", None) == "Speed":
+                speed_low = control_item.get("items", None)[0].get("value", None)
+                speed_high = control_item.get("items", None)[1].get("value", None)
+                speed_range = (speed_low, speed_high)
+                return speed_range
+        return None
+    
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         preset_modes = []
@@ -102,12 +123,11 @@ class PyDreoFan(PyDreoBaseDevice):
             control = controls_conf.get("control", None)
             if (control is not None):
                 for control_item in control:
-                    if (control_item is not None):
-                        if control_item.get("type", None) == "Mode":
-                            for mode_item in control_item.get("items", None):
-                                text = mode_item.get("image", None).split("_")[1]
-                                value = mode_item.get("value", None)
-                                preset_modes.append((text, value))
+                    if control_item.get("type", None) == "Mode":
+                        for mode_item in control_item.get("items", None):
+                            text = mode_item.get("image", None).split("_")[1]
+                            value = mode_item.get("value", None)
+                            preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
             if (schedule is not None):
                 modes = schedule.get("modes", None)
