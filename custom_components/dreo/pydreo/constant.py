@@ -78,11 +78,6 @@ DREO_AUTH_REGION_EU = "EU"
 DREO_API_REGION_US = "us"
 DREO_API_REGION_EU = "eu"
 
-FAN_MODE_NORMAL = "normal"
-FAN_MODE_NATURAL = "natural"
-FAN_MODE_AUTO = "auto"
-FAN_MODE_SLEEP = "sleep"
-FAN_MODE_TURBO = "turbo"
 HEATER_MODE_COOLAIR = "coolair"
 HEATER_MODE_HOTAIR = "hotair"
 HEATER_MODE_ECO = "eco"
@@ -217,3 +212,15 @@ class HVACMode(StrEnum):
 
     # Only the fan is on, not fan and another mode like cool
     FAN_ONLY = "fan_only"
+
+FAN_MODE_STRINGS = {
+    "device_fans_mode_straight": "normal",
+    "device_fans_mode_natural": "natural",
+    "device_control_mode_sleep": "sleep",
+    "device_fans_mode_sleep": "sleep",
+    "device_fans_mode_auto": "auto",
+    "device_control_mode_auto": "auto",
+    "device_control_mode_turbo": "turbo",
+    "base_reverse": "reverse",
+    "device_control_custom": "custom"
+}

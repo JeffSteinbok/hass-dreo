@@ -26,7 +26,8 @@ from .constant import (
     FIXEDCONF_KEY,
     OscillationMode,
     TemperatureUnit,
-    SPEED_RANGE
+    SPEED_RANGE,
+    FAN_MODE_STRINGS
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
@@ -123,9 +124,11 @@ class PyDreoFan(PyDreoBaseDevice):
             control = controls_conf.get("control", None)
             if (control is not None):
                 for control_item in control:
-                    if control_item.get("type", None) == "Mode":
+                    if (control_item.get("type", None) == "Mode" or
+                        control_item.get("type", None) == "CFFan"):
                         for mode_item in control_item.get("items", None):
-                            text = mode_item.get("image", None).split("_")[1]
+                            text_id = mode_item.get("text", None)
+                            text = FAN_MODE_STRINGS[text_id]
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
@@ -133,7 +136,8 @@ class PyDreoFan(PyDreoBaseDevice):
                 modes = schedule.get("modes", None)
                 if (modes is not None):
                     for mode_item in modes:
-                        text = mode_item.get("icon", None).split("_")[1]
+                        text_id = mode_item.get("title", None)
+                        text = FAN_MODE_STRINGS[text_id]
                         value = mode_item.get("value", None)
                         if (text, value) not in preset_modes:
                             preset_modes.append((text, value))
