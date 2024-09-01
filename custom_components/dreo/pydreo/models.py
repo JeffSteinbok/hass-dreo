@@ -70,6 +70,7 @@ class DreoDeviceDetails:
 SUPPORTED_MODEL_PREFIXES = {
     "DR-HTF",
     "DR-HAF",
+    "DR-HAP",
     "DR-HPF",
     "DR-HCF",
     "DR-HSH",
@@ -82,6 +83,10 @@ SUPPORTED_FANS = {
     "DR-HAF": DreoDeviceDetails(),
     "DR-HPF": DreoDeviceDetails(),
     "DR-HCF": DreoDeviceDetails()
+}
+
+SUPPORTED_AIR_PURIFIERS = {
+    "DR-HAP003S": DreoDeviceDetails()
 }
 
 SUPPORTED_HEATERS = {

@@ -8,6 +8,7 @@ from .const import (
     LOGGER,
     DOMAIN,
     DREO_FANS,
+    DREO_AIR_PURIFIERS,
     DREO_HEATERS,
     DREO_AIRCONDITIONERS,
     DREO_COOKERS,
@@ -59,6 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data[DOMAIN][DREO_MANAGER] = manager
 
     fans = hass.data[DOMAIN][DREO_FANS] = []
+    air_purifiers = hass.data[DOMAIN][DREO_AIR_PURIFIERS] = []
     heaters = hass.data[DOMAIN][DREO_HEATERS] = []
     acs = hass.data[DOMAIN][DREO_AIRCONDITIONERS] = []
     cookers = hass.data[DOMAIN][DREO_COOKERS] = []
@@ -122,14 +124,18 @@ def process_devices(manager) -> dict:
     """Assign devices to proper component."""
     devices = {}
     devices[DREO_FANS] = []
+    devices[DREO_AIR_PURIFIERS] = []
     devices[DREO_HEATERS] = []
     devices[DREO_AIRCONDITIONERS] = []
     devices[DREO_COOKERS] = []
 
     if manager.fans:
         devices[DREO_FANS].extend(manager.fans)
-        # Expose fan sensors separately
         _LOGGER.info("%d Dreo fans found", len(manager.fans))
+
+    if manager.air_purifiers:
+        devices[DREO_AIR_PURIFIERS].extend(manager.air_purifiers)
+        _LOGGER.info("%d Dreo air purifiers found", len(manager.air_purifiers))
 
     if manager.heaters:
         devices[DREO_HEATERS].extend(manager.heaters)

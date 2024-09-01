@@ -1,7 +1,8 @@
 """Base class for all tests. Contains a mock for call_dreo_api() function and instantiated Dreo object."""
 # pylint: disable=W0201
 import logging
-from typing import Optional, TYPE_CHECKING
+import os
+from typing import Optional
 from unittest.mock import patch
 import pytest
 from  .imports import * # pylint: disable=W0401,W0614
@@ -85,4 +86,9 @@ class TestBase:
             return (call_json.get_response_from_file(self.get_devices_file_name), 200)
         if api == "devicestate":
             logger.debug("API call: %s %s", api, json_object)
-            return (call_json.get_response_from_file(f"get_device_state_{json_object['deviceSn']}.json"), 200)
+            if (os.path.exists(f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")):
+                logger.debug("Device state loaded from file: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
+                return (call_json.get_response_from_file(f"get_device_state_{json_object['deviceSn']}.json"), 200)
+            else:
+                logger.debug("No file found: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
+                return {}, 200

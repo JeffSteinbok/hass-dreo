@@ -17,6 +17,7 @@ from .models import *
 from .commandtransport import CommandTransport
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreofan import PyDreoFan
+from .pydreoairpurifier import PyDreoAirPurifier
 from .pydreoheater import PyDreoHeater
 from .pydreoac import PyDreoAC
 from .pydreochefmaker import PyDreoChefMaker
@@ -47,6 +48,7 @@ class PyDreo:  # pylint: disable=function-redefined
         self._dev_list = {}
         self._device_list_by_sn = {}
         self.fans: list[PyDreoFan] = []
+        self.air_purifiers : list[PyDreoAirPurifier] = []
         self.heaters: list[PyDreoHeater] = []
         self.acs: list[PyDreoAC] = []
         self.cookers: list[PyDreoChefMaker] = []
@@ -138,7 +140,6 @@ class PyDreo:  # pylint: disable=function-redefined
 
         # detail_keys = ['deviceType', 'deviceName', 'deviceStatus']
         for dev in devices:
-            # For now, let's keep this simple and just support fans...
             # Get the state of the device...separate API call...boo
             try:
                 model = dev.get("model", None)
@@ -159,6 +160,9 @@ class PyDreo:  # pylint: disable=function-redefined
                 elif model in SUPPORTED_FANS:
                     _LOGGER.debug("Fan %s found!", model)
                     device = PyDreoFan(SUPPORTED_FANS[model], dev, self)
+                elif model in SUPPORTED_AIR_PURIFIERS:
+                    _LOGGER.debug("Air Purifier %s found!", model)
+                    device = PyDreoAirPurifier(SUPPORTED_AIR_PURIFIERS[model], dev, self)
                 elif model in SUPPORTED_HEATERS:
                     _LOGGER.debug("Heater %s found!", model)
                     device = PyDreoHeater(SUPPORTED_HEATERS[model], dev, self)
@@ -168,6 +172,9 @@ class PyDreo:  # pylint: disable=function-redefined
                 elif model_prefix is not None and model_prefix in SUPPORTED_FANS:
                     _LOGGER.debug("Fan %s found! via prefix %s", model, model_prefix)
                     device = PyDreoFan(SUPPORTED_FANS[model_prefix], dev, self)
+                elif model_prefix is not None and model_prefix in SUPPORTED_AIR_PURIFIERS:
+                    _LOGGER.debug("Air Purifier %s found! via prefix %s", model, model_prefix)
+                    device = PyDreoAirPurifier(SUPPORTED_AIR_PURIFIERS[model_prefix], dev, self)
                 elif model_prefix is not None and model_prefix in SUPPORTED_HEATERS:
                     _LOGGER.debug("Heater %s found! via prefix %s", model, model_prefix)
                     device = PyDreoHeater(SUPPORTED_HEATERS[model_prefix], dev, self)
@@ -180,6 +187,8 @@ class PyDreo:  # pylint: disable=function-redefined
                 self.load_device_state(device)
                 if isinstance(device, PyDreoFan):
                     self.fans.append(device)
+                if isinstance(device, PyDreoAirPurifier):
+                    self.air_purifiers.append(device)
                 if isinstance(device, PyDreoHeater):
                     self.heaters.append(device)
                 if isinstance(device, PyDreoAC):
