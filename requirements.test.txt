@@ -1,4 +1,5 @@
 # Strictly for tests
 pytest
 pytest-cov
+pytest-mock
 pyyaml
