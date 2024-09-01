@@ -91,10 +91,10 @@ to control the device remotely via either the Dreo app or this HA integration.
 
 <table>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/heat-mode-thermostat.png" width="300" alt="heat mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/fan-mode-thermostat.png" width="300" alt="fan mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/off-mode-thermostat.png" width="300" alt="off mode thermostat"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/heat-mode-thermostat.png" width="300" alt="heat mode thermostat"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/fan-mode-thermostat.png" width="300" alt="fan mode thermostat"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/off-mode-thermostat.png" width="300" alt="off mode thermostat"></td>
     </tr>
     <tr>
         <td>Auto/Eco Mode</td>
@@ -103,10 +103,10 @@ to control the device remotely via either the Dreo app or this HA integration.
         <td>Off</td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/mode-list.png" width="200" alt="HVAC mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/fan-mode-list.png" width="200" alt="fan mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/preset-mode-list.png" width="200" alt="preset mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/swing-mode-list.png" width="200" alt="swing mode list"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/mode-list.png" width="200" alt="HVAC mode list"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/fan-mode-list.png" width="200" alt="fan mode list"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/preset-mode-list.png" width="200" alt="preset mode list"></td>
+        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/swing-mode-list.png" width="200" alt="swing mode list"></td>
     </tr>
     <tr>
         <td>HVAC Modes</td>
@@ -115,8 +115,8 @@ to control the device remotely via either the Dreo app or this HA integration.
         <td>Swing Modes</td>
     </tr>
     <tr>
-        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/heater-entities.png" width="200" alt="heater entities"></td>
-        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/compact-thermostat.png" width="200" alt="compact-thermostat"></td> 
+        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/heater-entities.png" width="200" alt="heater entities"></td>
+        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/compact-thermostat.png" width="200" alt="compact-thermostat"></td> 
     </tr>
     <tr>
         <td colspan="2" align="center">Heater Entities</td>
