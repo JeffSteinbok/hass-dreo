@@ -110,7 +110,7 @@ class TestPyDreoFan(TestBase):
             fan.fan_speed = 10
 
 
-        def test_HCF005S(self):  # pylint: disable=invalid-name
+    def test_HCF005S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
 
         self.get_devices_file_name = "get_devices_HCF001S.json"
