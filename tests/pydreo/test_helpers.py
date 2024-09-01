@@ -2,13 +2,11 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from  .imports import PyDreo, Helpers
+    from  .imports import Helpers
     from . import call_json
-    from .testbase import TestBase
 else:
     from imports import * # pylint: disable=W0401,W0614
     import call_json
-    from testbase import TestBase
 
 class TestHelpers:
     """Test Helpers class."""
