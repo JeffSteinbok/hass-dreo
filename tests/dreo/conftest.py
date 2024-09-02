@@ -1,9 +1,5 @@
 import logging
-from collections import defaultdict
 import pytest
-
-from custom_components.dreo.pydreo import PyDreo
-
 
 @pytest.fixture(autouse=True)
 def set_debug_mode(caplog):

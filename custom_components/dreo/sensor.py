@@ -16,7 +16,8 @@ from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import (
     TemperatureUnit,
     HUMIDITY_KEY,
-    MODE_KEY
+    MODE_KEY,
+    DreoDeviceType
 )
 
 from .haimports import *  # pylint: disable=W0401,W0614
@@ -24,7 +25,7 @@ from .haimports import *  # pylint: disable=W0401,W0614
 from .const import (
     LOGGER,
     DOMAIN,
-    DREO_MANAGER,
+    PYDREO_MANAGER,
 )
 
 from .pydreo.pydreoac import (
@@ -95,33 +96,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[MODE_STANDBY, MODE_COOKING, MODE_OFF],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
-    ),
-    DreoSensorEntityDescription(
-        key="humidity",
-        translation_key="humidity",
-        device_class=SensorDeviceClass.HUMIDITY,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement_fn=lambda device: "%",
-        value_fn=lambda device: device.humidity,
-        exists_fn=lambda device: device.is_feature_supported(HUMIDITY_KEY)
-    ),
-    DreoSensorEntityDescription(
-        key="Use since cleaning",
-        translation_key="use_hours",
-        device_class=SensorDeviceClass.DURATION,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement_fn=lambda device: "h",
-        value_fn=lambda device: device.work_time,
-        exists_fn=lambda device: device.is_feature_supported(WORK_TIME)
-    ),
-    DreoSensorEntityDescription(
-        key="Target temp reached",
-        translation_key="reach_target_temp",
-        device_class=SensorDeviceClass.ENUM,
-        options=["Yes", "No"],
-        value_fn=lambda device: device.temp_target_reached,
-        exists_fn=lambda device: device.is_feature_supported(TEMP_TARGET_REACHED)
-    ),
+    )
 )
 
 
@@ -133,27 +108,31 @@ async def async_setup_entry(
     """Set up the Dreo sensor platform."""
     _LOGGER.info("Starting Dreo Sensor Platform")
 
-    manager = hass.data[DOMAIN][DREO_MANAGER]
+    pydreo_manager = hass.data[DOMAIN][PYDREO_MANAGER]
 
     sensor_has = []
-    for fanEntity in manager.fans:
-        # Really ugly hack since there is just one sensor for now...
-        sensor_has.append(DreoSensorHA(fanEntity, SENSORS[0]))
+    for pydreo_device in pydreo_manager.devices:
 
-    for heater_entity in manager.heaters:
-        # Really ugly hack since there is just one sensor for now...
-        sensor_has.append(DreoSensorHA(heater_entity, SENSORS[0]))
+        if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
+            pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR or
+            pydreo_device.type == DreoDeviceType.AIR_PURIFIER):
+            # Really ugly hack since there is just one sensor for now...
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[0]))
 
-    for ac_entity in manager.acs:
-        # Really ugly hack...
-        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[0]))
-        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[1]))
-        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[2]))
-        sensor_has.append(DreoSensorHA(ac_entity, SENSORS[3]))
+        if pydreo_device.type == DreoDeviceType.HEATER:
+            # Really ugly hack since there is just one sensor for now...
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[0]))
 
-    for cooking_entity in manager.cookers:
-        # Really ugly hack...
-        sensor_has.append(DreoSensorHA(cooking_entity, SENSORS[4]))
+        if pydreo_device.type == DreoDeviceType.AIR_CONDITIONER:
+            # Really ugly hack...
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[0]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[1]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[2]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[3]))
+
+        if pydreo_device.type == DreoDeviceType.COOKER:
+            # Really ugly hack...
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[4]))
 
     async_add_entities(sensor_has)
 

@@ -28,12 +28,13 @@ from .pydreo import (
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
     HUMIDITY_RANGE,
+    DreoDeviceType
 )
 
 from .const import (
     LOGGER,
     DOMAIN,
-    DREO_MANAGER,
+    PYDREO_MANAGER,
 )
 
 HVAC_MODE_MAP = {
@@ -108,13 +109,14 @@ async def async_setup_entry(
     _LOGGER.info("Starting Dreo Climate Platform")
     _LOGGER.debug("Dreo Climate:async_setup_entry")
 
-    manager: PyDreo = hass.data[DOMAIN][DREO_MANAGER]
+    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    async_add_entities(add_device_entries(manager.heaters))
-    async_add_entities(add_device_entries(manager.acs))
-
-    platform = entity_platform.async_get_current_platform()
-
+    climate_entities_ha = []
+    for pydreo_device in pydreo_manager.devices:
+        if pydreo_device.type == DreoDeviceType.HEATER:
+            climate_entities_ha.append(DreoHeaterHA(pydreo_device))
+        elif pydreo_device.type == DreoDeviceType.AIR_CONDITIONER:
+            climate_entities_ha.append(DreoACHA(pydreo_device))
 
 # Implementation of the heater
 class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
@@ -326,11 +328,11 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def min_temp(self) -> float | None:
-        return self.device.device_definition.range[ECOLEVEL_RANGE][0]
+        return self.device.device_definition.speed_range[ECOLEVEL_RANGE][0]
 
     @property
     def max_temp(self) -> float | None:
-        return self.device.device_definition.range[ECOLEVEL_RANGE][1]
+        return self.device.device_definition.speed_range[ECOLEVEL_RANGE][1]
 
     @property
     def target_temperature_step(self) -> float | None:
@@ -584,11 +586,11 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
     
     @property
     def min_temp(self) -> float | None:
-        return self.device.device_definition.range[TEMP_RANGE][0]
+        return self.device.device_definition.speed_range[TEMP_RANGE][0]
 
     @property
     def max_temp(self) -> float | None:
-        return self.device.device_definition.range[TEMP_RANGE][1]
+        return self.device.device_definition.speed_range[TEMP_RANGE][1]
     
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
@@ -610,7 +612,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
             range_key = TARGET_TEMP_RANGE_ECO
         else:
             range_key = TARGET_TEMP_RANGE
-        return self.device.device_definition.range[range_key][0]
+        return self.device.device_definition.speed_range[range_key][0]
 
     @property
     def target_temperature_high(self) -> float | None:
@@ -618,7 +620,7 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
             range_key = TARGET_TEMP_RANGE_ECO
         else:
             range_key = TARGET_TEMP_RANGE
-        return self.device.device_definition.range[range_key][1]
+        return self.device.device_definition.speed_range[range_key][1]
 
     @property
     def target_temperature_step(self) -> float | None:
@@ -641,11 +643,11 @@ class DreoACHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def min_humidity(self) -> float | None:
-        return self.device.device_definition.range[HUMIDITY_RANGE][0]
+        return self.device.device_definition.speed_range[HUMIDITY_RANGE][0]
 
     @property
     def max_humidity(self) -> float | None:
-        return self.device.device_definition.range[HUMIDITY_RANGE][1]
+        return self.device.device_definition.speed_range[HUMIDITY_RANGE][1]
 
     @property
     def hvac_mode(self):

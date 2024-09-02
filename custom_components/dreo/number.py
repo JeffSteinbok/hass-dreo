@@ -17,7 +17,7 @@ from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .const import (
     LOGGER,
     DOMAIN,
-    DREO_MANAGER
+    PYDREO_MANAGER
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -139,7 +139,7 @@ async def async_setup_entry(
     """Set up the Dreo Number platform."""
     _LOGGER.info("Starting Dreo Number Platform")
 
-    manager : PyDreo = hass.data[DOMAIN][DREO_MANAGER]
+    manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     async_add_entities(add_entries(manager.fans))
     async_add_entities(add_entries(manager.heaters))

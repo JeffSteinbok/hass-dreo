@@ -11,14 +11,14 @@ from .basedevice import DreoBaseDeviceHA
 from .const import (
     LOGGER,
     DOMAIN,
-    DREO_MANAGER
+    PYDREO_MANAGER
 )
 
 from .pydreo import PyDreo
-from .pydreo.pydreofan import PyDreoFan
+from .pydreo.constant import DreoDeviceType
+from .pydreo.pydreofan import PyDreoFanBase
 
 _LOGGER = logging.getLogger(LOGGER)
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -30,14 +30,14 @@ async def async_setup_entry(
     _LOGGER.info("Starting Dreo Fan Platform")
     _LOGGER.debug("Dreo Fan:async_setup_entry")
 
-    manager : PyDreo = hass.data[DOMAIN][DREO_MANAGER]
+    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     fan_entities_ha = []
-    for fan_entity_ha in manager.fans:
-        fan_entities_ha.append(DreoFanHA(fan_entity_ha))
-
-    for air_purifier_ha in manager.air_purifiers:
-        fan_entities_ha.append(DreoAirPurifierHA(air_purifier_ha))
+    for pydreo_device in pydreo_manager.devices:
+        if pydreo_device.type == DreoDeviceType.TOWER_FAN:
+            fan_entities_ha.append(DreoFanHA(pydreo_device))
+        elif pydreo_device.type == DreoDeviceType.AIR_PURIFIER:
+            fan_entities_ha.append(DreoAirPurifierHA(pydreo_device))
 
     async_add_entities(fan_entities_ha)
 
@@ -45,7 +45,7 @@ async def async_setup_entry(
 class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     """Representation of a Dreo fan."""
 
-    def __init__(self, pyDreoFan: PyDreoFan):
+    def __init__(self, pyDreoFan: PyDreoFanBase):
         """Initialize the Dreo fan device."""
         super().__init__(pyDreoFan)
         self.device = pyDreoFan
@@ -152,7 +152,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
 class DreoAirPurifierHA(DreoBaseDeviceHA, FanEntity):
     """Representation of a Dreo air purifier."""
 
-    def __init__(self, pyDreoFan: PyDreoFan):
+    def __init__(self, pyDreoFan: PyDreoFanBase):
         """Initialize the Dreo air purifiers device."""
         super().__init__(pyDreoFan)
         self.device = pyDreoFan

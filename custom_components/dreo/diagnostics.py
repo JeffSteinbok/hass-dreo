@@ -13,7 +13,7 @@ from .pydreo import PyDreo
 from .haimports import * # pylint: disable=W0401,W0614
 from .const import (
     DOMAIN,
-    DREO_MANAGER,
+    PYDREO_MANAGER,
     LOGGER
 )
 
@@ -37,7 +37,7 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    manager: PyDreo = hass.data[DOMAIN][DREO_MANAGER]
+    manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     data = {
         DOMAIN: {

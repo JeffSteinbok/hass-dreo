@@ -6,10 +6,6 @@ and methods needed to run the tests.
 """
 # import utils
 import logging
-from typing import TYPE_CHECKING
-
-from .imports import PyDreo
-from . import call_json
 from .testbase import TestBase
 
 
@@ -31,6 +27,6 @@ class TestGeneralAPI(TestBase):
 
         self.get_devices_file_name = "get_devices_HTF008S.json"
         self.manager.load_devices()
-        assert len(self.manager.fans) == 1
-        assert self.manager.fans[0].speed_range == (1, 5)
-        assert self.manager.fans[0].preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert len(self.manager.devices) == 1
+        assert self.manager.devices[0].speed_range == (1, 5)
+        assert self.manager.devices[0].preset_modes == ['normal', 'natural', 'sleep', 'auto']

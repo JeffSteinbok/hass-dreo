@@ -15,8 +15,10 @@ from .constant import *
 from .helpers import Helpers
 from .models import *
 from .commandtransport import CommandTransport
-from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
-from .pydreofan import PyDreoFan
+from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError, UnknownProductError
+from .pydreotowerfan import PyDreoTowerFan
+from .pydreoaircirculator import PyDreoAirCirculator
+from .pydreoceilingfan import PyDreoCeilingFan
 from .pydreoairpurifier import PyDreoAirPurifier
 from .pydreoheater import PyDreoHeater
 from .pydreoac import PyDreoAC
@@ -24,6 +26,15 @@ from .pydreochefmaker import PyDreoChefMaker
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
+_DREO_DEVICE_TYPE_TO_CLASS = {
+    DreoDeviceType.TOWER_FAN: PyDreoTowerFan,
+    DreoDeviceType.AIR_CIRCULATOR: PyDreoAirCirculator,
+    DreoDeviceType.AIR_PURIFIER: PyDreoAirPurifier,
+    DreoDeviceType.CEILING_FAN: PyDreoCeilingFan,
+    DreoDeviceType.HEATER: PyDreoHeater,
+    DreoDeviceType.AIR_CONDITIONER: PyDreoAC,
+    DreoDeviceType.CHEF_MAKER: PyDreoChefMaker
+}
 
 class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
@@ -47,18 +58,7 @@ class PyDreo:  # pylint: disable=function-redefined
         self.in_process = False
         self._dev_list = {}
         self._device_list_by_sn = {}
-        self.fans: list[PyDreoFan] = []
-        self.air_purifiers : list[PyDreoAirPurifier] = []
-        self.heaters: list[PyDreoHeater] = []
-        self.acs: list[PyDreoAC] = []
-        self.cookers: list[PyDreoChefMaker] = []
-
-        self._dev_list = {
-            "fans": self.fans,
-            "heaters": self.heaters,
-            "acs": self.acs,
-            "cookers": self.cookers,
-        }
+        self.devices: list[PyDreoBaseDevice] = []
 
     @property
     def api_server_region(self) -> str:
@@ -143,8 +143,8 @@ class PyDreo:  # pylint: disable=function-redefined
             # Get the state of the device...separate API call...boo
             try:
                 model = dev.get("model", None)
-                _LOGGER.debug("found device with model %s", model)
-                device = None
+                
+                _LOGGER.debug("Found device with model %s", model)
 
                 # Get the prefix of the model number to match against the supported devices.
                 # Not all models will have known prefixes.
@@ -154,47 +154,27 @@ class PyDreo:  # pylint: disable=function-redefined
                         model_prefix = prefix
                         _LOGGER.debug("Prefix %s assigned from model %s", model_prefix, model)
                         break
-
+                
                 if model is None:
                     raise UnknownModelError(model)
-                elif model in SUPPORTED_FANS:
-                    _LOGGER.debug("Fan %s found!", model)
-                    device = PyDreoFan(SUPPORTED_FANS[model], dev, self)
-                elif model in SUPPORTED_AIR_PURIFIERS:
-                    _LOGGER.debug("Air Purifier %s found!", model)
-                    device = PyDreoAirPurifier(SUPPORTED_AIR_PURIFIERS[model], dev, self)
-                elif model in SUPPORTED_HEATERS:
-                    _LOGGER.debug("Heater %s found!", model)
-                    device = PyDreoHeater(SUPPORTED_HEATERS[model], dev, self)
-                elif model in SUPPORTED_ACS:
-                    _LOGGER.debug("AC %s found!", model)
-                    device = PyDreoAC(SUPPORTED_ACS[model], dev, self)
-                elif model_prefix is not None and model_prefix in SUPPORTED_FANS:
-                    _LOGGER.debug("Fan %s found! via prefix %s", model, model_prefix)
-                    device = PyDreoFan(SUPPORTED_FANS[model_prefix], dev, self)
-                elif model_prefix is not None and model_prefix in SUPPORTED_AIR_PURIFIERS:
-                    _LOGGER.debug("Air Purifier %s found! via prefix %s", model, model_prefix)
-                    device = PyDreoAirPurifier(SUPPORTED_AIR_PURIFIERS[model_prefix], dev, self)
-                elif model_prefix is not None and model_prefix in SUPPORTED_HEATERS:
-                    _LOGGER.debug("Heater %s found! via prefix %s", model, model_prefix)
-                    device = PyDreoHeater(SUPPORTED_HEATERS[model_prefix], dev, self)
-                elif model_prefix is not None and model_prefix in SUPPORTED_ACS:
-                    _LOGGER.debug("AC %s found! via prefix %s", model, model_prefix)
-                    device = PyDreoHeater(SUPPORTED_ACS[model_prefix], dev, self)
+                
+                device_details = None
+                if model in SUPPORTED_DEVICES:
+                    _LOGGER.debug("Device %s found!", model)
+                    device_details = SUPPORTED_DEVICES[model]
+                elif model_prefix is not None and model_prefix in SUPPORTED_DEVICES:
+                    _LOGGER.debug("Device %s found! via prefix %s", model, model_prefix)
+                    device_details = SUPPORTED_DEVICES[model_prefix]
                 else:
                     raise UnknownModelError(model)
 
+                device_class = _DREO_DEVICE_TYPE_TO_CLASS.get(device_details.device_type, None)
+                if device_class is None:
+                    raise UnknownProductError(device_details.device_type)
+                device = device_class(device_details, dev, self)
+
                 self.load_device_state(device)
-                if isinstance(device, PyDreoFan):
-                    self.fans.append(device)
-                if isinstance(device, PyDreoAirPurifier):
-                    self.air_purifiers.append(device)
-                if isinstance(device, PyDreoHeater):
-                    self.heaters.append(device)
-                if isinstance(device, PyDreoAC):
-                    self.acs.append(device)
-                if isinstance(device, PyDreoChefMaker):
-                    self.cookers.append(device)
+                self.devices.append(device)
 
                 self._device_list_by_sn[device.serial_number] = device
             except UnknownModelError as ume:

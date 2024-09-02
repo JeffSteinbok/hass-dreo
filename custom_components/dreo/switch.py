@@ -15,7 +15,7 @@ from .basedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 
-from .const import LOGGER, DOMAIN, DREO_MANAGER
+from .const import LOGGER, DOMAIN, PYDREO_MANAGER
 
 _LOGGER = logging.getLogger(LOGGER)
 
@@ -128,12 +128,9 @@ async def async_setup_entry(
     """Set up the Dreo Switch platform."""
     _LOGGER.info("Starting Dreo Switch Platform")
 
-    manager: PyDreo = hass.data[DOMAIN][DREO_MANAGER]
+    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    async_add_entities(add_device_entries(manager.fans))
-    async_add_entities(add_device_entries(manager.heaters))
-    async_add_entities(add_device_entries(manager.acs))
-    async_add_entities(add_device_entries(manager.cookers))
+    async_add_entities(add_device_entries(pydreo_manager.devices))
 
 
 class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
