@@ -21,7 +21,7 @@ class Helpers:
     """Dreo Helper Functions."""
 
     @staticmethod
-    def req_headers(manager) -> dict:
+    def req_headers(pydreo_manager) -> dict:
         """Build header for api requests."""
         headers = {
             "ua": "dreo/2.8.2",
@@ -30,8 +30,8 @@ class Helpers:
             "accept-encoding": "gzip",
             "user-agent": "okhttp/4.9.1",
         }
-        if manager.token is not None:
-            headers["authorization"] = f"Bearer {manager.token}"
+        if pydreo_manager.token is not None:
+            headers["authorization"] = f"Bearer {pydreo_manager.token}"
         return headers
 
     @staticmethod
@@ -40,7 +40,7 @@ class Helpers:
         return {"acceptLanguage": "en"}
 
     @classmethod
-    def req_body(cls, manager, type_) -> dict:
+    def req_body(cls, pydreo_manager, type_) -> dict:
         """Builder for body of api requests."""
         body = {}
 
@@ -49,11 +49,11 @@ class Helpers:
             body = {**cls.req_body_base()}
             body["client_id"] = "7de37c362ee54dcf9c4561812309347a"
             body["client_secret"] = "32dfa0764f25451d99f94e1693498791"
-            body["email"] = manager.username
+            body["email"] = pydreo_manager.username
             body["encrypt"] = "ciphertext"
             body["grant_type"] = "email-password"
             body["himei"] = "faede31549d649f58864093158787ec9"
-            body["password"] = cls.hash_password(manager.password)
+            body["password"] = cls.hash_password(pydreo_manager.password)
             body["scope"] = "all"
             print(body)
 

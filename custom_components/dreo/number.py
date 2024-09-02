@@ -139,11 +139,9 @@ async def async_setup_entry(
     """Set up the Dreo Number platform."""
     _LOGGER.info("Starting Dreo Number Platform")
 
-    manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    async_add_entities(add_entries(manager.fans))
-    async_add_entities(add_entries(manager.heaters))
-    async_add_entities(add_entries(manager.acs))
+    async_add_entities(add_entries(pydreo_manager.devices))
 
 
 class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):

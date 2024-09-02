@@ -37,22 +37,14 @@ async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
 ) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
-    manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     data = {
         DOMAIN: {
-            "fan_count": len(manager.fans),
-            "heater_count": len(manager.heaters),
-            "acs_count": len(manager.acs),
-            "cookers_count": len(manager.cookers),
-            "raw_devicelist": _redact_values(manager.raw_response),
+            "device_count": len(pydreo_manager.devices),
+            "raw_devicelist": _redact_values(pydreo_manager.raw_response),
         },
-        "devices": {
-            "fans": [_redact_values(device.__dict__) for device in manager.fans],
-            "heaters": [_redact_values(device.__dict__) for device in manager.heaters],
-            "acs": [_redact_values(device.__dict__) for device in manager.acs],
-            "cookers": [_redact_values(device.__dict__) for device in manager.cookers],
-        },
+        "devices": [_redact_values(device.__dict__) for device in pydreo_manager.devices],
     }
 
     return data

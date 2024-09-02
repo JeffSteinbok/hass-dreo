@@ -40,7 +40,7 @@ class TestBase:
         Attributes
         ----------
         self.mock_api : Mock
-        self.manager : Dreo
+        self.pydreo_manager : PyDreo
         self.caplog : LogCaptureFixture
 
         Yields
@@ -54,10 +54,10 @@ class TestBase:
         self.mock_api.side_effect = self.call_dreo_api
         self.mock_api.create_autospect()
         self.mock_api.return_value.ok = True
-        self.manager = PyDreo('EMAIL', 'PASSWORD', redact=True) # pylint: disable=E0601
-        self.manager.enabled = True
-        self.manager.token = Defaults.token
-        self.manager.account_id = Defaults.account_id
+        self.pydreo_manager = PyDreo('EMAIL', 'PASSWORD', redact=True) # pylint: disable=E0601
+        self.pydreo_manager.enabled = True
+        self.pydreo_manager.token = Defaults.token
+        self.pydreo_manager.account_id = Defaults.account_id
         caplog.set_level(logging.DEBUG)
         yield
         self.mock_api_call.stop()

@@ -18,8 +18,8 @@ class TestPyDreoAirPurifier(TestBase):
         """Load fan and test sending commands."""
 
         self.get_devices_file_name = "get_devices_HAP003S.json"
-        self.manager.load_devices()
-        assert len(self.manager.devices) == 1
-        air_purifier = self.manager.devices[0]
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        air_purifier = self.pydreo_manager.devices[0]
         assert air_purifier.speed_range == (1, 18)
         assert air_purifier.preset_modes == ['auto', 'manual', 'sleep', 'turbo']

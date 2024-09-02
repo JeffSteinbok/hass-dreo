@@ -49,8 +49,8 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self._username = user_input[CONF_USERNAME]
         self._password = user_input[CONF_PASSWORD]
 
-        manager = PyDreo(self._username, self._password, "us")
-        login = await self.hass.async_add_executor_job(manager.login)
+        pydreo_manager = PyDreo(self._username, self._password, "us")
+        login = await self.hass.async_add_executor_job(pydreo_manager.login)
         if not login:
             return self._show_form(errors={"base": "invalid_auth"})
 

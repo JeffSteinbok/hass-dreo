@@ -19,9 +19,9 @@ class TestPyDreoFan(TestBase):
         """Load fan and test sending commands."""
 
         self.get_devices_file_name = "get_devices_HTF008S.json"
-        self.manager.load_devices()
-        assert len(self.manager.devices) == 1
-        fan = self.manager.devices[0]
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
         assert fan.speed_range == (1, 5)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
 
@@ -47,9 +47,9 @@ class TestPyDreoFan(TestBase):
         """Load fan and test sending commands."""
 
         self.get_devices_file_name = "get_devices_HTF005S.json"
-        self.manager.load_devices()
-        assert len(self.manager.devices) == 1
-        fan = self.manager.devices[0]
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
         assert fan.speed_range == (1, 12)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
         assert fan.oscillating is True

@@ -19,11 +19,11 @@ class TestPyDreoAirCirculator(TestBase):
     def test_HAF004S(self): # pylint: disable=invalid-name
         """Load circulator fan and test sending commands."""
         self.get_devices_file_name = "get_devices_HAF004S.json"
-        self.manager.load_devices()
+        self.pydreo_manager.load_devices()
 
-        assert len(self.manager.devices) == 1
+        assert len(self.pydreo_manager.devices) == 1
 
-        fan : PyDreoAirCirculator = self.manager.devices[0]
+        fan : PyDreoAirCirculator = self.pydreo_manager.devices[0]
 
         assert fan.speed_range == (1, 9)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto', 'turbo', 'custom']

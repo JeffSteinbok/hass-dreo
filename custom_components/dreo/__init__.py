@@ -95,12 +95,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    manager = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager = hass.data[DOMAIN][PYDREO_MANAGER]
     if unload_ok := await hass.config_entries.async_unload_platforms(
         config_entry,
         hass.data[DOMAIN][DREO_PLATFORMS],
     ):
         hass.data.pop(DOMAIN)
 
-    manager.stop_transport()
+    pydreo_manager.stop_transport()
     return unload_ok

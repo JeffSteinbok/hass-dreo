@@ -18,9 +18,9 @@ class TestPyDreoHeater(TestBase):
         """Load heater and test sending commands."""
 
         self.get_devices_file_name = "get_device_state_HSH004S_1.json"
-        self.manager.load_devices()
-        assert len(self.manager.devices) == 1
-        heater = self.manager.devices[0]
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
 
         assert heater.heat_range == (1, 3)
         assert heater.preset_modes == ['H1', 'H2', 'H3']
