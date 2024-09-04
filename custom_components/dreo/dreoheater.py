@@ -254,11 +254,11 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def min_temp(self) -> float | None:
-        return self.device.device_definition.speed_range[ECOLEVEL_RANGE][0]
+        return self.device.device_definition.range[ECOLEVEL_RANGE][0]
 
     @property
     def max_temp(self) -> float | None:
-        return self.device.device_definition.speed_range[ECOLEVEL_RANGE][1]
+        return self.device.device_definition.range[ECOLEVEL_RANGE][1]
 
     @property
     def target_temperature_step(self) -> float | None:

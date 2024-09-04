@@ -271,11 +271,11 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     
     @property
     def min_temp(self) -> float | None:
-        return self.device.device_definition.speed_range[TEMP_RANGE][0]
+        return self.device.device_definition.range[TEMP_RANGE][0]
 
     @property
     def max_temp(self) -> float | None:
-        return self.device.device_definition.speed_range[TEMP_RANGE][1]
+        return self.device.device_definition.range[TEMP_RANGE][1]
     
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
@@ -297,7 +297,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             range_key = TARGET_TEMP_RANGE_ECO
         else:
             range_key = TARGET_TEMP_RANGE
-        return self.device.device_definition.speed_range[range_key][0]
+        return self.device.device_definition.range[range_key][0]
 
     @property
     def target_temperature_high(self) -> float | None:
@@ -305,7 +305,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             range_key = TARGET_TEMP_RANGE_ECO
         else:
             range_key = TARGET_TEMP_RANGE
-        return self.device.device_definition.speed_range[range_key][1]
+        return self.device.device_definition.range[range_key][1]
 
     @property
     def target_temperature_step(self) -> float | None:
@@ -328,11 +328,11 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def min_humidity(self) -> float | None:
-        return self.device.device_definition.speed_range[HUMIDITY_RANGE][0]
+        return self.device.device_definition.range[HUMIDITY_RANGE][0]
 
     @property
     def max_humidity(self) -> float | None:
-        return self.device.device_definition.speed_range[HUMIDITY_RANGE][1]
+        return self.device.device_definition.range[HUMIDITY_RANGE][1]
 
     @property
     def hvac_mode(self):

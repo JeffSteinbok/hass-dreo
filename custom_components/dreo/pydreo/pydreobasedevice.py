@@ -132,7 +132,7 @@ class PyDreoBaseDevice(object):
             cb()
 
     @property
-    def device_definition(self):
+    def device_definition(self) -> DreoDeviceDetails:
         """Returns the device definition."""
         return self._device_definition
 

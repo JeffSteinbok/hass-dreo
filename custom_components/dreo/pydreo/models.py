@@ -59,7 +59,7 @@ class DreoDeviceDetails:
     preset_modes: list[str]
     """List of possible preset mode names"""
 
-    speed_range: dict
+    range: dict
     """Dictionary of different ranges"""
 
     hvac_modes: list[str]
@@ -78,7 +78,7 @@ class DreoDeviceDetails:
         self,
         device_type: DreoDeviceType = None,
         preset_modes: list[str] = None,
-        speed_range: dict = None,
+        range: dict = None,
         hvac_modes: list[str] = None,
         swing_modes: list[str] = None,
         fan_modes: list[str] = None,
@@ -90,7 +90,7 @@ class DreoDeviceDetails:
 
         self.device_type = device_type
         self.preset_modes = preset_modes
-        self.speed_range = speed_range
+        self.range = range
         self.hvac_modes = hvac_modes
         self.swing_modes = swing_modes
         self.fan_modes = fan_modes
@@ -129,7 +129,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH004S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        speed_range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
+        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -141,7 +141,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH009S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        speed_range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -158,7 +158,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH009AS": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        speed_range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -175,7 +175,7 @@ SUPPORTED_DEVICES = {
     "WH719S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        speed_range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -192,7 +192,7 @@ SUPPORTED_DEVICES = {
     "WH739S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        speed_range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -210,7 +210,7 @@ SUPPORTED_DEVICES = {
     # Air Conditioners
     "DR-HAC005S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CONDITIONER,
-        speed_range={
+        range={
             TEMP_RANGE: (60, 95),
             TARGET_TEMP_RANGE: (64, 86),
             TARGET_TEMP_RANGE_ECO: (75, 86),
