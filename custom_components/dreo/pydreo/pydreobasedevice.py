@@ -18,7 +18,6 @@ class UnknownProductError(Exception):
 class UnknownModelError(Exception):
     """Exception thrown when we don't recognize a model of a device."""
 
-
 class PyDreoBaseDevice(object):
     """Base class for all Dreo devices.
 

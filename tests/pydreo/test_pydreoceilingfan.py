@@ -22,13 +22,18 @@ class TestPyDreoCeilingFan(TestBase):
         self.get_devices_file_name = "get_devices_HCF001S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
-        fan = self.pydreo_manager.devices[0]
+        fan : PyDreoCeilingFan = self.pydreo_manager.devices[0]
         assert fan.speed_range == (1, 12)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'reverse']
+        assert fan.is_feature_supported('poweron') is False
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
             mock_send_command.assert_called_once_with(fan, {FANON_KEY: True})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.light_on = True
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'normal'

@@ -11,7 +11,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import logging
 
-from .basedevice import DreoBaseDeviceHA
+from .dreobasedevice import DreoBaseDeviceHA
+from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import (
     TemperatureUnit,
@@ -108,7 +109,7 @@ async def async_setup_entry(
     """Set up the Dreo sensor platform."""
     _LOGGER.info("Starting Dreo Sensor Platform")
 
-    pydreo_manager = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     sensor_has = []
     for pydreo_device in pydreo_manager.devices:
@@ -130,7 +131,7 @@ async def async_setup_entry(
             sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[2]))
             sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[3]))
 
-        if pydreo_device.type == DreoDeviceType.COOKER:
+        if pydreo_device.type == DreoDeviceType.CHEF_MAKER:
             # Really ugly hack...
             sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[4]))
 

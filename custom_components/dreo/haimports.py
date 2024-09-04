@@ -38,7 +38,8 @@ from homeassistant.helpers.selector import (
 
 from homeassistant.helpers.entity import (
     DeviceInfo,
-    Entity 
+    Entity,
+    EntityDescription
 )
 
 from homeassistant.core import callback #type:ignore

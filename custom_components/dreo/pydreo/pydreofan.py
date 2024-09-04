@@ -13,11 +13,10 @@ from .constant import (
     WIND_MODE_KEY,
     LIGHTSENSORON_KEY,
     MUTEON_KEY,
-    FIXEDCONF_KEY,
     TemperatureUnit,
     SPEED_RANGE
 )
-
+ 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 from .helpers import Helpers
@@ -116,7 +115,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
     @is_on.setter
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
-        _LOGGER.debug("PyDreoAirPurifier:is_on.setter - %s", value)
+        _LOGGER.debug("PyDreoFanBase:is_on.setter - %s", value)
         self._send_command(POWERON_KEY, value)
 
     @property
@@ -194,7 +193,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def oscillating(self, value: bool) -> None:
         """Enable or disable oscillation"""
         _LOGGER.debug("PyDreoFan:oscillating.setter")
-        raise NotImplementedError(f"Attempting to set oscillating on a device that doesn't support ({value})")
+        raise NotImplementedError(f"PyDreoFanBase: Attempting to set oscillating on a device that doesn't support ({value})")
 
     @property
     def display_auto_off(self) -> bool:
@@ -212,7 +211,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if self._led_always_on is not None:
             self._send_command(LEDALWAYSON_KEY, not value)
         else:
-            raise NotImplementedError("Attempting to set display always on on a device that doesn't support.")
+            raise NotImplementedError("PyDreoFanBase: Attempting to set display always on on a device that doesn't support.")
 
     @property
     def adaptive_brightness(self) -> bool:
@@ -225,12 +224,12 @@ class PyDreoFanBase(PyDreoBaseDevice):
     @adaptive_brightness.setter
     def adaptive_brightness(self, value: bool) -> None:
         """Set if the display is always on"""
-        _LOGGER.debug("PyDreoFan:adaptive_brightness.setter")
+        _LOGGER.debug("PyDreoFanBase:adaptive_brightness.setter")
 
         if self._light_sensor_on is not None:
             self._send_command(LIGHTSENSORON_KEY, value)
         else:
-            raise NotImplementedError("Attempting to set adaptive brightness on on a device that doesn't support.")
+            raise NotImplementedError("PyDreoFanBase: ttempting to set adaptive brightness on on a device that doesn't support.")
 
     @property
     def panel_sound(self) -> bool:
@@ -244,18 +243,18 @@ class PyDreoFanBase(PyDreoBaseDevice):
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
-        _LOGGER.debug("PyDreoFan:panel_sound.setter")
+        _LOGGER.debug("PyDreoFanBase:panel_sound.setter")
 
         if self._voice_on is not None:
             self._send_command(VOICEON_KEY, value)
         elif self._mute_on is not None:
             self._send_command(MUTEON_KEY, not value)
         else:
-            raise NotImplementedError("Attempting to set panel_sound on a device that doesn't support.")
+            raise NotImplementedError("PyDreoFanBase: Attempting to set panel_sound on a device that doesn't support.")
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        _LOGGER.debug("PyDreoFan:update_state")
+        _LOGGER.debug("PyDreoFanBase:update_state")
         super().update_state(state)
 
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
@@ -272,7 +271,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoFan:handle_server_update")
+        _LOGGER.debug("PyDreoFanBase:handle_server_update")
         super().handle_server_update(message)
 
         val_wind_level = self.get_server_update_key_value(message, WINDLEVEL_KEY)

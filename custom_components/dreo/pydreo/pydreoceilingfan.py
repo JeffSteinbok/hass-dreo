@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Dict
 from .constant import (
     LOGGER_NAME,
     FANON_KEY,
+    LIGHTON_KEY,
     WINDLEVEL_KEY,
     SPEED_RANGE,
     FAN_MODE_STRINGS
@@ -37,20 +38,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
             self._preset_modes = self.parse_preset_modes(details)
 
         self._fan_speed = None
+        self._light_on = None
 
         self._wind_type = None
         self._wind_mode = None
-        self._osc_mode = None
-        self._cruise_conf = None
 
-        self._temperature = None
-        self._led_always_on = None
-        self._voice_on = None
         self._device_definition = device_definition
-        self._light_sensor_on = None
-        self._mute_on = None
-
-        self._fixed_conf = None
 
     def __repr__(self):
         # Representation string of object.
@@ -85,6 +78,17 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._send_command(FANON_KEY, value)
 
     @property
+    def light_on(self):
+        """Returns `True` if the device light is on, `False` otherwise."""
+        return self.light_on
+
+    @light_on.setter
+    def light_on(self, value: bool):
+        """Set if the fan is on or off"""
+        _LOGGER.debug("PyDreoCeilingFan:light_on.setter - %s", value)
+        self._send_command(LIGHTON_KEY, value)
+
+    @property
     def oscillating(self) -> bool:
         return None
     
@@ -102,6 +106,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
             _LOGGER.error("Unable to get fan speed from state. Check debug logs for more information.")
 
         self._is_on = self.get_state_update_value(state, FANON_KEY)
+        self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -111,3 +116,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         val_power_on = self.get_server_update_key_value(message, FANON_KEY)
         if isinstance(val_power_on, bool):
             self._is_on = val_power_on
+
+        val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
+        if isinstance(val_light_on, bool):
+            self._light_on = val_light_on            

@@ -1,23 +1,19 @@
 """BaseDevice utilities for Dreo Component."""
-import logging
 
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .haimports import * # pylint: disable=W0401,W0614
 
 from .const import (
-    LOGGER,
     DOMAIN
 )
-
-_LOGGER = logging.getLogger(LOGGER)
 
 class DreoBaseDeviceHA(Entity):
     """Base class for Dreo Entity Representations."""
 
     def __init__(self, pydreo_base_device: PyDreoBaseDevice) -> None:
         """Initialize the Dreo device."""
-        self.device = pydreo_base_device
-        self._attr_unique_id = self.device.serial_number
+        self.pydreo_device = pydreo_base_device
+        self._attr_unique_id = self.pydreo_device.serial_number
         self._attr_name = pydreo_base_device.name
 
     @property
@@ -27,11 +23,11 @@ class DreoBaseDeviceHA(Entity):
         return DeviceInfo(
             identifiers={
                 # Serial numbers are unique identifiers within a specific domain
-                (DOMAIN, self.device.serial_number)
+                (DOMAIN, self.pydreo_device.serial_number)
             },
-            name=self.device.name,
+            name=self.pydreo_device.name,
             manufacturer="Dreo",
-            model=self.device.model
+            model=self.pydreo_device.model
         )
 
     @property
@@ -52,4 +48,4 @@ class DreoBaseDeviceHA(Entity):
             # Tell HA we're ready to update
             self.schedule_update_ha_state(True)
 
-        self.device.add_attr_callback(update_state)
+        self.pydreo_device.add_attr_callback(update_state)
