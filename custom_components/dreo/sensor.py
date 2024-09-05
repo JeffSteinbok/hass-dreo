@@ -37,7 +37,8 @@ from .pydreo.pydreoac import (
 from .pydreo.pydreochefmaker import (
     MODE_OFF,
     MODE_COOKING,
-    MODE_STANDBY
+    MODE_STANDBY,
+    MODE_PAUSED,
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -94,7 +95,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         key="Status",
         translation_key="status",
         device_class=SensorDeviceClass.ENUM,
-        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF],
+        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
     )
