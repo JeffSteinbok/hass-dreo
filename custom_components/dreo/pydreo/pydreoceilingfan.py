@@ -80,7 +80,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
     @property
     def light_on(self):
         """Returns `True` if the device light is on, `False` otherwise."""
-        return self.light_on
+        return self._light_on
 
     @light_on.setter
     def light_on(self, value: bool):

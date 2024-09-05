@@ -26,6 +26,7 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan.speed_range == (1, 12)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'reverse']
         assert fan.is_feature_supported('poweron') is False
+        assert fan.is_feature_supported('light_on') is True
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
