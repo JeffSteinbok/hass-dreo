@@ -2,7 +2,7 @@ import json
 import os
 from typing import Any
 
-from custom_components.dreo.devices.dreobasedevice import DreoBaseDeviceHA
+from custom_components.dreo.dreobasedevice import DreoBaseDeviceHA
 
 current_path: str = os.path.dirname(os.path.realpath(__file__))
 
