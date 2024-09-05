@@ -274,6 +274,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFanBase:handle_server_update")
         super().handle_server_update(message)
 
+        val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        if isinstance(val_poweron, bool):
+            self._is_on = val_poweron  # Ensure poweron state is updated
+            _LOGGER.debug("PyDreoFanBase:handle_server_update - poweron is %s", self._is_on)
+
         val_wind_level = self.get_server_update_key_value(message, WINDLEVEL_KEY)
         if isinstance(val_wind_level, int):
             self._fan_speed = val_wind_level
