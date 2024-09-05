@@ -14,10 +14,10 @@ LOGIN_RESPONSE = call_json.LOGIN_RET_BODY
 
 class TestPyDreoHeater(TestBase):
     """Test PyDreoHeater class."""
-    def test_heater_load_and_send_commands(self):
+    def test_HSH009S(self):
         """Load heater and test sending commands."""
 
-        self.get_devices_file_name = "get_devices_HSH004S_1.json"
+        self.get_devices_file_name = "get_devices_HSH009S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
         heater = self.pydreo_manager.devices[0]
