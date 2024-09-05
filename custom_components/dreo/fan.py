@@ -36,6 +36,5 @@ async def async_setup_entry(
             pydreo_device.type == DreoDeviceType.AIR_PURIFIER):
             fan_entities_ha.append(DreoFanHA(pydreo_device))
 
-    _LOGGER.debug("Fan:async_setup_entry: Adding Fans: %s", fan_entities_ha)
-    _LOGGER.debug("vdebu add to plat: %s", fan_entities_ha[0].add_to_platform_start)
+    _LOGGER.debug("Fan:async_setup_entry: Adding Fans (%s)", fan_entities_ha.count)
     async_add_entities(fan_entities_ha)
