@@ -34,7 +34,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
-        return self.device.is_on
+        return self.device._is_on
 
     @property
     def oscillating(self) -> bool:
