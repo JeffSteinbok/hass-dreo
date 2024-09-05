@@ -24,7 +24,7 @@ class DreoChefMakerHA(DreoBaseDeviceHA, SwitchEntity):
         """Initialize the Dreo ChefMaker device."""
         super().__init__(pyDreoChefMaker)
         self.device = pyDreoChefMaker
-        super._icon = "mdi:power"    
+        self._icon = "mdi:power"
 
     @property
     def is_on(self) -> bool:
