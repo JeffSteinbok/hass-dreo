@@ -106,10 +106,10 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
     """Add Number entries for Dreo devices."""
     number_ha_collection : list[DreoNumberHA] = []
-    number_keys : list[str] = []
     
     for pydreo_device in pydreo_devices:
         _LOGGER.debug("Number:get_entries: Adding Numbers for %s", pydreo_device.name)
+        number_keys : list[str] = []
         
         for number_definition in NUMBERS:
             _LOGGER.debug("Number:get_entries: checking attribute: %s on %s", number_definition.attr_name, pydreo_device.name)

@@ -105,11 +105,11 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSwitchHA]:
     """Get the Dreo Switches for the devices."""
     switch_ha_collection : DreoSwitchHA = []
-    switch_keys : list[str] = []
 
     for pydreo_device in pydreo_devices:
         _LOGGER.debug("Switch:get_entries: Adding switches for %s", pydreo_device.name)
-        
+        switch_keys : list[str] = []
+
         for switch_definition in SWITCHES:
             _LOGGER.debug("Switch:get_entries: checking attribute: %s on %s", switch_definition.attr_name, pydreo_device.name)
 
@@ -135,14 +135,15 @@ async def async_setup_entry(
 
     pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    fan_entities_ha : list[SwitchEntity] = []
+    switch_entities_ha : list[SwitchEntity] = []
     for pydreo_device in pydreo_manager.devices:
         if pydreo_device.type == DreoDeviceType.CHEF_MAKER:
-            fan_entities_ha.append(DreoChefMakerHA(pydreo_device))
+            switch_entities_ha.append(DreoChefMakerHA(pydreo_device))
+    switch_entities_to_add = get_entries(pydreo_manager.devices)
 
-    fan_entities_ha.append(get_entries(pydreo_manager.devices))
+    switch_entities_ha.extend(switch_entities_to_add)
 
-    async_add_entities(fan_entities_ha)
+    async_add_entities(switch_entities_ha)
 
 class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
     """Representation of a Switch describing a read-write property of a Dreo device."""

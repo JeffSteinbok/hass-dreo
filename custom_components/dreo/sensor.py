@@ -111,7 +111,7 @@ async def async_setup_entry(
 
     pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    sensor_has = []
+    sensor_has : list[SensorEntity] = []
     for pydreo_device in pydreo_manager.devices:
 
         if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
