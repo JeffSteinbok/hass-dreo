@@ -5,7 +5,6 @@ import logging
 from .haimports import * # pylint: disable=W0401,W0614
 
 from .dreofan import DreoFanHA 
-from .dreoairpurifier import DreoAirPurifierHA
 
 from .const import (
     LOGGER,
@@ -33,7 +32,8 @@ async def async_setup_entry(
     fan_entities_ha = []
     for pydreo_device in pydreo_manager.devices:
         if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
-            pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR):
+            pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR or
+            pydreo_device):
             fan_entities_ha.append(DreoFanHA(pydreo_device))
 
     _LOGGER.debug("Fan:async_setup_entry: Adding Fans: %s", fan_entities_ha)
