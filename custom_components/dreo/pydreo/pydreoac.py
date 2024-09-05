@@ -86,7 +86,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._timer_on = None
         self._cooldown = None
         self._ptc_on = None
-        self._light_on = None
+        self._display_auto_off = None
         self._ctlstatus = None
         self._timer_off = None
         self._childlockon = None
@@ -234,15 +234,15 @@ class PyDreoAC(PyDreoBaseDevice):
         self._send_command(PTCON_KEY, value)
 
     @property
-    def light_on(self) -> bool:
+    def display_auto_off(self) -> bool:
         """Returns `True` if Display Auto off is OFF."""
-        return not self._light_on
+        return self._display_auto_off
 
-    @light_on.setter
-    def light_on(self, value: bool) -> None:
-        """Enable or disable light"""
-        _LOGGER.debug("PyDreoAC:lighton.setter(%s) --> %s", self.name, value)
-        self._send_command(LIGHTON_KEY, not value)
+    @display_auto_off.setter
+    def display_auto_off(self, value: bool) -> None:
+        """Enable or disable auto-off"""
+        _LOGGER.debug("PyDreoAC:display_auto_off.setter(%s) --> %s", self.name, value)
+        self._send_command(LIGHTON_KEY, value)
 
     @property
     def ctlstatus(self) -> bool:
