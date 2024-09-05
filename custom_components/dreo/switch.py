@@ -77,12 +77,6 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         key="PTC", translation_key="ptcon", attr_name="ptcon", icon="mdi:help"
     ),
     DreoSwitchEntityDescription(
-        key="Display Auto Off",
-        translation_key="lighton",
-        attr_name="lighton",
-        icon="mdi:led-on",
-    ),
-    DreoSwitchEntityDescription(
         key="Child Lock",
         translation_key="childlockon",
         attr_name="childlockon",
