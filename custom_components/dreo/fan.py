@@ -33,7 +33,7 @@ async def async_setup_entry(
     for pydreo_device in pydreo_manager.devices:
         if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
             pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR or
-            pydreo_device):
+            pydreo_device.type == DreoDeviceType.AIR_PURIFIER):
             fan_entities_ha.append(DreoFanHA(pydreo_device))
 
     _LOGGER.debug("Fan:async_setup_entry: Adding Fans: %s", fan_entities_ha)
