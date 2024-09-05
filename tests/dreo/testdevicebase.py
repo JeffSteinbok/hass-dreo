@@ -24,7 +24,7 @@ class TestDeviceBase:
                            features: dict[str, any] = None):
         
         """Create a mock device."""
-        pydreo_device_mock : PyDreoDeviceMock = PyDreoDeviceMock(name, serial_number, features)
+        pydreo_device_mock : PyDreoDeviceMock = PyDreoDeviceMock(name=name, serial_number=serial_number, features=features)
         return MagicMock(return_value=pydreo_device_mock)()
    
     def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:

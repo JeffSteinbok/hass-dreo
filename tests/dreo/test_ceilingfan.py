@@ -12,12 +12,13 @@ class TestDreoCeilingFanHA(TestDeviceBase):
     def test_ceiling_fan_simple(self, mock_update_ha_state: MagicMock):
         """Test the Dreo Ceiling Fan HA class."""
         
-        mocked_pydreo_ceilingfan : PyDreoDeviceMock = self.create_mock_device("Test Ceiling Fan", "123456", 
-                                                           { "is_on" : True,
-                                                             "preset_modes" : ['normal', 'natural', 'sleep', 'auto'],
-                                                             "fan_speed" : 3,
-                                                             "light_on" : True,
-                                                             "speed_range" : (1, 5) })
+        mocked_pydreo_ceilingfan : PyDreoDeviceMock = self.create_mock_device(name="Test Ceiling Fan", 
+                                                                              serial_number="123456", 
+                                                                              features= { "is_on" : True,
+                                                                                          "preset_modes" : ['normal', 'natural', 'sleep', 'auto'],
+                                                                                          "fan_speed" : 3,
+                                                                                          "light_on" : True,
+                                                                                          "speed_range" : (1, 5) })
         
         test_fan = fan.DreoFanHA(mocked_pydreo_ceilingfan)
         assert test_fan.is_on is True

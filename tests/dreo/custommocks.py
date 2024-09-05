@@ -3,17 +3,14 @@ from unittest.mock import MagicMock
 
 class PyDreoDeviceMock(MagicMock):
     """Mock for PyDreoDevice."""
-
     def __init__(self, 
-                 name: str = "Mocked Dreo Device", 
-                 serial_number : str = "123456",
-                 features : dict[str, any] = None) -> None:
-         super().__init__()
-         self.name = name
-         self.serial_number = serial_number
+                 *args, **kwargs) -> None:
+         super().__init__(*args, **kwargs)
+         self.name = kwargs.get('name')
+         self.serial_number = kwargs.get('serial_number')
          self._supported_features : list[str] = []
-         if (features is not None):
-            self.set_features(features)
+         if (kwargs.get('features') is not None):
+            self.set_features(kwargs.get('features'))
 
     def set_feature(self, feature_name : str, value : any):
         """Set a feature on the mock."""

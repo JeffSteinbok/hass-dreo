@@ -15,11 +15,12 @@ class Test_DreoFanHA(TestDeviceBase):
     def test_fan_simple(self, mocker):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
 
-            mocked_pydreo_fan : PyDreoDeviceMock = self.create_mock_device("Test Fan", "123456", 
-                                                    { "is_on" : True,
-                                                        "preset_modes" : ['normal', 'natural', 'sleep', 'auto'],
-                                                        "fan_speed" : 3,
-                                                        "speed_range" : (1, 5) })
+            mocked_pydreo_fan : PyDreoDeviceMock = self.create_mock_device( name="Test Ceiling Fan", 
+                                                                            serial_number="123456", 
+                                                                            features= { "is_on" : True,
+                                                                                        "preset_modes" : ['normal', 'natural', 'sleep', 'auto'],
+                                                                                        "fan_speed" : 3,
+                                                                                        "speed_range" : (1, 5) })
 
             test_fan = fan.DreoFanHA(mocked_pydreo_fan)
             assert test_fan.is_on is True
