@@ -65,7 +65,10 @@ class PyDreoTowerFan(PyDreoFanBase):
                         control_item.get("type", None) == "CFFan"):
                         for mode_item in control_item.get("items", None):
                             text_id = mode_item.get("text", None)
-                            text = FAN_MODE_STRINGS[text_id]
+                            if (text_id in FAN_MODE_STRINGS):
+                                text = FAN_MODE_STRINGS[text_id]
+                            else:
+                                text = text_id
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
@@ -74,7 +77,10 @@ class PyDreoTowerFan(PyDreoFanBase):
                 if (modes is not None):
                     for mode_item in modes:
                         text_id = mode_item.get("title", None)
-                        text = FAN_MODE_STRINGS[text_id]
+                        if (text_id in FAN_MODE_STRINGS):
+                            text = FAN_MODE_STRINGS[text_id]
+                        else:
+                            text = text_id
                         value = mode_item.get("value", None)
                         if (text, value) not in preset_modes:
                             preset_modes.append((text, value))

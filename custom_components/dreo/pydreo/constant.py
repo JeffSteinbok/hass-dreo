@@ -227,7 +227,8 @@ FAN_MODE_STRINGS = {
     "device_control_mode_auto": "auto",
     "device_control_mode_turbo": "turbo",
     "base_reverse": "reverse",
-    "device_control_custom": "custom"
+    "device_control_custom": "custom",
+    "fan_2in1_breeze": "2-in-1 Breeze Mode" 
 }
 
 class DreoDeviceType(StrEnum):
