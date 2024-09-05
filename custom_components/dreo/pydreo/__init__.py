@@ -165,6 +165,9 @@ class PyDreo:  # pylint: disable=function-redefined
                 elif model in SUPPORTED_ACS:
                     _LOGGER.debug("AC %s found!", model)
                     device = PyDreoAC(SUPPORTED_ACS[model], dev, self)
+                elif model in SUPPORTED_COOKERS:
+                    _LOGGER.debug("Cooker %s found!", model)
+                    device = PyDreoChefMaker(SUPPORTED_COOKERS[model], dev, self)
                 elif model_prefix is not None and model_prefix in SUPPORTED_FANS:
                     _LOGGER.debug("Fan %s found! via prefix %s", model, model_prefix)
                     device = PyDreoFan(SUPPORTED_FANS[model_prefix], dev, self)
