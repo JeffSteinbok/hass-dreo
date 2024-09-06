@@ -76,7 +76,7 @@
                 "timestamp": 1725530471
             },
             "module_hardware_mac": {
-                "state": "00:1c:c2:66:f0:a8",
+                "state": "**REDACTED**",
                 "timestamp": 1725530471
             },
             "muteon": {
@@ -92,7 +92,7 @@
                 "timestamp": 1724691658
             },
             "wifi_ssid": {
-                "state": "UPC0380368_2GEXT",
+                "state": "**REDACTED**",
                 "timestamp": 1724691658
             },
             "wkestdu": {
@@ -157,7 +157,7 @@
             }
         },
         "sn": "KCM001S_1",
-        "productId": "1546676586681569281",
+        "productId": "**REDACTED**",
         "region": "us-east-2"
     }
 }

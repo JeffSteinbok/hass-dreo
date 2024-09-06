@@ -86,7 +86,7 @@
                 "timestamp": 1687062055
             },
             "module_hardware_mac": {
-                "state": "001cc263494b",
+                "state": "**REDACTED**",
                 "timestamp": 1686788164
             },
             "ledalwayson": {
@@ -95,7 +95,7 @@
             }
         },
         "sn": "HTF008S_1",
-        "productId": "1582290393341964289",
+        "productId": "**REDACTED**",
         "region": "us-east-2"
     }
 }
