@@ -28,6 +28,7 @@ KEYS_TO_REDACT = {
     "_username",
     "token",
     "_token"
+    "productId"
 }
 
 _LOGGER = logging.getLogger(LOGGER)

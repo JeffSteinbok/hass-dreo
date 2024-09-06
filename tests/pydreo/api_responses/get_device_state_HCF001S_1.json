@@ -47,7 +47,7 @@
                 "timestamp": 1724564509
             },
             "module_hardware_mac": {
-                "state": "001cc27df25e",
+                "state": "**REDACTED**",
                 "timestamp": 1724564509
             },
             "muteon": {
@@ -59,7 +59,7 @@
                 "timestamp": 1724882948
             },
             "wifi_ssid": {
-                "state": "connected_1",
+                "wifi_ssid": "**REDACTED**",
                 "timestamp": 1721672047
             },
             "mcu_hardware_model": {
@@ -110,8 +110,8 @@
                 "timestamp": 1724923407
             }
         },
-        "sn": "1706512872524279810-150f28ec46b7b969:001:0000000000w",
-        "productId": "1706512872524279810",
+        "sn": "HCF001S_1",
+        "productId": "**REDACTED**",
         "region": "us-east-2/emq"
     }
 }
