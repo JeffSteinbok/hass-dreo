@@ -87,11 +87,11 @@ class IntegrationTestBase:
             return (call_json.get_response_from_file(self.get_devices_file_name), 200)
         if api == "devicestate":
             logger.debug("API call: %s %s", api, json_object)
-            if (os.path.exists(f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")):
-                logger.debug("Device state loaded from file: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
+            if (os.path.exists(f"tests/dreo/integrationtests/api_responses/get_device_state_{json_object['deviceSn']}.json")):
+                logger.debug("Device state loaded from file: %s", f"tests/dreo/integrationtests/api_responses/get_device_state_{json_object['deviceSn']}.json")
                 return (call_json.get_response_from_file(f"get_device_state_{json_object['deviceSn']}.json"), 200)
             else:
-                logger.debug("No file found: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
+                logger.debug("No file found: %s", f"tests/dreo/integrationtests/api_responses/get_device_state_{json_object['deviceSn']}.json")
                 return {}, 200
             
     def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:

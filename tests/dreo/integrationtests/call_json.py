@@ -46,7 +46,7 @@ LOGIN_RET_BODY = (
 )
 
 def get_response_from_file(filename: str) -> json:
-    with open("tests/pydreo/api_responses/" + filename, 'r') as file:
+    with open("tests/dreo/integrationtests/api_responses/" + filename, 'r') as file:
         return json.load(file)
 
 def login_call_body(email, password):

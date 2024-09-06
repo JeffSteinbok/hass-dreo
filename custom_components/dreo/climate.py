@@ -37,3 +37,6 @@ async def async_setup_entry(
             climate_entities_ha.append(DreoHeaterHA(pydreo_device))
         elif pydreo_device.type == DreoDeviceType.AIR_CONDITIONER:
             climate_entities_ha.append(DreoAirConditionerHA(pydreo_device))
+
+    _LOGGER.debug("Climate:async_setup_entry: Adding Climate Devices (%s)", climate_entities_ha.count)
+    async_add_entities(climate_entities_ha)
