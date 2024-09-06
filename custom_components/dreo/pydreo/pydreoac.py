@@ -256,12 +256,12 @@ class PyDreoAC(PyDreoBaseDevice):
         self._send_command(CTLSTATUS_KEY, value)
 
     @property
-    def child_lock_on(self) -> bool:
+    def childlockon(self) -> bool:
         """Returns `True` if Child Lock is on."""
         return self._childlockon
 
-    @child_lock_on.setter
-    def child_lock_on(self, value: bool) -> None:
+    @childlockon.setter
+    def childlockon(self, value: bool) -> None:
         """Enable or disable Child Lock"""
         _LOGGER.debug("PyDreoAC:childlockon.setter(%s) --> %s", self.name, value)
         self._send_command(CHILDLOCKON_KEY, value)
