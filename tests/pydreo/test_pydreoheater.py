@@ -14,13 +14,13 @@ LOGIN_RESPONSE = call_json.LOGIN_RET_BODY
 
 class TestPyDreoHeater(TestBase):
     """Test PyDreoHeater class."""
-    def test_heater_load_and_send_commands(self):
+    def test_HSH009S(self):
         """Load heater and test sending commands."""
 
-        self.get_devices_file_name = "get_device_state_HSH004S_1.json"
-        self.manager.load_devices()
-        assert len(self.manager.heaters) == 1
-        heater = self.manager.heaters[0]
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
 
         assert heater.heat_range == (1, 3)
         assert heater.preset_modes == ['H1', 'H2', 'H3']

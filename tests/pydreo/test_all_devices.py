@@ -6,10 +6,6 @@ and methods needed to run the tests.
 """
 # import utils
 import logging
-from typing import TYPE_CHECKING
-
-from .imports import PyDreo
-from . import call_json
 from .testbase import TestBase
 
 
@@ -22,15 +18,15 @@ class TestGeneralAPI(TestBase):
     def test_login(self):
         """Test login() method request and API response."""
         print("Test Login")
-        self.manager.enabled = False
-        assert self.manager.login()
+        self.pydreo_manager.enabled = False
+        assert self.pydreo_manager.login()
 
     def test_load_devices(self):
         """Test get_devices() method request and API response."""
         print("Test Device List")
 
         self.get_devices_file_name = "get_devices_HTF008S.json"
-        self.manager.load_devices()
-        assert len(self.manager.fans) == 1
-        assert self.manager.fans[0].speed_range == (1, 5)
-        assert self.manager.fans[0].preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        assert self.pydreo_manager.devices[0].speed_range == (1, 5)
+        assert self.pydreo_manager.devices[0].preset_modes == ['normal', 'natural', 'sleep', 'auto']

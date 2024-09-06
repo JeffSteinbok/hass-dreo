@@ -35,7 +35,8 @@ The following fans types are supported. Not all variants have been tested.
 | -------- | ------------ | ------ |
 | Tower Fans | DR-HTF | |
 | Air Circulators | DR-HAF, DR-HPF | |
-| Ceiling Fans | DR-HCF | No light support. |
+| Ceiling Fans | DR-HCF | |
+| Air Purifiers | DR-HAP | |
 
 Models that have been specifically tested can be found below.
 

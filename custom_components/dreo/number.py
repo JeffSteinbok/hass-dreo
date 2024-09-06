@@ -9,15 +9,16 @@ from dataclasses import dataclass
 import logging
 
 from .haimports import * # pylint: disable=W0401,W0614
-from .basedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
+from .dreobasedevice import DreoBaseDeviceHA
 
+from .dreochefmaker import DreoChefMakerHA
 
 from .const import (
     LOGGER,
     DOMAIN,
-    DREO_MANAGER
+    PYDREO_MANAGER
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -30,9 +31,7 @@ class DreoNumberEntityDescription(NumberEntityDescription):
 
     def __repr__(self):
         # Representation string of object.
-        return "<{0}:{1}:{2}>".format(
-            self.__class__.__name__, self.attr_name, self.key
-        )
+        return f"<{self.__class__.__name__}:{self.attr_name}:{self.key}>"
 
 
 NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
@@ -104,19 +103,28 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
 )
 
 
-def add_entries(pydreo_devices : list) -> []:
-    number_ha_collection = []
+def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
+    """Add Number entries for Dreo devices."""
+    number_ha_collection : list[DreoNumberHA] = []
     
     for pydreo_device in pydreo_devices:
-        _LOGGER.debug("Number:add_entries: Adding Numbers for %s", pydreo_device.name)
+        _LOGGER.debug("Number:get_entries: Adding Numbers for %s", pydreo_device.name)
+        number_keys : list[str] = []
+        
         for number_definition in NUMBERS:
-            _LOGGER.debug("Number:add_entries: checking attribute: %s on %s", number_definition.attr_name, pydreo_device.name)
+            _LOGGER.debug("Number:get_entries: checking attribute: %s on %s", number_definition.attr_name, pydreo_device.name)
+
             if pydreo_device.is_feature_supported(number_definition.attr_name):
-                _LOGGER.debug("Number:add_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
+                if (number_definition.key in number_keys):
+                    _LOGGER.error("Number:get_entries: Duplicate number key %s", number_definition.key)
+                    continue
+
+                _LOGGER.debug("Number:get_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
+                number_keys.append(number_definition.key)
                 if hasattr(pydreo_device.device_definition.range, number_definition.attr_name + "_range") and \
-                        pydreo_device.device_definition.range[number_definition.attr_name + "_range"] is not None:
+                           pydreo_device.device_definition.range[number_definition.attr_name + "_range"] is not None:
                     n_range = pydreo_device.device_definition.range[number_definition.attr_name + "_range"]
-                    _LOGGER.debug("Number:add_entries: range %s is %s", number_definition.attr_name + "_range", n_range)
+                    _LOGGER.debug("Number:get_entries: range %s is %s", number_definition.attr_name + "_range", n_range)
                     if isinstance(n_range, tuple):
                         dned = DreoNumberEntityDescription(key=number_definition.key,
                                                            translation_key=number_definition.translation_key,
@@ -139,11 +147,9 @@ async def async_setup_entry(
     """Set up the Dreo Number platform."""
     _LOGGER.info("Starting Dreo Number Platform")
 
-    manager : PyDreo = hass.data[DOMAIN][DREO_MANAGER]
+    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    async_add_entities(add_entries(manager.fans))
-    async_add_entities(add_entries(manager.heaters))
-    async_add_entities(add_entries(manager.acs))
+    async_add_entities(get_entries(pydreo_manager.devices))
 
 
 class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):

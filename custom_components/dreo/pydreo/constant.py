@@ -16,8 +16,6 @@ STATE_KEY = "state"
 POWERON_KEY = "poweron"
 WINDTYPE_KEY = "windtype"
 WINDLEVEL_KEY = "windlevel"
-SHAKEHORIZON_KEY = "shakehorizon"
-SHAKEHORIZONANGLE_KEY = "shakehorizonangle"
 MODE_KEY = "mode"
 HTALEVEL_KEY = "htalevel"
 OSCON_KEY = "oscon"
@@ -44,6 +42,13 @@ CHILDLOCKON_KEY = "childlockon"
 TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
 TARGET_HUMIDITY_KEY = "rhlevel"
+
+# Tower Fans
+SHAKEHORIZON_KEY = "shakehorizon"
+SHAKEHORIZONANGLE_KEY = "shakehorizonangle"
+
+# Ceiling Fan
+FANON_KEY = "fanon"
 
 
 DREO_API_URL_FORMAT = (
@@ -222,5 +227,16 @@ FAN_MODE_STRINGS = {
     "device_control_mode_auto": "auto",
     "device_control_mode_turbo": "turbo",
     "base_reverse": "reverse",
-    "device_control_custom": "custom"
+    "device_control_custom": "custom",
+    "fan_2in1_breeze": "2-in-1 Breeze Mode" 
 }
+
+class DreoDeviceType(StrEnum):
+    """Product names for Dreo devices"""
+    TOWER_FAN = "Tower Fan"
+    AIR_CIRCULATOR = "Air Circulator"
+    AIR_PURIFIER = "Air Purifier"
+    CEILING_FAN = "Ceiling Fan"
+    HEATER = "Heater"
+    AIR_CONDITIONER = "Air Conditioner"
+    CHEF_MAKER = "Chef Maker"

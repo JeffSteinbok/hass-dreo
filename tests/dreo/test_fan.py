@@ -1,21 +1,26 @@
+"""Tests for the Dreo Fan entity."""
 from unittest.mock import patch
-#from homeassistant.helpers import Entity
+from .testdevicebase import TestDeviceBase
+from .custommocks import PyDreoDeviceMock
 
 from custom_components.dreo import fan
+from custom_components.dreo import switch
+from custom_components.dreo import number
 
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
 PATCH_SEND_COMMAND = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
 
-class Test_DreoFanHA:
+class Test_DreoFanHA(TestDeviceBase):
 
     def test_fan_simple(self, mocker):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
 
-            mocked_pydreo_fan = mocker.MagicMock()
-            mocked_pydreo_fan.is_on = True
-            mocked_pydreo_fan.fan_speed = 3
-            mocked_pydreo_fan.speed_range = (1, 5)
-            mocked_pydreo_fan.preset_modes = ['normal', 'natural', 'sleep', 'auto']
+            mocked_pydreo_fan : PyDreoDeviceMock = self.create_mock_device( name="Test Ceiling Fan", 
+                                                                            serial_number="123456", 
+                                                                            features= { "is_on" : True,
+                                                                                        "preset_modes" : ['normal', 'natural', 'sleep', 'auto'],
+                                                                                        "fan_speed" : 3,
+                                                                                        "speed_range" : (1, 5) })
 
             test_fan = fan.DreoFanHA(mocked_pydreo_fan)
             assert test_fan.is_on is True
@@ -37,4 +42,10 @@ class Test_DreoFanHA:
             assert mocked_pydreo_fan.preset_mode is "normal"
             mock_send_command.assert_called_once()
             mock_send_command.reset_mock()
+
+            # Check to see what switches are added to ceiling fans
+            self.verify_expected_entities(switch.get_entries([mocked_pydreo_fan]), [])
+
+            # Check to see what numbers are added to ceiling fans
+            self.verify_expected_entities(number.get_entries([mocked_pydreo_fan]), [])
 

@@ -4,6 +4,7 @@ import logging
 import os
 from typing import Optional
 from unittest.mock import patch
+from homeassistant.helpers.entity import Entity
 import pytest
 from  .imports import * # pylint: disable=W0401,W0614
 from . import defaults
@@ -17,7 +18,7 @@ PATCH_CALL_DREO_API = f'{PATCH_BASE_PATH}.PyDreo.call_dreo_api'
 
 Defaults = defaults.Defaults
 
-class TestBase:
+class IntegrationTestBase:
     """Base class for all tests.
 
     Contains instantiated PyDreo object and mocked
@@ -92,3 +93,22 @@ class TestBase:
             else:
                 logger.debug("No file found: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
                 return {}, 200
+            
+    def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:
+        """Verify the expected entities are present."""
+        found_entity_keys : list[str] = []
+        for ha_entity in ha_entities:
+            found_entity_keys.append(ha_entity.entity_description.key)
+        found_entity_keys.sort()
+        logger.debug("Found entity keys: %s", found_entity_keys)
+        logger.debug("Expected entity keys: %s", found_entity_keys)
+        assert found_entity_keys == expected_keys
+
+    def get_entity_by_key(self, ha_entities: list, key: str) -> None:
+        """Verify the expected entities are present."""
+        for ha_entity in ha_entities:
+            if (ha_entity.entity_description.key == key):
+                return ha_entity
+        return None               
+
+            

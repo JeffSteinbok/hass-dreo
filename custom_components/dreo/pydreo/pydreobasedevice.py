@@ -12,9 +12,11 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
+class UnknownProductError(Exception):
+    """Exception thrown when we don't recognize a product of a device."""
+
 class UnknownModelError(Exception):
     """Exception thrown when we don't recognize a model of a device."""
-
 
 class PyDreoBaseDevice(object):
     """Base class for all Dreo devices.
@@ -130,7 +132,7 @@ class PyDreoBaseDevice(object):
             cb()
 
     @property
-    def device_definition(self):
+    def device_definition(self) -> DreoDeviceDetails:
         """Returns the device definition."""
         return self._device_definition
 
@@ -153,6 +155,11 @@ class PyDreoBaseDevice(object):
     def brand(self):
         """Returns the device's manufacturer."""
         return "Dreo"
+
+    @property
+    def type(self):
+        """Returns the device's type."""
+        return self._device_definition.device_type
 
     @property
     def model(self):
