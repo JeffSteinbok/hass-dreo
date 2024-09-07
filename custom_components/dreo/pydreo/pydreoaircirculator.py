@@ -307,7 +307,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("PyDreoAirCirculator:handle_server_update")
-
+        super().handle_server_update(message)
+        
         val_horiz_oscillation = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_KEY)
         if isinstance(val_horiz_oscillation, bool):
             self._horizontally_oscillating = val_horiz_oscillation
