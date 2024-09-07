@@ -35,14 +35,15 @@ class PyDreoFanBase(PyDreoBaseDevice):
         super().__init__(device_definition, details, dreo)
         
         self._speed_range = None
-        if (device_definition.range is not None):
-            self._speed_range = device_definition.range[SPEED_RANGE]
+        if (device_definition.device_ranges is not None):
+            self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)
         self._preset_modes = device_definition.preset_modes
         if (self._preset_modes is None):
             self._preset_modes = self.parse_preset_modes(details)
 
+        self._is_on = False
         self._fan_speed = None
 
         self._wind_type = None

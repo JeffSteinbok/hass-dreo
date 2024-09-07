@@ -7,11 +7,10 @@ from .constant import (
     LOGGER_NAME,
     SHAKEHORIZON_KEY,
     SHAKEHORIZONANGLE_KEY,
-    SPEED_RANGE,
-    FAN_MODE_STRINGS
+    SPEED_RANGE
 )
 
-from .pydreofan import PyDreoFanBase
+from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -28,8 +27,8 @@ class PyDreoTowerFan(PyDreoFanBase):
         super().__init__(device_definition, details, dreo)
         
         self._speed_range = None
-        if (device_definition.range is not None):
-            self._speed_range = device_definition.range[SPEED_RANGE]
+        if (device_definition.device_ranges is not None):
+            self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)
         self._preset_modes = device_definition.preset_modes
@@ -61,14 +60,9 @@ class PyDreoTowerFan(PyDreoFanBase):
             control = controls_conf.get("control", None)
             if (control is not None):
                 for control_item in control:
-                    if (control_item.get("type", None) == "Mode" or
-                        control_item.get("type", None) == "CFFan"):
+                    if (control_item.get("type", None) == "Mode"):
                         for mode_item in control_item.get("items", None):
-                            text_id = mode_item.get("text", None)
-                            if (text_id in FAN_MODE_STRINGS):
-                                text = FAN_MODE_STRINGS[text_id]
-                            else:
-                                text = text_id
+                            text = self.get_mode_string(mode_item.get("text", None))
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
@@ -76,11 +70,7 @@ class PyDreoTowerFan(PyDreoFanBase):
                 modes = schedule.get("modes", None)
                 if (modes is not None):
                     for mode_item in modes:
-                        text_id = mode_item.get("title", None)
-                        if (text_id in FAN_MODE_STRINGS):
-                            text = FAN_MODE_STRINGS[text_id]
-                        else:
-                            text = text_id
+                        text = self.get_mode_string(mode_item.get("title", None))
                         value = mode_item.get("value", None)
                         if (text, value) not in preset_modes:
                             preset_modes.append((text, value))
@@ -143,4 +133,3 @@ class PyDreoTowerFan(PyDreoFanBase):
         val_shakehorizonangle = self.get_server_update_key_value(message, SHAKEHORIZONANGLE_KEY)
         if isinstance(val_shakehorizonangle, int):
             self._shakehorizonangle = val_shakehorizonangle
-

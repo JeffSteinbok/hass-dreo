@@ -7,7 +7,7 @@ from .constant import (
     LOGGER_NAME
 )
 
-from .pydreofan import PyDreoFanBase
+from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)

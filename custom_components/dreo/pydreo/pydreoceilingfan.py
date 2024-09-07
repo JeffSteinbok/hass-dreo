@@ -12,7 +12,7 @@ from .constant import (
     FAN_MODE_STRINGS
 )
 
-from .pydreofan import PyDreoFanBase
+from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -29,8 +29,8 @@ class PyDreoCeilingFan(PyDreoFanBase):
         super().__init__(device_definition, details, dreo)
         
         self._speed_range = None
-        if (device_definition.range is not None):
-            self._speed_range = device_definition.range[SPEED_RANGE]
+        if (device_definition.device_ranges is not None):
+            self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)
         self._preset_modes = device_definition.preset_modes
@@ -59,11 +59,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
                 for control_item in control:
                     if (control_item.get("type", None) == "CFFan"):
                         for mode_item in control_item.get("items", None):
-                            text_id = mode_item.get("text", None)
-                            if (text_id in FAN_MODE_STRINGS):
-                                text = FAN_MODE_STRINGS[text_id]
-                            else:
-                                text = text_id
+                            text = self.get_mode_string(mode_item.get("text", None))
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
 

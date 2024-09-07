@@ -121,9 +121,9 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
 
                 _LOGGER.debug("Number:get_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
                 number_keys.append(number_definition.key)
-                if hasattr(pydreo_device.device_definition.range, number_definition.attr_name + "_range") and \
-                           pydreo_device.device_definition.range[number_definition.attr_name + "_range"] is not None:
-                    n_range = pydreo_device.device_definition.range[number_definition.attr_name + "_range"]
+                if hasattr(pydreo_device.device_definition.device_ranges, number_definition.attr_name + "_range") and \
+                           pydreo_device.device_definition.device_ranges[number_definition.attr_name + "_range"] is not None:
+                    n_range = pydreo_device.device_definition.device_ranges[number_definition.attr_name + "_range"]
                     _LOGGER.debug("Number:get_entries: range %s is %s", number_definition.attr_name + "_range", n_range)
                     if isinstance(n_range, tuple):
                         dned = DreoNumberEntityDescription(key=number_definition.key,

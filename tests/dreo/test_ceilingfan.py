@@ -1,3 +1,4 @@
+"""Tests for the Dreo Ceiling Fan HA class."""
 from unittest.mock import MagicMock
 
 from custom_components.dreo import fan
@@ -46,5 +47,3 @@ class TestDreoCeilingFanHA(TestDeviceBase):
 
         # Check to see what numbers are added to ceiling fans
         self.verify_expected_entities(number.get_entries([mocked_pydreo_ceilingfan]), [])
-
-        

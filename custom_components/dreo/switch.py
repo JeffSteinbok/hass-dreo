@@ -13,8 +13,7 @@ import logging
 from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
 from .dreochefmaker import DreoChefMakerHA
-from .pydreo import PyDreo
-from .pydreo.pydreobasedevice import PyDreoBaseDevice
+from .pydreo import PyDreo, PyDreoBaseDevice
 from .pydreo.constant import DreoDeviceType
 
 from .const import LOGGER, DOMAIN, PYDREO_MANAGER

@@ -21,7 +21,7 @@ from .pydreoaircirculator import PyDreoAirCirculator
 from .pydreoceilingfan import PyDreoCeilingFan
 from .pydreoairpurifier import PyDreoAirPurifier
 from .pydreoheater import PyDreoHeater
-from .pydreoac import PyDreoAC
+from .pydreoairconditioner import PyDreoAC
 from .pydreochefmaker import PyDreoChefMaker
 
 _LOGGER = logging.getLogger(LOGGER_NAME)

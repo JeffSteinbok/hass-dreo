@@ -101,7 +101,7 @@ class IntegrationTestBase:
             found_entity_keys.append(ha_entity.entity_description.key)
         found_entity_keys.sort()
         logger.debug("Found entity keys: %s", found_entity_keys)
-        logger.debug("Expected entity keys: %s", found_entity_keys)
+        logger.debug("Expected entity keys: %s", expected_keys)
         assert found_entity_keys == expected_keys
 
     def get_entity_by_key(self, ha_entities: list, key: str) -> None:
