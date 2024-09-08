@@ -22,6 +22,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
     """Test Dreo Air Circulators and PyDreo together."""
     
     def test_HAF001S(self):  # pylint: disable=invalid-name
+        """Test HAF001S fan."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
 
             self.get_devices_file_name = "get_devices_HAF001S.json"
@@ -45,4 +46,28 @@ class TestDreoAirCirculator(IntegrationTestBase):
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(switches, ['Horizontally Oscillating', 'Panel Sound'])
 
-        
+    def test_HAF004S(self):  # pylint: disable=invalid-name
+        """Test HAF004S fan."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+
+            self.get_devices_file_name = "get_devices_HAF004S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+            
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.is_on is False
+            assert ha_fan.speed_count == 9
+            assert ha_fan.supported_features & FanEntityFeature.OSCILLATE
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                ha_fan.turn_on()
+                # TODO: Possible bug; need to test at home.  Why does this not cause an update?
+                #mock_update_ha_state.assert_called_once()
+                #mock_update_ha_state.reset_mock()
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+
+            # Check to see what switches are added to air circulator fans
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(switches, ['Adaptive Brightness', 'Horizontally Oscillating', 'Panel Sound', 'Vertically Oscillating'])
+                

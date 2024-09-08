@@ -1,0 +1,123 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+      "mixed": {
+        "wifi_rssi": {
+          "state": -54,
+          "timestamp": 1723954337
+        },
+        "poweron": {
+          "state": false,
+          "timestamp": 1724296307
+        },
+        "hoscadj": {
+          "state": 5,
+          "timestamp": 1720935176
+        },
+        "cruiseconf": {
+          "state": "60,45,0,-45",
+          "timestamp": 1724128380
+        },
+        "timeron": {
+          "state": {
+            "du": 0,
+            "ts": 1723954336
+          },
+          "timestamp": null
+        },
+        "fixedconf": {
+          "state": "0,0",
+          "timestamp": 1724137207
+        },
+        "mode": {
+          "state": 1,
+          "timestamp": 1723954337
+        },
+        "mcuon": {
+          "state": true,
+          "timestamp": 1723954337
+        },
+        "network_latency": {
+          "state": 222,
+          "timestamp": 1723954337
+        },
+        "module_hardware_model": {
+          "state": "PAI-051",
+          "timestamp": 1723954337
+        },
+        "turboon": {
+          "state": false,
+          "timestamp": 1723954337
+        },
+        "mcu_firmware_version": {
+          "state": "0.6.8",
+          "timestamp": 1723954337
+        },
+        "lightsensoron": {
+          "state": true,
+          "timestamp": 1723954337
+        },
+        "customconf": {
+          "state": "temp:23333334444446666668888889",
+          "timestamp": 1723954337
+        },
+        "oscmode": {
+          "state": 2,
+          "timestamp": 1724128382
+        },
+        "temperature": {
+          "state": 73,
+          "timestamp": 1724305697
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "alignon": {
+          "state": true,
+          "timestamp": 1723954337
+        },
+        "muteon": {
+          "state": true,
+          "timestamp": 1723954337
+        },
+        "mcu_hardware_model": {
+          "state": "SC95F8613B",
+          "timestamp": 1723954337
+        },
+        "wifi_ssid": "**REDACTED**",
+        "windlevel": {
+          "state": 7,
+          "timestamp": 1724045886
+        },
+        "wrong": {
+          "state": 0,
+          "timestamp": 1723954337
+        },
+        "module_firmware_version": {
+          "state": "1.2.17",
+          "timestamp": 1723954337
+        },
+        "connected": {
+          "state": true,
+          "timestamp": 1723954337
+        },
+        "timeroff": {
+          "state": {
+            "du": 0,
+            "ts": 1723954336
+          },
+          "timestamp": null
+        },
+        "voscadj": {
+          "state": -5,
+          "timestamp": 1723859101
+        },
+        "childlockon": {
+          "state": false,
+          "timestamp": 1723954337
+        }
+      },
+      "sn": "HAF004S_1",
+      "productId": "**REDACTED**",
+      "region": "us-east-2"
+    }
+}
