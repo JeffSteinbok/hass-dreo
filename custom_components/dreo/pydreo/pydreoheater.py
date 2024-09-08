@@ -69,11 +69,6 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._tempoffset = None
         self._fixed_conf = None
 
-
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
-
     @property
     def poweron(self):
         """Returns `True` if the device is on, `False` otherwise."""

@@ -44,10 +44,6 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._wind_mode = None
 
         self._device_definition = device_definition
-
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
     
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""

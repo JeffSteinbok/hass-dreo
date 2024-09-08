@@ -48,10 +48,6 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
-
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
     
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -87,7 +83,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def oscillating(self) -> bool:
         """Returns `True` if either horizontal or vertical oscillation is on."""
         if self._horizontally_oscillating is not None:
-            return self._horizontally_oscillating or self._vertically_oscillating
+            if self._vertically_oscillating is not None:
+                return self._horizontally_oscillating or self._vertically_oscillating
+            return self._horizontally_oscillating
         if self._osc_mode is not None:
             return self._osc_mode != OscillationMode.OFF
         return None

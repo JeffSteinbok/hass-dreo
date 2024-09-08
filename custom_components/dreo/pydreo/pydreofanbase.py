@@ -55,10 +55,6 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._light_sensor_on = None
         self._mute_on = None
 
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
-
     def parse_speed_range(self, details: Dict[str, list]) -> tuple[int, int]:
         """Parse the speed range from the details."""
         # There are a bunch of different places this could be, so we're going to look in
@@ -187,7 +183,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
     @property
     def oscillating(self) -> bool:
-        """Returns None if oscillatio if either horizontal or vertical oscillation is on."""
+        """Returns None if oscillation if either horizontal or vertical oscillation is on."""
         raise NotImplementedError
     
     @oscillating.setter

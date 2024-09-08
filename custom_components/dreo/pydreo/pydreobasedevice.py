@@ -56,7 +56,7 @@ class PyDreoBaseDevice(object):
 
     def __repr__(self):
         # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
+        return f"<{self.__class__.__name__}:{self._sn}:{self._name}>"
 
     def get_server_update_key_value(self, message: dict, key: str):
         """Helper method to get values from a WebSocket update in a safe way."""

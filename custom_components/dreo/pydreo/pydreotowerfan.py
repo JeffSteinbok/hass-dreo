@@ -38,10 +38,6 @@ class PyDreoTowerFan(PyDreoFanBase):
         self._shakehorizon = None
         self._shakehorizonangle = None
 
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
-
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
         """Parse the speed range from a control node"""
         for control_item in control_node:

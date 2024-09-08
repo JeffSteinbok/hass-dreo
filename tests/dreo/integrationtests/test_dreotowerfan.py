@@ -4,7 +4,6 @@ import logging
 from unittest.mock import patch
 import pytest
 from  .imports import * # pylint: disable=W0401,W0614
-from . import call_json
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)

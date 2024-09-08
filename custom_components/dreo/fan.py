@@ -4,6 +4,7 @@ import logging
 
 from .haimports import * # pylint: disable=W0401,W0614
 from .pydreo import PyDreo, PyDreoBaseDevice
+from .pydreo.constant import DreoDeviceType
 from .dreofan import DreoFanHA 
 
 from .const import (
@@ -11,9 +12,6 @@ from .const import (
     DOMAIN,
     PYDREO_MANAGER
 )
-
-from .pydreo import PyDreo
-from .pydreo.constant import DreoDeviceType
 
 _LOGGER = logging.getLogger(LOGGER)
 
