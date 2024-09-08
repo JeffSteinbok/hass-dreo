@@ -171,9 +171,10 @@ class PyDreo:  # pylint: disable=function-redefined
                 device_class = _DREO_DEVICE_TYPE_TO_CLASS.get(device_details.device_type, None)
                 if device_class is None:
                     raise UnknownProductError(device_details.device_type)
-                device = device_class(device_details, dev, self)
+                device : PyDreoBaseDevice = device_class(device_details, dev, self)
 
                 self.load_device_state(device)
+
                 self.devices.append(device)
 
                 self._device_list_by_sn[device.serial_number] = device
@@ -269,8 +270,80 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.error("Error logging in with username and password")
         return False
 
+    def get_device_setting(self, device: PyDreoBaseDevice, setting : DREO_DEVICE_SETTING) -> bool | int:
+        """Get a device setting from the API."""
+        _LOGGER.debug("get_device_setting: %s(%s), enabled: %s", 
+                    device.name, 
+                    setting,
+                    self.enabled)
+        if not self.enabled:
+            return None
+
+        self.in_process = True
+        setting_value = None
+        response, _ = self.call_dreo_api(
+            DREO_API_SETTING_GET, 
+            {   DEVICESN_KEY: device.serial_number,
+                DREO_API_SETTING_DATA_KEY: setting
+            }
+        )
+
+        if response and Helpers.code_check(response):
+            if DATA_KEY in response:
+                data_node = response[DATA_KEY]
+                if DREO_API_SETTING_DATA_VALUE in data_node:
+                    setting_value = data_node[DREO_API_SETTING_DATA_VALUE]
+                else:
+                    _LOGGER.error("%s key not found in returned data. %s",
+                                DREO_API_SETTING_DATA_VALUE,
+                                data_node)
+        else:
+            _LOGGER.error("Error retrieving device setting.")
+
+        self.in_process = False
+
+        return setting_value
+    
+    def set_device_setting(self, device: PyDreoBaseDevice, setting : DREO_DEVICE_SETTING, value : bool | int) -> None:
+        """Get a device setting from the API."""
+        _LOGGER.debug("set_device_setting: %s(%s=%s), enabled: %s", 
+                    device.name, 
+                    setting,
+                    value,
+                    self.enabled)
+        if not self.enabled:
+            return None
+
+        self.in_process = True
+        proc_return = False
+        response, _ = self.call_dreo_api(
+            DREO_API_SETTING_PUT, 
+            {   DEVICESN_KEY: device.serial_number,
+                DREO_API_SETTING_DATA_KEY: setting,
+                DREO_API_SETTING_DATA_VALUE: value
+            }
+        )        
+
+        # stash the raw return value from the devicestate api call
+        device.raw_state = response
+
+        if response and Helpers.code_check(response):
+            if DATA_KEY in response and MIXED_KEY in response[DATA_KEY]:
+                device_state = response[DATA_KEY][MIXED_KEY]
+                device.update_state(device_state)
+                proc_return = True
+            else:
+                _LOGGER.error("Mixed state in response not found")
+        else:
+            _LOGGER.error("Error retrieving device state")
+
+        self.in_process = False
+
+        return proc_return
+    
     def call_dreo_api(self, api: str, json_object: Optional[dict] = None) -> tuple:
-        """Call the Dreo API. This is used for login and the initial device list and states."""
+        """Call the Dreo API. This is used for login and the initial device list and states as well
+           as device settings."""
         _LOGGER.debug("Calling Dreo API: {%s}", api)
         api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
 
@@ -281,8 +354,8 @@ class PyDreo:  # pylint: disable=function-redefined
 
         return Helpers.call_api(
             api_url,
-            DREO_APIS[api][DREO_API_LIST_PATH],
-            DREO_APIS[api][DREO_API_LIST_METHOD],
+            DREO_APIS[api][DREO_API_PATH],
+            DREO_APIS[api][DREO_API_METHOD],
             json_object_full,
             Helpers.req_headers(self),
         )
