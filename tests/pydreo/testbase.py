@@ -88,11 +88,12 @@ class TestBase:
             return (call_json.get_response_from_file(self.get_devices_file_name), 200)
         if api == "devicestate":
             logger.debug("API call: %s %s", api, json_object)
-            if (os.path.exists(f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")):
-                logger.debug("Device state loaded from file: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
-                return (call_json.get_response_from_file(f"get_device_state_{json_object['deviceSn']}.json"), 200)
+            file_name = "get_device_state_{json_object['deviceSn']}.json"
+            if (os.path.exists(API_REPONSE_BASE_PATH + file_name)):
+                logger.debug("Device state loaded from file: %s", API_REPONSE_BASE_PATH + file_name)
+                return (call_json.get_response_from_file(file_name), 200)
             else:
-                logger.debug("No file found: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
+                logger.debug("No file found: %s", API_REPONSE_BASE_PATH + file_name)
                 return {}, 200
         if api == "setting_get":
             file_name = f"get_device_setting_{json_object['deviceSn']}_{json_object['dataKey']}.json"
@@ -100,7 +101,7 @@ class TestBase:
                 logger.debug("Device setting loaded from file: %s", API_REPONSE_BASE_PATH + file_name)
                 return (call_json.get_response_from_file(file_name), 200)
             else:
-                logger.debug("No file found: %s", file_name)
+                logger.debug("No file found: %s", API_REPONSE_BASE_PATH + file_name)
                 return {}, 200
 
 
