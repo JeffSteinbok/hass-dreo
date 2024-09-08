@@ -62,7 +62,7 @@ Models that have been specifically tested can be found below.
 - DR-HPF005S
 
 #### Ceiling Fans
--   DR-HCF001S - No Light Support
+-   DR-HCF001S
 
 ### Humidifiers
 
