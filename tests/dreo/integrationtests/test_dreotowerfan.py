@@ -9,7 +9,7 @@ from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-class TestPyDreoFan(IntegrationTestBase):
+class TestDreoTowerFan(IntegrationTestBase):
     """Test PyDreoFan class."""
 
     def test_HTF005S(self):  # pylint: disable=invalid-name

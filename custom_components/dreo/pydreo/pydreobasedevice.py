@@ -75,6 +75,33 @@ class PyDreoBaseDevice(object):
 
         return None
 
+
+    def is_preference_supported(self, preference_type: str, details: dict) -> bool:
+        """Check if a preference type is supported."""
+        _LOGGER.debug("PyDreoBaseDevice:Checking for preference type %s", preference_type)
+        controls_conf = details.get("controlsConf", None)
+        if controls_conf is not None:
+            preferences = controls_conf.get("preference", None)
+            if (preferences is not None):
+                for preference in preferences:
+                    if preference.get("type", None) == preference_type:
+                        _LOGGER.debug("PyDreoFanBase:Found preference type %s", preference_type)
+                        return True
+                    
+        _LOGGER.debug("PyDreoBaseDevice:Preference type %s not found", preference_type)
+        return False
+    
+    def get_setting(self, dreo : "PyDreo", setting_name: str, default_value : any) -> any:
+        """Get the value of a preference."""
+        _LOGGER.debug("PyDreoBaseDevice:get_setting: %s", setting_name)
+        setting_val = dreo.get_device_setting(self, setting_name)
+        if setting_val is None:
+            _LOGGER.debug("PyDreoBaseDevice:get_setting: %s not found.  Using default value.", setting_name)
+            setting_val = default_value
+
+        _LOGGER.debug("PyDreoBaseDevice:get_setting: %s -> %s", setting_name, setting_val)
+        return setting_val
+    
     def get_mode_string(self, mode_id: str) -> str:
         """Get the mode string from the device definition."""
         if (mode_id in FAN_MODE_STRINGS):
@@ -103,6 +130,13 @@ class PyDreoBaseDevice(object):
         )
         params: dict = {command_key: value}
         self._dreo.send_command(self, params)
+
+    def _set_setting(self, setting_key: str, value):
+        """Set a setting on the device."""
+        _LOGGER.debug(
+            "pyDreoBaseDevice(%s):set_setting: %s-> %s", self, setting_key, value
+        )
+        self._dreo.set_device_setting(self, setting_key, value)
 
     def get_state_update_value(self, state: dict, key: str):
         """Get a value from the state update in a safe manner."""

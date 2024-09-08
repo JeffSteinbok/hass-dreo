@@ -14,7 +14,9 @@ from .constant import (
     LIGHTSENSORON_KEY,
     MUTEON_KEY,
     TemperatureUnit,
-    SPEED_RANGE
+    SPEED_RANGE,
+    DREO_DEVICE_SETTING,
+    PREFERENCE_TYPE_TEMPERATURE_CALIBRATION
 )
  
 from .pydreobasedevice import PyDreoBaseDevice
@@ -42,6 +44,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._preset_modes = device_definition.preset_modes
         if (self._preset_modes is None):
             self._preset_modes = self.parse_preset_modes(details)
+
+        # Check to see if temperature calibration is supported.
+        self._temperature_offset = None
+        if self.is_preference_supported(PREFERENCE_TYPE_TEMPERATURE_CALIBRATION, details):
+            self._temperature_offset = int(self.get_setting(dreo, DREO_DEVICE_SETTING.FanTempOffset, 0))
 
         self._is_on = False
         self._fan_speed = None
@@ -93,7 +100,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         raise NotImplementedError
-                        
+    
     @property
     def speed_range(self):
         """Get the speed range"""
@@ -165,7 +172,10 @@ class PyDreoFanBase(PyDreoBaseDevice):
     @property
     def temperature(self):
         """Get the temperature"""
-        return self._temperature
+        temp = self._temperature
+        if (self.temperature_offset is not None):
+            temp += self.temperature_offset
+        return temp
 
     @property
     def temperature_units(self) -> TemperatureUnit:
@@ -181,6 +191,20 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         return TemperatureUnit.CELCIUS
 
+    @property
+    def temperature_offset(self) -> bool:
+        """Get the temperature calibration value"""
+        return self._temperature_offset
+    
+    @temperature_offset.setter
+    def temperature_offset(self, value: int) -> None:
+        """Set the temperature calibration value"""
+        _LOGGER.debug("PyDreoFan:temperature_calibration.setter")
+        if (self.temperature_offset is not None):
+            self._set_setting(DREO_DEVICE_SETTING.FanTempOffset, value)
+        else:
+            raise NotImplementedError(f"PyDreoFanBase: Attempting to set temperature calibration on a device that doesn't support ({value})")
+                                  
     @property
     def oscillating(self) -> bool:
         """Returns None if oscillation if either horizontal or vertical oscillation is on."""

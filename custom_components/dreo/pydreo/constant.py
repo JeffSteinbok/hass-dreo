@@ -43,6 +43,10 @@ TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
 TARGET_HUMIDITY_KEY = "rhlevel"
 
+# Preferences Names
+# It's possible we should switch to IDs instead of names
+PREFERENCE_TYPE_TEMPERATURE_CALIBRATION = "Temperature Calibration"  # ID: 250
+
 # Tower Fans
 SHAKEHORIZON_KEY = "shakehorizon"
 SHAKEHORIZONANGLE_KEY = "shakehorizonangle"
@@ -55,27 +59,44 @@ DREO_API_URL_FORMAT = (
     "https://app-api-{0}.dreo-cloud.com"  # {0} is the 2 letter region code
 )
 
-DREO_API_LIST_PATH = "path"
-DREO_API_LIST_METHOD = "method"
+DREO_API_PATH = "path"
+DREO_API_METHOD = "method"
 
 DREO_API_LOGIN = "login"
 DREO_API_DEVICELIST = "devicelist"
 DREO_API_DEVICESTATE = "devicestate"
+DREO_API_SETTING_GET = "setting_get"
+DREO_API_SETTING_PUT = "setting_put"
+
+DREO_API_SETTING_DATA_KEY = "dataKey"
+DREO_API_SETTING_DATA_VALUE = "dataValue"
 
 DREO_APIS = {
     DREO_API_LOGIN: {
-        DREO_API_LIST_PATH: "/api/oauth/login",
-        DREO_API_LIST_METHOD: "post",
+        DREO_API_PATH: "/api/oauth/login",
+        DREO_API_METHOD: "post",
     },
     DREO_API_DEVICELIST: {
-        DREO_API_LIST_PATH: "/api/v2/user-device/device/list",
-        DREO_API_LIST_METHOD: "get",
+        DREO_API_PATH: "/api/v2/user-device/device/list",
+        DREO_API_METHOD: "get",
     },
     DREO_API_DEVICESTATE: {
-        DREO_API_LIST_PATH: "/api/user-device/device/state",
-        DREO_API_LIST_METHOD: "get",
+        DREO_API_PATH: "/api/user-device/device/state",
+        DREO_API_METHOD: "get",
     },
+    DREO_API_SETTING_GET: {
+        DREO_API_PATH: "/api/user-device/setting",
+        DREO_API_METHOD: "get",
+    },
+    DREO_API_SETTING_PUT: {
+        DREO_API_PATH: "/api/user-device/setting",
+        DREO_API_METHOD: "put",
+    }
 }
+
+class DREO_DEVICE_SETTING(StrEnum):
+    """Dreo device settings"""
+    FanTempOffset = "kHafFanTempOffsetKey"
 
 DREO_AUTH_REGION_NA = "NA"
 DREO_AUTH_REGION_EU = "EU"
