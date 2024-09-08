@@ -12,7 +12,7 @@ from .const import (
     LOGGER
 )
 
-from .pydreo.pydreofan import PyDreoFanBase
+from .pydreo.pydreofanbase import PyDreoFanBase
 
 _LOGGER = logging.getLogger(LOGGER)
 

@@ -100,11 +100,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fan_mode = None
         self.work_time = None
         self.temp_target_reached = None
-
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
-
+        
     @property
     def poweron(self):
         """Returns `True` if the device is on, `False` otherwise."""

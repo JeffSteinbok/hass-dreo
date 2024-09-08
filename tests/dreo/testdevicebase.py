@@ -1,12 +1,11 @@
 """Base class for Dreo device tests."""
-import pytest
 from unittest.mock import MagicMock, patch
+import pytest
 from homeassistant.helpers.entity import Entity
 from .custommocks import PyDreoDeviceMock
 
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
 PATCH_UPDATE_HA_STATE = 'homeassistant.helpers.entity.Entity.schedule_update_ha_state'
-
 
 class TestDeviceBase:
     """Base class for Dreo Device Tests."""

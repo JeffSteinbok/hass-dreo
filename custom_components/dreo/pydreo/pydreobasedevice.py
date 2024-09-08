@@ -4,7 +4,7 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY
+from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY, FAN_MODE_STRINGS
 from .models import DreoDeviceDetails
 
 if TYPE_CHECKING:
@@ -56,7 +56,7 @@ class PyDreoBaseDevice(object):
 
     def __repr__(self):
         # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
+        return f"<{self.__class__.__name__}:{self._sn}:{self._name}>"
 
     def get_server_update_key_value(self, message: dict, key: str):
         """Helper method to get values from a WebSocket update in a safe way."""
@@ -75,6 +75,15 @@ class PyDreoBaseDevice(object):
 
         return None
 
+    def get_mode_string(self, mode_id: str) -> str:
+        """Get the mode string from the device definition."""
+        if (mode_id in FAN_MODE_STRINGS):
+            text = FAN_MODE_STRINGS[mode_id]
+        else:
+            text = mode_id
+
+        return text
+    
     def handle_server_update_base(self, message):
         """Initial method called when we get a WebSocket message."""
         _LOGGER.debug("{%s}: got {%s} message **", self.name, message)

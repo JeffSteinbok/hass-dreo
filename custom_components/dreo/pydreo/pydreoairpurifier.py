@@ -7,7 +7,7 @@ from .constant import (
     LOGGER_NAME
 )
 
-from .pydreofan import PyDreoFanBase
+from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -24,10 +24,6 @@ class PyDreoAirPurifier(PyDreoFanBase):
         _LOGGER.debug("PyDreoAirPurifier:__init__")
         super().__init__(device_definition, details, dreo)
 
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
-    
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
         """Parse the speed range from a control node"""
         # This is done differently for air purifiers than for other fan types

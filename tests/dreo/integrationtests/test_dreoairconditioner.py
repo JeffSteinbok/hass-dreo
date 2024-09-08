@@ -2,11 +2,9 @@
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
-from  .imports import * # pylint: disable=W0401,W0614
-from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
-from custom_components.dreo import climate
-from custom_components.dreo import switch
 from custom_components.dreo import number
+from  .imports import * # pylint: disable=W0401,W0614
+from .integrationtestbase import IntegrationTestBase
 
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
 PATCH_SCHEDULE_UPDATE_HA_STATE= f'{PATCH_BASE_PATH}.schedule_update_ha_state'
@@ -18,6 +16,7 @@ class TestDreoAirConditioner(IntegrationTestBase):
     """Test Dreo Ceiling Fan class and PyDreo together."""
     
     def test_HAC001S(self):  # pylint: disable=invalid-name
+        """Load air conditioner and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
 
             self.get_devices_file_name = "get_devices_HAC001S.json"

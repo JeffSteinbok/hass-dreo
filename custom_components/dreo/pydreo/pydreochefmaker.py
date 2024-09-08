@@ -1,15 +1,17 @@
+"""Support for Dreo ChefMaker devices."""
 import logging
 from typing import Dict, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from pydreo import PyDreo
-
 from .constant import (
     LOGGER_NAME,
-    REPORTED_KEY,
     POWERON_KEY,
-    STATE_KEY,
 )
+from .models import DreoDeviceDetails
+
+from .pydreobasedevice import PyDreoBaseDevice
+
+if TYPE_CHECKING:
+    from pydreo import PyDreo
 
 LIGHT_KEY = "ledpotkepton"
 MODE_KEY = "mode"
@@ -17,9 +19,6 @@ MODE_STANDBY = "standby"
 MODE_COOKING = "cooking"
 MODE_PAUSED = "ckpause"
 MODE_OFF = "off"
-
-from .models import DreoDeviceDetails
-from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -73,6 +72,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._mode = value
 
     def set_mode_from_is_on(self) -> None:
+        """Set the mode based on the power state."""
         val = MODE_STANDBY if self._is_on else MODE_OFF
         _LOGGER.debug(
             "PyDreoChefMaker(%s):set_mode_from_is_on: %s --> %s", self, self.mode, val

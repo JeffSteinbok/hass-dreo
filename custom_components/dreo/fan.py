@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 
 from .haimports import * # pylint: disable=W0401,W0614
-
+from .pydreo import PyDreo, PyDreoBaseDevice
+from .pydreo.constant import DreoDeviceType
 from .dreofan import DreoFanHA 
 
 from .const import (
@@ -12,10 +13,20 @@ from .const import (
     PYDREO_MANAGER
 )
 
-from .pydreo import PyDreo
-from .pydreo.constant import DreoDeviceType
-
 _LOGGER = logging.getLogger(LOGGER)
+
+def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoFanHA]:
+    """Get the Dreo Fan entities for the devices."""
+    fan_entities_ha : DreoFanHA = []
+
+    for pydreo_device in pydreo_devices:
+        if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
+            pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR or
+            pydreo_device.type == DreoDeviceType.AIR_PURIFIER):
+            _LOGGER.debug("climate:get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
+            fan_entities_ha.append(DreoFanHA(pydreo_device))
+
+    return fan_entities_ha
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -29,12 +40,7 @@ async def async_setup_entry(
 
     pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    fan_entities_ha = []
-    for pydreo_device in pydreo_manager.devices:
-        if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
-            pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR or
-            pydreo_device.type == DreoDeviceType.AIR_PURIFIER):
-            fan_entities_ha.append(DreoFanHA(pydreo_device))
+    fan_entities_ha = get_entries(pydreo_manager.devices)
 
     _LOGGER.debug("Fan:async_setup_entry: Adding Fans (%s)", fan_entities_ha.count)
     async_add_entities(fan_entities_ha)

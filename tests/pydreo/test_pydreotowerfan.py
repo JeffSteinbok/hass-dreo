@@ -10,9 +10,6 @@ from .testbase import TestBase, PATCH_SEND_COMMAND
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-LOGIN_RESPONSE = call_json.LOGIN_RET_BODY
-
-
 class TestPyDreoFan(TestBase):
     """Test PyDreoFan class."""
     def test_tower_load_and_send_commands(self):

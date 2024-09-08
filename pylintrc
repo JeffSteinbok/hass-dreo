@@ -12,5 +12,5 @@ output-format=text
 
 [FORMAT]
 # Maximum number of characters on a single line.
-max-line-length=120
+max-line-length=130
 

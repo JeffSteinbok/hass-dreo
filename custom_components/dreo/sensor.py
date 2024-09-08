@@ -29,7 +29,7 @@ from .const import (
     PYDREO_MANAGER,
 )
 
-from .pydreo.pydreoac import (
+from .pydreo.pydreoairconditioner import (
     WORK_TIME,
     TEMP_TARGET_REACHED,
 )

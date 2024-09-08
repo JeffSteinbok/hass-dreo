@@ -2,11 +2,11 @@
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
-from  .imports import * # pylint: disable=W0401,W0614
-from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
+from .imports import * # pylint: disable=W0401,W0614
+from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
 PATCH_SCHEDULE_UPDATE_HA_STATE= f'{PATCH_BASE_PATH}.schedule_update_ha_state'

@@ -8,9 +8,6 @@ from .testbase import TestBase
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-LOGIN_RESPONSE = call_json.LOGIN_RET_BODY
-
-
 class TestPyDreoAirPurifier(TestBase):
     """Test TestPyDreoAirPurifier class."""
 

@@ -6,50 +6,42 @@
 # pylint: disable=W0613
 
 from typing import Any
-from dataclasses import dataclass
 import logging
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
+
 from .pydreo import (
-    PyDreo,
-    PyDreoHeater,
     PyDreoAC,
-    HEATER_MODE_OFF,
-    HEATER_MODE_COOLAIR,
-    HEATER_MODE_HOTAIR,
-    HEATER_MODE_ECO,
-    MODE_LEVEL_MAP,
-    LEVEL_MODE_MAP,
-    ECOLEVEL_RANGE,
     ANGLE_OSCANGLE_MAP,
     OSCANGLE_ANGLE_MAP,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
     HUMIDITY_RANGE,
-    DreoDeviceType
+)
+
+from .pydreo.pydreoairconditioner import (
+    DREO_AC_MODE_COOL,
+    DREO_AC_MODE_DRY,
 )
 
 from .const import (
     LOGGER,
     DOMAIN,
-    PYDREO_MANAGER,
 )
 
-HVAC_MODE_MAP = {
-    HVACMode.OFF: HEATER_MODE_OFF,
-    HVACMode.FAN_ONLY: HEATER_MODE_COOLAIR,
-    HVACMode.AUTO: HEATER_MODE_ECO,
-    HVACMode.HEAT: HEATER_MODE_HOTAIR,
-}
-
-HEATER_MODE_MAP = {
-    HEATER_MODE_OFF: HVACMode.OFF,
-    HEATER_MODE_COOLAIR: HVACMode.FAN_ONLY,
-    HEATER_MODE_HOTAIR: HVACMode.HEAT,
-    HEATER_MODE_ECO: HVACMode.AUTO,
-}
+from homeassistant.components.climate import (
+    SWING_ON,
+    SWING_OFF,
+    FAN_AUTO,
+    FAN_LOW,
+    FAN_MEDIUM,
+    FAN_HIGH,
+    PRESET_ECO,
+    PRESET_NONE,
+    HVACMode,
+)
 
 AC_MODE_MAP = {
     1: HVACMode.COOL,
@@ -66,23 +58,6 @@ HVAC_AC_MODE_MAP = {
     HVACMode.DRY: 2,
     HVACMode.FAN_ONLY: 3,
 }
-
-from homeassistant.components.climate import (
-    SWING_ON,
-    SWING_OFF,
-    FAN_AUTO,
-    FAN_LOW,
-    FAN_MEDIUM,
-    FAN_HIGH,
-    PRESET_ECO,
-    PRESET_NONE,
-    HVACMode,
-)
-
-from .pydreo.pydreoac import (
-    DREO_AC_MODE_COOL,
-    DREO_AC_MODE_DRY,
-)
 
 _LOGGER = logging.getLogger(LOGGER)
 
@@ -106,7 +81,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
         _LOGGER.info(
-            "DreoACHA:__init__(%s) shows pyDreoDevice as: current_temp(%s), target_temp(%s), mode(%s), oscon(%s), fan_mode(%s)",
+            "DreoAirConditionerHA:__init__(%s) shows pyDreoDevice as: current_temp(%s), target_temp(%s), mode(%s), oscon(%s), fan_mode(%s)",
             pyDreoDevice.name,
             pyDreoDevice.temperature,
             pyDreoDevice.target_temperature,
@@ -129,7 +104,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_oscon = self.device.oscon
 
         _LOGGER.info(
-            "new DreoACHA instance(%s), unique ID %s, HVAC mode %s, target temp %s, current temp %s, swing mode %s, swing modes [%s], oscon %s, fan_mode %s",
+            "new DreoAirConditionerHA instance(%s), unique ID %s, HVAC mode %s, target temp %s, current temp %s, swing mode %s, swing modes [%s], oscon %s, fan_mode %s",
             self._attr_name,
             self._attr_unique_id,
             self._attr_hvac_mode,
@@ -154,12 +129,12 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def fan_mode(self) -> str:
         """Return the current fan mode - if on, it means that we're in 'coolair' mode"""
-        _LOGGER.debug("DreoACHA:fan_mode(%s): %s", self.device.name, self.device.fan_mode)
+        _LOGGER.debug("DreoAirConditionerHA:fan_mode(%s): %s", self.device.name, self.device.fan_mode)
         return self.device.fan_mode
 
     def set_fan_mode(self, fan_mode: str) -> None:
         """Set new target fan mode."""
-        _LOGGER.debug("DreoACHA:set_fan_mode(%s) --> %s", self.device.name, fan_mode)
+        _LOGGER.debug("DreoAirConditionerHA:set_fan_mode(%s) --> %s", self.device.name, fan_mode)
         self.device.fan_mode = fan_mode
         self._attr_fan_mode = fan_mode
 
@@ -181,7 +156,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def preset_modes(self) -> list[str]:
         """Get the list of available preset modes."""
-        _LOGGER.debug("DreoACHA:preset_mode(%s): %s", self.device.name, self.device.preset_mode)
+        _LOGGER.debug("DreoAirConditionerHA:preset_mode(%s): %s", self.device.name, self.device.preset_mode)
         return self.device.preset_modes
 
     @property
@@ -191,7 +166,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_preset_mode(self, preset_mode: str) -> None:
         """Set the preset mode of the device."""
-        _LOGGER.debug("DreoACHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
+        _LOGGER.debug("DreoAirConditionerHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
         if preset_mode == PRESET_ECO:
             self.device.mode = DREO_AC_MODE_COOL
             self.device.preset_mode = preset_mode
@@ -215,7 +190,8 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         supported_features = 0
         if self.device.target_temperature is not None and self.device.mode == DREO_AC_MODE_COOL:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if (self.device.preset_mode is not None or self.device.device_definition.preset_modes is not None) and self.device.mode == DREO_AC_MODE_COOL:
+        if ((self.device.preset_mode is not None or self.device.device_definition.preset_modes is not None) and 
+            self.device.mode == DREO_AC_MODE_COOL):
             supported_features |= ClimateEntityFeature.PRESET_MODE
         if self.device.oscon is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
@@ -227,41 +203,43 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         if self.device.target_humidity is not None and self.device.mode == DREO_AC_MODE_DRY:
             supported_features |= ClimateEntityFeature.TARGET_HUMIDITY
         
-        _LOGGER.debug("DreoACHA:supported_features(%s): %s (device.mode: %s)", self, supported_features, self.device.mode)
+        _LOGGER.debug("DreoAirConditionerHA:supported_features(%s): %s (device.mode: %s)", self, supported_features, self.device.mode)
         
         return supported_features
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
-        _LOGGER.debug("DreoACHA:turn_on(%s)", self.device.name)
+        _LOGGER.debug("DreoAirConditionerHA:turn_on(%s)", self.device.name)
         self.device.poweron = True
         self.device.mode = HVAC_AC_MODE_MAP[self._last_hvac_mode]
         self.device._attr_hvac_mode = self._last_hvac_mode
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        _LOGGER.debug("DreoACHA:turn_off(%s)", self.device.name)
+        _LOGGER.debug("DreoAirConditionerHA:turn_off(%s)", self.device.name)
         self.device.poweron = False
         self._last_hvac_mode = self._attr_hvac_mode
 
     @oscon.setter
     def oscon(self, oscon: bool) -> None:
         """Oscillate the fan."""
-        _LOGGER.debug("DreoACHA::oscon(%s) --> %s", self.device.name, oscon)
+        _LOGGER.debug("DreoAirConditionerHA::oscon(%s) --> %s", self.device.name, oscon)
         self.device.oscon = oscon
 
     @oscangle.setter
     def oscangle(self, oscangle: str) -> None:
         """Set the oscillation angle"""
-        _LOGGER.debug("DreoACHA::oscangle(%s) -> %s", self.device.name, oscangle)
+        _LOGGER.debug("DreoAirConditionerHA::oscangle(%s) -> %s", self.device.name, oscangle)
         self.device.oscangle = OSCANGLE_ANGLE_MAP[oscangle]
 
     def panel_sound(self, panel_sound: bool) -> None:
-        _LOGGER.debug("DreoACHA::panel_sound(%s) --> %s", self.device.name, panel_sound)
+        """Turn the panel sound on or off."""
+        _LOGGER.debug("DreoAirConditionerHA::panel_sound(%s) --> %s", self.device.name, panel_sound)
         self.device.muteon = not panel_sound
 
     def muteon(self, muteon: bool) -> None:
-        _LOGGER.debug("DreoACHA::muteon(%s) --> %s", self.device.name, muteon)
+        """Turn the sound on or off."""
+        _LOGGER.debug("DreoAirConditionerHA::muteon(%s) --> %s", self.device.name, muteon)
         self.device.muteon = muteon
 
     ### Implementation of climate methods
@@ -271,16 +249,16 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     
     @property
     def min_temp(self) -> float | None:
-        return self.device.device_definition.range[TEMP_RANGE][0]
+        return self.device.device_definition.device_ranges[TEMP_RANGE][0]
 
     @property
     def max_temp(self) -> float | None:
-        return self.device.device_definition.range[TEMP_RANGE][1]
+        return self.device.device_definition.device_ranges[TEMP_RANGE][1]
     
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         self.device.target_temperature = kwargs.get(ATTR_TEMPERATURE)
-        _LOGGER.debug("DreoACHA::set_temperature(%s) %s --> %s", 
+        _LOGGER.debug("DreoAirConditionerHA::set_temperature(%s) %s --> %s", 
                       self.device.name, 
                       self._attr_target_temperature, 
                       self.device.target_temperature)
@@ -297,7 +275,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             range_key = TARGET_TEMP_RANGE_ECO
         else:
             range_key = TARGET_TEMP_RANGE
-        return self.device.device_definition.range[range_key][0]
+        return self.device.device_definition.device_ranges[range_key][0]
 
     @property
     def target_temperature_high(self) -> float | None:
@@ -305,7 +283,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             range_key = TARGET_TEMP_RANGE_ECO
         else:
             range_key = TARGET_TEMP_RANGE
-        return self.device.device_definition.range[range_key][1]
+        return self.device.device_definition.device_ranges[range_key][1]
 
     @property
     def target_temperature_step(self) -> float | None:
@@ -317,7 +295,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_humidity(self, humidity: int) -> None:
         """Set new target humidity."""
-        _LOGGER.debug("DreoACHA::set_humidity(%s) %s --> %s", self.device.name, self._attr_target_humidity, humidity)
+        _LOGGER.debug("DreoAirConditionerHA::set_humidity(%s) %s --> %s", self.device.name, self._attr_target_humidity, humidity)
         self.device.target_humidity = humidity
         self._attr_target_humidity = humidity
         self.schedule_update_ha_state()
@@ -328,17 +306,17 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def min_humidity(self) -> float | None:
-        return self.device.device_definition.range[HUMIDITY_RANGE][0]
+        return self.device.device_definition.device_ranges[HUMIDITY_RANGE][0]
 
     @property
     def max_humidity(self) -> float | None:
-        return self.device.device_definition.range[HUMIDITY_RANGE][1]
+        return self.device.device_definition.device_ranges[HUMIDITY_RANGE][1]
 
     @property
     def hvac_mode(self):
         # ensure hvac_mode is actually in sync with the device's mode
         self._attr_hvac_mode = AC_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
-        _LOGGER.debug("DreoACHA:hvac_mode(%s): %s (device.mode: %s)", 
+        _LOGGER.debug("DreoAirConditionerHA:hvac_mode(%s): %s (device.mode: %s)", 
                       self.device.name, 
                       self._attr_hvac_mode,
                       self.device.mode)
@@ -351,7 +329,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode."""
-        _LOGGER.debug("DreoACHA:set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
+        _LOGGER.debug("DreoAirConditionerHA:set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
         self._last_hvac_mode = self._attr_hvac_mode
         self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
 
@@ -377,7 +355,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_swing_mode(self, swing_mode: str) -> None:
         """Set new target swing operation."""
-        _LOGGER.debug("DreoACHA:set_swing_mode(%s) -> %s", self.device.name, swing_mode)
+        _LOGGER.debug("DreoAirConditionerHA:set_swing_mode(%s) -> %s", self.device.name, swing_mode)
 
         if self.device.oscon is not None:
             self.oscon = (

@@ -69,11 +69,6 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._tempoffset = None
         self._fixed_conf = None
 
-
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
-
     @property
     def poweron(self):
         """Returns `True` if the device is on, `False` otherwise."""
@@ -88,7 +83,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def heat_range(self):
         """Get the heat range"""
-        return self._device_definition.range[HEAT_RANGE]
+        return self._device_definition.device_ranges[HEAT_RANGE]
 
     @property
     def preset_modes(self):
@@ -120,11 +115,11 @@ class PyDreoHeater(PyDreoBaseDevice):
         """Set the heat level."""
         _LOGGER.debug("PyDreoHeater:htalevel.setter(%s, %s)", self.name, htalevel)
         # TODO: Change to in range check
-        if (htalevel < self._device_definition.range[HEAT_RANGE][0] or 
-            htalevel > self._device_definition.range[HEAT_RANGE][1]):
+        if (htalevel < self._device_definition.device_ranges[HEAT_RANGE][0] or 
+            htalevel > self._device_definition.device_ranges[HEAT_RANGE][1]):
             _LOGGER.error("Heat level %s is not in the acceptable range: %s",
                             htalevel,
-                            self._device_definition.range[HEAT_RANGE])
+                            self._device_definition.device_ranges[HEAT_RANGE])
             return
         self.mode = HEATER_MODE_HOTAIR
         self._send_command(HTALEVEL_KEY, htalevel)
@@ -132,7 +127,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property 
     def ecolevel_range(self):
         """Get the ecolevel range"""
-        return self._device_definition.range[ECOLEVEL_RANGE]
+        return self._device_definition.device_ranges[ECOLEVEL_RANGE]
 
     @property
     def ecolevel(self):
@@ -144,10 +139,10 @@ class PyDreoHeater(PyDreoBaseDevice):
         """Set the target temperature."""
         _LOGGER.debug("PyDreoHeater:ecolevel(%s)", ecolevel)
         # TODO: Change to in range check
-        if ecolevel < self._device_definition.range[ECOLEVEL_RANGE][0] or ecolevel > self._device_definition.range[ECOLEVEL_RANGE][1]:
+        if ecolevel < self._device_definition.device_ranges[ECOLEVEL_RANGE][0] or ecolevel > self._device_definition.device_ranges[ECOLEVEL_RANGE][1]:
             _LOGGER.error("Target Temperature %s is not in the acceptable range: %s",
                             ecolevel,
-                            self._device_definition.range[ECOLEVEL_RANGE])
+                            self._device_definition.device_ranges[ECOLEVEL_RANGE])
             return
         self._send_command(ECOLEVEL_KEY, ecolevel)
 

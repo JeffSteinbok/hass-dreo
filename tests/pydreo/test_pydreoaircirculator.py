@@ -4,14 +4,10 @@ import logging
 from unittest.mock import patch
 import pytest
 from  .imports import * # pylint: disable=W0401,W0614
-from . import call_json
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-LOGIN_RESPONSE = call_json.LOGIN_RET_BODY
-
 
 class TestPyDreoAirCirculator(TestBase):
     """Test PyDreoAirCirculator class."""
@@ -48,3 +44,17 @@ class TestPyDreoAirCirculator(TestBase):
 
         with pytest.raises(ValueError):
             fan.fan_speed = 10
+
+    def test_HAF001S(self): # pylint: disable=invalid-name
+        """Test HAF001S fan."""
+        self.get_devices_file_name = "get_devices_HAF001S.json"
+        self.pydreo_manager.load_devices()
+
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan : PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        assert fan.speed_range == (1, 4)
+        assert fan.horizontally_oscillating is not None
+        assert fan.horizontally_oscillating is False
+        assert fan.oscillating is not None
