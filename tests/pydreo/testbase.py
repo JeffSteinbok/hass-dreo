@@ -88,7 +88,7 @@ class TestBase:
             return (call_json.get_response_from_file(self.get_devices_file_name), 200)
         if api == "devicestate":
             logger.debug("API call: %s %s", api, json_object)
-            file_name = "get_device_state_{json_object['deviceSn']}.json"
+            file_name = f"get_device_state_{json_object['deviceSn']}.json"
             if (os.path.exists(API_REPONSE_BASE_PATH + file_name)):
                 logger.debug("Device state loaded from file: %s", API_REPONSE_BASE_PATH + file_name)
                 return (call_json.get_response_from_file(file_name), 200)
