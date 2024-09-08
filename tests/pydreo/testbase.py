@@ -11,6 +11,8 @@ from . import call_json
 
 logger = logging.getLogger(__name__)
 
+API_REPONSE_BASE_PATH = 'tests/pydreo/api_responses/'
+
 PATCH_BASE_PATH = 'custom_components.dreo.pydreo'
 PATCH_SEND_COMMAND = f'{PATCH_BASE_PATH}.PyDreo.send_command'
 PATCH_CALL_DREO_API = f'{PATCH_BASE_PATH}.PyDreo.call_dreo_api'
@@ -92,3 +94,13 @@ class TestBase:
             else:
                 logger.debug("No file found: %s", f"tests/pydreo/api_responses/get_device_state_{json_object['deviceSn']}.json")
                 return {}, 200
+        if api == "setting_get":
+            file_name = f"get_device_setting_{json_object['deviceSn']}_{json_object['dataKey']}.json"
+            if (os.path.exists(API_REPONSE_BASE_PATH + file_name)):
+                logger.debug("Device setting loaded from file: %s", API_REPONSE_BASE_PATH + file_name)
+                return (call_json.get_response_from_file(file_name), 200)
+            else:
+                logger.debug("No file found: %s", file_name)
+                return {}, 200
+
+
