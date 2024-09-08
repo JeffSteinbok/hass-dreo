@@ -22,8 +22,9 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoFanHA]:
     for pydreo_device in pydreo_devices:
         if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
             pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR or
-            pydreo_device.type == DreoDeviceType.AIR_PURIFIER):
-            _LOGGER.debug("climate:get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
+            pydreo_device.type == DreoDeviceType.AIR_PURIFIER or
+            pydreo_device.type == DreoDeviceType.CEILING_FAN):
+            _LOGGER.debug("Fan:get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
             fan_entities_ha.append(DreoFanHA(pydreo_device))
 
     return fan_entities_ha

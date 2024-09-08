@@ -12,6 +12,21 @@ PATCH_SEND_COMMAND = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
 
 class Test_DreoFanHA(TestDeviceBase):
 
+    def test_fan_entries(self, mocker):
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+
+            mocked_pydreo_fans : list[PyDreoDeviceMock] = [ self.create_mock_device( name="Test Tower Fan", type="Tower Fan"),
+                                                            self.create_mock_device( name="Test Ceiling Fan", type="Ceiling Fan"),
+                                                            self.create_mock_device( name="Test Air Circulator", type="Air Circulator"),
+                                                            self.create_mock_device( name="Test Air Purifier", type="Air Purifier"),
+                                                            self.create_mock_device( name="Test Heater", type="Heater"),
+                                                            self.create_mock_device( name="Test Humidifier", type="Humidifier"),
+                                                            self.create_mock_device( name="Test Dehumidifier", type="Dehumidifier"),
+                                                            self.create_mock_device( name="Test Air Conditioner", type="Air Conditioner")]
+
+            entity_list = fan.get_entries(mocked_pydreo_fans)
+            assert len(entity_list) == 4
+
     def test_fan_simple(self, mocker):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
 

@@ -6,9 +6,11 @@ class PyDreoDeviceMock(MagicMock):
     def __init__(self, 
                  *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.type = kwargs.get('type')
         self.name = kwargs.get('name')
         self.serial_number = kwargs.get('serial_number')
         self._supported_features : list[str] = []
+        
         if (kwargs.get('features') is not None):
             self.set_features(kwargs.get('features'))
 
