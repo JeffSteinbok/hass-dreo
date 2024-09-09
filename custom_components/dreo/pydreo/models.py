@@ -108,7 +108,8 @@ SUPPORTED_MODEL_PREFIXES = {
     "DR-HCF",
     "DR-HSH",
     "WH",
-    "DR-HAC"
+    "DR-HAC",
+    "DR-HHM"
 }
 
 SUPPORTED_DEVICES = {
@@ -241,5 +242,7 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.CHEF_MAKER,
         cooking_modes=COOKING_MODES,
         cooking_range=COOKING_RANGES,
-    )
+    ),
+
+    "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER),
 }

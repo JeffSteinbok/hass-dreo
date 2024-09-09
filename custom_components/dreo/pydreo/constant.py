@@ -249,7 +249,8 @@ FAN_MODE_STRINGS = {
     "device_control_mode_turbo": "turbo",
     "base_reverse": "reverse",
     "device_control_custom": "custom",
-    "fan_2in1_breeze": "2-in-1 Breeze Mode" 
+    "fan_2in1_breeze": "2-in-1 Breeze Mode",
+    "device_control_mode_manual": "manual"
 }
 
 class DreoDeviceType(StrEnum):
@@ -261,3 +262,5 @@ class DreoDeviceType(StrEnum):
     HEATER = "Heater"
     AIR_CONDITIONER = "Air Conditioner"
     CHEF_MAKER = "Chef Maker"
+    HUMIDIFIER = "Humidifier"
+    UNKNOWN = "Unknown"
