@@ -1,8 +1,10 @@
-# PyDreo Unit Tests
+# Dreo Integration Tests
 
-*This aims to briefly describe how these unit-tests are setup. Note that this is my first attempt at Python UnitTesting, so there is likely a much better way to do some of this. If you have suggestions, let me know.*
+*This aims to briefly describe how these tests are setup.*
 
-- All tests inherit off TestBase.py
+For Unit Tests, see [README.md](../README.md)
+
+- All tests inherit off IntegrationTestBase.py
 - All API responses are in the **api_responses** folder.
     - Tests can specify a version of get_devices response for their specific scenarios. 
         - Recommendation would be to have seperate get_devices files for each device to test.

@@ -1,12 +1,11 @@
 """Base class for Dreo device tests."""
-import pytest
 from unittest.mock import MagicMock, patch
+import pytest
 from homeassistant.helpers.entity import Entity
 from .custommocks import PyDreoDeviceMock
 
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
 PATCH_UPDATE_HA_STATE = 'homeassistant.helpers.entity.Entity.schedule_update_ha_state'
-
 
 class TestDeviceBase:
     """Base class for Dreo Device Tests."""
@@ -19,12 +18,13 @@ class TestDeviceBase:
             yield mock_method
 
     def create_mock_device(self, 
+                           type : str = None,
                            name: str = "Mocked Dreo Device", 
                            serial_number: str = "123456", 
                            features: dict[str, any] = None):
         
         """Create a mock device."""
-        pydreo_device_mock : PyDreoDeviceMock = PyDreoDeviceMock(name=name, serial_number=serial_number, features=features)
+        pydreo_device_mock : PyDreoDeviceMock = PyDreoDeviceMock(type=type, name=name, serial_number=serial_number, features=features)
         return MagicMock(return_value=pydreo_device_mock)()
    
     def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:

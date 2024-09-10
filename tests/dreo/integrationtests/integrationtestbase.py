@@ -16,6 +16,8 @@ PATCH_BASE_PATH = 'custom_components.dreo.pydreo'
 PATCH_SEND_COMMAND = f'{PATCH_BASE_PATH}.PyDreo.send_command'
 PATCH_CALL_DREO_API = f'{PATCH_BASE_PATH}.PyDreo.call_dreo_api'
 
+API_REPONSE_BASE_PATH = "tests/dreo/integrationtests/api_responses/"
+
 Defaults = defaults.Defaults
 
 class IntegrationTestBase:
@@ -87,13 +89,22 @@ class IntegrationTestBase:
             return (call_json.get_response_from_file(self.get_devices_file_name), 200)
         if api == "devicestate":
             logger.debug("API call: %s %s", api, json_object)
-            if (os.path.exists(f"tests/dreo/integrationtests/api_responses/get_device_state_{json_object['deviceSn']}.json")):
-                logger.debug("Device state loaded from file: %s", f"tests/dreo/integrationtests/api_responses/get_device_state_{json_object['deviceSn']}.json")
-                return (call_json.get_response_from_file(f"get_device_state_{json_object['deviceSn']}.json"), 200)
+            file_name = f"get_device_state_{json_object['deviceSn']}.json"
+            if (os.path.exists(API_REPONSE_BASE_PATH + file_name)):
+                logger.debug("Device state loaded from file: %s", API_REPONSE_BASE_PATH + file_name)
+                return (call_json.get_response_from_file(file_name), 200)
             else:
-                logger.debug("No file found: %s", f"tests/dreo/integrationtests/api_responses/get_device_state_{json_object['deviceSn']}.json")
+                logger.debug("No file found: %s", API_REPONSE_BASE_PATH + file_name)
                 return {}, 200
-            
+        if api == "setting_get":
+            file_name = f"get_device_setting_{json_object['deviceSn']}_{json_object['dataKey']}.json"
+            if (os.path.exists(API_REPONSE_BASE_PATH + file_name)):
+                logger.debug("Device setting loaded from file: %s", API_REPONSE_BASE_PATH + file_name)
+                return (call_json.get_response_from_file(file_name), 200)
+            else:
+                logger.debug("No file found: %s", API_REPONSE_BASE_PATH + file_name)
+                return {}, 200
+
     def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:
         """Verify the expected entities are present."""
         found_entity_keys : list[str] = []
@@ -101,7 +112,7 @@ class IntegrationTestBase:
             found_entity_keys.append(ha_entity.entity_description.key)
         found_entity_keys.sort()
         logger.debug("Found entity keys: %s", found_entity_keys)
-        logger.debug("Expected entity keys: %s", found_entity_keys)
+        logger.debug("Expected entity keys: %s", expected_keys)
         assert found_entity_keys == expected_keys
 
     def get_entity_by_key(self, ha_entities: list, key: str) -> None:
@@ -109,6 +120,6 @@ class IntegrationTestBase:
         for ha_entity in ha_entities:
             if (ha_entity.entity_description.key == key):
                 return ha_entity
-        return None               
+        return None
 
-            
+

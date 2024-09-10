@@ -59,7 +59,7 @@ class DreoDeviceDetails:
     preset_modes: list[str]
     """List of possible preset mode names"""
 
-    range: dict
+    device_ranges: dict
     """Dictionary of different ranges"""
 
     hvac_modes: list[str]
@@ -78,7 +78,7 @@ class DreoDeviceDetails:
         self,
         device_type: DreoDeviceType = None,
         preset_modes: list[str] = None,
-        range: dict = None,
+        device_ranges: dict = None,
         hvac_modes: list[str] = None,
         swing_modes: list[str] = None,
         fan_modes: list[str] = None,
@@ -90,7 +90,7 @@ class DreoDeviceDetails:
 
         self.device_type = device_type
         self.preset_modes = preset_modes
-        self.range = range
+        self.device_ranges = device_ranges
         self.hvac_modes = hvac_modes
         self.swing_modes = swing_modes
         self.fan_modes = fan_modes
@@ -129,7 +129,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH004S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -141,7 +141,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH009S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -158,7 +158,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH009AS": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -172,10 +172,23 @@ SUPPORTED_DEVICES = {
             HeaterOscillationAngles.ONE_TWENTY,
         ],
     ),
+    "DR-HSH017S": DreoDeviceDetails(
+        device_type=DreoDeviceType.HEATER,
+        preset_modes=["H1", "H2", "H3"],
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
+        hvac_modes=[
+            HEATER_MODE_COOLAIR,
+            HEATER_MODE_HOTAIR,
+            HEATER_MODE_ECO,
+            HEATER_MODE_OFF,
+        ],
+        swing_modes=[SWING_OFF, SWING_ON],
+    ),    
+    # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH719S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -192,7 +205,7 @@ SUPPORTED_DEVICES = {
     "WH739S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        range={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -210,7 +223,7 @@ SUPPORTED_DEVICES = {
     # Air Conditioners
     "DR-HAC005S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CONDITIONER,
-        range={
+        device_ranges={
             TEMP_RANGE: (60, 95),
             TARGET_TEMP_RANGE: (64, 86),
             TARGET_TEMP_RANGE_ECO: (75, 86),

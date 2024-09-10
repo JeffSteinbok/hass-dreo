@@ -14,11 +14,10 @@ from .constant import (
     OSCMODE_KEY,
     FIXEDCONF_KEY,
     OscillationMode,
-    SPEED_RANGE,
-    FAN_MODE_STRINGS
+    SPEED_RANGE
 )
 
-from .pydreofan import PyDreoFanBase
+from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -35,8 +34,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
         super().__init__(device_definition, details, dreo)
         
         self._speed_range = None
-        if (device_definition.range is not None):
-            self._speed_range = device_definition.range[SPEED_RANGE]
+        if (device_definition.device_ranges is not None):
+            self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)
         self._preset_modes = device_definition.preset_modes
@@ -49,10 +48,6 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
-
-    def __repr__(self):
-        # Representation string of object.
-        return f"<{self.__class__.__name__}:{self._device_id}:{self._name}>"
     
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -64,11 +59,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 for control_item in control:
                     if (control_item.get("type", None) == "Mode"):
                         for mode_item in control_item.get("items", None):
-                            text_id = mode_item.get("text", None)
-                            if (text_id in FAN_MODE_STRINGS):
-                                text = FAN_MODE_STRINGS[text_id]
-                            else:
-                                text = text_id
+                            text = self.get_mode_string(mode_item.get("text", None))
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
@@ -76,11 +67,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 modes = schedule.get("modes", None)
                 if (modes is not None):
                     for mode_item in modes:
-                        text_id = mode_item.get("title", None)
-                        if (text_id in FAN_MODE_STRINGS):
-                            text = FAN_MODE_STRINGS[text_id]
-                        else:
-                            text = text_id
+                        text = self.get_mode_string(mode_item.get("title", None))
                         value = mode_item.get("value", None)
                         if (text, value) not in preset_modes:
                             preset_modes.append((text, value))
@@ -96,7 +83,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def oscillating(self) -> bool:
         """Returns `True` if either horizontal or vertical oscillation is on."""
         if self._horizontally_oscillating is not None:
-            return self._horizontally_oscillating or self._vertically_oscillating
+            if self._vertically_oscillating is not None:
+                return self._horizontally_oscillating or self._vertically_oscillating
+            return self._horizontally_oscillating
         if self._osc_mode is not None:
             return self._osc_mode != OscillationMode.OFF
         return None
@@ -307,6 +296,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("PyDreoAirCirculator:handle_server_update")
+        super().handle_server_update(message)
 
         val_horiz_oscillation = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_KEY)
         if isinstance(val_horiz_oscillation, bool):

@@ -10,8 +10,6 @@ from .testbase import TestBase, PATCH_SEND_COMMAND
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-LOGIN_RESPONSE = call_json.LOGIN_RET_BODY
-
 class TestPyDreoHeater(TestBase):
     """Test PyDreoHeater class."""
     def test_HSH009S(self):
