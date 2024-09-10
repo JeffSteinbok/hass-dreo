@@ -20,4 +20,4 @@ class TestPyDreoHumidifier(TestBase):
         assert len(self.pydreo_manager.devices) == 1
         humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
         assert humidifier.modes == ['manual', 'auto', 'sleep']
-        assert humidifier.is_feature_supported('poweron') is True
+        assert humidifier.is_feature_supported('is_on') is True

@@ -60,14 +60,14 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         return modes
         
     @property
-    def poweron(self):
+    def is_on(self):
         """Returns `True` if the device is on, `False` otherwise."""
         return self._is_on
 
-    @poweron.setter
-    def poweron(self, value: bool):
-        """Set if the air conditioner is on or off"""
-        _LOGGER.debug("PyDreoHumidifier:poweron.setter - %s", value)
+    @is_on.setter
+    def is_on(self, value: bool):
+        """Set if the fan is on or off"""
+        _LOGGER.debug("PyDreoHumidifier:is_on.setter - %s", value)
         self._send_command(POWERON_KEY, value)
 
     @property

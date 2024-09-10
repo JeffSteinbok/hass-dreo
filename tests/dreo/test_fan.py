@@ -8,12 +8,12 @@ from custom_components.dreo import switch
 from custom_components.dreo import number
 
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_SEND_COMMAND = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
 
 class Test_DreoFanHA(TestDeviceBase):
 
     def test_fan_entries(self, mocker):
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+        with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
 
             mocked_pydreo_fans : list[PyDreoDeviceMock] = [ self.create_mock_device( name="Test Tower Fan", type="Tower Fan"),
                                                             self.create_mock_device( name="Test Ceiling Fan", type="Ceiling Fan"),
@@ -28,7 +28,7 @@ class Test_DreoFanHA(TestDeviceBase):
             assert len(entity_list) == 4
 
     def test_fan_simple(self, mocker):
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+        with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
 
             mocked_pydreo_fan : PyDreoDeviceMock = self.create_mock_device( name="Test Ceiling Fan", 
                                                                             serial_number="123456", 
@@ -44,8 +44,8 @@ class Test_DreoFanHA(TestDeviceBase):
 
             test_fan.set_percentage(20)
             assert mocked_pydreo_fan.fan_speed == 1
-            mock_send_command.assert_called_once()
-            mock_send_command.reset_mock()
+            mock_update_ha_state.assert_called_once()
+            mock_update_ha_state.reset_mock()
 
             test_fan.set_percentage(0)
             assert mocked_pydreo_fan.is_on is False
@@ -55,8 +55,8 @@ class Test_DreoFanHA(TestDeviceBase):
 
             test_fan.set_preset_mode("normal")
             assert mocked_pydreo_fan.preset_mode is "normal"
-            mock_send_command.assert_called_once()
-            mock_send_command.reset_mock()
+            mock_update_ha_state.assert_called_once()
+            mock_update_ha_state.reset_mock()
 
             # Check to see what switches are added to ceiling fans
             self.verify_expected_entities(switch.get_entries([mocked_pydreo_fan]), [])
