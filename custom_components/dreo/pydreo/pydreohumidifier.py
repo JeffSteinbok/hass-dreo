@@ -8,7 +8,8 @@ from .constant import (
     MODE_KEY,
     MUTEON_KEY,
     POWERON_KEY,
-    TARGET_HUMIDITY_KEY
+    HUMIDITY_KEY,
+    TARGET_AUTO_HUMIDITY_KEY
 )
 
 from .helpers import Helpers
@@ -90,7 +91,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         """Set the target humidity"""
         _LOGGER.debug("PyDreoHumidifier:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         self._target_humidity = value
-        self._send_command(TARGET_HUMIDITY_KEY, value)
+        self._send_command(TARGET_AUTO_HUMIDITY_KEY, value)
 
     @property
     def panel_sound(self) -> bool:
@@ -132,6 +133,8 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoHumidifier(%s):update_state: %s", self.name, state)
         self._mode = self.get_state_update_value(state, MODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
+        self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
+        self._target_humidity = self.get_state_update_value(state, TARGET_AUTO_HUMIDITY_KEY)
         
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -144,4 +147,4 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
-            self._wind_mode = val_mode
+            self._mode = val_mode

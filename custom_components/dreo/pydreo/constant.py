@@ -41,6 +41,7 @@ ECOLEVEL_RANGE_KEY = "ecolevel_range"
 CHILDLOCKON_KEY = "childlockon"
 TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
+TARGET_AUTO_HUMIDITY_KEY = "rhautolevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
 
 # Preferences Names

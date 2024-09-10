@@ -102,6 +102,16 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         """Return the list of supported modes."""
         return self.device.modes
 
+    @property
+    def current_humitity(self) -> float:
+        """Return the current humidity."""
+        return self.device.humidity
+    
+    @property
+    def target_humidity(self) -> float:
+        """Return the humidity level we try to reach."""
+        return self.device.target_humidity
+    
     def turn_on(self, **kwargs: any) -> None:
         """Turn the device on."""
         _LOGGER.debug("DreoHumidiferHA:turn_on(%s)", self.device.name)
@@ -127,3 +137,10 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
             )
 
         self.device.mode = mode
+
+    def set_humidity(self, humidity: float) -> None:
+        """Set the humidity level."""
+        _LOGGER.debug(
+            "DreoHumidiferHA:set_humidity(%s) --> %s", self.device.name, humidity
+        )
+        self.device.target_humidity = humidity
