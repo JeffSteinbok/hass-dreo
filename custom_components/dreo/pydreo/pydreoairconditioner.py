@@ -236,9 +236,9 @@ class PyDreoAC(PyDreoBaseDevice):
 
     @display_auto_off.setter
     def display_auto_off(self, value: bool) -> None:
-        """Enable or disable auto-off"""
+        """Enable or disable display auto-off"""
         _LOGGER.debug("PyDreoAC:display_auto_off.setter(%s) --> %s", self.name, value)
-        self._send_command(LIGHTON_KEY, value)
+        self._send_command(LIGHTON_KEY, not value)
 
     @property
     def ctlstatus(self) -> bool:
@@ -252,12 +252,12 @@ class PyDreoAC(PyDreoBaseDevice):
         self._send_command(CTLSTATUS_KEY, value)
 
     @property
-    def child_lock_on(self) -> bool:
+    def childlockon(self) -> bool:
         """Returns `True` if Child Lock is on."""
         return self._childlockon
 
-    @child_lock_on.setter
-    def child_lock_on(self, value: bool) -> None:
+    @childlockon.setter
+    def childlockon(self, value: bool) -> None:
         """Enable or disable Child Lock"""
         _LOGGER.debug("PyDreoAC:childlockon.setter(%s) --> %s", self.name, value)
         self._send_command(CHILDLOCKON_KEY, value)
@@ -316,7 +316,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._timer_on = timeron["du"]
         self._cooldown = self.get_state_update_value(state, COOLDOWN_KEY)
         self._ptc_on = self.get_state_update_value(state, PTCON_KEY)
-        self._display_auto_off = self.get_state_update_value(state, LIGHTON_KEY)
+        self._display_auto_off = not self.get_state_update_value(state, LIGHTON_KEY)
         self._ctlstatus = self.get_state_update_value(state, CTLSTATUS_KEY)
         timeroff = self.get_state_update_value(state, TIMEROFF_KEY)
         self._timer_off = timeroff["du"]
@@ -396,9 +396,9 @@ class PyDreoAC(PyDreoBaseDevice):
         if isinstance(val_ptc_on, bool):
             self._ptc_on = val_ptc_on
 
-        val_display_auto_off = self.get_server_update_key_value(message, LIGHTON_KEY)
-        if isinstance(val_display_auto_off, bool):
-            self._display_auto_off = val_display_auto_off
+        val_lighton = self.get_server_update_key_value(message, LIGHTON_KEY)
+        if isinstance(val_lighton, bool):
+            self._display_auto_off = not val_lighton
 
         val_ctlstatus = self.get_server_update_key_value(message, CTLSTATUS_KEY)
         if isinstance(val_ctlstatus, str):
