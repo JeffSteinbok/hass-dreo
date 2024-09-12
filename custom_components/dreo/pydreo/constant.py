@@ -261,3 +261,4 @@ class DreoDeviceType(StrEnum):
     HEATER = "Heater"
     AIR_CONDITIONER = "Air Conditioner"
     CHEF_MAKER = "Chef Maker"
+    HUMIDIFIER = "Humidifier"
