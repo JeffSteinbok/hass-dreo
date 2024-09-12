@@ -43,6 +43,9 @@ class DreoBaseDeviceHA(Entity):
     async def async_added_to_hass(self):
         """Register callbacks."""
 
+        # Create a callback to update state in HA and add it a callback in
+        # the PyDreo device. This will cause all handle_server_update responses
+        # to update the state in HA.
         @callback
         def update_state():
             # Tell HA we're ready to update

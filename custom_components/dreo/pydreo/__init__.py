@@ -16,6 +16,7 @@ from .helpers import Helpers
 from .models import *
 from .commandtransport import CommandTransport
 from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError, UnknownProductError
+from .pydreounknowndevice import PyDreoUnknownDevice
 from .pydreotowerfan import PyDreoTowerFan
 from .pydreoaircirculator import PyDreoAirCirculator
 from .pydreoceilingfan import PyDreoCeilingFan
@@ -23,6 +24,7 @@ from .pydreoairpurifier import PyDreoAirPurifier
 from .pydreoheater import PyDreoHeater
 from .pydreoairconditioner import PyDreoAC
 from .pydreochefmaker import PyDreoChefMaker
+from .pydreohumidifier import PyDreoHumidifier
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -33,7 +35,8 @@ _DREO_DEVICE_TYPE_TO_CLASS = {
     DreoDeviceType.CEILING_FAN: PyDreoCeilingFan,
     DreoDeviceType.HEATER: PyDreoHeater,
     DreoDeviceType.AIR_CONDITIONER: PyDreoAC,
-    DreoDeviceType.CHEF_MAKER: PyDreoChefMaker
+    DreoDeviceType.CHEF_MAKER: PyDreoChefMaker,
+    DreoDeviceType.HUMIDIFIER: PyDreoHumidifier
 }
 
 class PyDreo:  # pylint: disable=function-redefined
@@ -146,31 +149,33 @@ class PyDreo:  # pylint: disable=function-redefined
                 
                 _LOGGER.debug("Found device with model %s", model)
 
-                # Get the prefix of the model number to match against the supported devices.
-                # Not all models will have known prefixes.
-                model_prefix = None
-                for prefix in SUPPORTED_MODEL_PREFIXES:
-                    if model[:len(prefix):] == prefix:
-                        model_prefix = prefix
-                        _LOGGER.debug("Prefix %s assigned from model %s", model_prefix, model)
-                        break
-                
-                if model is None:
-                    raise UnknownModelError(model)
-                
-                device_details = None
-                if model in SUPPORTED_DEVICES:
-                    _LOGGER.debug("Device %s found!", model)
-                    device_details = SUPPORTED_DEVICES[model]
-                elif model_prefix is not None and model_prefix in SUPPORTED_DEVICES:
-                    _LOGGER.debug("Device %s found! via prefix %s", model, model_prefix)
-                    device_details = SUPPORTED_DEVICES[model_prefix]
-                else:
-                    raise UnknownModelError(model)
+                if model is not None: 
+                    # Get the prefix of the model number to match against the supported devices.
+                    # Not all models will have known prefixes.
+                    model_prefix = None
+                    for prefix in SUPPORTED_MODEL_PREFIXES:
+                        if model[:len(prefix):] == prefix:
+                            model_prefix = prefix
+                            _LOGGER.debug("Prefix %s assigned from model %s", model_prefix, model)
+                            break
+                    
+                    device_details = None
+                    if model in SUPPORTED_DEVICES:
+                        _LOGGER.debug("Device %s found!", model)
+                        device_details = SUPPORTED_DEVICES[model]
+                    elif model_prefix is not None and model_prefix in SUPPORTED_DEVICES:
+                        _LOGGER.debug("Device %s found! via prefix %s", model, model_prefix)
+                        device_details = SUPPORTED_DEVICES[model_prefix]
 
-                device_class = _DREO_DEVICE_TYPE_TO_CLASS.get(device_details.device_type, None)
+                # If device_details is None at this point, we have an unknown device model.
+                # Unsupported/Unknown Device.  Load the state, but store it in an "unsupported objects"
+                # list for later use in diagnostics.
+                if device_details is not None:
+                    device_class = _DREO_DEVICE_TYPE_TO_CLASS.get(device_details.device_type, None)
+
                 if device_class is None:
-                    raise UnknownProductError(device_details.device_type)
+                    device_class = PyDreoUnknownDevice
+                
                 device : PyDreoBaseDevice = device_class(device_details, dev, self)
 
                 self.load_device_state(device)

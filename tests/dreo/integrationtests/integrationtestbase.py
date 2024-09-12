@@ -103,8 +103,8 @@ class IntegrationTestBase:
                 return (call_json.get_response_from_file(file_name), 200)
             else:
                 logger.debug("No file found: %s", API_REPONSE_BASE_PATH + file_name)
-                return {}, 200            
-            
+                return {}, 200
+
     def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:
         """Verify the expected entities are present."""
         found_entity_keys : list[str] = []
@@ -120,6 +120,6 @@ class IntegrationTestBase:
         for ha_entity in ha_entities:
             if (ha_entity.entity_description.key == key):
                 return ha_entity
-        return None               
+        return None
 
-            
+

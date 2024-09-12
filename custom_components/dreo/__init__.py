@@ -47,16 +47,18 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         _LOGGER.error("Unable to load devices from the dreo server")
         return False
 
+    _LOGGER.debug("Checking for supported installed device types")
     device_types = set()
     for device in pydreo_manager.devices:
         device_types.add(device.type)   
-
+    _LOGGER.debug("Device types found are: %s", device_types)
     _LOGGER.info("%d Dreo devices found", len(pydreo_manager.devices))
 
     platforms = set()
     if (DreoDeviceType.TOWER_FAN in device_types or 
         DreoDeviceType.AIR_CIRCULATOR in device_types or
-        DreoDeviceType.AIR_PURIFIER in device_types):
+        DreoDeviceType.AIR_PURIFIER in device_types or
+        DreoDeviceType.CEILING_FAN in device_types):
         platforms.add(Platform.FAN)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
