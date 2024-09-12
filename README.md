@@ -65,8 +65,9 @@ Models that have been specifically tested can be found below.
 -   DR-HCF001S
 
 ### Humidifiers
+*Initial beta-level support*
 
-- No humidifiers are supported at this time, but possible support in the future is being discussed in [issue #60](https://github.com/JeffSteinbok/hass-dreo/issues/60)
+- DR-HHM*
 
 ### Space Heaters
 
