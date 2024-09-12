@@ -103,7 +103,7 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         return self.device.modes
 
     @property
-    def current_humitity(self) -> float:
+    def current_humidity(self) -> float:
         """Return the current humidity."""
         return self.device.humidity
     

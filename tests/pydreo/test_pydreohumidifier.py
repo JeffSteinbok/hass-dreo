@@ -21,3 +21,7 @@ class TestPyDreoHumidifier(TestBase):
         humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
         assert humidifier.modes == ['manual', 'auto', 'sleep']
         assert humidifier.is_feature_supported('is_on') is True
+        assert humidifier.is_feature_supported('humidity') is True
+        assert humidifier.is_feature_supported('target_humidity') is True
+        assert humidifier.humidity == 47
+        assert humidifier.target_humidity == 60

@@ -3,6 +3,8 @@
 import logging
 from unittest.mock import patch
 from custom_components.dreo import number
+from custom_components.dreo import humidifier
+
 from  .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
 
@@ -25,7 +27,12 @@ class TestDreoHumidifier(IntegrationTestBase):
             
             pydreo_humidifier = self.pydreo_manager.devices[0]
             assert pydreo_humidifier.type == 'Humidifier'
-            
+
+            ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
+            assert ha_humidifier.is_on is True
+            assert ha_humidifier.current_humidity == 47
+            assert ha_humidifier.target_humidity == 60
+
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(numbers, [])
