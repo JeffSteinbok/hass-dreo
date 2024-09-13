@@ -25,3 +25,8 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.is_feature_supported('target_humidity') is True
         assert humidifier.humidity == 47
         assert humidifier.target_humidity == 60
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.mode = 'auto'
+            mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 1})
+
