@@ -121,23 +121,37 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
 
                 _LOGGER.debug("Number:get_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
                 number_keys.append(number_definition.key)
-                if hasattr(pydreo_device.device_definition.device_ranges, number_definition.attr_name + "_range") and \
-                           pydreo_device.device_definition.device_ranges[number_definition.attr_name + "_range"] is not None:
-                    n_range = pydreo_device.device_definition.device_ranges[number_definition.attr_name + "_range"]
-                    _LOGGER.debug("Number:get_entries: range %s is %s", number_definition.attr_name + "_range", n_range)
-                    if isinstance(n_range, tuple):
-                        dned = DreoNumberEntityDescription(key=number_definition.key,
-                                                           translation_key=number_definition.translation_key,
-                                                           attr_name=number_definition.attr_name,
-                                                           icon=number_definition.icon,
-                                                           min_value=n_range[0],
-                                                           max_value=n_range[1])
-                        number_ha_collection.append(DreoNumberHA(pydreo_device, dned))
+
+                device_range = get_device_range(pydreo_device, number_definition)
+                if device_range is not None and isinstance(device_range, tuple):
+                    dned = DreoNumberEntityDescription(key=number_definition.key,
+                                                       translation_key=number_definition.translation_key,
+                                                       attr_name=number_definition.attr_name,
+                                                       icon=number_definition.icon,
+                                                       min_value=device_range[0],
+                                                       max_value=device_range[1])
+                    number_ha_collection.append(DreoNumberHA(pydreo_device, dned))
                 else:
                     number_ha_collection.append(DreoNumberHA(pydreo_device,number_definition))
     
     return number_ha_collection
-    
+
+def get_device_range(device: PyDreoBaseDevice, number_definition: DreoNumberEntityDescription) -> tuple | None:
+    """Returns the device-specific range for a Number."""
+    range_name = number_definition.attr_name + "_range"
+
+    range_from_device = getattr(device, range_name, None)
+    if range_from_device is not None:
+        _LOGGER.debug("Number:get_device_range: range %s from device is %s", range_name, range_from_device)
+        return range_from_device
+
+    range_from_device_definition = getattr(device.device_definition.device_ranges, range_name, None)
+    if range_from_device_definition is not None:
+        _LOGGER.debug("Number:get_device_range: range %s from device definition is %s", range_name,
+                      range_from_device_definition)
+        return range_from_device_definition
+
+    return None
 
 async def async_setup_entry(
     hass: HomeAssistant,

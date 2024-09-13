@@ -21,6 +21,8 @@ class TestPyDreoAirCirculator(TestBase):
 
         fan : PyDreoAirCirculator = self.pydreo_manager.devices[0]
 
+        assert fan.horizontal_angle_range == (-60, 60)
+        assert fan.vertical_angle_range == (-30, 90)
         assert fan.speed_range == (1, 9)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto', 'turbo', 'custom']
         assert fan.oscillating is True
