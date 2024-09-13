@@ -181,6 +181,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
             raise NotImplementedError("Horizontal oscillation is not supported.")
 
     @property
+    def horizontal_osc_angle_left_range(self):
+        return self.horizontal_angle_range
+
+    @property
+    def horizontal_osc_angle_right_range(self):
+        return self.horizontal_angle_range
+
+    @property
     def vertically_oscillating(self):
         """Returns `True` if vertical oscillation is on."""
         if self._vertically_oscillating is not None:
@@ -204,6 +212,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
             self._send_command(OSCMODE_KEY, osc_computed)
         else:
             raise NotImplementedError("Vertical oscillation is not supported.")
+
+    @property
+    def vertical_osc_angle_top_range(self):
+        return self.vertical_angle_range
+
+    @property
+    def vertical_osc_angle_bottom_range(self):
+        return self.vertical_angle_range
 
     def set_horizontal_oscillation_angle(self, angle: int) -> None:
         """Set the horizontal oscillation angle."""
