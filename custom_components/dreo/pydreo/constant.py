@@ -163,6 +163,8 @@ OSCILLATION_ANGLE_KEY = "oscangle"
 
 WIND_MODE_KEY = "mode"
 
+HORIZONTAL_ANGLE_RANGE = "horizontal_angle_range"
+VERTICAL_ANGLE_RANGE = "vertical_angle_range"
 SPEED_RANGE = "speed_range"
 HEAT_RANGE = "heat_range"
 ECOLEVEL_RANGE = "ecolevel_range"

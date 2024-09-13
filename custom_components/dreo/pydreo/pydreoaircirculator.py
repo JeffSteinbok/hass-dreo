@@ -14,6 +14,8 @@ from .constant import (
     OSCMODE_KEY,
     FIXEDCONF_KEY,
     OscillationMode,
+    HORIZONTAL_ANGLE_RANGE,
+    VERTICAL_ANGLE_RANGE,
     SPEED_RANGE
 )
 
@@ -32,7 +34,19 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
         super().__init__(device_definition, details, dreo)
-        
+
+        self._horizontal_angle_range = None
+        if device_definition.device_ranges is not None:
+            self._horizontal_angle_range = device_definition.device_ranges[HORIZONTAL_ANGLE_RANGE]
+        if self._horizontal_angle_range is None:
+            self._horizontal_angle_range = self.parse_swing_angle_range(details, "hor")
+
+        self._vertical_angle_range = None
+        if device_definition.device_ranges is not None:
+            self._vertical_angle_range = device_definition.device_ranges[VERTICAL_ANGLE_RANGE]
+        if self._vertical_angle_range is None:
+            self._vertical_angle_range = self.parse_swing_angle_range(details, "ver")
+
         self._speed_range = None
         if (device_definition.device_ranges is not None):
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
@@ -48,7 +62,31 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
-    
+
+    @staticmethod
+    def parse_swing_angle_range(details: Dict[str, list], direction: str) -> tuple[int, int] | None:
+        """Parse the swing angle range from the details."""
+        controls_conf = details.get("controlsConf", None)
+        if controls_conf is None:
+            return None
+
+        swing_angle = controls_conf.get("swingAngle", None)
+        if swing_angle is None:
+            _LOGGER.debug("PyDreoAirCirculator:no swing angle detected")
+            return None
+
+        fixed_angle = swing_angle.get("fixedAngle", None)
+        if fixed_angle is None:
+            _LOGGER.debug("PyDreoAirCirculator:no fixed angle detected")
+            return None
+
+        angle = fixed_angle.get(direction + "Angle", None)
+        zero_angle = fixed_angle.get(direction + "ZeroAngle", None)
+        if angle is None or zero_angle is None:
+            return None
+
+        return -zero_angle, angle - zero_angle
+
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         preset_modes = []
@@ -78,6 +116,16 @@ class PyDreoAirCirculator(PyDreoFanBase):
             preset_modes = None
         _LOGGER.debug("PyDreoAirCirculator:Detected preset modes - %s", preset_modes)
         return preset_modes
+
+    @property
+    def horizontal_angle_range(self):
+        """Get the horizontal swing angle range"""
+        return self._horizontal_angle_range
+
+    @property
+    def vertical_angle_range(self):
+        """Get the vertical swing angle range"""
+        return self._vertical_angle_range
 
     @property
     def oscillating(self) -> bool:
@@ -133,6 +181,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
             raise NotImplementedError("Horizontal oscillation is not supported.")
 
     @property
+    def horizontal_osc_angle_left_range(self):
+        return self.horizontal_angle_range
+
+    @property
+    def horizontal_osc_angle_right_range(self):
+        return self.horizontal_angle_range
+
+    @property
     def vertically_oscillating(self):
         """Returns `True` if vertical oscillation is on."""
         if self._vertically_oscillating is not None:
@@ -156,6 +212,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
             self._send_command(OSCMODE_KEY, osc_computed)
         else:
             raise NotImplementedError("Vertical oscillation is not supported.")
+
+    @property
+    def vertical_osc_angle_top_range(self):
+        return self.vertical_angle_range
+
+    @property
+    def vertical_osc_angle_bottom_range(self):
+        return self.vertical_angle_range
 
     def set_horizontal_oscillation_angle(self, angle: int) -> None:
         """Set the horizontal oscillation angle."""
