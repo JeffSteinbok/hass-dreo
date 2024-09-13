@@ -144,14 +144,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if mode is None:
             mode = self._wind_type
 
-        if mode is None:
+        str_value : str = Helpers.name_from_value(self._preset_modes, mode)
+        if (str_value is None):
             return None
-
-        # If we can't match the preset mode, just return the first one.
-        if mode > len(self.preset_modes):
-            return self.preset_modes[0]
-
-        return self.preset_modes[mode - 1]
+        
+        return str_value    
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
@@ -164,8 +161,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         else:
             raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support.")
 
-        if value in self.preset_modes:
-            self._send_command(key, self.preset_modes.index(value) + 1)
+        numeric_value = Helpers.value_from_name(self._preset_modes, value)
+        if numeric_value is not None:
+            self._send_command(key, numeric_value)
         else:
             raise ValueError(f"Preset mode {value} is not in the acceptable list: {self.preset_modes}")
 

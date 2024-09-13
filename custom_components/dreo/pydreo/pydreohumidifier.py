@@ -109,22 +109,19 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @property
     def mode(self):
         """Return the current mode."""
-        mode = self._mode
-
-        # If we can't match the preset mode, just return the first one.
-        if mode > len(self.modes):
-            return self.modes[0]
-
-        return self.modes[mode - 1]
+        
+        str_value : str = Helpers.name_from_value(self._modes, self._mode)
+        if (str_value is None):
+            return None
+        return str_value
 
     @mode.setter
     def mode(self, value: str) -> None:
-        key: str = None
-
-        if value in self.modes:
-            self._send_command(MODE_KEY, self.modes.index(value) + 1)
+        numeric_value = Helpers.value_from_name(self._modes, value)
+        if numeric_value is not None:
+            self._send_command(MODE_KEY, numeric_value)
         else:
-            raise ValueError(f"Preset mode {value} is not in the acceptable list: {self.modes}") 
+            raise ValueError(f"Preset mode {value} is not in the acceptable list: {self._modes}")
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
