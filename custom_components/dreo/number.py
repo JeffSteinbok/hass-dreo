@@ -13,8 +13,6 @@ from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .dreobasedevice import DreoBaseDeviceHA
 
-from .dreochefmaker import DreoChefMakerHA
-
 from .const import (
     LOGGER,
     DOMAIN,
@@ -166,7 +164,7 @@ async def async_setup_entry(
     async_add_entities(get_entries(pydreo_manager.devices))
 
 
-class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):
+class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-method
     """Representation of a Number describing a read-only property of a Dreo device."""
 
     def __init__(self, 
@@ -189,7 +187,6 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):
     def native_value(self) -> float:
         """Return the state of the number."""
         return getattr(self.device, self.entity_description.attr_name)
-
 
     def set_native_value(self, value: float) -> None:
         return setattr(self.device, self.entity_description.attr_name, value)
