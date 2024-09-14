@@ -32,6 +32,8 @@ from .constant import (
     PRESET_NONE,
     PRESET_ECO
 )
+from .pydreobasedevice import PyDreoBaseDevice
+from .models import DreoDeviceDetails
 
 DREO_AC_MODE_COOL = 1
 DREO_AC_MODE_DRY = 2
@@ -61,9 +63,6 @@ AC_OSC_OFF = 0
 
 WORK_TIME = "worktime"
 TEMP_TARGET_REACHED = "reachtarget"
-
-from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 

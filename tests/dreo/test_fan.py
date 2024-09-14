@@ -1,19 +1,23 @@
 """Tests for the Dreo Fan entity."""
 from unittest.mock import patch
-from .testdevicebase import TestDeviceBase
-from .custommocks import PyDreoDeviceMock
 
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
 
+from .testdevicebase import TestDeviceBase
+from .custommocks import PyDreoDeviceMock
+
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
 PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
 
-class Test_DreoFanHA(TestDeviceBase):
+class TestDreoFanHA(TestDeviceBase):
+    """Test the Dreo Fan entity."""
 
-    def test_fan_entries(self, mocker):
-        with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
+    def test_fan_entries(self):
+        """Test the creation of the fan entries."""
+
+        with patch(PATCH_UPDATE_HA_STATE):
 
             mocked_pydreo_fans : list[PyDreoDeviceMock] = [ self.create_mock_device( name="Test Tower Fan", type="Tower Fan"),
                                                             self.create_mock_device( name="Test Ceiling Fan", type="Ceiling Fan"),
@@ -27,7 +31,8 @@ class Test_DreoFanHA(TestDeviceBase):
             entity_list = fan.get_entries(mocked_pydreo_fans)
             assert len(entity_list) == 4
 
-    def test_fan_simple(self, mocker):
+    def test_fan_simple(self):
+        """Test the creation of the fan entity."""
         with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
 
             mocked_pydreo_fan : PyDreoDeviceMock = self.create_mock_device( name="Test Ceiling Fan", 
@@ -49,9 +54,6 @@ class Test_DreoFanHA(TestDeviceBase):
 
             test_fan.set_percentage(0)
             assert mocked_pydreo_fan.is_on is False
-            # TODO: Possible bug; need to test at home.  Why does this not cause an update?
-            #mock_send_command.assert_called_once()
-            #mock_send_command.reset_mock()
 
             test_fan.set_preset_mode("normal")
             assert mocked_pydreo_fan.preset_mode is "normal"
@@ -63,4 +65,3 @@ class Test_DreoFanHA(TestDeviceBase):
 
             # Check to see what numbers are added to ceiling fans
             self.verify_expected_entities(number.get_entries([mocked_pydreo_fan]), [])
-

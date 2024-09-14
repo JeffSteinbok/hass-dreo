@@ -30,7 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     region = "us"
 
     from .pydreo import PyDreo  # pylint: disable=C0415
-    from .pydreo.constant import DreoDeviceType
+    from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
 
     pydreo_manager = PyDreo(username, password, region)
     pydreo_manager.auto_reconnect = auto_reconnect

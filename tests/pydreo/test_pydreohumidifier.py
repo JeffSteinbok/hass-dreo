@@ -2,7 +2,6 @@
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
-import pytest
 from  .imports import * # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
@@ -29,4 +28,3 @@ class TestPyDreoHumidifier(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             humidifier.mode = 'auto'
             mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 1})
-

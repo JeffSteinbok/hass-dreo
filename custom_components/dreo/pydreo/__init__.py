@@ -275,7 +275,7 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.error("Error logging in with username and password")
         return False
 
-    def get_device_setting(self, device: PyDreoBaseDevice, setting : DREO_DEVICE_SETTING) -> bool | int:
+    def get_device_setting(self, device: PyDreoBaseDevice, setting : DreoDeviceSetting) -> bool | int:
         """Get a device setting from the API."""
         _LOGGER.debug("get_device_setting: %s(%s), enabled: %s", 
                     device.name, 
@@ -309,7 +309,7 @@ class PyDreo:  # pylint: disable=function-redefined
 
         return setting_value
     
-    def set_device_setting(self, device: PyDreoBaseDevice, setting : DREO_DEVICE_SETTING, value : bool | int) -> None:
+    def set_device_setting(self, device: PyDreoBaseDevice, setting : DreoDeviceSetting, value : bool | int) -> None:
         """Get a device setting from the API."""
         _LOGGER.debug("set_device_setting: %s(%s=%s), enabled: %s", 
                     device.name, 

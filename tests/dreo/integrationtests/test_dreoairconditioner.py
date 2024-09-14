@@ -17,7 +17,7 @@ class TestDreoAirConditioner(IntegrationTestBase):
 
     def test_HAC001S(self):  # pylint: disable=invalid-name
         """Load air conditioner and test sending commands."""
-        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
 
             self.get_devices_file_name = "get_devices_HAC001S.json"
             self.pydreo_manager.load_devices()
@@ -29,5 +29,3 @@ class TestDreoAirConditioner(IntegrationTestBase):
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_ac])
             self.verify_expected_entities(numbers, [])
-
-

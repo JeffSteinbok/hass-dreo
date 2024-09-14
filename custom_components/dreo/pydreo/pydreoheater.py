@@ -69,6 +69,8 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._tempoffset = None
         self._fixed_conf = None
 
+        self._timeron = None
+
     @property
     def poweron(self):
         """Returns `True` if the device is on, `False` otherwise."""
@@ -114,9 +116,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def htalevel(self, htalevel : int) :
         """Set the heat level."""
         _LOGGER.debug("PyDreoHeater:htalevel.setter(%s, %s)", self.name, htalevel)
-        # TODO: Change to in range check
-        if (htalevel < self._device_definition.device_ranges[HEAT_RANGE][0] or 
-            htalevel > self._device_definition.device_ranges[HEAT_RANGE][1]):
+        if (htalevel not in self._device_definition.device_ranges[HEAT_RANGE]):
             _LOGGER.error("Heat level %s is not in the acceptable range: %s",
                             htalevel,
                             self._device_definition.device_ranges[HEAT_RANGE])
@@ -138,8 +138,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def ecolevel(self, ecolevel : int):
         """Set the target temperature."""
         _LOGGER.debug("PyDreoHeater:ecolevel(%s)", ecolevel)
-        # TODO: Change to in range check
-        if ecolevel < self._device_definition.device_ranges[ECOLEVEL_RANGE][0] or ecolevel > self._device_definition.device_ranges[ECOLEVEL_RANGE][1]:
+        if ecolevel not in self._device_definition.device_ranges[ECOLEVEL_RANGE]:
             _LOGGER.error("Target Temperature %s is not in the acceptable range: %s",
                             ecolevel,
                             self._device_definition.device_ranges[ECOLEVEL_RANGE])
@@ -218,8 +217,7 @@ class PyDreoHeater(PyDreoBaseDevice):
             self._send_command(OSCON_KEY, value)
         else:
             _LOGGER.error("Attempting to set oscillation on on a device that doesn't support it.")
-            raise ValueError(f"Attempting to set oscillation on on a device that doesn't support it.")
-        return
+            raise ValueError("Attempting to set oscillation on on a device that doesn't support it.")
 
     @property
     def oscangle(self) -> HeaterOscillationAngles:

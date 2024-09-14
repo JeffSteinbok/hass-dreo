@@ -2,7 +2,6 @@
 # pylint: disable=used-before-assignment
 import logging
 from  .imports import * # pylint: disable=W0401,W0614
-from . import call_json
 from .testbase import TestBase
 
 logger = logging.getLogger(__name__)

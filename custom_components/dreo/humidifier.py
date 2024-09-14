@@ -2,13 +2,12 @@
 from __future__ import annotations
 import logging
 
-from .haimports import * # pylint: disable=W0401,W0614
-
 from homeassistant.components.humidifier import (
     HumidifierEntity,
     HumidifierEntityFeature
 )
 
+from .haimports import * # pylint: disable=W0401,W0614
 from .pydreo import PyDreo, PyDreoBaseDevice, PyDreoHumidifier
 from .pydreo.constant import DreoDeviceType
 from .dreobasedevice import DreoBaseDeviceHA
@@ -34,7 +33,7 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoHumidifierH
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: ConfigEntry, # pylint: disable=unused-argument
     async_add_entities: AddEntitiesCallback,
     _discovery_info=None,
 ) -> None:

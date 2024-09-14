@@ -4,7 +4,6 @@ import logging
 from unittest.mock import patch, call
 import pytest
 from  .imports import * # pylint: disable=W0401,W0614
-from . import call_json
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
@@ -12,7 +11,7 @@ logger.setLevel(logging.DEBUG)
 
 class TestPyDreoHeater(TestBase):
     """Test PyDreoHeater class."""
-    def test_HSH009S(self):
+    def test_HSH009S(self): # pylint: disable=invalid-name
         """Load heater and test sending commands."""
 
         self.get_devices_file_name = "get_devices_HSH009S.json"
@@ -33,6 +32,3 @@ class TestPyDreoHeater(TestBase):
 
         with pytest.raises(ValueError):
             heater.preset_mode = 'not_a_mode'
-
-
-

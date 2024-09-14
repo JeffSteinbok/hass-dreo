@@ -15,7 +15,7 @@ from .constant import (
     MUTEON_KEY,
     TemperatureUnit,
     SPEED_RANGE,
-    DREO_DEVICE_SETTING,
+    DreoDeviceSetting,
     PREFERENCE_TYPE_TEMPERATURE_CALIBRATION
 )
  
@@ -48,7 +48,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         # Check to see if temperature calibration is supported.
         self._temperature_offset = None
         if self.is_preference_supported(PREFERENCE_TYPE_TEMPERATURE_CALIBRATION, details):
-            self._temperature_offset = int(self.get_setting(dreo, DREO_DEVICE_SETTING.FanTempOffset, 0))
+            self._temperature_offset = int(self.get_setting(dreo, DreoDeviceSetting.FAN_TEMP_OFFSET, 0))
 
         self._is_on = False
         self._fan_speed = None
@@ -199,9 +199,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
         """Set the temperature calibration value"""
         _LOGGER.debug("PyDreoFan:temperature_calibration.setter")
         if (self.temperature_offset is not None):
-            self._set_setting(DREO_DEVICE_SETTING.FanTempOffset, value)
+            self._set_setting(DreoDeviceSetting.FAN_TEMP_OFFSET, value)
         else:
-            raise NotImplementedError(f"PyDreoFanBase: Attempting to set temperature calibration on a device that doesn't support ({value})")
+            raise NotImplementedError(
+                f"PyDreoFanBase: Attempting to set temperature calibration on a device that doesn't support ({value})"
+            )
                                   
     @property
     def oscillating(self) -> bool:
@@ -329,5 +331,3 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_mute, bool):
             self._mute_on = val_mute
-
-
