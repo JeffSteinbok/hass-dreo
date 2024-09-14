@@ -43,5 +43,5 @@ async def async_setup_entry(
 
     fan_entities_ha = get_entries(pydreo_manager.devices)
 
-    _LOGGER.debug("Fan:async_setup_entry: Adding Fans (%s)", fan_entities_ha.count)
+    _LOGGER.debug("Fan:async_setup_entry: Adding Fans (%s)", fan_entities_ha.count())
     async_add_entities(fan_entities_ha)
