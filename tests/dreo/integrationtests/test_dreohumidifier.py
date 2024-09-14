@@ -19,7 +19,7 @@ class TestDreoHumidifier(IntegrationTestBase):
     
     def test_HHM001S(self):  # pylint: disable=invalid-name
         """Load air conditioner and test sending commands."""
-        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
 
             self.get_devices_file_name = "get_devices_HHM001S.json"
             self.pydreo_manager.load_devices()

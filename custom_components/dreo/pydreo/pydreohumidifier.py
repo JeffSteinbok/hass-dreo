@@ -54,7 +54,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
                         modes.append((text, value))
 
         modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (modes.count is 0):
+        if (len(modes) == 0):
             _LOGGER.debug("PyDreoHumidifier:No preset modes detected")
             modes = None
         _LOGGER.debug("PyDreoHumidifier:Detected preset modes - %s", modes)

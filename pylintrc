@@ -4,7 +4,7 @@ rcfile=
 
 [MESSAGES CONTROL]
 # Disable the message, report, category or checker with the given id(s).
-disable=trailing-whitespace,superfluous-parens
+disable=trailing-whitespace,superfluous-parens,fixme
 
 [REPORTS]
 # Set the output format. Available formats are text, parseable, colorized, json and msvs (visual studio).
@@ -12,5 +12,5 @@ output-format=text
 
 [FORMAT]
 # Maximum number of characters on a single line.
-max-line-length=130
+max-line-length=150
 

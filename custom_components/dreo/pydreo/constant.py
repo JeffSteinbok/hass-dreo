@@ -95,9 +95,9 @@ DREO_APIS = {
     }
 }
 
-class DREO_DEVICE_SETTING(StrEnum):
+class DreoDeviceSetting(StrEnum):
     """Dreo device settings"""
-    FanTempOffset = "kHafFanTempOffsetKey"
+    FAN_TEMP_OFFSET = "kHafFanTempOffsetKey"
 
 DREO_AUTH_REGION_NA = "NA"
 DREO_AUTH_REGION_EU = "EU"

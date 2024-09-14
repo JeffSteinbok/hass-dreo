@@ -52,7 +52,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
                         preset_modes.append((value, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (preset_modes.count is 0):
+        if (len(preset_modes) == 0):
             _LOGGER.debug("PyDreoAirPurifier:No preset modes detected")
             preset_modes = None
         _LOGGER.debug("PyDreoAirPurifier:Detected preset modes - %s", preset_modes)

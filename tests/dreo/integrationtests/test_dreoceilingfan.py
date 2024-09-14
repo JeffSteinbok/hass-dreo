@@ -18,7 +18,8 @@ class TestDreoCeilingFan(IntegrationTestBase):
     """Test Dreo Ceiling Fan class and PyDreo together."""
     
     def test_HCF001S(self):  # pylint: disable=invalid-name
-        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+        """Load fan and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
 
             self.get_devices_file_name = "get_devices_HCF001S.json"
             self.pydreo_manager.load_devices()
@@ -31,9 +32,6 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_on()
-                # TODO: Possible bug; need to test at home.  Why does this not cause an update?
-                #mock_update_ha_state.assert_called_once()
-                #mock_update_ha_state.reset_mock()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
 
             # Check to see what switches are added to ceiling fans
@@ -43,9 +41,6 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 light_switch.turn_on()
-                # TODO: Possible bug; need to test at home.  Why does this not cause an update?
-                #mock_update_ha_state.assert_called_once()
-                #mock_update_ha_state.reset_mock()
                 mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})            
 
             # Check to see what numbers are added to ceiling fans

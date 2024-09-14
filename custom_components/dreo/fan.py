@@ -31,7 +31,7 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoFanHA]:
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: ConfigEntry, # pylint: disable=unused-argument
     async_add_entities: AddEntitiesCallback,
     _discovery_info=None,
 ) -> None:
@@ -43,5 +43,5 @@ async def async_setup_entry(
 
     fan_entities_ha = get_entries(pydreo_manager.devices)
 
-    _LOGGER.debug("Fan:async_setup_entry: Adding Fans (%s)", fan_entities_ha.count)
+    _LOGGER.debug("Fan:async_setup_entry: Adding Fans (%s)", len(fan_entities_ha))
     async_add_entities(fan_entities_ha)

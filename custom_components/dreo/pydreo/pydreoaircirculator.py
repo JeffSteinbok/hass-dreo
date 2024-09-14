@@ -111,7 +111,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                             preset_modes.append((text, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (preset_modes.count is 0):
+        if (len(preset_modes) == 0):
             _LOGGER.debug("PyDreoAirCirculator:No preset modes detected")
             preset_modes = None
         _LOGGER.debug("PyDreoAirCirculator:Detected preset modes - %s", preset_modes)
@@ -182,10 +182,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     @property
     def horizontal_osc_angle_left_range(self):
+        """Get the left horizontal oscillation angle range."""
         return self.horizontal_angle_range
 
     @property
     def horizontal_osc_angle_right_range(self):
+        """Get the right horizontal oscillation angle range."""
         return self.horizontal_angle_range
 
     @property
@@ -215,10 +217,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     @property
     def vertical_osc_angle_top_range(self):
+        """Get the top vertical oscillation angle range."""
         return self.vertical_angle_range
 
     @property
     def vertical_osc_angle_bottom_range(self):
+        """Get the bottom vertical oscillation angle range."""
         return self.vertical_angle_range
 
     def set_horizontal_oscillation_angle(self, angle: int) -> None:

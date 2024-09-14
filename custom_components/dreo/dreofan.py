@@ -122,3 +122,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         """Oscillate the fan."""
         self.device.oscillating = oscillating
         self.schedule_update_ha_state()
+
+    def set_direction(self, direction: str) -> None:
+        """Set the direction of the fan."""
+        raise NotImplementedError

@@ -9,7 +9,6 @@ from .constant import (
     LIGHTON_KEY,
     WINDLEVEL_KEY,
     SPEED_RANGE,
-    FAN_MODE_STRINGS
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -60,7 +59,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
                             preset_modes.append((text, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (preset_modes.count is 0):
+        if (len(preset_modes) == 0):
             _LOGGER.debug("PyDreoFan:No preset modes detected")
             preset_modes = None
         _LOGGER.debug("PyDreoFan:Detected preset modes - %s", preset_modes)

@@ -42,5 +42,3 @@ class TestPyDreoTowerFan(TestBase):
 
         with pytest.raises(ValueError):
             fan.fan_speed = 13
-
-    
