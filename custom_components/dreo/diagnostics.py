@@ -27,7 +27,7 @@ KEYS_TO_REDACT = {
     "username",
     "_username",
     "token",
-    "_token"
+    "_token",
     "productId"
 }
 
