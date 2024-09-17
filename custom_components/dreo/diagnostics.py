@@ -43,7 +43,7 @@ async def async_get_config_entry_diagnostics(
     data = {
         DOMAIN: {
             "device_count": len(pydreo_manager.devices),
-            "raw_devicelist": _redact_values(pydreo_manager.raw_response),
+            "raw_devicelist": _redact_values(pydreo_manager.raw_response.__dict__),
         },
         "devices": [_redact_values(device.__dict__) for device in pydreo_manager.devices],
     }
