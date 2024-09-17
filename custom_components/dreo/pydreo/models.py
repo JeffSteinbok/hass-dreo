@@ -238,6 +238,23 @@ SUPPORTED_DEVICES = {
         fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
     ),
 
+    # Air Conditioners
+    "DR-HAC006S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CONDITIONER,
+        device_ranges={
+            TEMP_RANGE: (60, 95),
+            TARGET_TEMP_RANGE: (64, 86),
+            TARGET_TEMP_RANGE_ECO: (75, 86),
+            HUMIDITY_RANGE: (30, 80),
+        },
+        # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)
+        hvac_modes=[HVACMode.COOL, HVACMode.FAN_ONLY, HVACMode.DRY],
+        swing_modes=[SWING_OFF, SWING_ON],
+        preset_modes=[PRESET_NONE, PRESET_ECO],
+        # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
+        fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
+    ),    
+
     "DR-KCM001S": DreoDeviceDetails(
         device_type=DreoDeviceType.CHEF_MAKER,
         cooking_modes=COOKING_MODES,

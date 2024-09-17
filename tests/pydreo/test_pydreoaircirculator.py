@@ -6,6 +6,8 @@ import pytest
 from  .imports import * # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
+from custom_components.dreo.pydreo import PyDreoAirCirculator
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
