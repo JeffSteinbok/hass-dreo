@@ -85,6 +85,7 @@ Models that have been specifically tested can be found below.
 ### Air Conditioners
 
 - DR-HAC005S
+- DR-HAC006S
 
 ### Cookers
 
