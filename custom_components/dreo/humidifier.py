@@ -45,7 +45,7 @@ async def async_setup_entry(
 
     humidifier_entities_ha = get_entries(pydreo_manager.devices)
 
-    _LOGGER.debug("Humidifier:async_setup_entry: Adding Humidifiers (%s)", humidifier_entities_ha.count())
+    _LOGGER.debug("Humidifier:async_setup_entry: Adding Humidifiers (%s)", len(humidifier_entities_ha))
     async_add_entities(humidifier_entities_ha)
 
 # Implementation of the Humidifier
