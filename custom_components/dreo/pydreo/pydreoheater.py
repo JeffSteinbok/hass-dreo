@@ -116,7 +116,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def htalevel(self, htalevel : int) :
         """Set the heat level."""
         _LOGGER.debug("PyDreoHeater:htalevel.setter(%s, %s)", self.name, htalevel)
-        if (htalevel not in self._device_definition.device_ranges[HEAT_RANGE]):
+        if (self._device_definition.device_ranges[HEAT_RANGE][0] > htalevel > self._device_definition.device_ranges[HEAT_RANGE][1]):
             _LOGGER.error("Heat level %s is not in the acceptable range: %s",
                             htalevel,
                             self._device_definition.device_ranges[HEAT_RANGE])
@@ -138,7 +138,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def ecolevel(self, ecolevel : int):
         """Set the target temperature."""
         _LOGGER.debug("PyDreoHeater:ecolevel(%s)", ecolevel)
-        if ecolevel not in self._device_definition.device_ranges[ECOLEVEL_RANGE]:
+        if self._device_definition.device_ranges[ECOLEVEL_RANGE][0] > ecolevel > self._device_definition.device_ranges[ECOLEVEL_RANGE][1]:
             _LOGGER.error("Target Temperature %s is not in the acceptable range: %s",
                             ecolevel,
                             self._device_definition.device_ranges[ECOLEVEL_RANGE])
