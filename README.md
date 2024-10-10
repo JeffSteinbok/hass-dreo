@@ -76,6 +76,7 @@ Models that have been specifically tested can be found below.
 ### Space Heaters
 
 - DR-HSH004S
+- DR-HSH006S
 - DR-HSH009S
 - DR-HSH009AS
 - DR-HSH0017S
