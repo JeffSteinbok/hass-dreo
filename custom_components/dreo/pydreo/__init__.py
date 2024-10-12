@@ -170,8 +170,12 @@ class PyDreo:  # pylint: disable=function-redefined
                 # If device_details is None at this point, we have an unknown device model.
                 # Unsupported/Unknown Device.  Load the state, but store it in an "unsupported objects"
                 # list for later use in diagnostics.
+                device_class = None
+                
                 if device_details is not None:
                     device_class = _DREO_DEVICE_TYPE_TO_CLASS.get(device_details.device_type, None)
+                else:
+                    device_details = DreoDeviceDetails(device_type = DreoDeviceType.UNKNOWN)
 
                 if device_class is None:
                     device_class = PyDreoUnknownDevice

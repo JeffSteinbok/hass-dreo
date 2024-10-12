@@ -4,8 +4,7 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
-    DreoDeviceType
+    LOGGER_NAME
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
@@ -19,6 +18,6 @@ if TYPE_CHECKING:
 class PyDreoUnknownDevice(PyDreoBaseDevice):
     """Dreo Device class for unknown devices."""
 
-    def __init__(self, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):  #pylint: disable=useless-super-delegation
         """Initialize the Dreo Device."""
-        super().__init__(DreoDeviceDetails(device_type = DreoDeviceType.UNKNOWN), details, dreo)
+        super().__init__(device_definition, details, dreo)
