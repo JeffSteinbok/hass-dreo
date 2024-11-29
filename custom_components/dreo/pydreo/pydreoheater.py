@@ -170,7 +170,10 @@ class PyDreoHeater(PyDreoBaseDevice):
     @mode.setter
     def mode(self, mode: str) -> None:
         _LOGGER.debug("PyDreoHeater:mode(%s) --> %s", self.name, mode)
-        self._send_command(MODE_KEY, mode)
+        # setting heater mode to OFF is redundand because 'poweron' will be set
+        # and can prevent it from properly turning back on (tested on DR-HSH004S)
+        if not mode == HEATER_MODE_OFF:
+            self._send_command(MODE_KEY, mode)
 
     @property
     def fan_mode(self) -> str:
