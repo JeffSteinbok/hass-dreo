@@ -82,6 +82,7 @@ Models that have been specifically tested can be found below.
 - DR-HSH0017S
 - WH719S
 - WH739S
+- WH517S
 
 ### Air Conditioners
 
