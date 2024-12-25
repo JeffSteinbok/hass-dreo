@@ -127,6 +127,17 @@ SUPPORTED_DEVICES = {
     "DR-HAP003S": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
 
     # Heaters
+    "DR-HSH017BS": DreoDeviceDetails(
+        device_type=DreoDeviceType.HEATER,
+        preset_modes=["H1", "H2", "H3"],
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
+        hvac_modes=[
+            HEATER_MODE_COOLAIR,
+            HEATER_MODE_HOTAIR,
+            HEATER_MODE_ECO,
+            HEATER_MODE_OFF,
+        ],
+    ),
     "DR-HSH004S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
