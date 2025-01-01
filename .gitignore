@@ -116,3 +116,6 @@ ignore
 
 # IntelliJ projects
 **/*.iml
+
+# Home assistant development configs
+config/
