@@ -23,7 +23,7 @@ from .constant import (
     PRESET_NONE,
     PRESET_ECO,
     HVACMode,
-    DreoDeviceType
+    DreoDeviceType,
 )
 
 COOKING_MODES = [
@@ -85,7 +85,7 @@ class DreoDeviceDetails:
         cooking_modes: list[str] = None,
         cooking_range: dict = None,
     ):
-        if (device_type is None):
+        if device_type is None:
             raise ValueError("device_type is required")
 
         self.device_type = device_type
@@ -109,23 +109,19 @@ SUPPORTED_MODEL_PREFIXES = {
     "DR-HSH",
     "WH",
     "DR-HAC",
-    "DR-HHM"
+    "DR-HHM",
 }
 
 SUPPORTED_DEVICES = {
     # Tower Fans
     "DR-HTF": DreoDeviceDetails(device_type=DreoDeviceType.TOWER_FAN),
-
     # Air Circulators
     "DR-HAF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
-
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),
-
     # Air Purifiers
     "DR-HAP003S": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
-
     # Heaters
     "DR-HSH017BS": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
@@ -207,7 +203,7 @@ SUPPORTED_DEVICES = {
             HEATER_MODE_OFF,
         ],
         swing_modes=[SWING_OFF, SWING_ON],
-    ),    
+    ),
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH719S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
@@ -243,7 +239,6 @@ SUPPORTED_DEVICES = {
             HeaterOscillationAngles.ONE_TWENTY,
         ],
     ),
-
     # Air Conditioners
     "DR-HAC005S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CONDITIONER,
@@ -260,7 +255,6 @@ SUPPORTED_DEVICES = {
         # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
         fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
     ),
-
     # Air Conditioners
     "DR-HAC006S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CONDITIONER,
@@ -276,13 +270,11 @@ SUPPORTED_DEVICES = {
         preset_modes=[PRESET_NONE, PRESET_ECO],
         # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
         fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
-    ),    
-
+    ),
     "DR-KCM001S": DreoDeviceDetails(
         device_type=DreoDeviceType.CHEF_MAKER,
         cooking_modes=COOKING_MODES,
         cooking_range=COOKING_RANGES,
     ),
-
     "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER),
 }

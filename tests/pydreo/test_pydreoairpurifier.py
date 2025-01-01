@@ -1,11 +1,13 @@
 """Tests for Dreo Fans"""
+
 # pylint: disable=used-before-assignment
 import logging
-from  .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestPyDreoAirPurifier(TestBase):
     """Test TestPyDreoAirPurifier class."""
@@ -18,4 +20,4 @@ class TestPyDreoAirPurifier(TestBase):
         assert len(self.pydreo_manager.devices) == 1
         air_purifier = self.pydreo_manager.devices[0]
         assert air_purifier.speed_range == (1, 18)
-        assert air_purifier.preset_modes == ['auto', 'manual', 'sleep', 'turbo']
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]

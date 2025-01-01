@@ -1,4 +1,5 @@
 """Utility functions for the Dreo tests."""
+
 import json
 import os
 from typing import Any
@@ -26,11 +27,10 @@ def create_devices_from_data(file_name: str) -> list[DreoBaseDeviceHA]:
     processed = []
     for device in devices:
         processed_states = []
-#        for state in device["states"]:
-#            processed_states.append(HubSpaceState(**state))
+        #        for state in device["states"]:
+        #            processed_states.append(HubSpaceState(**state))
         device["states"] = processed_states
         if "children" not in device:
             device["children"] = []
-#        processed.append(HubSpaceDevice(**device))
+    #        processed.append(HubSpaceDevice(**device))
     return processed
-

@@ -1,4 +1,5 @@
 """Dreo API for controling fans."""
+
 import logging
 from typing import TYPE_CHECKING, Dict
 
@@ -16,9 +17,9 @@ from .constant import (
     TemperatureUnit,
     SPEED_RANGE,
     DreoDeviceSetting,
-    PREFERENCE_TYPE_TEMPERATURE_CALIBRATION
+    PREFERENCE_TYPE_TEMPERATURE_CALIBRATION,
 )
- 
+
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 from .helpers import Helpers
@@ -32,23 +33,32 @@ if TYPE_CHECKING:
 class PyDreoFanBase(PyDreoBaseDevice):
     """Base class for Dreo Fan API Calls."""
 
-    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(
+        self,
+        device_definition: DreoDeviceDetails,
+        details: Dict[str, list],
+        dreo: "PyDreo",
+    ):
         """Initialize air devices."""
         super().__init__(device_definition, details, dreo)
-        
+
         self._speed_range = None
-        if (device_definition.device_ranges is not None):
+        if device_definition.device_ranges is not None:
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
-        if (self._speed_range is None):
+        if self._speed_range is None:
             self._speed_range = self.parse_speed_range(details)
         self._preset_modes = device_definition.preset_modes
-        if (self._preset_modes is None):
+        if self._preset_modes is None:
             self._preset_modes = self.parse_preset_modes(details)
 
         # Check to see if temperature calibration is supported.
         self._temperature_offset = None
-        if self.is_preference_supported(PREFERENCE_TYPE_TEMPERATURE_CALIBRATION, details):
-            self._temperature_offset = int(self.get_setting(dreo, DreoDeviceSetting.FAN_TEMP_OFFSET, 0))
+        if self.is_preference_supported(
+            PREFERENCE_TYPE_TEMPERATURE_CALIBRATION, details
+        ):
+            self._temperature_offset = int(
+                self.get_setting(dreo, DreoDeviceSetting.FAN_TEMP_OFFSET, 0)
+            )
 
         self._is_on = False
         self._fan_speed = None
@@ -66,24 +76,31 @@ class PyDreoFanBase(PyDreoBaseDevice):
         """Parse the speed range from the details."""
         # There are a bunch of different places this could be, so we're going to look in
         # multiple places.
-        speed_range : tuple[int, int] = None
+        speed_range: tuple[int, int] = None
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             extra_configs = controls_conf.get("extraConfigs")
-            if (extra_configs is not None):
+            if extra_configs is not None:
                 _LOGGER.debug("PyDreoFan:Detected extraConfigs")
                 for extra_config_item in extra_configs:
                     if extra_config_item.get("key", None) == "control":
                         _LOGGER.debug("PyDreoFan:Detected extraConfigs/control")
-                        speed_range = self.parse_speed_range_from_control_node(extra_config_item.get("value", None))
-                        if (speed_range is not None):
-                            _LOGGER.debug("PyDreoFan:Detected speed range from extraConfig - %s", speed_range)
+                        speed_range = self.parse_speed_range_from_control_node(
+                            extra_config_item.get("value", None)
+                        )
+                        if speed_range is not None:
+                            _LOGGER.debug(
+                                "PyDreoFan:Detected speed range from extraConfig - %s",
+                                speed_range,
+                            )
                             return speed_range
 
             control_node = controls_conf.get("control", None)
-            if (control_node is not None):
+            if control_node is not None:
                 speed_range = self.parse_speed_range_from_control_node(control_node)
-                _LOGGER.debug("PyDreoFan:Detected speed range from controlsConf - %s", speed_range)
+                _LOGGER.debug(
+                    "PyDreoFan:Detected speed range from controlsConf - %s", speed_range
+                )
                 return speed_range
         return None
 
@@ -96,11 +113,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
                 speed_range = (speed_low, speed_high)
                 return speed_range
         return None
-    
+
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         raise NotImplementedError
-    
+
     @property
     def speed_range(self):
         """Get the speed range"""
@@ -110,7 +127,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def preset_modes(self) -> list[str]:
         """Get the list of preset modes"""
         return Helpers.get_name_list(self._preset_modes)
-    
+
     @property
     def is_on(self):
         """Returns `True` if the device is on, `False` otherwise."""
@@ -131,10 +148,14 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def fan_speed(self, fan_speed: int):
         """Set the fan speed."""
         if fan_speed < 1 or fan_speed > self._speed_range[1]:
-            _LOGGER.error("Fan speed %s is not in the acceptable range: %s",
-                          fan_speed,
-                          self._speed_range)
-            raise ValueError(f"fan_speed must be between {self._speed_range[0]} and {self._speed_range[1]}")
+            _LOGGER.error(
+                "Fan speed %s is not in the acceptable range: %s",
+                fan_speed,
+                self._speed_range,
+            )
+            raise ValueError(
+                f"fan_speed must be between {self._speed_range[0]} and {self._speed_range[1]}"
+            )
         self._send_command(WINDLEVEL_KEY, fan_speed)
 
     @property
@@ -144,11 +165,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if mode is None:
             mode = self._wind_type
 
-        str_value : str = Helpers.name_from_value(self._preset_modes, mode)
-        if (str_value is None):
+        str_value: str = Helpers.name_from_value(self._preset_modes, mode)
+        if str_value is None:
             return None
-        
-        return str_value    
+
+        return str_value
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
@@ -159,19 +180,23 @@ class PyDreoFanBase(PyDreoBaseDevice):
         elif self._wind_mode is not None:
             key = WIND_MODE_KEY
         else:
-            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support.")
+            raise NotImplementedError(
+                "Attempting to set preset_mode on a device that doesn't support."
+            )
 
         numeric_value = Helpers.value_from_name(self._preset_modes, value)
         if numeric_value is not None:
             self._send_command(key, numeric_value)
         else:
-            raise ValueError(f"Preset mode {value} is not in the acceptable list: {self.preset_modes}")
+            raise ValueError(
+                f"Preset mode {value} is not in the acceptable list: {self.preset_modes}"
+            )
 
     @property
     def temperature(self):
         """Get the temperature"""
         temp = self._temperature
-        if (self.temperature_offset is not None):
+        if self.temperature_offset is not None:
             temp += self.temperature_offset
         return temp
 
@@ -193,28 +218,30 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def temperature_offset(self) -> bool:
         """Get the temperature calibration value"""
         return self._temperature_offset
-    
+
     @temperature_offset.setter
     def temperature_offset(self, value: int) -> None:
         """Set the temperature calibration value"""
         _LOGGER.debug("PyDreoFan:temperature_calibration.setter")
-        if (self.temperature_offset is not None):
+        if self.temperature_offset is not None:
             self._set_setting(DreoDeviceSetting.FAN_TEMP_OFFSET, value)
         else:
             raise NotImplementedError(
                 f"PyDreoFanBase: Attempting to set temperature calibration on a device that doesn't support ({value})"
             )
-                                  
+
     @property
     def oscillating(self) -> bool:
         """Returns None if oscillation if either horizontal or vertical oscillation is on."""
         raise NotImplementedError
-    
+
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
         """Enable or disable oscillation"""
         _LOGGER.debug("PyDreoFan:oscillating.setter")
-        raise NotImplementedError(f"PyDreoFanBase: Attempting to set oscillating on a device that doesn't support ({value})")
+        raise NotImplementedError(
+            f"PyDreoFanBase: Attempting to set oscillating on a device that doesn't support ({value})"
+        )
 
     @property
     def display_auto_off(self) -> bool:
@@ -232,12 +259,14 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if self._led_always_on is not None:
             self._send_command(LEDALWAYSON_KEY, not value)
         else:
-            raise NotImplementedError("PyDreoFanBase: Attempting to set display always on on a device that doesn't support.")
+            raise NotImplementedError(
+                "PyDreoFanBase: Attempting to set display always on on a device that doesn't support."
+            )
 
     @property
     def adaptive_brightness(self) -> bool:
         """Is the display always on?"""
-        if (self._light_sensor_on is not None):
+        if self._light_sensor_on is not None:
             return self._light_sensor_on
         else:
             return None
@@ -250,7 +279,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if self._light_sensor_on is not None:
             self._send_command(LIGHTSENSORON_KEY, value)
         else:
-            raise NotImplementedError("PyDreoFanBase: ttempting to set adaptive brightness on on a device that doesn't support.")
+            raise NotImplementedError(
+                "PyDreoFanBase: ttempting to set adaptive brightness on on a device that doesn't support."
+            )
 
     @property
     def panel_sound(self) -> bool:
@@ -271,7 +302,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         elif self._mute_on is not None:
             self._send_command(MUTEON_KEY, not value)
         else:
-            raise NotImplementedError("PyDreoFanBase: Attempting to set panel_sound on a device that doesn't support.")
+            raise NotImplementedError(
+                "PyDreoFanBase: Attempting to set panel_sound on a device that doesn't support."
+            )
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -280,7 +313,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
         if self._fan_speed is None:
-            _LOGGER.error("Unable to get fan speed from state. Check debug logs for more information.")
+            _LOGGER.error(
+                "Unable to get fan speed from state. Check debug logs for more information."
+            )
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
@@ -298,7 +333,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_poweron, bool):
             self._is_on = val_poweron  # Ensure poweron state is updated
-            _LOGGER.debug("PyDreoFanBase:handle_server_update - poweron is %s", self._is_on)
+            _LOGGER.debug(
+                "PyDreoFanBase:handle_server_update - poweron is %s", self._is_on
+            )
 
         val_wind_level = self.get_server_update_key_value(message, WINDLEVEL_KEY)
         if isinstance(val_wind_level, int):
@@ -308,7 +345,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if isinstance(val_temperature, int):
             self._temperature = val_temperature
 
-        val_display_always_on = self.get_server_update_key_value(message, LEDALWAYSON_KEY)
+        val_display_always_on = self.get_server_update_key_value(
+            message, LEDALWAYSON_KEY
+        )
         if isinstance(val_display_always_on, bool):
             self._led_always_on = val_display_always_on
 

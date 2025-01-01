@@ -1,11 +1,10 @@
 """BaseDevice utilities for Dreo Component."""
 
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 
-from .const import (
-    DOMAIN
-)
+from .const import DOMAIN
+
 
 class DreoBaseDeviceHA(Entity):
     """Base class for Dreo Entity Representations."""
@@ -27,7 +26,7 @@ class DreoBaseDeviceHA(Entity):
             },
             name=self.pydreo_device.name,
             manufacturer="Dreo",
-            model=self.pydreo_device.model
+            model=self.pydreo_device.model,
         )
 
     @property

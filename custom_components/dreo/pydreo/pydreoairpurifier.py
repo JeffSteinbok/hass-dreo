@@ -3,9 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import (
-    LOGGER_NAME
-)
+from .constant import LOGGER_NAME
 
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
@@ -19,7 +17,12 @@ if TYPE_CHECKING:
 class PyDreoAirPurifier(PyDreoFanBase):
     """Class for Dreo Air Purifier API Calls."""
 
-    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(
+        self,
+        device_definition: DreoDeviceDetails,
+        details: Dict[str, list],
+        dreo: "PyDreo",
+    ):
         """Initialize air devices."""
         _LOGGER.debug("PyDreoAirPurifier:__init__")
         super().__init__(device_definition, details, dreo)
@@ -41,18 +44,18 @@ class PyDreoAirPurifier(PyDreoFanBase):
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             control = controls_conf.get("control", None)
-            if (control is not None):
+            if control is not None:
                 for control_item in control:
-                    if (control_item.get("type", None) == "Mode"):
+                    if control_item.get("type", None) == "Mode":
                         for mode_item in control_item.get("items", None):
                             value = mode_item.get("value", None)
                             preset_modes.append((value, value))
-                    elif (control_item.get("type", None) == "Manual"):
+                    elif control_item.get("type", None) == "Manual":
                         value = control_item.get("value", None)
                         preset_modes.append((value, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (len(preset_modes) == 0):
+        if len(preset_modes) == 0:
             _LOGGER.debug("PyDreoAirPurifier:No preset modes detected")
             preset_modes = None
         _LOGGER.debug("PyDreoAirPurifier:Detected preset modes - %s", preset_modes)
@@ -61,11 +64,13 @@ class PyDreoAirPurifier(PyDreoFanBase):
     @property
     def oscillating(self) -> bool:
         return None
-    
+
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
-        raise NotImplementedError(f"Attempting to set oscillating on a device that doesn't support ({value})")
-    
+        raise NotImplementedError(
+            f"Attempting to set oscillating on a device that doesn't support ({value})"
+        )
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("PyDreoAirPurifier:update_state")

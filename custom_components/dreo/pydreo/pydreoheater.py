@@ -32,7 +32,7 @@ from .constant import (
     TemperatureUnit,
     HeaterOscillationAngles,
     FAN_ON,
-    FAN_OFF
+    FAN_OFF,
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
@@ -43,10 +43,16 @@ _LOGGER = logging.getLogger(LOGGER_NAME)
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
+
 class PyDreoHeater(PyDreoBaseDevice):
     """Base class for Dreo heater API Calls."""
 
-    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(
+        self,
+        device_definition: DreoDeviceDetails,
+        details: Dict[str, list],
+        dreo: "PyDreo",
+    ):
         """Initialize heater devices."""
         super().__init__(device_definition, details, dreo)
 
@@ -113,18 +119,24 @@ class PyDreoHeater(PyDreoBaseDevice):
         return self._htalevel
 
     @htalevel.setter
-    def htalevel(self, htalevel : int) :
+    def htalevel(self, htalevel: int):
         """Set the heat level."""
         _LOGGER.debug("PyDreoHeater:htalevel.setter(%s, %s)", self.name, htalevel)
-        if (self._device_definition.device_ranges[HEAT_RANGE][0] > htalevel > self._device_definition.device_ranges[HEAT_RANGE][1]):
-            _LOGGER.error("Heat level %s is not in the acceptable range: %s",
-                            htalevel,
-                            self._device_definition.device_ranges[HEAT_RANGE])
+        if (
+            self._device_definition.device_ranges[HEAT_RANGE][0]
+            > htalevel
+            > self._device_definition.device_ranges[HEAT_RANGE][1]
+        ):
+            _LOGGER.error(
+                "Heat level %s is not in the acceptable range: %s",
+                htalevel,
+                self._device_definition.device_ranges[HEAT_RANGE],
+            )
             return
         self.mode = HEATER_MODE_HOTAIR
         self._send_command(HTALEVEL_KEY, htalevel)
 
-    @property 
+    @property
     def ecolevel_range(self):
         """Get the ecolevel range"""
         return self._device_definition.device_ranges[ECOLEVEL_RANGE]
@@ -135,13 +147,19 @@ class PyDreoHeater(PyDreoBaseDevice):
         return self._ecolevel
 
     @ecolevel.setter
-    def ecolevel(self, ecolevel : int):
+    def ecolevel(self, ecolevel: int):
         """Set the target temperature."""
         _LOGGER.debug("PyDreoHeater:ecolevel(%s)", ecolevel)
-        if self._device_definition.device_ranges[ECOLEVEL_RANGE][0] > ecolevel > self._device_definition.device_ranges[ECOLEVEL_RANGE][1]:
-            _LOGGER.error("Target Temperature %s is not in the acceptable range: %s",
-                            ecolevel,
-                            self._device_definition.device_ranges[ECOLEVEL_RANGE])
+        if (
+            self._device_definition.device_ranges[ECOLEVEL_RANGE][0]
+            > ecolevel
+            > self._device_definition.device_ranges[ECOLEVEL_RANGE][1]
+        ):
+            _LOGGER.error(
+                "Target Temperature %s is not in the acceptable range: %s",
+                ecolevel,
+                self._device_definition.device_ranges[ECOLEVEL_RANGE],
+            )
             return
         self._send_command(ECOLEVEL_KEY, ecolevel)
 
@@ -162,9 +180,11 @@ class PyDreoHeater(PyDreoBaseDevice):
             # Don't need self.mode = HEATER_MODE_HOTAIR because the htalevel setter will set the mode
             self.htalevel = MODE_LEVEL_MAP[level]
         else:
-            _LOGGER.error("Preset mode %s is not in the acceptable list: %s",
-                            level,
-                            self._device_definition.preset_modes)
+            _LOGGER.error(
+                "Preset mode %s is not in the acceptable list: %s",
+                level,
+                self._device_definition.preset_modes,
+            )
             raise ValueError(f"preset_mode must be one of: {self.preset_modes}")
 
     @mode.setter
@@ -203,7 +223,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         if self._temperature is not None:
             if self._temperature > 50:
                 return TemperatureUnit.FAHRENHEIT
-    
+
         return TemperatureUnit.CELCIUS
 
     @property
@@ -213,14 +233,17 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @oscon.setter
     def oscon(self, value: bool) -> None:
-
         """Enable or disable oscillation"""
         _LOGGER.debug("PyDreoHeater:oscon.setter(%s) -> %s", self.name, value)
         if self._oscon is not None:
             self._send_command(OSCON_KEY, value)
         else:
-            _LOGGER.error("Attempting to set oscillation on on a device that doesn't support it.")
-            raise ValueError("Attempting to set oscillation on on a device that doesn't support it.")
+            _LOGGER.error(
+                "Attempting to set oscillation on on a device that doesn't support it."
+            )
+            raise ValueError(
+                "Attempting to set oscillation on on a device that doesn't support it."
+            )
 
     @property
     def oscangle(self) -> HeaterOscillationAngles:
@@ -234,7 +257,9 @@ class PyDreoHeater(PyDreoBaseDevice):
         if self._oscangle is not None:
             self._send_command(OSCANGLE_KEY, value)
         else:
-            _LOGGER.error("Attempting to set oscillation angle on a device that doesn't support it.")
+            _LOGGER.error(
+                "Attempting to set oscillation angle on a device that doesn't support it."
+            )
             return
 
     @property
@@ -244,13 +269,14 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @ptcon.setter
     def ptcon(self, value: bool) -> None:
-
         """Enable or disable PTC"""
         _LOGGER.debug("PyDreoHeater:ptcon.setter(%s) --> %s", self.name, value)
         if self._ptc_on is not None:
             self._send_command(PTCON_KEY, value)
         else:
-            _LOGGER.error("Attempting to set PTC on on a device that doesn't support it.")
+            _LOGGER.error(
+                "Attempting to set PTC on on a device that doesn't support it."
+            )
             return
 
     @property
@@ -260,13 +286,14 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @lighton.setter
     def lighton(self, value: bool) -> None:
-
         """Enable or disable light"""
         _LOGGER.debug("PyDreoHeater:lighton.setter(%s) --> %s", self.name, value)
         if self._light_on is not None:
             self._send_command(LIGHTON_KEY, not value)
         else:
-            _LOGGER.error("Attempting to set Display Auto Off on a device that doesn't support it.")
+            _LOGGER.error(
+                "Attempting to set Display Auto Off on a device that doesn't support it."
+            )
             return
 
     @property
@@ -276,13 +303,14 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @ctlstatus.setter
     def ctlstatus(self, value: bool) -> None:
-
         """Enable or disable ctlstatus"""
         _LOGGER.debug("PyDreoHeater:ctlstatus.setter(%s) --> %s", self.name, value)
         if self._ctlstatus is not None:
             self._send_command(CTLSTATUS_KEY, value)
         else:
-            _LOGGER.error("Attempting to set ctlstatus on on a device that doesn't support it.")
+            _LOGGER.error(
+                "Attempting to set ctlstatus on on a device that doesn't support it."
+            )
             return
 
     @property
@@ -292,13 +320,14 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @childlockon.setter
     def childlockon(self, value: bool) -> None:
-
         """Enable or disable Child Lock"""
         _LOGGER.debug("PyDreoHeater:childlockon.setter(%s) --> %s", self.name, value)
         if self._childlockon is not None:
             self._send_command(CHILDLOCKON_KEY, value)
         else:
-            _LOGGER.error("Attempting to set child lock on on a device that doesn't support it.")
+            _LOGGER.error(
+                "Attempting to set child lock on on a device that doesn't support it."
+            )
             return
 
     @property
@@ -317,18 +346,21 @@ class PyDreoHeater(PyDreoBaseDevice):
             _LOGGER.debug("Setting _muteon to %s", not value)
             self._send_command(MUTEON_KEY, not value)
         else:
-            _LOGGER.error("Attempting to set panel_sound on a device that doesn't support.")
+            _LOGGER.error(
+                "Attempting to set panel_sound on a device that doesn't support."
+            )
             return
 
-
-    def update_state(self, state: dict) :
+    def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        super().update_state(state) # handles _is_on
+        super().update_state(state)  # handles _is_on
 
         _LOGGER.debug("update_state: %s", state)
         self._htalevel = self.get_state_update_value(state, HTALEVEL_KEY)
         if self._htalevel is None:
-            _LOGGER.error("Unable to get heat level from state. Check debug logs for more information.")
+            _LOGGER.error(
+                "Unable to get heat level from state. Check debug logs for more information."
+            )
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._mode = self.get_state_update_value(state, MODE_KEY)
@@ -348,7 +380,6 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
-
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -420,14 +451,14 @@ class PyDreoHeater(PyDreoBaseDevice):
         if isinstance(val_ecolevel, int):
             self._ecolevel = val_ecolevel
 
-        val_childlockon = self.get_server_update_key_value(message, CHILDLOCKON_KEY)  
+        val_childlockon = self.get_server_update_key_value(message, CHILDLOCKON_KEY)
         if isinstance(val_childlockon, bool):
             self._childlockon = val_childlockon
 
-        val_tempoffset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)  
+        val_tempoffset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)
         if isinstance(val_tempoffset, int):
             self._tempoffset = val_tempoffset
-    
-        val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)  
+
+        val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf

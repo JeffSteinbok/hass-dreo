@@ -23,10 +23,7 @@ from .pydreo import (
     OSCANGLE_ANGLE_MAP,
 )
 
-from .const import (
-    LOGGER,
-    DOMAIN
-)
+from .const import LOGGER, DOMAIN
 
 HVAC_MODE_MAP = {
     HVACMode.OFF: HEATER_MODE_OFF,
@@ -43,6 +40,7 @@ HEATER_MODE_MAP = {
 }
 
 _LOGGER = logging.getLogger(LOGGER)
+
 
 # Implementation of the heater
 class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
@@ -322,6 +320,10 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             "DreoHeaterHA:set_swing_mode(%s) -> %s", self.device.name, swing_mode
         )
         if self.device.oscon is not None:
-            self.oscon = False if swing_mode != SWING_ON and swing_mode in self._attr_swing_modes else True
+            self.oscon = (
+                False
+                if swing_mode != SWING_ON and swing_mode in self._attr_swing_modes
+                else True
+            )
         elif self.device.oscangle is not None:
             self.oscangle = swing_mode

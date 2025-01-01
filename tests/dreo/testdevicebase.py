@@ -1,11 +1,13 @@
 """Base class for Dreo device tests."""
+
 from unittest.mock import MagicMock, patch
 import pytest
 from homeassistant.helpers.entity import Entity
 from .custommocks import PyDreoDeviceMock
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = 'homeassistant.helpers.entity.Entity.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = "homeassistant.helpers.entity.Entity.schedule_update_ha_state"
+
 
 class TestDeviceBase:
     """Base class for Dreo Device Tests."""
@@ -17,19 +19,24 @@ class TestDeviceBase:
             mock_method.return_value = True
             yield mock_method
 
-    def create_mock_device(self, 
-                           type : str = None,
-                           name: str = "Mocked Dreo Device", 
-                           serial_number: str = "123456", 
-                           features: dict[str, any] = None):
-        
+    def create_mock_device(
+        self,
+        type: str = None,
+        name: str = "Mocked Dreo Device",
+        serial_number: str = "123456",
+        features: dict[str, any] = None,
+    ):
         """Create a mock device."""
-        pydreo_device_mock : PyDreoDeviceMock = PyDreoDeviceMock(type=type, name=name, serial_number=serial_number, features=features)
+        pydreo_device_mock: PyDreoDeviceMock = PyDreoDeviceMock(
+            type=type, name=name, serial_number=serial_number, features=features
+        )
         return MagicMock(return_value=pydreo_device_mock)()
-   
-    def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:
+
+    def verify_expected_entities(
+        self, ha_entities: list[Entity], expected_keys: list[str]
+    ) -> None:
         """Verify the expected entities are present."""
-        found_entity_keys : list[str] = []
+        found_entity_keys: list[str] = []
         for ha_entity in ha_entities:
             found_entity_keys.append(ha_entity.entity_description.key)
         found_entity_keys.sort()
