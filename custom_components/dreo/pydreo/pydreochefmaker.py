@@ -1,4 +1,5 @@
 """Support for Dreo ChefMaker devices."""
+
 import logging
 from typing import Dict, TYPE_CHECKING
 

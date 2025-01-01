@@ -8,22 +8,20 @@ from __future__ import annotations
 from dataclasses import dataclass
 import logging
 
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .dreobasedevice import DreoBaseDeviceHA
 
-from .const import (
-    LOGGER,
-    DOMAIN,
-    PYDREO_MANAGER
-)
+from .const import LOGGER, DOMAIN, PYDREO_MANAGER
 
 _LOGGER = logging.getLogger(LOGGER)
+
 
 @dataclass
 class DreoNumberEntityDescription(NumberEntityDescription):
     """Describe Dreo Number entity."""
+
     attr_name: str = None
     icon: str = None
 
@@ -47,7 +45,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         attr_name="vertical_angle",
         icon="mdi:angle-acute",
         min_value=0,
-        max_value=90
+        max_value=90,
     ),
     DreoNumberEntityDescription(
         key="Target Temperature",
@@ -55,7 +53,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         attr_name="ecolevel",
         icon="mdi:temperature",
         min_value=0,
-        max_value=100
+        max_value=100,
     ),
     DreoNumberEntityDescription(
         key="Horizontal Oscillation Angle Left",
@@ -79,7 +77,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         attr_name="vertical_osc_angle_top",
         icon="mdi:vector-radius",
         min_value=0,
-        max_value=90
+        max_value=90,
     ),
     DreoNumberEntityDescription(
         key="Vertical Oscillation Angle Bottom",
@@ -87,7 +85,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         attr_name="vertical_osc_angle_bottom",
         icon="mdi:vector-radius",
         min_value=0,
-        max_value=90
+        max_value=90,
     ),
     DreoNumberEntityDescription(
         key="Oscillation Angle",
@@ -96,60 +94,88 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:angle-acute",
         min_value=30,
         max_value=120,
-        step = 30
-    )
+        step=30,
+    ),
 )
 
 
-def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
+def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
     """Add Number entries for Dreo devices."""
-    number_ha_collection : list[DreoNumberHA] = []
-    
+    number_ha_collection: list[DreoNumberHA] = []
+
     for pydreo_device in pydreo_devices:
         _LOGGER.debug("Number:get_entries: Adding Numbers for %s", pydreo_device.name)
-        number_keys : list[str] = []
-        
+        number_keys: list[str] = []
+
         for number_definition in NUMBERS:
-            _LOGGER.debug("Number:get_entries: checking attribute: %s on %s", number_definition.attr_name, pydreo_device.name)
+            _LOGGER.debug(
+                "Number:get_entries: checking attribute: %s on %s",
+                number_definition.attr_name,
+                pydreo_device.name,
+            )
 
             if pydreo_device.is_feature_supported(number_definition.attr_name):
-                if (number_definition.key in number_keys):
-                    _LOGGER.error("Number:get_entries: Duplicate number key %s", number_definition.key)
+                if number_definition.key in number_keys:
+                    _LOGGER.error(
+                        "Number:get_entries: Duplicate number key %s",
+                        number_definition.key,
+                    )
                     continue
 
-                _LOGGER.debug("Number:get_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
+                _LOGGER.debug(
+                    "Number:get_entries: Adding Number %s for %s",
+                    number_definition.key,
+                    number_definition.attr_name,
+                )
                 number_keys.append(number_definition.key)
 
                 device_range = get_device_range(pydreo_device, number_definition)
                 if device_range is not None and isinstance(device_range, tuple):
-                    dned = DreoNumberEntityDescription(key=number_definition.key,
-                                                       translation_key=number_definition.translation_key,
-                                                       attr_name=number_definition.attr_name,
-                                                       icon=number_definition.icon,
-                                                       min_value=device_range[0],
-                                                       max_value=device_range[1])
+                    dned = DreoNumberEntityDescription(
+                        key=number_definition.key,
+                        translation_key=number_definition.translation_key,
+                        attr_name=number_definition.attr_name,
+                        icon=number_definition.icon,
+                        min_value=device_range[0],
+                        max_value=device_range[1],
+                    )
                     number_ha_collection.append(DreoNumberHA(pydreo_device, dned))
                 else:
-                    number_ha_collection.append(DreoNumberHA(pydreo_device,number_definition))
-    
+                    number_ha_collection.append(
+                        DreoNumberHA(pydreo_device, number_definition)
+                    )
+
     return number_ha_collection
 
-def get_device_range(device: PyDreoBaseDevice, number_definition: DreoNumberEntityDescription) -> tuple | None:
+
+def get_device_range(
+    device: PyDreoBaseDevice, number_definition: DreoNumberEntityDescription
+) -> tuple | None:
     """Returns the device-specific range for a Number."""
     range_name = number_definition.attr_name + "_range"
 
     range_from_device = getattr(device, range_name, None)
     if range_from_device is not None:
-        _LOGGER.debug("Number:get_device_range: range %s from device is %s", range_name, range_from_device)
+        _LOGGER.debug(
+            "Number:get_device_range: range %s from device is %s",
+            range_name,
+            range_from_device,
+        )
         return range_from_device
 
-    range_from_device_definition = getattr(device.device_definition.device_ranges, range_name, None)
+    range_from_device_definition = getattr(
+        device.device_definition.device_ranges, range_name, None
+    )
     if range_from_device_definition is not None:
-        _LOGGER.debug("Number:get_device_range: range %s from device definition is %s", range_name,
-                      range_from_device_definition)
+        _LOGGER.debug(
+            "Number:get_device_range: range %s from device definition is %s",
+            range_name,
+            range_from_device_definition,
+        )
         return range_from_device_definition
 
     return None
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -159,17 +185,17 @@ async def async_setup_entry(
     """Set up the Dreo Number platform."""
     _LOGGER.info("Starting Dreo Number Platform")
 
-    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     async_add_entities(get_entries(pydreo_manager.devices))
 
 
-class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-method
+class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):  # pylint: disable=abstract-method
     """Representation of a Number describing a read-only property of a Dreo device."""
 
-    def __init__(self, 
-                    pyDreoDevice: PyDreoBaseDevice,
-                    description: DreoNumberEntityDescription) -> None:
+    def __init__(
+        self, pyDreoDevice: PyDreoBaseDevice, description: DreoNumberEntityDescription
+    ) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
 

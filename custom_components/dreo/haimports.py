@@ -3,7 +3,7 @@
 # Single file for all HA imports so that we can include this in all
 # other files, and disable linting in one specific place.
 
-# This is pretty ugly all things considered, but seems less ugly than 
+# This is pretty ugly all things considered, but seems less ugly than
 # ignoring specific lines all over the place
 
 # pylint: disable=unused-import, wildcard-import, unused-wildcard-import
@@ -15,9 +15,12 @@ from homeassistant import config_entries, core
 
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
+from homeassistant.helpers.dispatcher import (
+    async_dispatcher_connect,
+    async_dispatcher_send,
+)
 
-from homeassistant.components.diagnostics import REDACTED 
+from homeassistant.components.diagnostics import REDACTED
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
@@ -31,47 +34,37 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
-from homeassistant.helpers.entity import (
-    DeviceInfo,
-    Entity,
-    EntityDescription
-)
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 
 from homeassistant.util.percentage import (
     int_states_in_range,
     percentage_to_ranged_value,
-    ranged_value_to_percentage
-) 
-
-from homeassistant.components.fan import (
-    FanEntity, 
-    FanEntityFeature
+    ranged_value_to_percentage,
 )
+
+from homeassistant.components.fan import FanEntity, FanEntityFeature
 
 from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     ClimateEntityDescription,
     FAN_ON,
-    FAN_OFF
+    FAN_OFF,
 )
 
-from homeassistant.components.switch import (
-    SwitchEntity,
-    SwitchEntityDescription
-)
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
-    SensorStateClass
+    SensorStateClass,
 )
 
 from homeassistant.components.number import (
     NumberDeviceClass,
     NumberEntity,
-    NumberEntityDescription
+    NumberEntityDescription,
 )
 
 from homeassistant.const import (
@@ -83,7 +76,8 @@ from homeassistant.const import (
     PRECISION_WHOLE,
     STATE_OFF,
     STATE_ON,
-    UnitOfTemperature)
+    UnitOfTemperature,
+)
 
 from homeassistant.components.climate import (
     FAN_AUTO,

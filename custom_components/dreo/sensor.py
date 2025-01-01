@@ -14,12 +14,7 @@ import logging
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .pydreo.constant import (
-    TemperatureUnit,
-    HUMIDITY_KEY,
-    MODE_KEY,
-    DreoDeviceType
-)
+from .pydreo.constant import TemperatureUnit, HUMIDITY_KEY, MODE_KEY, DreoDeviceType
 
 from .haimports import *  # pylint: disable=W0401,W0614
 
@@ -98,7 +93,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
-    )
+    ),
 )
 
 
@@ -110,14 +105,15 @@ async def async_setup_entry(
     """Set up the Dreo sensor platform."""
     _LOGGER.info("Starting Dreo Sensor Platform")
 
-    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    sensor_has : list[SensorEntity] = []
+    sensor_has: list[SensorEntity] = []
     for pydreo_device in pydreo_manager.devices:
-
-        if (pydreo_device.type == DreoDeviceType.TOWER_FAN or
-            pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR or
-            pydreo_device.type == DreoDeviceType.AIR_PURIFIER):
+        if (
+            pydreo_device.type == DreoDeviceType.TOWER_FAN
+            or pydreo_device.type == DreoDeviceType.AIR_CIRCULATOR
+            or pydreo_device.type == DreoDeviceType.AIR_PURIFIER
+        ):
             # Really ugly hack since there is just one sensor for now...
             sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[0]))
 

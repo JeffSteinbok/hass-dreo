@@ -1,10 +1,17 @@
 """Base class for all Dreo devices."""
+
 import threading
 import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY, FAN_MODE_STRINGS
+from .constant import (
+    LOGGER_NAME,
+    REPORTED_KEY,
+    POWERON_KEY,
+    STATE_KEY,
+    FAN_MODE_STRINGS,
+)
 from .models import DreoDeviceDetails
 
 if TYPE_CHECKING:
@@ -12,11 +19,14 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
+
 class UnknownProductError(Exception):
     """Exception thrown when we don't recognize a product of a device."""
 
+
 class UnknownModelError(Exception):
     """Exception thrown when we don't recognize a model of a device."""
+
 
 class PyDreoBaseDevice(object):
     """Base class for all Dreo devices.
@@ -75,42 +85,50 @@ class PyDreoBaseDevice(object):
 
         return None
 
-
     def is_preference_supported(self, preference_type: str, details: dict) -> bool:
         """Check if a preference type is supported."""
-        _LOGGER.debug("PyDreoBaseDevice:Checking for preference type %s", preference_type)
+        _LOGGER.debug(
+            "PyDreoBaseDevice:Checking for preference type %s", preference_type
+        )
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             preferences = controls_conf.get("preference", None)
-            if (preferences is not None):
+            if preferences is not None:
                 for preference in preferences:
                     if preference.get("type", None) == preference_type:
-                        _LOGGER.debug("PyDreoFanBase:Found preference type %s", preference_type)
+                        _LOGGER.debug(
+                            "PyDreoFanBase:Found preference type %s", preference_type
+                        )
                         return True
-                    
+
         _LOGGER.debug("PyDreoBaseDevice:Preference type %s not found", preference_type)
         return False
-    
-    def get_setting(self, dreo : "PyDreo", setting_name: str, default_value : any) -> any:
+
+    def get_setting(self, dreo: "PyDreo", setting_name: str, default_value: any) -> any:
         """Get the value of a preference."""
         _LOGGER.debug("PyDreoBaseDevice:get_setting: %s", setting_name)
         setting_val = dreo.get_device_setting(self, setting_name)
         if setting_val is None:
-            _LOGGER.debug("PyDreoBaseDevice:get_setting: %s not found.  Using default value.", setting_name)
+            _LOGGER.debug(
+                "PyDreoBaseDevice:get_setting: %s not found.  Using default value.",
+                setting_name,
+            )
             setting_val = default_value
 
-        _LOGGER.debug("PyDreoBaseDevice:get_setting: %s -> %s", setting_name, setting_val)
+        _LOGGER.debug(
+            "PyDreoBaseDevice:get_setting: %s -> %s", setting_name, setting_val
+        )
         return setting_val
-    
+
     def get_mode_string(self, mode_id: str) -> str:
         """Get the mode string from the device definition."""
-        if (mode_id in FAN_MODE_STRINGS):
+        if mode_id in FAN_MODE_STRINGS:
             text = FAN_MODE_STRINGS[mode_id]
         else:
             text = mode_id
 
         return text
-    
+
     def handle_server_update_base(self, message):
         """Initial method called when we get a WebSocket message."""
         _LOGGER.debug("{%s}: got {%s} message **", self.name, message)

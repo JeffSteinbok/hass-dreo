@@ -1,20 +1,20 @@
 """Support for Dreo fans."""
+
 from __future__ import annotations
 
 import logging
 import math
 from typing import Any
 
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 
 from .dreobasedevice import DreoBaseDeviceHA
-from .const import (
-    LOGGER
-)
+from .const import LOGGER
 
 from .pydreo.pydreofanbase import PyDreoFanBase
 
 _LOGGER = logging.getLogger(LOGGER)
+
 
 class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     """Representation of a Dreo fan."""
@@ -59,18 +59,24 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the fan."""
-        attr = {"temperature": self.device.temperature,
-            'model': self.device.model,
-            'sn': self.device.serial_number}
+        attr = {
+            "temperature": self.device.temperature,
+            "model": self.device.model,
+            "sn": self.device.serial_number,
+        }
         return attr
 
     @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
-        supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.TURN_ON | FanEntityFeature.TURN_OFF
-        if (self.device.preset_modes is not None):
+        supported_features = (
+            FanEntityFeature.SET_SPEED
+            | FanEntityFeature.TURN_ON
+            | FanEntityFeature.TURN_OFF
+        )
+        if self.device.preset_modes is not None:
             supported_features = supported_features | FanEntityFeature.PRESET_MODE
-        if (self.device.oscillating is not None):
+        if self.device.oscillating is not None:
             supported_features = supported_features | FanEntityFeature.OSCILLATE
 
         return supported_features
@@ -99,8 +105,10 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         if not self.device.is_on:
             self.device.is_on = True
 
-        self.device.fan_speed = math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
-        
+        self.device.fan_speed = math.ceil(
+            percentage_to_ranged_value(self.device.speed_range, percentage)
+        )
+
         self.schedule_update_ha_state()
 
     def set_preset_mode(self, preset_mode: str) -> None:

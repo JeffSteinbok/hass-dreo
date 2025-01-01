@@ -1,14 +1,12 @@
 """Config (and Options) flow for Dreo integration."""
+
 import logging
 from typing import Any, Dict
 from collections import OrderedDict
 import voluptuous as vol
 
-from .haimports import * # pylint: disable=W0401,W0614
-from .const import (
-    DOMAIN,
-    CONF_AUTO_RECONNECT
-)
+from .haimports import *  # pylint: disable=W0401,W0614
+from .const import DOMAIN, CONF_AUTO_RECONNECT
 from .pydreo import PyDreo
 
 _LOGGER = logging.getLogger("dreo")
@@ -65,13 +63,16 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Get the options flow for this handler."""
         return OptionsFlowHandler(config_entry)
 
+
 class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handles options flow for the component."""
 
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         self.config_entry = config_entry
 
-    async def async_step_init(self, user_input: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def async_step_init(
+        self, user_input: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """Manage the options for the custom component."""
         errors: Dict[str, str] = {}
 
@@ -86,9 +87,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             auto_reconnect = True
 
         options_schema = vol.Schema(
-            {
-                vol.Required(CONF_AUTO_RECONNECT, default=auto_reconnect): bool
-            }
+            {vol.Required(CONF_AUTO_RECONNECT, default=auto_reconnect): bool}
         )
         return self.async_show_form(
             step_id="init", data_schema=options_schema, errors=errors

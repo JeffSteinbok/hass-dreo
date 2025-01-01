@@ -30,7 +30,7 @@ from .constant import (
     FAN_MEDIUM,
     FAN_HIGH,
     PRESET_NONE,
-    PRESET_ECO
+    PRESET_ECO,
 )
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
@@ -69,10 +69,16 @@ _LOGGER = logging.getLogger(LOGGER_NAME)
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
+
 class PyDreoAC(PyDreoBaseDevice):
     """Base class for Dreo air conditioner API Calls."""
 
-    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(
+        self,
+        device_definition: DreoDeviceDetails,
+        details: Dict[str, list],
+        dreo: "PyDreo",
+    ):
         """Initialize air conditioner devices."""
         super().__init__(device_definition, details, dreo)
 
@@ -99,7 +105,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fan_mode = None
         self.work_time = None
         self.temp_target_reached = None
-        
+
     @property
     def poweron(self):
         """Returns `True` if the device is on, `False` otherwise."""
@@ -149,7 +155,9 @@ class PyDreoAC(PyDreoBaseDevice):
     @fan_mode.setter
     def fan_mode(self, mode: str) -> None:
         """Set fan mode if requested"""
-        _LOGGER.debug("PyDreoAC:fan_mode.setter(%s) %s --> %s", self.name, self._fan_mode, mode)
+        _LOGGER.debug(
+            "PyDreoAC:fan_mode.setter(%s) %s --> %s", self.name, self._fan_mode, mode
+        )
         self._fan_mode = mode
         self._send_command(WINDLEVEL_KEY, DREO_AC_FAN_MODE_MAP[mode])
 
@@ -183,7 +191,12 @@ class PyDreoAC(PyDreoBaseDevice):
     @target_temperature.setter
     def target_temperature(self, value: int) -> None:
         """Set the target temperature"""
-        _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) %s --> %s", self, self._target_temperature, value)
+        _LOGGER.debug(
+            "PyDreoAC:target_temperature.setter(%s) %s --> %s",
+            self,
+            self._target_temperature,
+            value,
+        )
         self._target_temperature = value
         self._send_command(TARGET_TEMPERATURE_KEY, value)
 
@@ -200,7 +213,12 @@ class PyDreoAC(PyDreoBaseDevice):
     @target_humidity.setter
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
-        _LOGGER.debug("PyDreoAC:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
+        _LOGGER.debug(
+            "PyDreoAC:target_humidity.setter(%s) %s --> %s",
+            self,
+            self._target_humidity,
+            value,
+        )
         self._target_humidity = value
         self._send_command(TARGET_HUMIDITY_KEY, value)
 
@@ -273,7 +291,7 @@ class PyDreoAC(PyDreoBaseDevice):
         """Set if the panel sound"""
         _LOGGER.debug("PyDreoAC:panel_sound.setter(%s) --> %s", self.name, value)
         self._send_command(MUTEON_KEY, not value)
-        
+
     @property
     def preset_mode(self) -> str:
         """Return the current preset mode."""
@@ -282,13 +300,18 @@ class PyDreoAC(PyDreoBaseDevice):
     @preset_mode.setter
     def preset_mode(self, mode: str) -> None:
         """Set the preset mode."""
-        _LOGGER.debug("PyDreoAC:preset_mode.setter(%s) %s --> %s", self.name, self._preset_mode, mode)
-        
+        _LOGGER.debug(
+            "PyDreoAC:preset_mode.setter(%s) %s --> %s",
+            self.name,
+            self._preset_mode,
+            mode,
+        )
+
         if mode == PRESET_ECO:
             self._send_command(MODE_KEY, DREO_AC_MODE_ECO)
         else:
             self._send_command(MODE_KEY, DREO_AC_MODE_COOL)
-        
+
         self._preset_mode = mode
 
     def update_state(self, state: dict):
@@ -297,8 +320,10 @@ class PyDreoAC(PyDreoBaseDevice):
 
         _LOGGER.debug("PyDreoAC(%s):update_state: %s", self.name, state)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
-        self._target_temperature = self.get_state_update_value(state, TARGET_TEMPERATURE_KEY)
-        
+        self._target_temperature = self.get_state_update_value(
+            state, TARGET_TEMPERATURE_KEY
+        )
+
         mode = self.get_state_update_value(state, MODE_KEY)
         if mode == DREO_AC_MODE_ECO:
             mode = DREO_AC_MODE_COOL
@@ -306,8 +331,10 @@ class PyDreoAC(PyDreoBaseDevice):
         else:
             self._preset_mode = PRESET_NONE
         self._mode = mode
-        
-        self._fan_mode = DREO_AC_FAN_MODE_MAP[self.get_state_update_value(state, WINDLEVEL_KEY)]
+
+        self._fan_mode = DREO_AC_FAN_MODE_MAP[
+            self.get_state_update_value(state, WINDLEVEL_KEY)
+        ]
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
@@ -325,7 +352,11 @@ class PyDreoAC(PyDreoBaseDevice):
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
         self.work_time = self.get_state_update_value(state, WORK_TIME)
-        self.temp_target_reached = "Yes" if self.get_state_update_value(state, TEMP_TARGET_REACHED) > 0 else "No"
+        self.temp_target_reached = (
+            "Yes"
+            if self.get_state_update_value(state, TEMP_TARGET_REACHED) > 0
+            else "No"
+        )
         # TODO ecopauserate
 
     def handle_server_update(self, message):
@@ -341,12 +372,16 @@ class PyDreoAC(PyDreoBaseDevice):
         if isinstance(val_temperature, int):
             self._temperature = val_temperature
 
-        val_target_temperature = self.get_server_update_key_value(message, TARGET_TEMPERATURE_KEY)
+        val_target_temperature = self.get_server_update_key_value(
+            message, TARGET_TEMPERATURE_KEY
+        )
         if isinstance(val_target_temperature, int):
-            _LOGGER.debug("PyDreoAC(%s):handle_server_update - target_temperature: %s --> %s", 
-                          self, 
-                          self._target_temperature, 
-                          val_target_temperature)
+            _LOGGER.debug(
+                "PyDreoAC(%s):handle_server_update - target_temperature: %s --> %s",
+                self,
+                self._target_temperature,
+                val_target_temperature,
+            )
             self._target_temperature = val_target_temperature
 
         # Reported mode can be an empty string if the AC is off. Deal with that by
@@ -359,16 +394,23 @@ class PyDreoAC(PyDreoBaseDevice):
                 self._preset_mode = PRESET_ECO
             else:
                 self._preset_mode = PRESET_NONE
-            _LOGGER.debug("PyDreoAC(%s):handle_server_update - mode: %s --> %s", 
-                          self, 
-                          self._mode, 
-                          target_mode)
+            _LOGGER.debug(
+                "PyDreoAC(%s):handle_server_update - mode: %s --> %s",
+                self,
+                self._mode,
+                target_mode,
+            )
             self._mode = target_mode
 
         val_fan_mode = self.get_server_update_key_value(message, WINDLEVEL_KEY)
         if isinstance(val_fan_mode, int):
             val_fan_mode = DREO_AC_FAN_MODE_MAP[val_fan_mode]
-            _LOGGER.debug("PyDreoAC(%s):handle_server_update - fan_mode: %s --> %s", self, self._fan_mode, val_fan_mode)
+            _LOGGER.debug(
+                "PyDreoAC(%s):handle_server_update - fan_mode: %s --> %s",
+                self,
+                self._fan_mode,
+                val_fan_mode,
+            )
             self._fan_mode = val_fan_mode
 
         val_osc_mode = self.get_server_update_key_value(message, OSCMODE_KEY)
@@ -423,6 +465,8 @@ class PyDreoAC(PyDreoBaseDevice):
         if isinstance(val_work_time, int):
             self.work_time = val_work_time
 
-        val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED)
+        val_temp_target_reached = self.get_server_update_key_value(
+            message, TEMP_TARGET_REACHED
+        )
         if isinstance(val_work_time, int):
             self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"

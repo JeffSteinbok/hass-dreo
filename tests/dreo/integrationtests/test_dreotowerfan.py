@@ -1,13 +1,15 @@
 """Tests for Dreo Fans"""
+
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
 import pytest
-from  .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestDreoTowerFan(IntegrationTestBase):
     """Test PyDreoFan class."""
@@ -20,7 +22,7 @@ class TestDreoTowerFan(IntegrationTestBase):
         assert len(self.pydreo_manager.devices) == 1
         fan = self.pydreo_manager.devices[0]
         assert fan.speed_range == (1, 12)
-        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
         assert fan.oscillating is True
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -28,11 +30,11 @@ class TestDreoTowerFan(IntegrationTestBase):
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'
+            fan.preset_mode = "normal"
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
 
         with pytest.raises(ValueError):
-            fan.preset_mode = 'not_a_mode'
+            fan.preset_mode = "not_a_mode"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 3

@@ -30,7 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     region = "us"
 
     from .pydreo import PyDreo  # pylint: disable=C0415
-    from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
+    from .pydreo.constant import DreoDeviceType  # pylint: disable=C0415
 
     pydreo_manager = PyDreo(username, password, region)
     pydreo_manager.auto_reconnect = auto_reconnect
@@ -50,34 +50,38 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     _LOGGER.debug("Checking for supported installed device types")
     device_types = set()
     for device in pydreo_manager.devices:
-        device_types.add(device.type)   
+        device_types.add(device.type)
     _LOGGER.debug("Device types found are: %s", device_types)
     _LOGGER.info("%d Dreo devices found", len(pydreo_manager.devices))
 
     platforms = set()
-    if (DreoDeviceType.TOWER_FAN in device_types or 
-        DreoDeviceType.AIR_CIRCULATOR in device_types or
-        DreoDeviceType.AIR_PURIFIER in device_types or
-        DreoDeviceType.CEILING_FAN in device_types):
+    if (
+        DreoDeviceType.TOWER_FAN in device_types
+        or DreoDeviceType.AIR_CIRCULATOR in device_types
+        or DreoDeviceType.AIR_PURIFIER in device_types
+        or DreoDeviceType.CEILING_FAN in device_types
+    ):
         platforms.add(Platform.FAN)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if (DreoDeviceType.HEATER in device_types or 
-        DreoDeviceType.AIR_CONDITIONER in device_types):
+    if (
+        DreoDeviceType.HEATER in device_types
+        or DreoDeviceType.AIR_CONDITIONER in device_types
+    ):
         platforms.add(Platform.CLIMATE)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if (DreoDeviceType.HUMIDIFIER in device_types):
+    if DreoDeviceType.HUMIDIFIER in device_types:
         platforms.add(Platform.HUMIDIFIER)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if (DreoDeviceType.CHEF_MAKER in device_types):
+    if DreoDeviceType.CHEF_MAKER in device_types:
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
@@ -100,6 +104,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     config_entry.async_on_unload(config_entry.add_update_listener(_update_listener))
 
     return True
+
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""

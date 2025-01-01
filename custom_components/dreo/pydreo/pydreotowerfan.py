@@ -3,12 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import (
-    LOGGER_NAME,
-    SHAKEHORIZON_KEY,
-    SHAKEHORIZONANGLE_KEY,
-    SPEED_RANGE
-)
+from .constant import LOGGER_NAME, SHAKEHORIZON_KEY, SHAKEHORIZONANGLE_KEY, SPEED_RANGE
 
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
@@ -22,17 +17,22 @@ if TYPE_CHECKING:
 class PyDreoTowerFan(PyDreoFanBase):
     """Base class for Dreo Fan API Calls."""
 
-    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(
+        self,
+        device_definition: DreoDeviceDetails,
+        details: Dict[str, list],
+        dreo: "PyDreo",
+    ):
         """Initialize air devices."""
         super().__init__(device_definition, details, dreo)
-        
+
         self._speed_range = None
-        if (device_definition.device_ranges is not None):
+        if device_definition.device_ranges is not None:
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
-        if (self._speed_range is None):
+        if self._speed_range is None:
             self._speed_range = self.parse_speed_range(details)
         self._preset_modes = device_definition.preset_modes
-        if (self._preset_modes is None):
+        if self._preset_modes is None:
             self._preset_modes = self.parse_preset_modes(details)
 
         self._shakehorizon = None
@@ -47,24 +47,24 @@ class PyDreoTowerFan(PyDreoFanBase):
                 speed_range = (speed_low, speed_high)
                 return speed_range
         return None
-    
+
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         preset_modes = []
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             control = controls_conf.get("control", None)
-            if (control is not None):
+            if control is not None:
                 for control_item in control:
-                    if (control_item.get("type", None) == "Mode"):
+                    if control_item.get("type", None) == "Mode":
                         for mode_item in control_item.get("items", None):
                             text = self.get_mode_string(mode_item.get("text", None))
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
-            if (schedule is not None):
+            if schedule is not None:
                 modes = schedule.get("modes", None)
-                if (modes is not None):
+                if modes is not None:
                     for mode_item in modes:
                         text = self.get_mode_string(mode_item.get("title", None))
                         value = mode_item.get("value", None)
@@ -72,7 +72,7 @@ class PyDreoTowerFan(PyDreoFanBase):
                             preset_modes.append((text, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (len(preset_modes) == 0):
+        if len(preset_modes) == 0:
             _LOGGER.debug("PyDreoFan:No preset modes detected")
             preset_modes = None
         _LOGGER.debug("PyDreoFan:Detected preset modes - %s", preset_modes)
@@ -87,14 +87,15 @@ class PyDreoTowerFan(PyDreoFanBase):
 
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
-
         """Enable or disable oscillation"""
         _LOGGER.debug("PyDreoFan:oscillating.setter")
 
         if self._shakehorizon is not None:
             self._send_command(SHAKEHORIZON_KEY, value)
         else:
-            raise NotImplementedError("Attempting to set oscillating on a device that doesn't support.")
+            raise NotImplementedError(
+                "Attempting to set oscillating on a device that doesn't support."
+            )
 
     @property
     def shakehorizonangle(self) -> int:
@@ -107,7 +108,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         """Set the oscillation angle."""
         _LOGGER.debug("PyDreoFan:shakehorizonangle.setter")
         if self._shakehorizonangle is not None:
-            self._send_command(SHAKEHORIZONANGLE_KEY, value)            
+            self._send_command(SHAKEHORIZONANGLE_KEY, value)
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -115,7 +116,9 @@ class PyDreoTowerFan(PyDreoFanBase):
         super().update_state(state)
 
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
-        self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
+        self._shakehorizonangle = self.get_state_update_value(
+            state, SHAKEHORIZONANGLE_KEY
+        )
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -126,6 +129,8 @@ class PyDreoTowerFan(PyDreoFanBase):
         if isinstance(val_shakehorizon, bool):
             self._shakehorizon = val_shakehorizon
 
-        val_shakehorizonangle = self.get_server_update_key_value(message, SHAKEHORIZONANGLE_KEY)
+        val_shakehorizonangle = self.get_server_update_key_value(
+            message, SHAKEHORIZONANGLE_KEY
+        )
         if isinstance(val_shakehorizonangle, int):
             self._shakehorizonangle = val_shakehorizonangle

@@ -4,6 +4,7 @@ This tests all requests made by the pydreo library with pytest.
 All tests inherit from the TestBase class which contains the fixtures
 and methods needed to run the tests.
 """
+
 # import utils
 import logging
 from .testbase import TestBase
@@ -11,6 +12,7 @@ from .testbase import TestBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestGeneralAPI(TestBase):
     """General API testing class for login() and get_devices()."""
@@ -29,7 +31,12 @@ class TestGeneralAPI(TestBase):
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
         assert self.pydreo_manager.devices[0].speed_range == (1, 5)
-        assert self.pydreo_manager.devices[0].preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert self.pydreo_manager.devices[0].preset_modes == [
+            "normal",
+            "natural",
+            "sleep",
+            "auto",
+        ]
 
     def test_load_devices_unknown(self):
         """Test get_devices() method request and API response."""

@@ -1,4 +1,5 @@
 """Constants for the PyDreo library."""
+
 from enum import Enum, IntEnum, StrEnum
 
 LOGGER_NAME = "pydreo"
@@ -92,12 +93,15 @@ DREO_APIS = {
     DREO_API_SETTING_PUT: {
         DREO_API_PATH: "/api/user-device/setting",
         DREO_API_METHOD: "put",
-    }
+    },
 }
+
 
 class DreoDeviceSetting(StrEnum):
     """Dreo device settings"""
+
     FAN_TEMP_OFFSET = "kHafFanTempOffsetKey"
+
 
 DREO_AUTH_REGION_NA = "NA"
 DREO_AUTH_REGION_EU = "EU"
@@ -110,44 +114,22 @@ HEATER_MODE_HOTAIR = "hotair"
 HEATER_MODE_ECO = "eco"
 HEATER_MODE_OFF = "off"
 
-MODE_LEVEL_MAP = {
-    "H1" : 1,
-    "H2" : 2,
-    "H3" : 3
-}
+MODE_LEVEL_MAP = {"H1": 1, "H2": 2, "H3": 3}
 
-LEVEL_MODE_MAP = {
-    1 : "H1",
-    2 : "H2",
-    3 : "H3"
-}
+LEVEL_MODE_MAP = {1: "H1", 2: "H2", 3: "H3"}
 
 HEATER_MODES = [
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
     HEATER_MODE_ECO,
-    HEATER_MODE_OFF
+    HEATER_MODE_OFF,
 ]
 
-AC_ECO_LEVEL_MAP = {
-    1 : "10%",
-    2 : "20%",
-    3 : "30%"
-}
+AC_ECO_LEVEL_MAP = {1: "10%", 2: "20%", 3: "30%"}
 
-OSCANGLE_ANGLE_MAP = {
-    "Oscillate" : 0,
-    "60°" : 60,
-    "90°" : 90,
-    "120°" : 120
-}
+OSCANGLE_ANGLE_MAP = {"Oscillate": 0, "60°": 60, "90°": 90, "120°": 120}
 
-ANGLE_OSCANGLE_MAP = {
-    0: "Oscillate",
-    60 : "60°",
-    90 : "90°",
-    120 : "120°"
-}
+ANGLE_OSCANGLE_MAP = {0: "Oscillate", 60: "60°", 90: "90°", 120: "120°"}
 
 HORIZONTAL_OSCILLATION_KEY = "hoscon"
 HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
@@ -173,26 +155,33 @@ TARGET_TEMP_RANGE = "target_temp_range"
 TARGET_TEMP_RANGE_ECO = "target_temp_range_eco"
 HUMIDITY_RANGE = "humidity_range"
 
+
 class TemperatureUnit(Enum):
     """Valid possible temperature units."""
+
     CELCIUS = 0
     FAHRENHEIT = 1
+
 
 # Fan oscillation modes
 class OscillationMode(IntEnum):
     """Possible oscillation modes.  These are bitwise flags."""
-    OFF = 0,
-    HORIZONTAL = 1,
-    VERTICAL = 2,
+
+    OFF = (0,)
+    HORIZONTAL = (1,)
+    VERTICAL = (2,)
     BOTH = 3
+
 
 # Heater oscillation modes
 class HeaterOscillationAngles(StrEnum):
     """Possible Heater oscillation angles"""
+
     OSC = "Oscillate"
-    SIXTY = "60°",
-    NINETY = "90°",
+    SIXTY = ("60°",)
+    NINETY = ("90°",)
     ONE_TWENTY = "120°"
+
 
 #
 # The following is copied from homeassistant.components.climate
@@ -216,6 +205,7 @@ PRESET_NONE = "none"
 
 # Device is running an energy-saving mode
 PRESET_ECO = "eco"
+
 
 class HVACMode(StrEnum):
     """HVAC mode for climate devices."""
@@ -242,6 +232,7 @@ class HVACMode(StrEnum):
     # Only the fan is on, not fan and another mode like cool
     FAN_ONLY = "fan_only"
 
+
 FAN_MODE_STRINGS = {
     "device_fans_mode_straight": "normal",
     "device_fans_mode_natural": "natural",
@@ -253,11 +244,13 @@ FAN_MODE_STRINGS = {
     "base_reverse": "reverse",
     "device_control_custom": "custom",
     "fan_2in1_breeze": "2-in-1 Breeze Mode",
-    "device_control_mode_manual": "manual"
+    "device_control_mode_manual": "manual",
 }
+
 
 class DreoDeviceType(StrEnum):
     """Product names for Dreo devices"""
+
     TOWER_FAN = "Tower Fan"
     AIR_CIRCULATOR = "Air Circulator"
     AIR_PURIFIER = "Air Purifier"

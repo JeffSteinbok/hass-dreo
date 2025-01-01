@@ -1,23 +1,24 @@
 """Support for Dreo ChefMaker cookers."""
+
 from __future__ import annotations
 
 import logging
 from typing import Any
 
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 
 from .dreobasedevice import DreoBaseDeviceHA
-from .const import (
-    LOGGER
-)
+from .const import LOGGER
 
 from .pydreo.pydreochefmaker import PyDreoChefMaker
 
 _LOGGER = logging.getLogger(LOGGER)
 
+
 class DreoChefMakerHA(DreoBaseDeviceHA, SwitchEntity):
     """Representation of a Dreo chefmaker."""
-    # Note that these are implemented as Switches, as there is no 
+
+    # Note that these are implemented as Switches, as there is no
     # platform in HA that matches this device.
 
     def __init__(self, pyDreoChefMaker: PyDreoChefMaker):

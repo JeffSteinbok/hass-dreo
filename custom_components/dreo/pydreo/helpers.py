@@ -116,18 +116,16 @@ class Helpers:
         """Make API calls by passing endpoint, header and body."""
         response = None
         status_code = None
-        r = None # Response object
+        r = None  # Response object
         try:
             _LOGGER.debug("=======call_api=============================")
             _LOGGER.debug("[%s] calling '%s' api", method, api)
             _LOGGER.debug("API call URL: \n  %s%s", url, api)
             _LOGGER.debug(
-                "API call headers: \n  %s", Helpers.redactor(
-                    json.dumps(headers))
+                "API call headers: \n  %s", Helpers.redactor(json.dumps(headers))
             )
             _LOGGER.debug(
-                "API call json: \n  %s", Helpers.redactor(
-                    json.dumps(json_object))
+                "API call json: \n  %s", Helpers.redactor(json.dumps(json_object))
             )
             if method.lower() == "get":
                 r = requests.get(
@@ -164,7 +162,7 @@ class Helpers:
         return response, status_code
 
     @staticmethod
-    def     code_check(reponse_dict: dict) -> bool:
+    def code_check(reponse_dict: dict) -> bool:
         """Test if code == 0 for successful API call."""
         if reponse_dict is None:
             _LOGGER.error("No response from API")
@@ -179,7 +177,7 @@ class Helpers:
         return str(int(time.time() * 1000))
 
     @staticmethod
-    def name_from_value(name_value_list : list[tuple], value) -> str:
+    def name_from_value(name_value_list: list[tuple], value) -> str:
         """Return name from list of tuples."""
         for name, val in name_value_list:
             if val == value:
@@ -187,7 +185,7 @@ class Helpers:
         return None
 
     @staticmethod
-    def value_from_name(name_value_list : list[tuple], name) -> any:
+    def value_from_name(name_value_list: list[tuple], name) -> any:
         """Return value from list of tuples."""
         for n, val in name_value_list:
             if n == name:
@@ -195,6 +193,6 @@ class Helpers:
         return None
 
     @staticmethod
-    def get_name_list(name_value_list : list[tuple]) -> list[str]:
+    def get_name_list(name_value_list: list[tuple]) -> list[str]:
         """Return list of names from list of tuples."""
         return [name for name, _ in name_value_list]

@@ -1,7 +1,9 @@
 """PyDreo Test Defaults"""
+
 from requests.structures import CaseInsensitiveDict
 
-from .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
+
 
 class Defaults:
     """General defaults for API responses and requests.
@@ -33,18 +35,18 @@ class Defaults:
         Default device macid created from "dev_type-MACID"
     """
 
-    token = 'sample_tk'
-    account_id = 'sample_id'
+    token = "sample_tk"
+    account_id = "sample_id"
     trace_id = "TRACE_ID"
     active_time = 1
     brightness = 100
     color_temp = 100
     bool_toggle = True
-    str_toggle = 'on'
+    str_toggle = "on"
     bin_toggle = 1
 
     @staticmethod
-    def name(dev_type: str = 'NA'):
+    def name(dev_type: str = "NA"):
         """Name of device with format f"{dev_type}-NAME".
 
         Parameters
@@ -57,10 +59,10 @@ class Defaults:
         str
             Default name for device f"dev_type-NAME"
         """
-        return f'{dev_type}-NAME'
+        return f"{dev_type}-NAME"
 
     @staticmethod
-    def cid(dev_type='NA'):
+    def cid(dev_type="NA"):
         """CID for a device with format f"{dev_type}-CID".
 
         Parameters
@@ -73,10 +75,10 @@ class Defaults:
         str
             Default cid for device f"dev_type-CID"
         """
-        return f'{dev_type}-CID'
+        return f"{dev_type}-CID"
 
     @staticmethod
-    def uuid(dev_type='NA'):
+    def uuid(dev_type="NA"):
         """UUID for a device with format f"{dev_type}-UUID".
 
         Parameters
@@ -89,10 +91,10 @@ class Defaults:
         str
             Default uuid for device f"{dev_type}-UUID"
         """
-        return f'{dev_type}-UUID'
+        return f"{dev_type}-UUID"
 
     @staticmethod
-    def macid(dev_type='NA'):
+    def macid(dev_type="NA"):
         """MACID for a device with format f"{dev_type}-MACID".
 
         Parameters
@@ -105,19 +107,20 @@ class Defaults:
         str
             Default macID for device f"{dev_type}-MACID"
         """
-        return f'{dev_type}-MACID'
+        return f"{dev_type}-MACID"
 
 
-API_DEFAULTS = CaseInsensitiveDict({
-    'accountID': Defaults.account_id,
-    'token': Defaults.token,
-    "tk": Defaults.token,
-    "traceId": "TRACE_ID",
-    'verifyEmail': 'EMAIL',
-    'nickName': 'NICKNAME',
-    'password': 'PASSWORD',
-    'username': 'EMAIL',
-    'email': 'EMAIL',
-    'deviceName': 'NAME'
-
-})
+API_DEFAULTS = CaseInsensitiveDict(
+    {
+        "accountID": Defaults.account_id,
+        "token": Defaults.token,
+        "tk": Defaults.token,
+        "traceId": "TRACE_ID",
+        "verifyEmail": "EMAIL",
+        "nickName": "NICKNAME",
+        "password": "PASSWORD",
+        "username": "EMAIL",
+        "email": "EMAIL",
+        "deviceName": "NAME",
+    }
+)
