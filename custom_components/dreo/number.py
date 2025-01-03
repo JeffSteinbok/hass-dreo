@@ -53,9 +53,11 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         key="Target Temperature",
         translation_key="target_temp",
         attr_name="ecolevel",
-        icon="mdi:temperature",
+        native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
+        icon="mdi:thermometer",
         min_value=0,
-        max_value=100
+        max_value=100,
+        device_class=NumberDeviceClass.TEMPERATURE,
     ),
     DreoNumberEntityDescription(
         key="Horizontal Oscillation Angle Left",
@@ -122,12 +124,16 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
 
                 device_range = get_device_range(pydreo_device, number_definition)
                 if device_range is not None and isinstance(device_range, tuple):
-                    dned = DreoNumberEntityDescription(key=number_definition.key,
-                                                       translation_key=number_definition.translation_key,
-                                                       attr_name=number_definition.attr_name,
-                                                       icon=number_definition.icon,
-                                                       min_value=device_range[0],
-                                                       max_value=device_range[1])
+                    dned = DreoNumberEntityDescription(
+                        key=number_definition.key,
+                        translation_key=number_definition.translation_key,
+                        attr_name=number_definition.attr_name,
+                        icon=number_definition.icon,
+                        min_value=device_range[0],
+                        max_value=device_range[1],
+                        device_class=number_definition.device_class,
+                        native_unit_of_measurement=number_definition.native_unit_of_measurement,
+                    )
                     number_ha_collection.append(DreoNumberHA(pydreo_device, dned))
                 else:
                     number_ha_collection.append(DreoNumberHA(pydreo_device,number_definition))
@@ -182,6 +188,8 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-m
         self._attr_native_min_value = description.min_value
         self._attr_native_max_value = description.max_value
         self._attr_native_step = description.step
+        self._attr_native_unit_of_measurement = description.native_unit_of_measurement
+        self._device_class_name = description.device_class
 
     @property
     def native_value(self) -> float:

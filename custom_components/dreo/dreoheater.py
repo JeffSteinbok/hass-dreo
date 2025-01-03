@@ -49,7 +49,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     """Representation of a Dreo heater as a climate entity."""
 
     _attr_precision = PRECISION_WHOLE
-    _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT  # TODO
+    _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
     _attr_target_temperature = None
     _attr_current_temperature = None
     _attr_fan_mode = None
@@ -153,7 +153,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the heater."""
         return {
-            "current_temperature": self.device.temperature,
             "model": self.device.model,
             "htalevel": self.device.htalevel,
         }
