@@ -59,9 +59,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         translation_key="temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement_fn=lambda device: UnitOfTemperature.CELSIUS
-        if (device.temperature_units == TemperatureUnit.CELCIUS)
-        else UnitOfTemperature.FAHRENHEIT,
+        native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
         value_fn=lambda device: device.temperature,
         exists_fn=lambda device: device.is_feature_supported("temperature"),
     ),
