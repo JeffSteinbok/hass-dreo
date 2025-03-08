@@ -34,7 +34,8 @@ from homeassistant.helpers.selector import (
 from homeassistant.helpers.entity import (
     DeviceInfo,
     Entity,
-    EntityDescription
+    EntityDescription,
+    EntityCategory,
 )
 
 from homeassistant.util.percentage import (
@@ -59,6 +60,11 @@ from homeassistant.components.climate import (
 from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription
+)
+
+from homeassistant.components.button import (
+    ButtonEntity,
+    ButtonEntityDescription
 )
 
 from homeassistant.components.sensor import (

@@ -76,6 +76,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
+        platforms.add(Platform.BUTTON)
 
     if (DreoDeviceType.CHEF_MAKER in device_types):
         platforms.add(Platform.SENSOR)

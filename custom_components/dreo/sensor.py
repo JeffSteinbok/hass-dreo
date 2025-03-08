@@ -18,7 +18,9 @@ from .pydreo.constant import (
     TemperatureUnit,
     HUMIDITY_KEY,
     MODE_KEY,
-    DreoDeviceType
+    DreoDeviceType,
+    FILTER_TIME_KEY,
+    WORK_TIME_KEY,
 )
 
 from .haimports import *  # pylint: disable=W0401,W0614
@@ -30,7 +32,6 @@ from .const import (
 )
 
 from .pydreo.pydreoairconditioner import (
-    WORK_TIME,
     TEMP_TARGET_REACHED,
 )
 
@@ -81,7 +82,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "h",
         value_fn=lambda device: device.work_time,
-        exists_fn=lambda device: device.is_feature_supported(WORK_TIME),
+        exists_fn=lambda device: device.is_feature_supported(WORK_TIME_KEY),
     ),
     DreoSensorEntityDescription(
         key="Target temp reached",
@@ -98,6 +99,15 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="Filter Life",
+        translation_key="filter_life",
+        device_class=SensorDeviceClass.BATTERY,  # BATTERY is commonly used for consumable life percentage
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.filter_time,
+        exists_fn=lambda device: device.is_feature_supported(FILTER_TIME_KEY),
     )
 )
 
@@ -124,6 +134,12 @@ async def async_setup_entry(
         if pydreo_device.type == DreoDeviceType.HEATER:
             # Really ugly hack since there is just one sensor for now...
             sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[0]))
+
+        if pydreo_device.type == DreoDeviceType.HUMIDIFIER:
+            # Really ugly hack since there is just one sensor for now...
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[1]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[2]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[5]))
 
         if pydreo_device.type == DreoDeviceType.AIR_CONDITIONER:
             # Really ugly hack...

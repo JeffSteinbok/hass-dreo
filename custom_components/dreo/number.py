@@ -97,7 +97,36 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         min_value=30,
         max_value=120,
         step = 30
-    )
+    ),
+    DreoNumberEntityDescription(
+        key="Min Target Humidity",
+        translation_key="min_target_humidity",
+        attr_name="min_humidity_target",
+        icon="mdi:water-percent-alert",
+        min_value=15,
+        max_value=85,
+        entity_category=EntityCategory.CONFIG,
+        native_unit_of_measurement="%"
+    ),
+    DreoNumberEntityDescription(
+        key="Max Target Humidity",
+        translation_key="max_target_humidity",
+        attr_name="max_humidity_target",
+        icon="mdi:water-percent",
+        min_value=15,
+        max_value=85,
+        entity_category=EntityCategory.CONFIG,
+        native_unit_of_measurement="%"
+    ),
+    DreoNumberEntityDescription(
+        key="Fog Level",
+        translation_key="fog_level",
+        attr_name="fog_level",
+        icon="mdi:water",
+        min_value=1,
+        max_value=6,
+        step=1,
+    ),
 )
 
 

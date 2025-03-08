@@ -284,5 +284,10 @@ SUPPORTED_DEVICES = {
         cooking_range=COOKING_RANGES,
     ),
 
+    "DR-HHM005S": DreoDeviceDetails(
+        device_type=DreoDeviceType.HUMIDIFIER,
+        preset_modes=[("manual", 0), ("auto", 1), ("sleep", 2)]
+    ),
+
     "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER),
 }

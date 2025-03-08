@@ -43,6 +43,12 @@ TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
 TARGET_AUTO_HUMIDITY_KEY = "rhautolevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
+FILTERON_KEY = "filteron"
+FILTER_TIME_KEY = "filtertime"
+TARGET_SLEEP_HUMIDITY_KEY = "rhsleeplevel"
+FOG_LEVEL_KEY = "foglevel"
+WORK_TIME_KEY = "worktime"
+RGBTH_KEY = "rgbth"
 
 # Preferences Names
 # It's possible we should switch to IDs instead of names
