@@ -231,21 +231,21 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     ### Implementation of climate methods
     @property
-    def current_temperature(self) -> float:
+    def current_temperature(self) -> int:
         return self.device.temperature
 
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         if self._attr_hvac_mode == HVACMode.AUTO:
-            self.device.ecolevel = self._attr_target_temperature = kwargs.get(
+            self.device.ecolevel = self._attr_target_temperature = int(kwargs.get(
                 ATTR_TEMPERATURE
-            )
+            ))
         else:
             self._attr_target_temperature = 4  # self.device.temperature
             self.schedule_update_ha_state()
 
     @property
-    def target_temperature(self) -> float | None:
+    def target_temperature(self) -> int | None:
         return (
             self.device.ecolevel
             if self._attr_hvac_mode == HVACMode.AUTO
@@ -253,11 +253,11 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         )
 
     @property
-    def min_temp(self) -> float | None:
+    def min_temp(self) -> int | None:
         return self.device.device_definition.device_ranges[ECOLEVEL_RANGE][0]
 
     @property
-    def max_temp(self) -> float | None:
+    def max_temp(self) -> int | None:
         return self.device.device_definition.device_ranges[ECOLEVEL_RANGE][1]
 
     @property
