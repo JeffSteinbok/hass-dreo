@@ -116,3 +116,6 @@ ignore
 
 # IntelliJ projects
 **/*.iml
+
+# Mac-specific files
+**/.DS_Store
