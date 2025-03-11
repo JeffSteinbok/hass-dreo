@@ -87,6 +87,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="ledpotkepton",
         icon="mdi:led-on",
     ),
+    DreoSwitchEntityDescription(
+        key="Filter",
+        translation_key="filter_on",
+        attr_name="filter_on",
+        icon="mdi:filter",
+    ),  
     DreoSwitchEntityDescription(    
         key="Light",
         translation_key="light",

@@ -30,7 +30,8 @@ from .constant import (
     FAN_MEDIUM,
     FAN_HIGH,
     PRESET_NONE,
-    PRESET_ECO
+    PRESET_ECO,
+    WORK_TIME_KEY
 )
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
@@ -61,7 +62,6 @@ DREO_AC_FAN_MODE_MAP = {
 AC_OSC_ON = 2
 AC_OSC_OFF = 0
 
-WORK_TIME = "worktime"
 TEMP_TARGET_REACHED = "reachtarget"
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -324,7 +324,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
-        self.work_time = self.get_state_update_value(state, WORK_TIME)
+        self.work_time = self.get_state_update_value(state, WORK_TIME_KEY)
         self.temp_target_reached = "Yes" if self.get_state_update_value(state, TEMP_TARGET_REACHED) > 0 else "No"
         # TODO ecopauserate
 
@@ -419,7 +419,7 @@ class PyDreoAC(PyDreoBaseDevice):
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
 
-        val_work_time = self.get_server_update_key_value(message, WORK_TIME)
+        val_work_time = self.get_server_update_key_value(message, WORK_TIME_KEY)
         if isinstance(val_work_time, int):
             self.work_time = val_work_time
 

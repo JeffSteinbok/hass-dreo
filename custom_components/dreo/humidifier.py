@@ -97,7 +97,7 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         return self.device.mode
 
     @property
-    def available_modes(self) -> int:
+    def available_modes(self) -> list[str]:
         """Return the list of supported modes."""
         return self.device.modes
 
@@ -108,8 +108,23 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     
     @property
     def target_humidity(self) -> float:
-        """Return the humidity level we try to reach."""
+        """Return the humidity level we try to reach based on current mode."""
+        current_mode = self.mode
+        if current_mode == "manual":
+            return None
+        elif current_mode == "sleep":
+            return self.device.target_humidity_sleep
         return self.device.target_humidity
+
+    @property
+    def min_humidity(self) -> float:
+        """Return the minimum target humidity."""
+        return self.device.min_humidity_target
+
+    @property
+    def max_humidity(self) -> float:
+        """Return the maximum target humidity."""
+        return self.device.max_humidity_target
     
     def turn_on(self, **kwargs: any) -> None:
         """Turn the device on."""
@@ -142,4 +157,14 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         _LOGGER.debug(
             "DreoHumidiferHA:set_humidity(%s) --> %s", self.device.name, humidity
         )
-        self.device.target_humidity = humidity
+        
+        current_mode = self.device.mode
+        if current_mode == "manual":
+            _LOGGER.warning(
+                "Cannot set humidity in manual mode. Use the fog level entity to control mist output."
+            )
+            return
+        elif current_mode == "sleep":
+            self.device.target_humidity_sleep = humidity
+        else:
+            self.device.target_humidity = humidity
