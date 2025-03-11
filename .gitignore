@@ -119,3 +119,6 @@ ignore
 
 # Home assistant development configs
 config/
+
+# Mac-specific files
+**/.DS_Store
