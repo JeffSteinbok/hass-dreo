@@ -199,14 +199,13 @@ SUPPORTED_DEVICES = {
     "DR-HSH017S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
+        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
             HEATER_MODE_OFF,
         ],
-        swing_modes=[SWING_OFF, SWING_ON],
     ),    
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH719S": DreoDeviceDetails(
