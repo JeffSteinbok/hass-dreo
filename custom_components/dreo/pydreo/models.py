@@ -206,6 +206,7 @@ SUPPORTED_DEVICES = {
             HEATER_MODE_ECO,
             HEATER_MODE_OFF,
         ],
+        swing_modes=[],
     ),    
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH719S": DreoDeviceDetails(
