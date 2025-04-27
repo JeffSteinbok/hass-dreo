@@ -41,6 +41,7 @@ The following fans types are supported. Not all variants have been tested.
 | Air Circulators | DR-HAF, DR-HPF | |
 | Ceiling Fans | DR-HCF | |
 | Air Purifiers | DR-HAP | |
+| Air Conditioners | DR-HAC | |
 
 Models that have been specifically tested can be found below.
 
