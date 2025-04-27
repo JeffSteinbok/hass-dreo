@@ -124,7 +124,7 @@ SUPPORTED_DEVICES = {
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),
 
     # Air Purifiers
-    "DR-HAP003S": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
+    "DR-HAP": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
 
     # Heaters
     "DR-HSH017BS": DreoDeviceDetails(
