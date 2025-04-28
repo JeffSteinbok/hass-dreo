@@ -109,6 +109,8 @@ class PyDreoFanBase(PyDreoBaseDevice):
     @property
     def preset_modes(self) -> list[str]:
         """Get the list of preset modes"""
+        if self._preset_modes is None:
+            return None
         return Helpers.get_name_list(self._preset_modes)
     
     @property
