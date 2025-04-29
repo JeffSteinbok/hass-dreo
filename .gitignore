@@ -117,5 +117,8 @@ ignore
 # IntelliJ projects
 **/*.iml
 
+# Home assistant development configs
+config/
+
 # Mac-specific files
 **/.DS_Store
