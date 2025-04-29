@@ -18,6 +18,7 @@ from .pydreo.constant import (
     TemperatureUnit,
     HUMIDITY_KEY,
     MODE_KEY,
+    PM25_KEY,
     DreoDeviceType
 )
 
@@ -96,6 +97,15 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="pm25",
+        translation_key="pm25",
+        device_class=SensorDeviceClass.PM25,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.pm25,
+        exists_fn=lambda device: device.is_feature_supported(PM25_KEY),
     )
 )
 
