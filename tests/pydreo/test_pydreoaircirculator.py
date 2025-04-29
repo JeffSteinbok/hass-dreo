@@ -66,3 +66,19 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.horizontally_oscillating is not None
         assert fan.horizontally_oscillating is False
         assert fan.oscillating is not None
+
+
+    def test_HPF008S(self): # pylint: disable=invalid-name
+        """Test HAF001S fan."""
+        self.get_devices_file_name = "get_devices_HPF008S.json"
+        self.pydreo_manager.load_devices()
+
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan : PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        assert fan.speed_range == (1, 9)
+        assert fan.preset_modes == None
+        assert fan.horizontally_oscillating is True
+        assert fan.oscillating is True
+        assert fan.temperature == 78

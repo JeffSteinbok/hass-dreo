@@ -36,19 +36,19 @@ class PyDreoAirCirculator(PyDreoFanBase):
         super().__init__(device_definition, details, dreo)
 
         self._horizontal_angle_range = None
-        if device_definition.device_ranges is not None:
+        if device_definition.device_ranges is not None and HORIZONTAL_ANGLE_RANGE in device_definition.device_ranges:
             self._horizontal_angle_range = device_definition.device_ranges[HORIZONTAL_ANGLE_RANGE]
         if self._horizontal_angle_range is None:
             self._horizontal_angle_range = self.parse_swing_angle_range(details, "hor")
 
         self._vertical_angle_range = None
-        if device_definition.device_ranges is not None:
+        if device_definition.device_ranges is not None and VERTICAL_ANGLE_RANGE in device_definition.device_ranges:
             self._vertical_angle_range = device_definition.device_ranges[VERTICAL_ANGLE_RANGE]
         if self._vertical_angle_range is None:
             self._vertical_angle_range = self.parse_swing_angle_range(details, "ver")
 
         self._speed_range = None
-        if (device_definition.device_ranges is not None):
+        if device_definition.device_ranges is not None and SPEED_RANGE in device_definition.device_ranges:
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)
