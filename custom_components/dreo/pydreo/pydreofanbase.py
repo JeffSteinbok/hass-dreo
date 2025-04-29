@@ -13,6 +13,7 @@ from .constant import (
     WIND_MODE_KEY,
     LIGHTSENSORON_KEY,
     MUTEON_KEY,
+    PM25_KEY,
     TemperatureUnit,
     SPEED_RANGE,
     DreoDeviceSetting,
@@ -37,7 +38,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         super().__init__(device_definition, details, dreo)
         
         self._speed_range = None
-        if (device_definition.device_ranges is not None):
+        # Check if the device has a speed range defined in the device definition
+        # If not, parse the speed range from the details
+        if device_definition.device_ranges is not None and SPEED_RANGE in device_definition.device_ranges:
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)
@@ -61,6 +64,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._voice_on = None
         self._light_sensor_on = None
         self._mute_on = None
+        self._pm25 = None
 
     def parse_speed_range(self, details: Dict[str, list]) -> tuple[int, int]:
         """Parse the speed range from the details."""
@@ -275,6 +279,24 @@ class PyDreoFanBase(PyDreoBaseDevice):
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set panel_sound on a device that doesn't support.")
 
+    @property
+    def pm25(self) -> int:
+        """Get the PM2.5 value"""
+        if self._pm25 is not None:
+            return self._pm25
+        return None
+
+    @pm25.setter
+    def pm25(self, value: int) -> None:
+        """Set the PM2.5 value"""
+        _LOGGER.debug("PyDreoFanBase:pm25.setter")
+
+        if self._pm25 is not None:
+            self._send_command(PM25_KEY, value)
+        else:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set pm25 on a device that doesn't support.")
+
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("PyDreoFanBase:update_state")
@@ -291,6 +313,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._wind_mode = self.get_state_update_value(state, WIND_MODE_KEY)
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
+        self._pm25 = self.get_state_update_value(state, PM25_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -333,3 +356,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_mute, bool):
             self._mute_on = val_mute
+
+        val_pm25 = self.get_server_update_key_value(message, PM25_KEY)
+        if isinstance(val_pm25, int):
+            self._pm25 = val_pm25
