@@ -149,6 +149,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         """There seems to be a bug in HA fan entity where it does call into preset_mode even if the
         preset_mode is not supported.  So we need to check if the preset mode is supported before
         returning the value."""
+        if self._preset_modes is None:
+            return None
+        
         mode = self._wind_mode
         if mode is None:
             mode = self._wind_type

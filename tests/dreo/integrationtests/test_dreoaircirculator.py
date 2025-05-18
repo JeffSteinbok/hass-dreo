@@ -84,3 +84,6 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.is_on is False
             assert ha_fan.speed_count == 9
             assert not(ha_fan.supported_features & FanEntityFeature.PRESET_MODE)
+
+            """This shouldn't be needed, but for some reason HA calls this even if preset_mode is not supported."""
+            assert ha_fan.preset_mode is None
