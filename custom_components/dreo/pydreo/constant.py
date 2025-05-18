@@ -176,7 +176,7 @@ HUMIDITY_RANGE = "humidity_range"
 
 class TemperatureUnit(Enum):
     """Valid possible temperature units."""
-    CELCIUS = 0
+    CELSIUS = 0
     FAHRENHEIT = 1
 
 # Fan oscillation modes

@@ -204,7 +204,7 @@ class PyDreoHeater(PyDreoBaseDevice):
             if self._temperature > 50:
                 return TemperatureUnit.FAHRENHEIT
     
-        return TemperatureUnit.CELCIUS
+        return TemperatureUnit.CELSIUS
 
     @property
     def oscon(self) -> bool:
