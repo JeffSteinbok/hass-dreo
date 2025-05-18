@@ -71,3 +71,16 @@ class TestDreoAirCirculator(IntegrationTestBase):
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(switches, ['Adaptive Brightness', 'Horizontally Oscillating', 'Panel Sound', 'Vertically Oscillating'])
                 
+    def test_HPF008S(self):  # pylint: disable=invalid-name
+        """Test HPF008S fan."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+
+            self.get_devices_file_name = "get_devices_HPF008S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+            
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.is_on is False
+            assert ha_fan.speed_count == 9
+            assert not(ha_fan.supported_features & FanEntityFeature.PRESET_MODE)

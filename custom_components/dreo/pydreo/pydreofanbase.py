@@ -146,10 +146,15 @@ class PyDreoFanBase(PyDreoBaseDevice):
     @property
     def preset_mode(self):
         """Return the current preset mode."""
+        """There seems to be a bug in HA fan entity where it does call into preset_mode even if the
+        preset_mode is not supported.  So we need to check if the preset mode is supported before
+        returning the value."""
         mode = self._wind_mode
         if mode is None:
             mode = self._wind_type
-
+        if mode is None:
+            return None
+        
         str_value : str = Helpers.name_from_value(self._preset_modes, mode)
         if (str_value is None):
             return None

@@ -1,0 +1,124 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+      "mixed": {
+        "wifi_rssi": {
+          "state": -52,
+          "timestamp": 1744307665
+        },
+        "poweron": {
+          "state": false,
+          "timestamp": 1745507161
+        },
+        "scheid": {
+          "state": 0,
+          "timestamp": 1744307665
+        },
+        "cruiseconf": {
+          "state": "90,45,-30,-45",
+          "timestamp": 1744307665
+        },
+        "timeron": {
+          "state": {
+            "du": 0,
+            "ts": 1744188137
+          },
+          "timestamp": null
+        },
+        "fixedconf": {
+          "state": "0,0",
+          "timestamp": 1744307665
+        },
+        "scheon": {
+          "state": false,
+          "timestamp": 1744307665
+        },
+        "mode": {
+          "state": 1,
+          "timestamp": 1744723799
+        },
+        "mcuon": {
+          "state": true,
+          "timestamp": 1744307665
+        },
+        "network_latency": {
+          "state": 9,
+          "timestamp": 1744307665
+        },
+        "module_hardware_model": {
+          "state": "HeFi",
+          "timestamp": 1744307665
+        },
+        "mcu_firmware_version": {
+          "state": "0.1.3",
+          "timestamp": 1744307665
+        },
+        "oscmode": {
+          "state": 3,
+          "timestamp": 1744307665
+        },
+        "customconf": {
+          "state": "temp:12222223333334444447777778",
+          "timestamp": 1744307665
+        },
+        "temperature": {
+          "state": 78,
+          "timestamp": 1745822934
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "alignon": {
+          "state": true,
+          "timestamp": 1744307665
+        },
+        "muteon": {
+          "state": true,
+          "timestamp": 1744307665
+        },
+        "lighton": {
+          "state": false,
+          "timestamp": 1744307665
+        },
+        "wifi_ssid": "**REDACTED**",
+        "mcu_hardware_model": {
+          "state": "SC95F8615B/EU",
+          "timestamp": 1744307665
+        },
+        "windlevel": {
+          "state": 2,
+          "timestamp": 1744307665
+        },
+        "wrong": {
+          "state": 0,
+          "timestamp": 1744307665
+        },
+        "module_firmware_version": {
+          "state": "3.4.2",
+          "timestamp": 1744307665
+        },
+        "connected": {
+          "state": true,
+          "timestamp": 1744307665
+        },
+        "timeroff": {
+          "state": {
+            "du": 0,
+            "ts": 1744188137
+          },
+          "timestamp": null
+        },
+        "_ota": {
+          "state": 0,
+          "timestamp": 1744307665
+        },
+        "childlockon": {
+          "state": false,
+          "timestamp": 1744307665
+        }
+      },
+      "sn": "HPF008S_1",
+      "productId": "**REDACTED**",
+      "region": "eu-central-1/emq",
+      "deviceInfo": null
+    }
+}
