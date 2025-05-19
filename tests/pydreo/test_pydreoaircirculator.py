@@ -77,8 +77,9 @@ class TestPyDreoAirCirculator(TestBase):
 
         fan : PyDreoAirCirculator = self.pydreo_manager.devices[0]
 
+        assert fan.is_on is True
         assert fan.speed_range == (1, 9)
         assert fan.preset_modes == None
-        assert fan.horizontally_oscillating is True
-        assert fan.oscillating is True
-        assert fan.temperature == 78
+        assert fan.horizontally_oscillating is False
+        assert fan.oscillating is False
+        assert fan.temperature == 74

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Dict
 from .constant import (
     LOGGER_NAME,
     POWERON_KEY,
+    FANON_KEY,
     WINDLEVEL_KEY,
     TEMPERATURE_KEY,
     LEDALWAYSON_KEY,
@@ -54,6 +55,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
             self._temperature_offset = int(self.get_setting(dreo, DreoDeviceSetting.FAN_TEMP_OFFSET, 0))
 
         self._is_on = False
+        self._power_on_key = None
         self._fan_speed = None
 
         self._wind_type = None
@@ -310,6 +312,20 @@ class PyDreoFanBase(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFanBase:update_state")
         super().update_state(state)
 
+        power_on = self.get_state_update_value(state, POWERON_KEY)
+        if power_on is not None:
+            self._is_on = power_on
+            self._power_on_key = POWERON_KEY
+        else:
+            # If power_on is not in the state, we need to check if the fan is on or off.
+            fan_on = self.get_state_update_value(state, FANON_KEY)
+            if fan_on is not None:
+                self._is_on = fan_on
+                self._power_on_key = FANON_KEY
+            else:
+                _LOGGER.error("Unable to get power on state from state. Check debug logs for more information.")
+                self._power_on_key = None
+                
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
         if self._fan_speed is None:
             _LOGGER.error("Unable to get fan speed from state. Check debug logs for more information.")
@@ -328,10 +344,10 @@ class PyDreoFanBase(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFanBase:handle_server_update")
         super().handle_server_update(message)
 
-        val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        val_poweron = self.get_server_update_key_value(message, self._power_on_key)
         if isinstance(val_poweron, bool):
             self._is_on = val_poweron  # Ensure poweron state is updated
-            _LOGGER.debug("PyDreoFanBase:handle_server_update - poweron is %s", self._is_on)
+            _LOGGER.debug("PyDreoFanBase:handle_server_update - %s is %s", self._power_on_key, self._is_on)
 
         val_wind_level = self.get_server_update_key_value(message, WINDLEVEL_KEY)
         if isinstance(val_wind_level, int):
