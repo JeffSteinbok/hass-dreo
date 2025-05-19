@@ -198,13 +198,13 @@ class PyDreoHeater(PyDreoBaseDevice):
         # I'm not sure how the API returns in other regions, so I'm just auto-detecting
         # based on some reasonable range.
 
-        # Going to return Celcius as the default.  None of this matters if there is no
+        # Going to return Celsius as the default.  None of this matters if there is no
         # temperature returned anyway
         if self._temperature is not None:
             if self._temperature > 50:
                 return TemperatureUnit.FAHRENHEIT
     
-        return TemperatureUnit.CELCIUS
+        return TemperatureUnit.CELSIUS
 
     @property
     def oscon(self) -> bool:

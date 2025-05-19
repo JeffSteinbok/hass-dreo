@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from .constant import (
+    SPEED_RANGE,
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
     HEATER_MODE_ECO,
@@ -119,6 +120,9 @@ SUPPORTED_DEVICES = {
     # Air Circulators
     "DR-HAF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
+    "DR-HPF008S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        device_ranges={SPEED_RANGE: (1, 9)}),
 
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),

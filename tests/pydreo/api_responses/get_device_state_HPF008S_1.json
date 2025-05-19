@@ -1,0 +1,147 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -45,
+        "timestamp": 1745612915
+      },
+      "atmspeed": {
+        "state": 1,
+        "timestamp": 1745612915
+      },
+      "atmcolor": {
+        "state": 65360,
+        "timestamp": 1745619224
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1745612915
+      },
+      "cruiseconf": {
+        "state": "90,60,-30,-60",
+        "timestamp": 1745612915
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1743979402
+        },
+        "timestamp": null
+      },
+      "fixedconf": {
+        "state": "-15,10",
+        "timestamp": 1745612915
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1745612915
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1745612915
+      },
+      "mode": {
+        "state": 1,
+        "timestamp": 1745612915
+      },
+      "lightmode": {
+        "state": 0,
+        "timestamp": 1745612915
+      },
+      "network_latency": {
+        "state": 62,
+        "timestamp": 1745612915
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1745612915
+      },
+      "mcu_firmware_version": {
+        "state": "0.2.9",
+        "timestamp": 1745612915
+      },
+      "customconf": {
+        "state": "temp:23333334444446666668888889",
+        "timestamp": 1745612915
+      },
+      "oscmode": {
+        "state": 0,
+        "timestamp": 1745612915
+      },
+      "temperature": {
+        "state": 74,
+        "timestamp": 1745615623
+      },
+      "module_hardware_mac": "REDACTED",
+      "alignon": {
+        "state": true,
+        "timestamp": 1745612915
+      },
+      "atmmode": {
+        "state": 1,
+        "timestamp": 1745619225
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1745612915
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8615B/US",
+        "timestamp": 1745612915
+      },
+      "wifi_ssid": "REDACTED",
+      "windlevel": {
+        "state": 5,
+        "timestamp": 1745612915
+      },
+      "atmbri": {
+        "state": 1,
+        "timestamp": 1745612915
+      },
+      "module_firmware_version": {
+        "state": "3.6.3",
+        "timestamp": 1745612915
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1745612915
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1745612915
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1743979402
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1745612915
+      },
+      "atmon": {
+        "state": false,
+        "timestamp": 1745619226
+      },
+      "fanon": {
+        "state": true,
+        "timestamp": 1745619216
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1745612915
+      },
+      "tempoffset": {
+        "state": -4,
+        "timestamp": 1745612915
+      }
+    },
+    "sn": "HPF008S_1",
+    "productId": "REDACTED",
+    "region": "us-east-2/emq"
+  }
+}

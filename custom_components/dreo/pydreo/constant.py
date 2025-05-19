@@ -28,6 +28,7 @@ VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
 MUTEON_KEY = "muteon"
+PM25_KEY = "pm25"
 FIXEDCONF_KEY = "fixedconf"
 DEVON_KEY = "devon"
 TIMERON_KEY = "timeron"
@@ -175,7 +176,7 @@ HUMIDITY_RANGE = "humidity_range"
 
 class TemperatureUnit(Enum):
     """Valid possible temperature units."""
-    CELCIUS = 0
+    CELSIUS = 0
     FAHRENHEIT = 1
 
 # Fan oscillation modes
