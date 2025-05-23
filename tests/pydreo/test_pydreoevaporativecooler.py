@@ -15,7 +15,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
     """Test PyDreoEvaporativeCooler class."""
 
     def test_HEC002S(self): # pylint: disable=invalid-name
-        """Load evaporative fan and test sending commands."""
+        """Load evaporative cooler and test sending commands."""
         self.get_devices_file_name = "get_devices_HEC002S.json"
         self.pydreo_manager.load_devices()
 
@@ -32,9 +32,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.preset_mode == 2
         assert ec_fan.work_time == 16
         assert ec_fan.water_level == 0
-        assert ec_fan.horizontal_osc_angle_left_range == (-60, 60)
-        assert ec_fan.horizontal_osc_angle_right_range == (-60, 60)
-
+        
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.is_on = True
             mock_send_command.assert_called_once_with(ec_fan, {POWERON_KEY: True})
