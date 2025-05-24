@@ -99,6 +99,14 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         min_value=30,
         max_value=120,
         step = 30
+    ),
+    DreoNumberEntityDescription(
+        key="Target Humidity",
+        translation_key="target_humidity",
+        attr_name="target_humidity",
+        icon="mdi:water-percent",
+        min_value=40,
+        max_value=90,
     )
 )
 
