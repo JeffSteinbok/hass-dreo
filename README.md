@@ -95,7 +95,7 @@ Models that have been specifically tested can be found below.
 
 - DR-KCM001S
 
-#### Evaporative Coolers
+### Evaporative Coolers
 *Initial beta-level support*
 
 - DR-HEC002S (Beta)
