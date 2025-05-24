@@ -42,6 +42,7 @@ The following fans types are supported. Not all variants have been tested.
 | Ceiling Fans | DR-HCF | |
 | Air Purifiers | DR-HAP | |
 | Air Conditioners | DR-HAC | |
+| Evaporative Coolers | DR-HEC | |
 
 Models that have been specifically tested can be found below.
 
@@ -93,6 +94,11 @@ Models that have been specifically tested can be found below.
 ### Cookers
 
 - DR-KCM001S
+
+#### Tower Fans
+*Initial beta-level support*
+
+- DR-HEC002S (Beta)
 
 Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
 
