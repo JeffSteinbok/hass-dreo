@@ -1,0 +1,206 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "currentPage": 1,
+  "pageSize": 100,
+  "totalNum": 1,
+  "totalPage": 1,
+  "familyRooms": null,
+  "data": {
+    "list": [
+      {
+      "deviceId": "1924380451974754305",
+      "sn": "**REDACTED**",
+      "brand": "Dreo",
+      "model": "DR-HEC002S",
+      "productId": "**REDACTED**",
+      "productName": "Evaporative Cooler",
+      "deviceName": "Verdunstungsk\u00fchler",
+      "shared": false,
+      "series": null,
+      "seriesName": "IceWind 712S",
+      "type": 0,
+      "owner": true,
+      "familyId": null,
+      "familyName": null,
+      "roomId": null,
+      "roomName": null,
+      "roomNameI18Key": "",
+      "color": "b",
+      "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202412/26b695c7c2e4884fe6a4dfa743952e4887.png",
+      "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202412/26841547bbde3248e58c37c7c14e50eae8.png",
+      "widgetAbnormalImage": null,
+      "variantIconMd5": null,
+      "controlsConf": {
+        "template": "DR-HEC002S"
+      },
+      "mainConf": {
+        "isSmart": true,
+        "isWifi": true,
+        "isBluetooth": true,
+        "isVoiceControl": true
+      },
+      "resourcesConf": {
+        "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202412/268954c7b5bf144537a771fc3639efa6fe.png",
+        "imageFullSrc": "https://resources.dreo-cloud.com/app/preSigned202412/26a0a0d2dab8c0427c908ec86bd3447d23.zip",
+        "imageSmallDarkSrc": null,
+        "imageFullDarkSrc": null
+      },
+      "userManuals": [
+        {
+          "url": "https://resources.dreo-cloud.com/app/preSigned202501/175b69da3b02614a8d9b8a16bfb7e456c2.pdf",
+          "icon": null,
+          "desc": "DR-HEC002S User Manual V1",
+          "lang": "en"
+        }
+      ]
+    }
+    ],
+    "mixed": {
+      "wifi_rssi": {
+        "state": -55,
+        "timestamp": 1747729520
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1747764165
+      },
+      "scheid": {
+        "state": 1928052915,
+        "timestamp": 1747729520
+      },
+      "rhtarget": {
+        "state": 40,
+        "timestamp": 1747759185
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1747643033
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": true,
+        "timestamp": 1747729520
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1747729520
+      },
+      "lightmode": {
+        "state": 2,
+        "timestamp": 1747758105
+      },
+      "network_latency": {
+        "state": 11,
+        "timestamp": 1747729520
+      },
+      "rgbmode": {
+        "state": 0,
+        "timestamp": 1747736743
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1747729520
+      },
+      "mcu_firmware_version": {
+        "state": "1.0.0",
+        "timestamp": 1747729520
+      },
+      "rhsuspend": {
+        "state": true,
+        "timestamp": 1747764707
+      },
+      "temperature": {
+        "state": 74,
+        "timestamp": 1747764552
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "rgbon": {
+        "state": true,
+        "timestamp": 1747729520
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1747763465
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8523/EU",
+        "timestamp": 1747729520
+      },
+      "wifi_ssid": "**REDACTED**",
+      "windlevel": {
+        "state": 1,
+        "timestamp": 1747764171
+      },
+      "tempunit": {
+        "state": 130,
+        "timestamp": 1747729520
+      },
+      "windmode": {
+        "state": 2,
+        "timestamp": 1747758107
+      },
+      "rhmode": {
+        "state": 2,
+        "timestamp": 1747759130
+      },
+      "module_firmware_version": {
+        "state": "3.6.10",
+        "timestamp": 1747729520
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1747729520
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1747729520
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1747643033
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1747729520
+      },
+      "rh": {
+        "state": 39,
+        "timestamp": 1747764787
+      },
+      "rgbth": {
+        "state": "30,70",
+        "timestamp": 1747736763
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1747739592
+      },
+      "worktime": {
+        "state": 16,
+        "timestamp": 1747764243
+      },
+      "hoscon": {
+        "state": true,
+        "timestamp": 1747756942
+      },
+      "tempoffset": {
+        "state": -2,
+        "timestamp": 1747729520
+      },
+      "rgbcolor": {
+        "state": 16711932,
+        "timestamp": 1747736742
+      }
+    },
+    "sn": "**REDACTED**",
+    "productId": "**REDACTED**",
+    "region": "eu-central-1/emq",
+    "deviceInfo": null
+  }
+}
