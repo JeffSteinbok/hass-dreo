@@ -128,7 +128,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
         _LOGGER.debug("PyDreoFanBase:is_on.setter - %s", value)
-        self._send_command(POWERON_KEY, value)
+        self._send_command(self._power_on_key, value)
 
     @property
     def fan_speed(self):
