@@ -167,6 +167,11 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
         if description.options is not None:
             self._attr_options = description.options
 
+        _LOGGER.info(
+            "new DreoSensorHA instance(%s), unique ID %s",
+            self._attr_name,
+            self._attr_unique_id)
+
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""

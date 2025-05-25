@@ -191,6 +191,11 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-m
         self._attr_native_unit_of_measurement = description.native_unit_of_measurement
         self._device_class_name = description.device_class
 
+        _LOGGER.info(
+            "new DreoSensorHA instance(%s), unique ID %s",
+            self._attr_name,
+            self._attr_unique_id)
+
     @property
     def native_value(self) -> float:
         """Return the state of the number."""

@@ -155,6 +155,11 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
         self._attr_name = super().name + " " + description.key
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
 
+        _LOGGER.info(
+            "new DreoSwitchHA instance(%s), unique ID %s",
+            self._attr_name,
+            self._attr_unique_id)
+
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
