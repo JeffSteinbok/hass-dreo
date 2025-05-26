@@ -10,7 +10,7 @@
     "list": [
       {
       "deviceId": "1924380451974754305",
-      "sn": "**REDACTED**",
+      "sn": "HEC002S_1",
       "brand": "Dreo",
       "model": "DR-HEC002S",
       "productId": "**REDACTED**",
@@ -198,7 +198,7 @@
         "timestamp": 1747736742
       }
     },
-    "sn": "**REDACTED**",
+    "sn": "HEC002S_1",
     "productId": "**REDACTED**",
     "region": "eu-central-1/emq",
     "deviceInfo": null
