@@ -35,6 +35,6 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ['Target Humidity'])
 
         
