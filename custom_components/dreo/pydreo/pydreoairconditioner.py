@@ -173,7 +173,7 @@ class PyDreoAC(PyDreoBaseDevice):
             if self._temperature > 50:
                 return TemperatureUnit.FAHRENHEIT
 
-        return TemperatureUnit.CELCIUS
+        return TemperatureUnit.CELSIUS
 
     @property
     def target_temperature(self):

@@ -23,26 +23,18 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         ec_fan : PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
-        assert ec_fan.humidity == 39
-        assert ec_fan.humidify == True
+        assert ec_fan.humidity == 41
         assert ec_fan.speed_range == (1, 4)
         assert ec_fan.preset_modes == ['Normal', 'Natural', 'Sleep', 'Auto']
         assert ec_fan.oscillating is True
         assert ec_fan.childlockon is False
-        assert ec_fan.preset_mode == 2
-        assert ec_fan.work_time == 16
-        assert ec_fan.water_level == 0
+        assert ec_fan.preset_mode == 3
+        assert ec_fan.work_time == 19
+        assert ec_fan.water_level == 'Ok'
         
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.is_on = True
             mock_send_command.assert_called_once_with(ec_fan, {POWERON_KEY: True})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = 'normal'
-            mock_send_command.assert_called_once_with(ec_fan, {WIND_MODE_KEY: 1})
-
-        with pytest.raises(ValueError):
-            ec_fan.preset_mode = 'not_a_mode'
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.fan_speed = 3

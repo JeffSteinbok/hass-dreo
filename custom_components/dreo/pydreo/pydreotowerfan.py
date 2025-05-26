@@ -7,6 +7,7 @@ from .constant import (
     LOGGER_NAME,
     SHAKEHORIZON_KEY,
     SHAKEHORIZONANGLE_KEY,
+    OSCILLATION_KEY,
     SPEED_RANGE
 )
 
@@ -36,6 +37,7 @@ class PyDreoTowerFan(PyDreoFanBase):
             self._preset_modes = self.parse_preset_modes(details)
 
         self._shakehorizon = None
+        self._oscillating = None
         self._shakehorizonangle = None
 
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
@@ -83,6 +85,8 @@ class PyDreoTowerFan(PyDreoFanBase):
         """Returns `True` if either horizontal or vertical oscillation is on."""
         if self._shakehorizon is not None:
             return self._shakehorizon
+        elif self._oscillating is not None:
+            return self._oscillating
         return None
 
     @oscillating.setter
@@ -93,6 +97,8 @@ class PyDreoTowerFan(PyDreoFanBase):
 
         if self._shakehorizon is not None:
             self._send_command(SHAKEHORIZON_KEY, value)
+        elif self._oscillating is not None:
+            self._send_command(OSCILLATION_KEY, value)
         else:
             raise NotImplementedError("Attempting to set oscillating on a device that doesn't support.")
 
@@ -107,7 +113,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         """Set the oscillation angle."""
         _LOGGER.debug("PyDreoFan:shakehorizonangle.setter")
         if self._shakehorizonangle is not None:
-            self._send_command(SHAKEHORIZONANGLE_KEY, value)            
+            self._send_command(SHAKEHORIZONANGLE_KEY, value)           
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -116,12 +122,14 @@ class PyDreoTowerFan(PyDreoFanBase):
 
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
         self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
+        self._oscillating = self.get_state_update_value(state, OSCILLATION_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("PyDreoFan:handle_server_update")
         super().handle_server_update(message)
 
+        # Some tower fans use SHAKEHORIZON and some seem to use OSCON
         val_shakehorizon = self.get_server_update_key_value(message, SHAKEHORIZON_KEY)
         if isinstance(val_shakehorizon, bool):
             self._shakehorizon = val_shakehorizon
@@ -129,3 +137,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         val_shakehorizonangle = self.get_server_update_key_value(message, SHAKEHORIZONANGLE_KEY)
         if isinstance(val_shakehorizonangle, int):
             self._shakehorizonangle = val_shakehorizonangle
+
+        val_horiz_oscillation = self.get_server_update_key_value(message, OSCILLATION_KEY)
+        if isinstance(val_horiz_oscillation, bool):
+            self._horizontally_oscillating = val_horiz_oscillation

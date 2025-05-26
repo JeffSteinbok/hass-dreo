@@ -2,7 +2,6 @@
 
 import logging
 from typing import TYPE_CHECKING, Dict
-from custom_components.dreo.pydreo.helpers import Helpers
 from custom_components.dreo.pydreo.pydreofanbase import PyDreoFanBase
 
 from .constant import (
@@ -129,7 +128,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @target_humidity.setter
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
-        _LOGGER.debug("PyDreoAC:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
+        _LOGGER.debug("PyDreoEvaporativeCooler:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         self._target_humidity = value
         self._send_command(HUMIDITY_TARGET_KEY, value)
     
@@ -179,11 +178,12 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
    
     @property
     def water_level(self) -> int:
+       """Return the water level status"""
        return self._water_level
    
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API"""
-        _LOGGER.debug("PyDreoFan:update_state")
+        _LOGGER.debug("PyDreoEvaporativeCooler:update_state")
         super().update_state(state)
         
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
@@ -198,7 +198,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoFan:handle_server_update")
+        _LOGGER.debug("PyDreoEvaporativeCooler:handle_server_update")
         super().handle_server_update(message)
         
         val_temperature_offset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)

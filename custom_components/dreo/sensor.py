@@ -15,9 +15,9 @@ from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import (
-    TemperatureUnit,
     HUMIDITY_KEY,
     MODE_KEY,
+    PM25_KEY,
     DreoDeviceType
 )
 
@@ -104,6 +104,15 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
     ),
     DreoSensorEntityDescription(
+        key="pm25",
+        translation_key="pm25",
+        device_class=SensorDeviceClass.PM25,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.pm25,
+        exists_fn=lambda device: device.is_feature_supported(PM25_KEY),
+    ),
+    DreoSensorEntityDescription(
         key="Water Level",
         translation_key="water",
         device_class=SensorDeviceClass.ENUM,
@@ -176,6 +185,11 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
             )
         if description.options is not None:
             self._attr_options = description.options
+
+        _LOGGER.info(
+            "new DreoSensorHA instance(%s), unique ID %s",
+            self._attr_name,
+            self._attr_unique_id)
 
     @property
     def native_value(self) -> StateType:
