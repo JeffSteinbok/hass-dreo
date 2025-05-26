@@ -267,4 +267,5 @@ class DreoDeviceType(StrEnum):
     AIR_CONDITIONER = "Air Conditioner"
     CHEF_MAKER = "Chef Maker"
     HUMIDIFIER = "Humidifier"
+    EVAPORATIVE_COOLER = "Evaporative Cooler"
     UNKNOWN = "Unknown"

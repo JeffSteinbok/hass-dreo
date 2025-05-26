@@ -15,11 +15,16 @@ from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import (
-    TemperatureUnit,
     HUMIDITY_KEY,
     MODE_KEY,
     PM25_KEY,
     DreoDeviceType
+)
+
+from .pydreo.pydreoevaporativecooler import (
+    WATER_LEVEL_EMPTY, 
+    WATER_LEVEL_OK, 
+    WATER_LEVEL_STATUS_KEY
 )
 
 from .haimports import *  # pylint: disable=W0401,W0614
@@ -106,6 +111,14 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         native_unit_of_measurement_fn=lambda device: "%",
         value_fn=lambda device: device.pm25,
         exists_fn=lambda device: device.is_feature_supported(PM25_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="Water Level",
+        translation_key="water",
+        device_class=SensorDeviceClass.ENUM,
+        options=[WATER_LEVEL_OK, WATER_LEVEL_EMPTY],
+        value_fn=lambda device: device.water_level,
+        exists_fn=lambda device: device.is_feature_supported(WATER_LEVEL_STATUS_KEY),
     )
 )
 
@@ -144,6 +157,12 @@ async def async_setup_entry(
             # Really ugly hack...
             sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[4]))
 
+        if pydreo_device.type == DreoDeviceType.EVAPORATIVE_COOLER:
+            # Really ugly hack...
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[0]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[1]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[2]))
+            sensor_has.append(DreoSensorHA(pydreo_device, SENSORS[5])) 
     async_add_entities(sensor_has)
 
 

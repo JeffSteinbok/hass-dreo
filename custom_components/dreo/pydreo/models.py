@@ -10,6 +10,7 @@ from .constant import (
     HEATER_MODE_OFF,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
+    SPEED_RANGE,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
@@ -110,7 +111,8 @@ SUPPORTED_MODEL_PREFIXES = {
     "DR-HSH",
     "WH",
     "DR-HAC",
-    "DR-HHM"
+    "DR-HHM",
+    "DR-HEC"
 }
 
 SUPPORTED_DEVICES = {
@@ -273,4 +275,12 @@ SUPPORTED_DEVICES = {
     ),
 
     "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER),
+
+    # Evaporative Coolers
+    "DR-HEC": DreoDeviceDetails(
+        device_type=DreoDeviceType.EVAPORATIVE_COOLER,
+        device_ranges={
+            SPEED_RANGE: (1, 4)
+        },
+    )
 }
