@@ -1,5 +1,5 @@
 """Dreo HomeAssistant Integration."""
-
+import json
 import logging
 import time
 
@@ -10,6 +10,9 @@ from .const import (
     PYDREO_MANAGER,
     DREO_PLATFORMS,
     CONF_AUTO_RECONNECT,
+    DEBUG_TEST_MODE,
+    DEBUG_TEST_MODE_DIRECTORY_NAME,
+    DEBUG_TEST_MODE_DEVICES_FILE_NAME
 )
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -32,8 +35,21 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     from .pydreo import PyDreo  # pylint: disable=C0415
     from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
 
-    pydreo_manager = PyDreo(username, password, region)
-    pydreo_manager.auto_reconnect = auto_reconnect
+    if DEBUG_TEST_MODE:
+        _LOGGER.error("DEBUG_TEST_MODE is True!")
+        from .debug_test_mode import get_debug_test_mode_payload  # pylint: disable=C0415
+        debug__test_mode_payload : json = get_debug_test_mode_payload("custom_components/dreo")
+        if debug__test_mode_payload is None:
+            _LOGGER.error("DEBUG_TEST_MODE: Unable to get debug test mode payload.  Exiting setup.")
+            return False
+        pydreo_manager = PyDreo("TEST_EMAIL",
+                             "TEST_PASSWORD", 
+                             redact=True, 
+                             debug_test_mode=True, 
+                             debug_test_mode_payload=debug__test_mode_payload)
+    else:
+        pydreo_manager = PyDreo(username, password, region)
+        pydreo_manager.auto_reconnect = auto_reconnect
 
     login = await hass.async_add_executor_job(pydreo_manager.login)
 

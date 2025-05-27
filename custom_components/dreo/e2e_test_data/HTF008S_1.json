@@ -1,0 +1,101 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "mcu_hardware_model": {
+                "state": "SC95F8613B",
+                "timestamp": 1686788164
+            },
+            "wifi_ssid": {
+                "state": "REDACTED",
+                "timestamp": 1686788164
+            },
+            "windlevel": {
+                "state": 2,
+                "timestamp": 1687064489
+            },
+            "wifi_rssi": {
+                "state": -37,
+                "timestamp": 1686788164
+            },
+            "poweron": {
+                "state": "true",
+                "timestamp": 1687057235
+            },
+            "windtype": {
+                "state": 1,
+                "timestamp": 1686789795
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 7
+                },
+                "timestamp": null
+            },
+            "voiceon": {
+                "state": false,
+                "timestamp": 1686788993
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1686788164
+            },
+            "module_firmware_version": {
+                "state": "2.3.15",
+                "timestamp": 1686788164
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1686788164
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1686788164
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 7
+                },
+                "timestamp": null
+            },
+            "shakehorizon": {
+                "state": false,
+                "timestamp": 1686811203
+            },
+            "network_latency": {
+                "state": 102,
+                "timestamp": 1686788164
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1686788164
+            },
+            "module_hardware_model": {
+                "state": "HeFi",
+                "timestamp": 1686788164
+            },
+            "mcu_firmware_version": {
+                "state": "1.0.17",
+                "timestamp": 1686788164
+            },
+            "temperature": {
+                "state": 71,
+                "timestamp": 1687062055
+            },
+            "module_hardware_mac": {
+                "state": "**REDACTED**",
+                "timestamp": 1686788164
+            },
+            "ledalwayson": {
+                "state": false,
+                "timestamp": 1686788164
+            }
+        },
+        "sn": "HTF008S_1",
+        "productId": "**REDACTED**",
+        "region": "us-east-2"
+    }
+}
