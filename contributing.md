@@ -11,6 +11,31 @@ There are three buckets of tests, please feel free to add as appropriate.
 * [Dreo Integration Tests](tests/dreo/integrationtests/README.md) - That do talk to PyDreo
     * These integration tests ensure that the Dreo HA code gets what we expect from the device JSON files.
 
+# Debug Test Mode
+There is a special mode you can put the integration in that will allow you to pretend you have any device. Please note that enabling this will do the following:
+* Temporarily disconnect your integration from the Dreo servers.
+* All data will come from JSON files on disk.
+* Unit-tests will fail to prevent accidental merge.
+
+## Enabling
+In [custom_components/dreo/const.py](custom_components/dreo/const.py), uncomment the line:
+```
+# DEBUG_TEST_MODE = True
+```
+
+## Configuration
+In [custom_components/dreo/e2e_test_data](custom_components/dreo/e2e_test_data), you'll find 2 types of files containing content as they would be returned from the Dreo server.
+
+1. [custom_components/dreo/e2e_test_data/get_devices.json](get_devices.json) which contains a JSON blob containing a list of all devices. You can add/change anything in here, just make sure to update the device count at the top. For each device, you'll need a state file - see next point.
+1. Device state files, named as SERIALNUMBER.json. You'll need one of these for each device.
+
+Make sure you have Debug logging enabled as well so you can confirm your files are loading correctly.
+
+Simply edit the necessary files, and copy them over to your HA server and you're good to go.
+
+## Status Updates
+TODO
+
 ## Getting Network Traces from Dreo App
 As of a recent release, Dreo seems to have removed certificate pinning, at least for iOS. That makes all this a bunch easier.
 

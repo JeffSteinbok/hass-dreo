@@ -1,0 +1,716 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+      "currentPage": 1,
+      "pageSize": 10,
+      "totalNum": 1,
+      "totalPage": 1,
+      "list": [
+        {
+          "deviceId": "1234",
+          "sn": "HTF008S_1",
+          "brand": "Dreo",
+          "model": "DR-HTF008S",
+          "productId": "**REDACTED**",
+          "productName": "Tower Fan",
+          "deviceName": "DEVTEST - Main Bedroom Fan",
+          "shared": false,
+          "series": null,
+          "seriesName": "Cruiser Pro T3 S",
+          "controlsConf": {
+            "template": "DR-HTF008S",
+            "lottie": {
+              "key": "poweron",
+              "frames": [
+                {
+                  "value": 0,
+                  "frame": [
+                    0
+                  ]
+                },
+                {
+                  "value": 1,
+                  "frame": [
+                    2
+                  ]
+                }
+              ]
+            },
+            "cards": [
+              {
+                "type": 2,
+                "title": "device_control_temp",
+                "icon": "",
+                "image": "",
+                "url": "",
+                "show": true
+              },
+              {
+                "type": 6,
+                "title": "device_settings_title",
+                "icon": "ic_setting",
+                "image": "",
+                "url": "dreo://nav/device/setting?deviceSn=${sn}",
+                "show": true,
+                "key": "setting"
+              }
+            ],
+            "preference": [
+              {
+                "id": "200",
+                "type": "Panel Sound",
+                "title": "device_control_panelsound",
+                "image": "ic_mute",
+                "reverse": false,
+                "cmd": "voiceon"
+              },
+              {
+                "id": "210",
+                "type": "Display Auto Off",
+                "title": "device_fans_mode_auto_display",
+                "image": "ic_display",
+                "reverse": true,
+                "cmd": "ledalwayson"
+              },
+              {
+                "id": "230",
+                "type": "Temperature Unit",
+                "title": "device_control_temp_unit",
+                "image": "ic_temp_unit"
+              }
+            ],
+            "control": [
+              {
+                "id": "100",
+                "type": "Mode",
+                "title": "device_mode",
+                "items": [
+                  {
+                    "text": "device_fans_mode_straight",
+                    "textColors": [
+                      "#D5D6D7",
+                      "#D5D6D7"
+                    ],
+                    "image": "ic_normal_wind",
+                    "imageColors": [
+                      "#D5D6D7",
+                      "#25D7E4"
+                    ],
+                    "cmd": "windtype",
+                    "value": 1
+                  },
+                  {
+                    "text": "device_fans_mode_natural",
+                    "textColors": [
+                      "#D5D6D7",
+                      "#D5D6D7"
+                    ],
+                    "image": "ic_natural_wind",
+                    "imageColors": [
+                      "#D5D6D7",
+                      "#2CDD96"
+                    ],
+                    "cmd": "windtype",
+                    "value": 2
+                  },
+                  {
+                    "text": "device_control_mode_sleep",
+                    "textColors": [
+                      "#D5D6D7",
+                      "#D5D6D7"
+                    ],
+                    "image": "ic_sleep_wind",
+                    "imageColors": [
+                      "#D5D6D7",
+                      "#6249DF"
+                    ],
+                    "cmd": "windtype",
+                    "value": 3
+                  },
+                  {
+                    "text": "device_control_mode_auto",
+                    "textColors": [
+                      "#D5D6D7",
+                      "#D5D6D7"
+                    ],
+                    "image": "ic_auto_wind",
+                    "imageColors": [
+                      "#D5D6D7",
+                      "#0A80F5"
+                    ],
+                    "cmd": "windtype",
+                    "value": 4
+                  }
+                ]
+              },
+              {
+                "id": "110",
+                "type": "Speed",
+                "title": "device_control_speed",
+                "items": [
+                  {
+                    "text": "1",
+                    "cmd": "windlevel",
+                    "value": 1
+                  },
+                  {
+                    "text": "5",
+                    "cmd": "windlevel",
+                    "value": 5
+                  }
+                ]
+              },
+              {
+                "id": "120",
+                "type": "Oscillation",
+                "title": "device_control_oscillation",
+                "items": [],
+                "cmd": "shakehorizon"
+              }
+            ],
+            "category": "Tower Fan",
+            "setting": [
+              {
+                "text": "Firmware Version",
+                "image": "image.png",
+                "value": "1.0.0",
+                "url": "dreo://control"
+              }
+            ]
+          },
+          "mainConf": {
+            "isSmart": true,
+            "isWifi": true,
+            "isBluetooth": true,
+            "isVoiceControl": true
+          },
+          "resourcesConf": {
+            "imageSmallSrc": "https://resources.dreo-cloud.com/app/202302/154b19731975c74404ba60cc6a4af66c08.png",
+            "imageFullSrc": "https://resources.dreo-cloud.com/app/202302/16acefeb4c1aaa47c189c693cdf0beb612.zip"
+          },
+          "servicesConf": [
+            {
+              "key": "user_manual",
+              "value": "https://resources.dreo-cloud.com/app/202302/15e71c34e2b2e24aa79e9b2b4a5733f852.pdf"
+            }
+          ]
+        },
+        {
+            "deviceId": "**REDACTED**",
+            "sn": "HAC005S_1",
+            "brand": "Dreo",
+            "model": "DR-HAC005S",
+            "productId": "REDACTED",
+            "productName": "Air Conditioner",
+            "deviceName": "DEVTEST - Electric AC",
+            "shared": false,
+            "series": null,
+            "seriesName": "AC515S",
+            "type": 0,
+            "owner": true,
+            "familyId": null,
+            "familyName": null,
+            "roomId": null,
+            "roomName": null,
+            "roomNameI18Key": "",
+            "color": "w",
+            "controlsConf": {
+                "template": "DR-HAC005S",
+                "lottie": {
+                    "key": "mode",
+                    "frames": [
+                        {
+                            "value": 0,
+                            "frame": [
+                                0
+                            ]
+                        },
+                        {
+                            "value": 1,
+                            "frame": [
+                                3
+                            ]
+                        },
+                        {
+                            "value": 2,
+                            "frame": [
+                                4
+                            ]
+                        },
+                        {
+                            "value": 3,
+                            "frame": [
+                                2
+                            ]
+                        },
+                        {
+                            "value": 4,
+                            "frame": [
+                                3
+                            ]
+                        },
+                        {
+                            "value": 5,
+                            "frame": [
+                                3
+                            ]
+                        }
+                    ]
+                },
+                "schedule": {
+                    "modes": [
+                        {
+                            "controls": [
+                                {
+                                    "groupId": 0,
+                                    "type": 3,
+                                    "identity": "mode",
+                                    "items": [
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": true,
+                                            "cmd": [
+                                                "mode"
+                                            ],
+                                            "title": "schedule_ac_cool",
+                                            "value": 1,
+                                            "subItems": [
+                                                {
+                                                    "endValue": 86,
+                                                    "endColor": "#0051CF",
+                                                    "valueType": 1,
+                                                    "groupId": 0,
+                                                    "isSelected": false,
+                                                    "cmd": [
+                                                        "templevel"
+                                                    ],
+                                                    "startValue": 65,
+                                                    "type": 4,
+                                                    "title": "base_temp",
+                                                    "value": 76,
+                                                    "startColor": "#0051CF",
+                                                    "identity": "cooltemp"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "mode"
+                                            ],
+                                            "title": "schedule_ac_sleep",
+                                            "value": 4,
+                                            "identity": "sleep"
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "mode"
+                                            ],
+                                            "title": "schedule_ac_eco",
+                                            "value": 5,
+                                            "subItems": [
+                                                {
+                                                    "endValue": 86,
+                                                    "endColor": "#0051CF",
+                                                    "valueType": 1,
+                                                    "groupId": 0,
+                                                    "isSelected": false,
+                                                    "cmd": [
+                                                        "templevel"
+                                                    ],
+                                                    "startValue": 76,
+                                                    "type": 4,
+                                                    "title": "base_temp",
+                                                    "value": 76,
+                                                    "startColor": "#0051CF",
+                                                    "identity": "ecotemp"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "groupId": 0,
+                                    "type": 3,
+                                    "title": "device_control_speed",
+                                    "identity": "speed",
+                                    "value": 4,
+                                    "items": [
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_1",
+                                            "value": 1
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_2",
+                                            "value": 2
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_3",
+                                            "value": 3
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": true,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_auto",
+                                            "value": 4
+                                        }
+                                    ]
+                                }
+                            ],
+                            "valueType": 1,
+                            "icon": "ic_cool_mode_hac",
+                            "isSelected": true,
+                            "attention": [
+                                "mode",
+                                "windlevel",
+                                "poweron",
+                                "templevel",
+                                "oscmode"
+                            ],
+                            "cmd": "mode",
+                            "title": "base_cool",
+                            "value": 1
+                        },
+                        {
+                            "controls": [
+                                {
+                                    "endValue": 80,
+                                    "endColor": "#0051CF",
+                                    "valueType": 1,
+                                    "groupId": 0,
+                                    "isSelected": false,
+                                    "cmd": [
+                                        "rhlevel"
+                                    ],
+                                    "startValue": 30,
+                                    "type": 0,
+                                    "title": "home_humidity",
+                                    "value": 60,
+                                    "startColor": "#0051CF",
+                                    "unit": "%",
+                                    "identity": "temperature"
+                                },
+                                {
+                                    "groupId": 0,
+                                    "type": 3,
+                                    "title": "device_control_speed",
+                                    "identity": "speed",
+                                    "items": [
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_1",
+                                            "value": 1
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_2",
+                                            "value": 2
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_3",
+                                            "value": 3
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": true,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_auto",
+                                            "value": 4
+                                        }
+                                    ]
+                                }
+                            ],
+                            "valueType": 1,
+                            "icon": "ic_dry_mode",
+                            "isSelected": false,
+                            "attention": [
+                                "mode",
+                                "windlevel",
+                                "poweron",
+                                "rhlevel",
+                                "oscmode"
+                            ],
+                            "cmd": "mode",
+                            "title": "base_dry",
+                            "value": 2
+                        },
+                        {
+                            "controls": [
+                                {
+                                    "groupId": 0,
+                                    "type": 3,
+                                    "title": "device_control_speed",
+                                    "identity": "speed",
+                                    "items": [
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_1",
+                                            "value": 1
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_2",
+                                            "value": 2
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": false,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_3",
+                                            "value": 3
+                                        },
+                                        {
+                                            "valueType": 1,
+                                            "isSelected": true,
+                                            "cmd": [
+                                                "windlevel"
+                                            ],
+                                            "title": "base_auto",
+                                            "value": 4
+                                        }
+                                    ]
+                                }
+                            ],
+                            "valueType": 1,
+                            "icon": "ic_cool_mode",
+                            "isSelected": false,
+                            "attention": [
+                                "mode",
+                                "windlevel",
+                                "poweron",
+                                "oscmode"
+                            ],
+                            "cmd": "mode",
+                            "title": "base_fan",
+                            "value": 3
+                        }
+                    ]
+                },
+                "timer": {
+                    "minHour": 0,
+                    "maxHour": 23
+                },
+                "cards": [
+                    {
+                        "type": 2,
+                        "title": "device_control_temp",
+                        "icon": "",
+                        "image": "",
+                        "url": "dreo://nav/device/report?deviceSn=${sn}&type=temp",
+                        "show": true,
+                        "minVersion": "2.3.1"
+                    },
+                    {
+                        "type": 8,
+                        "title": "",
+                        "icon": "",
+                        "image": "",
+                        "url": "dreo://nav/device/schedule?deviceSn={sn}",
+                        "show": true,
+                        "key": ""
+                    },
+                    {
+                        "type": 3,
+                        "title": "home_humidifier_cleaning",
+                        "icon": "ic_hum_cleanning",
+                        "image": "",
+                        "url": "dreo://nav/device/cleanreminder?deviceSn=${sn}&start=50&end=300&step=10",
+                        "show": true,
+                        "key": "worktime"
+                    },
+                    {
+                        "type": 6,
+                        "title": "device_chart_usage",
+                        "icon": "ic_usage",
+                        "image": "",
+                        "url": "dreo://nav/device/hacstatistics?deviceSn=${sn}",
+                        "show": true,
+                        "key": "usage"
+                    },
+                    {
+                        "type": 6,
+                        "title": "base_maintenance",
+                        "icon": "https://resources.dreo-cloud.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
+                        "image": "",
+                        "url": "https://fe.dreo.com/article/dreo-air-conditioner-installation-maintenance",
+                        "show": true
+                    },
+                    {
+                        "type": 6,
+                        "title": "device_settings_title",
+                        "icon": "ic_setting",
+                        "image": "",
+                        "url": "dreo://nav/device/setting?deviceSn=${sn}",
+                        "show": true,
+                        "key": "setting"
+                    }
+                ],
+                "urlConfig": [
+                    {
+                        "key": "clean",
+                        "url": "https://fe.dreo.com/en/guides/videos/v?source=https://resources.dreo-cloud.com/app/202404/9/1094c8bcd7fc4811bd5d944b6a70f658.mp4&coverImage=https://resources.dreo-cloud.com/app/202404/10/47672f46958c4605ba621683d5db57fb.png"
+                    }
+                ],
+                "feature": {
+                    "schedule": {
+                        "enable": true,
+                        "localSupport": true,
+                        "module": [
+                            {
+                                "type": "HeFi",
+                                "version": "0.0.4"
+                            }
+                        ]
+                    }
+                },
+                "preference": [
+                    {
+                        "image": "ic_display",
+                        "id": "240",
+                        "cmd": "lighton",
+                        "type": "Display",
+                        "title": "dev_ctrl_heater_display",
+                        "reverse": false
+                    },
+                    {
+                        "id": "210",
+                        "type": "Panel Sound",
+                        "title": "device_control_panelsound",
+                        "image": "ic_mute",
+                        "cmd": "muteon",
+                        "reverse": true
+                    },
+                    {
+                        "id": "220",
+                        "type": "Child Lock",
+                        "title": "device_control_childlock",
+                        "image": "ic_child_lock",
+                        "reverse": false,
+                        "cmd": "childlockon"
+                    },
+                    {
+                        "id": "230",
+                        "type": "Temperature Unit",
+                        "title": "device_control_temp_unit",
+                        "image": "ic_temp_unit"
+                    }
+                ],
+                "control": [
+                    {
+                        "id": "130",
+                        "type": "Speed",
+                        "title": "device_control_speed",
+                        "items": [
+                            {
+                                "text": "base_1",
+                                "cmd": "windlevel",
+                                "value": 1
+                            },
+                            {
+                                "text": "base_2",
+                                "cmd": "windlevel",
+                                "value": 2
+                            },
+                            {
+                                "text": "base_3",
+                                "cmd": "windlevel",
+                                "value": 3
+                            },
+                            {
+                                "text": "device_control_mode_auto",
+                                "cmd": "windlevel",
+                                "value": 4
+                            }
+                        ]
+                    },
+                    {
+                        "id": "120",
+                        "type": "Oscillation",
+                        "title": "base_swing",
+                        "items": [],
+                        "cmd": "oscmode"
+                    }
+                ],
+                "category": "Air Conditioner",
+                "version": {
+                    "minControlVer": "2.6.0",
+                    "minPairingVer": "2.6.0"
+                }
+            },
+            "mainConf": {
+                "isSmart": true,
+                "isWifi": true,
+                "isBluetooth": true,
+                "isVoiceControl": true
+            },
+            "resourcesConf": {
+                "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202407/556eb3b7aab924e838315b41aba7536fb.png",
+                "imageFullSrc": "https://resources.dreo-cloud.com/app/202402/20/a82251e0d1ab44d89b356a5dcea07f1a.zip",
+                "imageSmallDarkSrc": "",
+                "imageFullDarkSrc": ""
+            },
+            "servicesConf": [
+                {
+                    "key": "user_manual",
+                    "value": "https://resources.dreo-cloud.com/app/202403/16/b59dd99941cb4ca89390622f4e894428.pdf"
+                }
+            ],
+            "userManuals": [
+                {
+                    "url": "https://resources.dreo-cloud.com/app/202403/16/b59dd99941cb4ca89390622f4e894428.pdf",
+                    "icon": null,
+                    "desc": "User Manual",
+                    "lang": "en"
+                }
+            ]
+        }        
+      ]
+    }
+  }
