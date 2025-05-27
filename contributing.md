@@ -31,6 +31,8 @@ In [custom_components/dreo/e2e_test_data](custom_components/dreo/e2e_test_data),
 
 Make sure you have Debug logging enabled as well so you can confirm your files are loading correctly.
 
+Simply edit the necessary files, and copy them over to your HA server and you're good to go.
+
 ## Status Updates
 TODO
 
