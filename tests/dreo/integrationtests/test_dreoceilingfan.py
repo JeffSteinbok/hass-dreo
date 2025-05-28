@@ -5,6 +5,7 @@ from unittest.mock import patch
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
+from custom_components.dreo import light
 from .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
@@ -36,15 +37,18 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             # Check to see what switches are added to ceiling fans
             switches = switch.get_entries([pydreo_fan])
-            self.verify_expected_entities(switches, ["Light", "Panel Sound"])
-            light_switch = self.get_entity_by_key(switches, "Light")
-
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
-                light_switch.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})            
-
+            self.verify_expected_entities(switches, ["Panel Sound"])
+       
             # Check to see what numbers are added to ceiling fans
             numbers = number.get_entries([pydreo_fan])
             self.verify_expected_entities(numbers, [])
+
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["Light"])
+            light_switch = self.get_entity_by_key(lights, "Light")
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                light_switch.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})                 
 
         

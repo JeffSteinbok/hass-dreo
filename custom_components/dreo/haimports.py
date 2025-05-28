@@ -74,6 +74,19 @@ from homeassistant.components.number import (
     NumberEntityDescription
 )
 
+from homeassistant.components.light import (
+    LightEntity,
+    LightEntityFeature,
+    ColorMode,
+    ATTR_COLOR_TEMP_KELVIN,
+    ATTR_BRIGHTNESS
+)
+
+from homeassistant.util.color import (
+    value_to_brightness,
+    brightness_to_value
+)
+
 from homeassistant.const import (
     TEMPERATURE,
     ATTR_ENTITY_ID,

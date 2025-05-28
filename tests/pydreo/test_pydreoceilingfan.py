@@ -23,6 +23,10 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'reverse']
         assert fan.is_feature_supported('poweron') is False
         assert fan.is_feature_supported('light_on') is True
+        assert fan.is_feature_supported('brightness') is True
+        assert fan.is_feature_supported('color_temperature') is True
+        assert fan.brightness == 64
+        assert fan.color_temperature == 25
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
@@ -31,6 +35,18 @@ class TestPyDreoCeilingFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.light_on = True
             mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.light_on = True
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.brightness = 50
+            mock_send_command.assert_called_once_with(fan, {BRIGHTNESS_KEY: 50})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.color_temperature = 50
+            mock_send_command.assert_called_once_with(fan, {COLORTEMP_KEY: 50})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'normal'

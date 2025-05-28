@@ -88,12 +88,6 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         icon="mdi:led-on",
     ),
     DreoSwitchEntityDescription(    
-        key="Light",
-        translation_key="light",
-        attr_name="light_on",
-        icon="mdi:lightbulb",
-    ),
-    DreoSwitchEntityDescription(    
         key="Humidify",
         translation_key="humidify",
         attr_name="humidify",

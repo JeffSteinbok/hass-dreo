@@ -80,6 +80,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
+    if (DreoDeviceType.CEILING_FAN in device_types):
+        platforms.add(Platform.LIGHT)
+
     if (DreoDeviceType.HEATER in device_types or 
         DreoDeviceType.AIR_CONDITIONER in device_types):
         platforms.add(Platform.CLIMATE)

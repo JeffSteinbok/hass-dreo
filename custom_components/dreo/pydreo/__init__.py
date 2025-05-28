@@ -418,6 +418,8 @@ class PyDreo:  # pylint: disable=function-redefined
         self._transport.testonly_interrupt_transport()
 
     def _transport_consume_message(self, message):
+        _LOGGER.debug("pydreo._transport_consume_message: %s", message)
+
         message_device_sn = message["devicesn"]
 
         if message_device_sn in self._device_list_by_sn:
@@ -442,4 +444,11 @@ class PyDreo:  # pylint: disable=function-redefined
         content = json.dumps(full_params)
         _LOGGER.debug(content)
 
-        self._transport.send_message(content)
+        if self.debug_test_mode:
+            _LOGGER.debug("Debug Test Mode is enabled.  Pretending we received the message...")
+            self._transport_consume_message({"devicesn": device.serial_number, 
+                                             "method": "report", 
+                                             "reported": params})
+        else:
+            # Send the message to the transport, which will then send it to the Dreo servers
+            self._transport.send_message(content)

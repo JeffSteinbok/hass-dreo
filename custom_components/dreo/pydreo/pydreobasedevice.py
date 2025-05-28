@@ -128,6 +128,7 @@ class PyDreoBaseDevice(object):
         _LOGGER.debug(
             "pyDreoBaseDevice(%s):send_command: %s-> %s", self, command_key, value
         )
+
         params: dict = {command_key: value}
         self._dreo.send_command(self, params)
 
