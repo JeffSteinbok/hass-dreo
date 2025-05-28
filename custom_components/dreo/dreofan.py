@@ -8,6 +8,8 @@ from typing import Any
 from .haimports import * # pylint: disable=W0401,W0614
 
 from .dreobasedevice import DreoBaseDeviceHA
+from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
+
 from .const import (
     LOGGER
 )
@@ -23,6 +25,8 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         """Initialize the Dreo fan device."""
         super().__init__(pyDreoFan)
         self.device = pyDreoFan
+        if self.device.type is DreoDeviceType.CEILING_FAN:
+            self._attr_icon = "mdi:ceiling-fan"
 
     @property
     def percentage(self) -> int | None:

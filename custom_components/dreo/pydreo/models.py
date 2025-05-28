@@ -10,7 +10,6 @@ from .constant import (
     HEATER_MODE_OFF,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
-    SPEED_RANGE,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,

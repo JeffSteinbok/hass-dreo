@@ -2,7 +2,7 @@
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
-from custom_components.dreo import number
+from custom_components.dreo import number, sensor
 from  .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
 
@@ -26,6 +26,9 @@ class TestDreoAirConditioner(IntegrationTestBase):
             pydreo_ac = self.pydreo_manager.devices[0]
             assert pydreo_ac.type == 'Air Conditioner'
 
-            # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_ac])
             self.verify_expected_entities(numbers, [])
+
+            sensors = sensor.get_entries([pydreo_ac])
+            self.verify_expected_entities(sensors, [])
+

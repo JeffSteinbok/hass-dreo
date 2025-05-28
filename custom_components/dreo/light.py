@@ -12,6 +12,7 @@ import math
 from .haimports import * # pylint: disable=W0401,W0614
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
+from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
 from .dreobasedevice import DreoBaseDeviceHA
 
 from .const import (
@@ -61,6 +62,9 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity): # pylint: disable=abstract-met
 
         self._attr_min_color_temp_kelvin = 2700  # Minimum color temperature in Kelvin (2700K)
         self._attr_max_color_temp_kelvin = 6500  # Maximum color temperature in Kelvin (6500K)
+
+        if self.device.type is DreoDeviceType.CEILING_FAN:
+            self._attr_icon = "mdi:ceiling-fan-light"
 
         self._color_mode : ColorMode = ColorMode.ONOFF
         if self.device.is_feature_supported("color_temperature"):

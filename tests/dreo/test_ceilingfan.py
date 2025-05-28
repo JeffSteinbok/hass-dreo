@@ -4,6 +4,8 @@ from unittest.mock import MagicMock
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
+from custom_components.dreo import light
+from custom_components.dreo import sensor
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
@@ -43,7 +45,13 @@ class TestDreoCeilingFanHA(TestDeviceBase):
         mock_update_ha_state.reset_mock()
 
         # Check to see what switches are added to ceiling fans
-        self.verify_expected_entities(switch.get_entries([mocked_pydreo_ceilingfan]), ["Light"])
+        self.verify_expected_entities(switch.get_entries([mocked_pydreo_ceilingfan]), [])
+
+        # Check to see what lights are added to ceiling fans
+        self.verify_expected_entities(light.get_entries([mocked_pydreo_ceilingfan]), ["Light"])
 
         # Check to see what numbers are added to ceiling fans
         self.verify_expected_entities(number.get_entries([mocked_pydreo_ceilingfan]), [])
+
+        # Check to see what sensors are added to ceiling fans
+        self.verify_expected_entities(sensor.get_entries([mocked_pydreo_ceilingfan]), [])
