@@ -261,7 +261,12 @@ SUPPORTED_DEVICES = {
             HUMIDITY_RANGE: (30, 80),
         },
         # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)
-        hvac_modes=[HVACMode.COOL, HVACMode.FAN_ONLY, HVACMode.DRY],
+        hvac_modes=[
+            HVACMode.OFF,
+            HVACMode.COOL, 
+            HVACMode.FAN_ONLY, 
+            HVACMode.DRY
+        ],
         swing_modes=[SWING_OFF, SWING_ON],
         preset_modes=[PRESET_NONE, PRESET_ECO],
         # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
