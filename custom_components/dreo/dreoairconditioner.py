@@ -331,13 +331,15 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         """Set new target hvac mode."""
         _LOGGER.debug("DreoAirConditionerHA:set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
         self._last_hvac_mode = self._attr_hvac_mode
-        self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
 
-        if hvac_mode != HVACMode.OFF:
-            self.device.poweron = True
-        else:
+        if hvac_mode == HVACMode.OFF:
             self.device.poweron = False
-            
+            self._attr_hvac_mode = HVACMode.OFF
+        else:
+            self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
+            self.device.poweron = True
+            self._attr_hvac_mode = hvac_mode
+
         self.schedule_update_ha_state()
 
     @property
