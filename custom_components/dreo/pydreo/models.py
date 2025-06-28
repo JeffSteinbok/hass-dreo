@@ -255,7 +255,7 @@ SUPPORTED_DEVICES = {
     "DR-HAC": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CONDITIONER,
         device_ranges={
-            TEMP_RANGE: (60, 95),
+            TEMP_RANGE: (60, 86),
             TARGET_TEMP_RANGE: (64, 86),
             TARGET_TEMP_RANGE_ECO: (75, 86),
             HUMIDITY_RANGE: (30, 80),
