@@ -116,6 +116,14 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             self._attr_fan_mode,
         )
 
+    async def async_added_to_hass(self) -> None:
+        """Configure temperature mapping after entity is added to HA."""
+        await super().async_added_to_hass()
+        
+        # Configure temperature mapping based on HA's unit configuration
+        ha_uses_celsius = self.hass.config.units.temperature_unit == UnitOfTemperature.CELSIUS
+        self.device.set_ha_temperature_unit_is_celsius(ha_uses_celsius)
+
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information for this air conditioner."""
