@@ -179,8 +179,6 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the air conditioner."""
         return {
-            "current_temperature": self.device.temperature,
-            "target_temperature": self.device.target_temperature,
             "model": self.device.model,
         }
 
