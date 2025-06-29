@@ -24,6 +24,7 @@ from .constant import (
     FAN_HIGH,
     PRESET_NONE,
     PRESET_ECO,
+    PRESET_SLEEP,
     HVACMode,
     DreoDeviceType
 )
@@ -268,7 +269,7 @@ SUPPORTED_DEVICES = {
             HVACMode.DRY
         ],
         swing_modes=[SWING_OFF, SWING_ON],
-        preset_modes=[PRESET_NONE, PRESET_ECO],
+        preset_modes=[PRESET_NONE, PRESET_ECO, PRESET_SLEEP],
         # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
         fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
     ),
