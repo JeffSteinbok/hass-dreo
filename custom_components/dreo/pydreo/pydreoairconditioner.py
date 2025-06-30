@@ -68,6 +68,26 @@ AC_OSC_OFF = 0
 WORK_TIME = "worktime"
 TEMP_TARGET_REACHED = "reachtarget"
 
+# Map: Celsius setting → Fahrenheit value to send to API
+# This is based on actual Fahrenheit values sent to the AC when using the remote control while AC is set to Celsius
+CELSIUS_TO_FAHRENHEIT_MAP = {
+    16: 61,   # Set 16°C → Send 61°F
+    17: 63,   # Set 17°C → Send 63°F  
+    18: 65,   # Set 18°C → Send 65°F
+    19: 67,   # Set 19°C → Send 67°F
+    20: 68,   # Set 20°C → Send 68°F
+    21: 70,   # Set 21°C → Send 70°F
+    22: 72,   # Set 22°C → Send 72°F
+    23: 74,   # Set 23°C → Send 74°F
+    24: 76,   # Set 24°C → Send 76°F
+    25: 77,   # Set 25°C → Send 77°F
+    26: 79,   # Set 26°C → Send 79°F
+    27: 81,   # Set 27°C → Send 81°F
+    28: 83,   # Set 28°C → Send 83°F
+    29: 85,   # Set 29°C → Send 85°F
+    30: 86,   # Set 30°C → Send 86°F
+}
+
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
 if TYPE_CHECKING:
@@ -172,12 +192,14 @@ class PyDreoAC(PyDreoBaseDevice):
 
     @property
     def temperature_units(self) -> TemperatureUnit:
-        """Get the temperature units."""
-        # Auto-detect based on range.
-        if self._temperature is not None:
-            if self._temperature > 50:
-                return TemperatureUnit.FAHRENHEIT
-
+        """Get the temperature units for the device display."""
+        # Use HA's configured unit if available, otherwise auto-detect from device values
+        if hasattr(self, '_ha_uses_celsius') and self._ha_uses_celsius is not None:
+            return TemperatureUnit.CELSIUS if self._ha_uses_celsius else TemperatureUnit.FAHRENHEIT
+        
+        # Fallback: auto-detect based on current temperature range  
+        if self._temperature is not None and self._temperature > 50:
+            return TemperatureUnit.FAHRENHEIT
         return TemperatureUnit.CELSIUS
 
     @property
@@ -471,3 +493,7 @@ class PyDreoAC(PyDreoBaseDevice):
         val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED)
         if isinstance(val_work_time, int):
             self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"
+
+    def set_ha_temperature_unit_is_celsius(self, is_celsius: bool) -> None:
+        """Set whether Home Assistant uses Celsius (called by HA climate entity)"""
+        self._ha_uses_celsius = is_celsius
