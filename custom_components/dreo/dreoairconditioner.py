@@ -116,6 +116,14 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             self._attr_fan_mode,
         )
 
+    async def async_added_to_hass(self) -> None:
+        """Configure temperature mapping after entity is added to HA."""
+        await super().async_added_to_hass()
+        
+        # Configure temperature mapping based on HA's unit configuration
+        ha_uses_celsius = self.hass.config.units.temperature_unit == UnitOfTemperature.CELSIUS
+        self.device.set_ha_temperature_unit_is_celsius(ha_uses_celsius)
+
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information for this air conditioner."""
@@ -242,7 +250,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     ### Implementation of climate methods
     @property
-    def current_temperature(self) -> float:
+    def current_temperature(self) -> int:
         return self.device.temperature
     
     @property
@@ -250,12 +258,12 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.device_ranges[TEMP_RANGE][0]
 
     @property
-    def max_temp(self) -> float | None:
+    def max_temp(self) -> int | None:
         return self.device.device_definition.device_ranges[TEMP_RANGE][1]
     
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        self.device.target_temperature = kwargs.get(ATTR_TEMPERATURE)
+        self.device.target_temperature = int(kwargs.get(ATTR_TEMPERATURE))
         _LOGGER.debug("DreoAirConditionerHA::set_temperature(%s) %s --> %s", 
                       self.device.name, 
                       self._attr_target_temperature, 
@@ -264,11 +272,11 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         self.schedule_update_ha_state()
 
     @property
-    def target_temperature(self) -> float | None:
+    def target_temperature(self) -> int | None:
         return self.device.target_temperature
     
     @property
-    def target_temperature_low(self) -> float | None:
+    def target_temperature_low(self) -> int | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TARGET_TEMP_RANGE_ECO
         else:
@@ -276,7 +284,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.device_ranges[range_key][0]
 
     @property
-    def target_temperature_high(self) -> float | None:
+    def target_temperature_high(self) -> int | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TARGET_TEMP_RANGE_ECO
         else:
@@ -284,7 +292,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.device_ranges[range_key][1]
 
     @property
-    def target_temperature_step(self) -> float | None:
+    def target_temperature_step(self) -> int | None:
         return 1
 
     @property
