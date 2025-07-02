@@ -23,7 +23,7 @@ class TestPyDreoAirConditioner(TestBase):
 
         ac : PyDreoAC = self.pydreo_manager.devices[0]
 
-        assert ac.preset_modes == ['none', 'eco']
+        assert ac.preset_modes == ['none', 'eco', 'sleep']
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.poweron = True
@@ -36,6 +36,12 @@ class TestPyDreoAirConditioner(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.preset_mode = 'eco'
             mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 5})
+
+        # Test sleep preset mode
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ac.preset_mode = 'sleep'
+            mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 4})
+            assert ac.preset_mode == 'sleep'  # Verify mode was set
 
         # TODO: Fix this in the AC class
         # with pytest.raises(ValueError):
