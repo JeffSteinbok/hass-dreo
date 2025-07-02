@@ -209,10 +209,38 @@ class PyDreoAC(PyDreoBaseDevice):
 
     @target_temperature.setter
     def target_temperature(self, value: int) -> None:
-        """Set the target temperature"""
-        _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) %s --> %s", self, self._target_temperature, value)
-        self._target_temperature = value
-        self._send_command(TARGET_TEMPERATURE_KEY, value)
+        """Set the target temperature with empirical mapping for Celsius conversions."""
+        # Handle SLEEP mode with sleeptempoffset
+        if self._preset_mode == PRESET_SLEEP and self._sleep_preset_initialization_temp is not None:
+            if self.temperature_units == TemperatureUnit.CELSIUS:
+                celsius_equivalent = round((value - 32) * 5/9)
+                mapped_fahrenheit = CELSIUS_TO_FAHRENHEIT_MAP.get(celsius_equivalent, value)
+                sleeptempoffset = mapped_fahrenheit - self._sleep_preset_initialization_temp
+                _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) SLEEP Celsius mode: %s°F (%s°C) --> offset %s (init temp: %s)", 
+                              self, value, celsius_equivalent, sleeptempoffset, self._sleep_preset_initialization_temp)
+                self._target_temperature = mapped_fahrenheit
+                self._send_command(SLEEPTEMPOFFSET_KEY, sleeptempoffset)
+            else:
+                # HA uses Fahrenheit - calculate offset directly
+                sleeptempoffset = value - self._sleep_preset_initialization_temp
+                _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) SLEEP Fahrenheit mode: %s°F --> offset %s (init temp: %s)", 
+                              self, value, sleeptempoffset, self._sleep_preset_initialization_temp)
+                self._target_temperature = value
+                self._send_command(SLEEPTEMPOFFSET_KEY, sleeptempoffset)
+        else:
+            # Normal mode (non-SLEEP) - use regular templevel
+            if self.temperature_units == TemperatureUnit.CELSIUS:
+                celsius_equivalent = round((value - 32) * 5/9)
+                mapped_fahrenheit = CELSIUS_TO_FAHRENHEIT_MAP.get(celsius_equivalent, value)
+                _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) Celsius mode: %s°F (%s°C) --> %s°F", 
+                              self, value, celsius_equivalent, mapped_fahrenheit)
+                self._target_temperature = mapped_fahrenheit
+                self._send_command(TARGET_TEMPERATURE_KEY, mapped_fahrenheit)
+            else:
+                # HA uses Fahrenheit - pass through directly
+                _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) Fahrenheit mode: %s°F", self, value)
+                self._target_temperature = value
+                self._send_command(TARGET_TEMPERATURE_KEY, value)
 
     @property
     def humidity(self):
