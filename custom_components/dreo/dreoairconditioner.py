@@ -19,6 +19,7 @@ from .pydreo import (
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
     HUMIDITY_RANGE,
+    PRESET_SLEEP,
 )
 
 from .pydreo.pydreoairconditioner import (
@@ -176,6 +177,9 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         """Set the preset mode of the device."""
         _LOGGER.debug("DreoAirConditionerHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
         if preset_mode == PRESET_ECO:
+            self.device.mode = DREO_AC_MODE_COOL
+            self.device.preset_mode = preset_mode
+        elif preset_mode == PRESET_SLEEP:
             self.device.mode = DREO_AC_MODE_COOL
             self.device.preset_mode = preset_mode
         else:
