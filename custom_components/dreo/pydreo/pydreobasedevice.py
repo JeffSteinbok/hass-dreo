@@ -27,7 +27,7 @@ class PyDreoBaseDevice(object):
     def __init__(
         self,
         device_definition: DreoDeviceDetails,
-        details: Dict[str, list],
+        details: dict[str, list],
         dreo: "PyDreo",
     ):
         self._device_definition = device_definition
@@ -48,7 +48,7 @@ class PyDreoBaseDevice(object):
         self._dreo = dreo
         self._is_on = False
 
-        self._feature_key_names: Dict[str, str] = {}
+        self._feature_key_names: dict[str, str] = {}
 
         self.raw_state = None
         self._attr_cbs = []
