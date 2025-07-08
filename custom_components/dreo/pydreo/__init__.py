@@ -1,21 +1,14 @@
 """Dreo API Library."""
 
-# flake8: noqa
-# from .pydreo import PyDreo
 import logging
-import threading
-import sys
 
 import json
-from itertools import chain
-from typing import Optional, Tuple
-from asyncio.exceptions import CancelledError
 
 from .constant import *
 from .helpers import Helpers
 from .models import *
 from .commandtransport import CommandTransport
-from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError, UnknownProductError
+from .pydreobasedevice import PyDreoBaseDevice, UnknownModelError
 from .pydreounknowndevice import PyDreoUnknownDevice
 from .pydreotowerfan import PyDreoTowerFan
 from .pydreoaircirculator import PyDreoAirCirculator
@@ -26,6 +19,7 @@ from .pydreoairconditioner import PyDreoAC
 from .pydreochefmaker import PyDreoChefMaker
 from .pydreohumidifier import PyDreoHumidifier
 from .pydreoevaporativecooler import PyDreoEvaporativeCooler
+from .mixins.ledmixin import LedMixin
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -194,6 +188,10 @@ class PyDreo:  # pylint: disable=function-redefined
 
                 if device_class is None:
                     device_class = PyDreoUnknownDevice
+
+                if device_details.integrated_light:
+                    mixin_name = f"{device_class.__name__}WithLed"
+                    device_class = type(mixin_name, (LedMixin, device_class), {})
                 
                 device : PyDreoBaseDevice = device_class(device_details, dev, self)
 
@@ -384,7 +382,7 @@ class PyDreo:  # pylint: disable=function-redefined
 
         return proc_return
     
-    def call_dreo_api(self, api: str, json_object: Optional[dict] = None) -> tuple:
+    def call_dreo_api(self, api: str, json_object: dict | None = None) -> tuple:
         """Call the Dreo API. This is used for login and the initial device list and states as well
            as device settings."""
         _LOGGER.debug("Calling Dreo API: {%s}", api)

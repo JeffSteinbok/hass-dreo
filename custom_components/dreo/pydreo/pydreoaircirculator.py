@@ -1,7 +1,7 @@
 """Dreo API for controling fans."""
 
 import logging
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 from .constant import (
     LOGGER_NAME,
@@ -16,7 +16,6 @@ from .constant import (
     OscillationMode,
     HORIZONTAL_ANGLE_RANGE,
     VERTICAL_ANGLE_RANGE,
-    SPEED_RANGE
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
 class PyDreoAirCirculator(PyDreoFanBase):
     """Base class for Dreo Fan API Calls."""
 
-    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(self, device_definition: DreoDeviceDetails, details: dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
         super().__init__(device_definition, details, dreo)
 
@@ -59,7 +58,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._vertically_oscillating = None
 
     @staticmethod
-    def parse_swing_angle_range(details: Dict[str, list], direction: str) -> tuple[int, int] | None:
+    def parse_swing_angle_range(details: dict[str, list], direction: str) -> tuple[int, int] | None:
         """Parse the swing angle range from the details."""
         controls_conf = details.get("controlsConf", None)
         if controls_conf is None:
@@ -82,7 +81,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         return -zero_angle, angle - zero_angle
 
-    def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
+    def parse_preset_modes(self, details: dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         preset_modes = []
         controls_conf = details.get("controlsConf", None)

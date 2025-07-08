@@ -1,6 +1,6 @@
 """Supported device models for the PyDreo library."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .constant import (
     SPEED_RANGE,
@@ -10,7 +10,6 @@ from .constant import (
     HEATER_MODE_OFF,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
-    SPEED_RANGE,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
@@ -57,48 +56,14 @@ class DreoDeviceDetails:
     """Represents a Dreo device model and capabilities"""
 
     device_type: DreoDeviceType
-    """The type of device"""
-
-    preset_modes: list[str]
-    """List of possible preset mode names"""
-
-    device_ranges: dict[range]
-    """Dictionary of different ranges"""
-
-    hvac_modes: list[str]
-    """List of possible HVAC mode names"""
-
-    swing_modes: list[str]
-    """List of possible swing modes"""
-
-    cooking_modes: list[str]
-    """List of possible cooking modes"""
-
-    cooking_range: dict
-    """Dictionary of different cooking ranges"""
-
-    def __init__(
-        self,
-        device_type: DreoDeviceType = None,
-        preset_modes: list[str] = None,
-        device_ranges: dict = None,
-        hvac_modes: list[str] = None,
-        swing_modes: list[str] = None,
-        fan_modes: list[str] = None,
-        cooking_modes: list[str] = None,
-        cooking_range: dict = None,
-    ):
-        if (device_type is None):
-            raise ValueError("device_type is required")
-
-        self.device_type = device_type
-        self.preset_modes = preset_modes
-        self.device_ranges = device_ranges
-        self.hvac_modes = hvac_modes
-        self.swing_modes = swing_modes
-        self.fan_modes = fan_modes
-        self.cooking_modes = cooking_modes
-        self.cooking_range = cooking_range
+    preset_modes: list[str] | None = None
+    device_ranges: dict[str, tuple[int, int]] | None = None
+    hvac_modes: list[str] | None = None
+    swing_modes: list[str] | None = None
+    fan_modes: list[str] | None = None
+    cooking_modes: list[str] | None = None
+    cooking_range: dict[str, dict[str, tuple[int, int]]] = field(default_factory=dict)
+    integrated_light: bool = False
 
 
 # Supported prefixes.
@@ -125,7 +90,8 @@ SUPPORTED_DEVICES = {
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
     "DR-HPF008S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
-        device_ranges={SPEED_RANGE: (1, 9)}),
+        device_ranges={SPEED_RANGE: (1, 9)},
+        integrated_light=True),
 
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),
