@@ -113,7 +113,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         """Set the oscillation angle."""
         _LOGGER.debug("PyDreoFan:shakehorizonangle.setter")
         if self._shakehorizonangle is not None:
-            self._send_command(SHAKEHORIZONANGLE_KEY, value)           
+            self._send_command(SHAKEHORIZONANGLE_KEY, int(value))           
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
