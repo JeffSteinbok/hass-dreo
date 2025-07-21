@@ -4,7 +4,7 @@
     "data": {
       "currentPage": 1,
       "pageSize": 10,
-      "totalNum": 1,
+      "totalNum": 3,
       "totalPage": 1,
       "list": [
         {
@@ -197,7 +197,7 @@
           ]
         },
         {
-            "deviceId": "**REDACTED**",
+            "deviceId": "432432658436549067340",
             "sn": "HAC005S_1",
             "brand": "Dreo",
             "model": "DR-HAC005S",
@@ -710,7 +710,682 @@
                     "lang": "en"
                 }
             ]
-        }        
+        },
+        {
+            "deviceId": "1769274833431957506",
+            "sn": "HCF001S_1",
+            "brand": "Dreo",
+            "model": "DR-HCF001S",
+            "productId": "**REDACTED**",
+            "productName": "Ceiling Fan",
+            "deviceName": "DEVTEST - Ceiling Fan",
+            "shared": false,
+            "series": null,
+            "seriesName": "CLF521S",
+            "type": 0,
+            "owner": true,
+            "familyId": null,
+            "familyName": null,
+            "roomId": null,
+            "roomName": null,
+            "roomNameI18Key": "",
+            "color": "w",
+            "controlsConf": {
+                "template": "DR-HCF001S",
+                "lottie": {
+                    "key": "poweron",
+                    "frames": [
+                        {
+                            "value": 0,
+                            "frame": [
+                                0
+                            ]
+                        },
+                        {
+                            "value": 1,
+                            "frame": [
+                                2
+                            ]
+                        }
+                    ]
+                },
+                "schedule": {
+                    "modes": []
+                },
+                "cards": [
+                    {
+                        "type": 6,
+                        "title": "home_bedtime_light",
+                        "icon": "ic_bedtime_light",
+                        "image": "",
+                        "url": "dreo://nav/device/bedtimelight?deviceSn=${sn}",
+                        "show": true,
+                        "key": ""
+                    },
+                    {
+                        "type": 8,
+                        "title": "",
+                        "icon": "",
+                        "image": "",
+                        "url": "dreo://nav/device/schedule?deviceSn={sn}",
+                        "show": true,
+                        "key": ""
+                    },
+                    {
+                        "type": 6,
+                        "title": "device_settings_title",
+                        "icon": "ic_setting",
+                        "image": "",
+                        "url": "dreo://nav/device/setting?deviceSn=${sn}",
+                        "show": true,
+                        "key": "setting"
+                    }
+                ],
+                "feature": {
+                    "schedule": {
+                        "enable": "",
+                        "localSupport": true,
+                        "module": [
+                            {
+                                "type": "HeFi",
+                                "version": "0.0.1"
+                            }
+                        ]
+                    }
+                },
+                "preference": [
+                    {
+                        "id": "200",
+                        "type": "Panel Sound",
+                        "title": "dev_ctrl_audio_feedback",
+                        "image": "ic_mute",
+                        "reverse": true,
+                        "cmd": "muteon"
+                    }
+                ],
+                "control": [
+                    {
+                        "id": "110",
+                        "type": "Speed",
+                        "title": "device_control_speed",
+                        "items": [
+                            {
+                                "text": "1",
+                                "cmd": "windlevel",
+                                "value": 1
+                            },
+                            {
+                                "text": "12",
+                                "cmd": "windlevel",
+                                "value": 12
+                            }
+                        ]
+                    },
+                    {
+                        "id": "130",
+                        "type": "CFFan",
+                        "title": "base_fan",
+                        "cmd": "fanon",
+                        "items": [
+                            {
+                                "text": "base_reverse",
+                                "textColors": [
+                                    "#D5D6D7",
+                                    "#1D1D1D"
+                                ],
+                                "image": "ic_cf_mode_reverse",
+                                "imageColors": [
+                                    "#D5D6D7",
+                                    "#FFBB33"
+                                ],
+                                "cmd": "mode",
+                                "value": 4,
+                                "toast": "dev_ctrl_reverse_toast"
+                            },
+                            {
+                                "text": "device_fans_mode_straight",
+                                "textColors": [
+                                    "#D5D6D7",
+                                    "#1D1D1D"
+                                ],
+                                "image": "ic_normal_wind",
+                                "imageColors": [
+                                    "#D5D6D7",
+                                    "#25D7E4"
+                                ],
+                                "cmd": "mode",
+                                "value": 1
+                            },
+                            {
+                                "text": "device_fans_mode_natural",
+                                "textColors": [
+                                    "#D5D6D7",
+                                    "#1D1D1D"
+                                ],
+                                "image": "ic_natural_wind",
+                                "imageColors": [
+                                    "#D5D6D7",
+                                    "#2CDD96"
+                                ],
+                                "cmd": "mode",
+                                "value": 2
+                            },
+                            {
+                                "text": "device_control_mode_sleep",
+                                "textColors": [
+                                    "#D5D6D7",
+                                    "#1D1D1D"
+                                ],
+                                "image": "ic_sleep_wind",
+                                "imageColors": [
+                                    "#D5D6D7",
+                                    "#6249DF"
+                                ],
+                                "cmd": "mode",
+                                "value": 3
+                            }
+                        ]
+                    },
+                    {
+                        "id": "140",
+                        "type": "CFLight",
+                        "title": "device_control_light",
+                        "cmd": "lighton",
+                        "items": [
+                            {
+                                "type": "light",
+                                "text": "device_fans_mode_natural",
+                                "image": "ic_cf_light",
+                                "cmd": "brightness",
+                                "maxValue": 100,
+                                "minValue": 1
+                            },
+                            {
+                                "type": "color",
+                                "text": "device_control_mode_sleep",
+                                "image": "ic_color_bar",
+                                "cmd": "colortemp",
+                                "maxValue": 100,
+                                "minValue": 0
+                            }
+                        ]
+                    }
+                ],
+                "category": "Ceiling Fan",
+                "version": {
+                    "minControlVer": "2.6.2",
+                    "minPairingVer": "2.6.2"
+                },
+                "setting": [
+                    {
+                        "text": "Firmware Version",
+                        "image": "image.png",
+                        "value": "1.0.0",
+                        "url": "dreo://control"
+                    }
+                ]
+            },
+            "mainConf": {
+                "isSmart": true,
+                "isWifi": true,
+                "isBluetooth": true,
+                "isVoiceControl": true
+            },
+            "resourcesConf": {
+                "imageSmallSrc": "https://resources.dreo-cloud.com/app/202403/5/2b990958eba64c5baf91e546e007f0dd.png",
+                "imageFullSrc": "https://resources.dreo-cloud.com/app/202402/6/8d6598eea10149d4a62d95eb3d3d948b.zip",
+                "imageSmallDarkSrc": "",
+                "imageFullDarkSrc": ""
+            },
+            "servicesConf": [
+                {
+                    "key": "user_manual",
+                    "value": "https://resources.dreo-cloud.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf"
+                }
+            ],
+            "userManuals": [
+                {
+                    "url": "https://resources.dreo-cloud.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf",
+                    "icon": null,
+                    "desc": "User Manual",
+                    "lang": "en"
+                }
+            ]
+        },
+        {
+            "deviceId": "1854820882982711297",
+            "sn": "HSH004S_1",
+            "brand": "Dreo",
+            "model": "DR-HSH004S",
+            "productId": "**REDACTED**",
+            "productName": "Heater",
+            "deviceName": "DEVTEST - HSH004S",
+            "shared": false,
+            "series": null,
+            "seriesName": "Atom One S",
+            "type": 0,
+            "owner": true,
+            "familyId": null,
+            "familyName": null,
+            "roomId": null,
+            "roomName": null,
+            "roomNameI18Key": "",
+            "color": "b",
+            "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202411/13f1817764f9464d27b70c9628cb778eea.png",
+            "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202411/13e8391e5d8f0e4d8da47e03004782422b.png",
+            "widgetAbnormalImage": null,
+            "variantIconMd5": null,
+            "controlsConf": {
+              "template": "DR-HSH004S",
+              "lottie": {
+                "key": "poweron",
+                "frames": [
+                  {
+                    "value": 1
+                  }
+                ]
+              },
+              "instructions": {
+                "en": "https://fe.dreo.com/en/safety-protection-instructions/",
+                "zh": "https://fe.dreo.com/zh/safety-protection-instructions/"
+              },
+              "cards": [
+                {
+                  "type": 6,
+                  "title": "device_settings_title",
+                  "icon": "ic_setting",
+                  "image": "",
+                  "url": "dreo://nav/device/setting?deviceSn=${sn}",
+                  "show": true,
+                  "key": "setting"
+                }
+              ],
+              "preference": [
+                {
+                  "id": "240",
+                  "type": "Temperature Calibration",
+                  "title": "device_control_temp_calibration",
+                  "image": "ic_temp_cal"
+                }
+              ],
+              "control": [
+                {
+                  "swingtype": false,
+                  "hideSafeMode": false
+                }
+              ],
+              "category": "Space Heater"
+            },
+            "mainConf": {
+              "isSmart": true,
+              "isWifi": true,
+              "isBluetooth": true,
+              "isVoiceControl": true
+            },
+            "resourcesConf": {
+              "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202409/1127e0097ddfd14914abcce4fed5e7d36e.png",
+              "imageFullSrc": "https://resources.dreo-cloud.com/app/preSigned202406/288eb1e27a155b4b4c875393b04313706a.zip",
+              "imageSmallDarkSrc": null,
+              "imageFullDarkSrc": null
+            },
+            "servicesConf": [
+              {
+                "key": "user_manual",
+                "value": "https://resources.dreo-cloud.com/app/202310/12056ea09c80d5455f9aa4e713ca8bd84e.pdf"
+              }
+            ],
+            "userManuals": [
+              {
+                "url": "https://resources.dreo-cloud.com/app/preSigned202409/198fc99c74378d4ede81167661b6f663a3.pdf",
+                "icon": null,
+                "desc": "DR-HSH004S User Manual (EU)",
+                "lang": "en"
+              }
+            ]
+        },
+        {
+            "deviceId": "1924380451974754305",
+            "sn": "HEC002S_1",
+            "brand": "Dreo",
+            "model": "DR-HEC002S",
+            "productId": "**REDACTED**",
+            "productName": "Evaporative Cooler",
+            "deviceName": "DEVTEST - Evaporative Cooler - HEC002S",
+            "shared": false,
+            "series": null,
+            "seriesName": "IceWind 712S",
+            "type": 0,
+            "owner": true,
+            "familyId": null,
+            "familyName": null,
+            "roomId": null,
+            "roomName": null,
+            "roomNameI18Key": "",
+            "color": "b",
+            "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202412/26b695c7c2e4884fe6a4dfa743952e4887.png",
+            "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202412/26841547bbde3248e58c37c7c14e50eae8.png",
+            "widgetAbnormalImage": null,
+            "variantIconMd5": null,
+            "controlsConf": {
+              "template": "DR-HEC002S"
+            },
+            "mainConf": {
+              "isSmart": true,
+              "isWifi": true,
+              "isBluetooth": true,
+              "isVoiceControl": true
+            },
+            "resourcesConf": {
+              "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202412/268954c7b5bf144537a771fc3639efa6fe.png",
+              "imageFullSrc": "https://resources.dreo-cloud.com/app/preSigned202412/26a0a0d2dab8c0427c908ec86bd3447d23.zip",
+              "imageSmallDarkSrc": null,
+              "imageFullDarkSrc": null
+            },
+            "userManuals": [
+              {
+                "url": "https://resources.dreo-cloud.com/app/preSigned202501/175b69da3b02614a8d9b8a16bfb7e456c2.pdf",
+                "icon": null,
+                "desc": "DR-HEC002S User Manual V1",
+                "lang": "en"
+              }
+            ]
+        },
+        {
+            "deviceId": "redacted",
+            "sn": "HSH009S_1",
+            "brand": "Dreo",
+            "model": "DR-HSH009S",
+            "productId": "**REDACTED**",
+            "productName": "Heater",
+            "deviceName": "DEVTEST - Heater - HSH009S",
+            "shared": false,
+            "series": null,
+            "seriesName": "Wall-mounted Heater",
+            "color": "w",
+            "controlsConf": {
+              "template": "DR-HSH009S",
+              "lottie": {
+                "key": "poweron",
+                "frames": [
+                  {
+                    "value": 0,
+                    "frame": [
+                      0
+                    ]
+                  },
+                  {
+                    "value": 1,
+                    "frame": [
+                      3
+                    ]
+                  }
+                ]
+              },
+              "schedule": {
+                "duration": [
+                  {
+                    "text": "schedule_control_turnoff_never",
+                    "desc": "schedule_control_turnoff_never_desc",
+                    "time": 0
+                  },
+                  {
+                    "text": "schedule_control_turnoff_30min",
+                    "desc": "schedule_control_turnoff_30min_desc",
+                    "time": 1800
+                  },
+                  {
+                    "text": "schedule_control_turnoff_1h",
+                    "desc": "schedule_control_turnoff_1h_desc",
+                    "time": 3600
+                  },
+                  {
+                    "text": "schedule_control_turnoff_2h",
+                    "desc": "schedule_control_turnoff_2h_desc",
+                    "time": 7200
+                  },
+                  {
+                    "text": "schedule_control_turnoff_4h",
+                    "desc": "schedule_control_turnoff_4h_desc",
+                    "time": 14400
+                  },
+                  {
+                    "text": "schedule_control_turnoff_6h",
+                    "desc": "schedule_control_turnoff_6h_desc",
+                    "time": 21600
+                  },
+                  {
+                    "text": "schedule_control_turnoff_8h",
+                    "desc": "schedule_control_turnoff_8h_desc",
+                    "time": 28800
+                  }
+                ],
+                "modes": [
+                  {
+                    "icon": "ic_hsh_item_heat",
+                    "title": "device_heater_mode_heat",
+                    "cmd": "mode",
+                    "value": "hotair",
+                    "valueType": 2,
+                    "isSelected": true,
+                    "attention": [
+                      "mode",
+                      "htalevel",
+                      "poweron",
+                      "oscangle"
+                    ],
+                    "controls": [
+                      {
+                        "type": 1,
+                        "title": "device_control_mode_manual_level",
+                        "cmd": [
+                          "htalevel"
+                        ],
+                        "value": 3,
+                        "valueType": 1,
+                        "startValue": 0,
+                        "validValue": 1,
+                        "periodColor": "#FF9500",
+                        "endValue": 3,
+                        "groupId": 0,
+                        "startColor": "#FFD666",
+                        "endColor": "#FF7214",
+                        "isSelected": false,
+                        "preUnit": "H"
+                      }
+                    ]
+                  },
+                  {
+                    "icon": "ic_hsh_item_eco",
+                    "title": "device_heater_mode_eco",
+                    "cmd": "mode",
+                    "value": "eco",
+                    "valueType": 2,
+                    "isSelected": false,
+                    "attention": [
+                      "mode",
+                      "ecolevel",
+                      "poweron",
+                      "oscangle"
+                    ],
+                    "controls": [
+                      {
+                        "type": 4,
+                        "valueType": 1,
+                        "title": "device_control_temp",
+                        "startColor": "#FFD666",
+                        "endColor": "#FF7214",
+                        "cmd": [
+                          "ecolevel"
+                        ],
+                        "value": 85,
+                        "startValue": 41,
+                        "endValue": 95,
+                        "groupId": 0,
+                        "isSelected": false,
+                        "unit": "\u2109"
+                      }
+                    ]
+                  },
+                  {
+                    "icon": "ic_hsh_item_fanonly",
+                    "title": "device_heater_mode_fan_only",
+                    "cmd": "mode",
+                    "value": "coolair",
+                    "valueType": 2,
+                    "isSelected": false,
+                    "attention": [
+                      "mode",
+                      "poweron",
+                      "oscangle"
+                    ],
+                    "controls": []
+                  }
+                ]
+              },
+              "timer": {
+                "maxHour": 23
+              },
+              "cards": [
+                {
+                  "type": 2,
+                  "title": "home_temp",
+                  "icon": "",
+                  "image": "",
+                  "url": "",
+                  "show": true
+                },
+                {
+                  "type": 8,
+                  "title": "",
+                  "icon": "",
+                  "image": "",
+                  "url": "dreo://nav/device/schedule?deviceSn={sn}",
+                  "show": true,
+                  "key": "",
+                  "minVersion": "2.2.2"
+                },
+                {
+                  "type": 6,
+                  "title": "device_settings_title",
+                  "icon": "ic_setting",
+                  "image": "",
+                  "url": "dreo://nav/device/setting?deviceSn=${sn}",
+                  "show": true,
+                  "key": "setting"
+                }
+              ],
+              "feature": {
+                "schedule": {
+                  "enable": true,
+                  "localSupport": true,
+                  "module": [
+                    {
+                      "type": "HeFi",
+                      "version": "0.0.1"
+                    }
+                  ]
+                }
+              },
+              "preference": [
+                {
+                  "id": "270",
+                  "type": "Display List",
+                  "title": "dev_ctrl_heater_display",
+                  "image": "ic_display",
+                  "reverse": false
+                },
+                {
+                  "id": "200",
+                  "type": "Panel Sound",
+                  "title": "device_control_panelsound",
+                  "image": "ic_mute",
+                  "reverse": true,
+                  "cmd": "muteon"
+                },
+                {
+                  "id": "220",
+                  "type": "Child Lock",
+                  "title": "device_control_childlock",
+                  "image": "ic_child_lock",
+                  "reverse": false,
+                  "cmd": "childlockon"
+                },
+                {
+                  "id": "250",
+                  "type": "Open Window Detection",
+                  "title": "dev_ctrl_open_win_dect",
+                  "image": "ic_winopen",
+                  "cmd": "winopenon"
+                },
+                {
+                  "id": "280",
+                  "type": "Show Temp",
+                  "title": "ambient_temp_always_on",
+                  "image": "ic_temp_unit_show",
+                  "reverse": false,
+                  "cmd": "dispmode"
+                },
+                {
+                  "id": "230",
+                  "type": "Temperature Unit",
+                  "title": "device_control_temp_unit",
+                  "image": "ic_temp_unit"
+                },
+                {
+                  "id": "240",
+                  "type": "Temperature Calibration",
+                  "title": "device_control_temp_calibration",
+                  "image": "ic_temp_cal"
+                }
+              ],
+              "control": [
+                {
+                  "swingtype": true,
+                  "hideSafeMode": true
+                }
+              ],
+              "category": "Space Heater",
+              "version": {
+                "minControlVer": "2.2.2",
+                "minPairingVer": "2.0.0"
+              }
+            },
+            "mainConf": {
+              "isSmart": true,
+              "isWifi": true,
+              "isBluetooth": true,
+              "isVoiceControl": true
+            },
+            "resourcesConf": {
+              "imageSmallSrc": "https://resources.dreo-cloud.com/app/202306/20bad19da722a44238bb81ae3a6b87b689.png",
+              "imageFullSrc": "https://resources.dreo-cloud.com/app/202307/259dd80ef20e50432195beab4dc1939160.zip",
+              "imageSmallDarkSrc": "",
+              "imageFullDarkSrc": ""
+            },
+            "servicesConf": [
+              {
+                "key": "user_manual",
+                "value": "https://resources.dreo-cloud.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf"
+              }
+            ],
+            "userManuals": [
+              {
+                "icon": "https://resources.dreo-cloud.com/app/202309/7c299b4e04b3842c3b7efe11e8b13b88d.png",
+                "url": "https://resources.dreo-cloud.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf",
+                "desc": "Wall-mounted Heater"
+              },
+              {
+                "icon": "https://resources.dreo-cloud.com/app/202309/71392605cead140a282abedfcdd49bbdf.png",
+                "url": "https://resources.dreo-cloud.com/app/202310/12a5ec101b8fa04ce2a65956acdce8e0ab.pdf",
+                "desc": "Wall-mounted Heater with ALCI Plug"
+              },
+              {
+                "icon": "https://resources.dreo-cloud.com/app/202309/75e96dbcf73e14cb1ba94172c55968c11.png",
+                "url": "https://resources.dreo-cloud.com/app/202310/121c4cbb7fff054a72a105a74d1cb703aa.pdf",
+                "desc": "Wall-mounted Heater with Safety Plug"
+              }
+            ]
+          }            
       ]
     }
   }

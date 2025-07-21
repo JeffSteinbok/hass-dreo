@@ -26,7 +26,7 @@ class TestDebugTestMode:
 
         pydreo_manager.login()
         pydreo_manager.load_devices()
-        assert len(pydreo_manager.devices) == 2
+        assert len(pydreo_manager.devices) == 6
         fan = pydreo_manager.devices[0]
         assert fan.speed_range == (1, 5)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
@@ -34,3 +34,6 @@ class TestDebugTestMode:
 
         ac = pydreo_manager.devices[1]
         assert ac.temperature == 88
+
+        fan.oscillating = True
+        assert fan.oscillating is True, "Fan should be oscillating after setting to True"

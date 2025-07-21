@@ -1,0 +1,152 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+      "mixed": {
+        "wifi_rssi": {
+          "state": -36,
+          "timestamp": 1747247773
+        },
+        "poweron": {
+          "state": false,
+          "timestamp": 1747429402
+        },
+        "scheid": {
+          "state": 0,
+          "timestamp": 1747247773
+        },
+        "rhtarget": {
+          "state": 53,
+          "timestamp": 1747247773
+        },
+        "timeron": {
+          "state": {
+            "du": 0,
+            "ts": 1746424878
+          },
+          "timestamp": null
+        },
+        "scheon": {
+          "state": false,
+          "timestamp": 1747247773
+        },
+        "mcuon": {
+          "state": true,
+          "timestamp": 1747247773
+        },
+        "lightmode": {
+          "state": 2,
+          "timestamp": 1747247773
+        },
+        "network_latency": {
+          "state": 80,
+          "timestamp": 1747247773
+        },
+        "rgbmode": {
+          "state": 0,
+          "timestamp": 1747247773
+        },
+        "module_hardware_model": {
+          "state": "HeFi",
+          "timestamp": 1747247773
+        },
+        "mcu_firmware_version": {
+          "state": "1.0.0",
+          "timestamp": 1747247773
+        },
+        "rhsuspend": {
+          "state": true,
+          "timestamp": 1747429402
+        },
+        "temperature": {
+          "state": 76,
+          "timestamp": 1747429377
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "rgbon": {
+          "state": true,
+          "timestamp": 1747247773
+        },
+        "muteon": {
+          "state": false,
+          "timestamp": 1747247773
+        },
+        "mcu_hardware_model": {
+          "state": "SC95F8523/EU",
+          "timestamp": 1747247773
+        },
+        "wifi_ssid": "**REDACTED**",
+        "windlevel": {
+          "state": 1,
+          "timestamp": 1747247773
+        },
+        "tempunit": {
+          "state": 130,
+          "timestamp": 1747247773
+        },
+        "windmode": {
+          "state": 2,
+          "timestamp": 1747247773
+        },
+        "rhmode": {
+          "state": 2,
+          "timestamp": 1747247773
+        },
+        "module_firmware_version": {
+          "state": "3.6.10",
+          "timestamp": 1747247773
+        },
+        "wrong": {
+          "state": 0,
+          "timestamp": 1747247773
+        },
+        "connected": {
+          "state": true,
+          "timestamp": 1747247773
+        },
+        "timeroff": {
+          "state": {
+            "du": 0,
+            "ts": 1746424878
+          },
+          "timestamp": null
+        },
+        "_ota": {
+          "state": 0,
+          "timestamp": 1747247773
+        },
+        "rh": {
+          "state": 41,
+          "timestamp": 1747429452
+        },
+        "rgbth": {
+          "state": "30,70",
+          "timestamp": 1747247773
+        },
+        "childlockon": {
+          "state": false,
+          "timestamp": 1747247773
+        },
+        "worktime": {
+          "state": 19,
+          "timestamp": 1747247773
+        },
+        "hoscon": {
+          "state": true,
+          "timestamp": 1747247773
+        },
+        "tempoffset": {
+          "state": 0,
+          "timestamp": 1747247773
+        },
+        "rgbcolor": {
+          "state": 30719,
+          "timestamp": 1747247773
+        }
+      },
+      "sn": "**REDACTED**",
+      "productId": "**REDACTED**",
+      "region": "eu-central-1/emq",
+      "deviceInfo": null
+    }
+}
