@@ -29,7 +29,7 @@ class TestDreoFanHA(TestDeviceBase):
                                                             self.create_mock_device( name="Test Air Conditioner", type="Air Conditioner")]
 
             entity_list = fan.get_entries(mocked_pydreo_fans)
-            assert len(entity_list) == 5
+            assert len(entity_list) == 4
 
     def test_fan_simple(self):
         """Test the creation of the fan entity."""
