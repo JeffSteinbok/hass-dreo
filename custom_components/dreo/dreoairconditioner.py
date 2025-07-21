@@ -19,6 +19,7 @@ from .pydreo import (
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
     HUMIDITY_RANGE,
+    PRESET_SLEEP,
 )
 
 from .pydreo.pydreoairconditioner import (
@@ -116,6 +117,14 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             self._attr_fan_mode,
         )
 
+    async def async_added_to_hass(self) -> None:
+        """Configure temperature mapping after entity is added to HA."""
+        await super().async_added_to_hass()
+        
+        # Configure temperature mapping based on HA's unit configuration
+        ha_uses_celsius = self.hass.config.units.temperature_unit == UnitOfTemperature.CELSIUS
+        self.device.set_ha_temperature_unit_is_celsius(ha_uses_celsius)
+
     @property
     def device_info(self) -> DeviceInfo:
         """Return device information for this air conditioner."""
@@ -170,6 +179,9 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         if preset_mode == PRESET_ECO:
             self.device.mode = DREO_AC_MODE_COOL
             self.device.preset_mode = preset_mode
+        elif preset_mode == PRESET_SLEEP:
+            self.device.mode = DREO_AC_MODE_COOL
+            self.device.preset_mode = preset_mode
         else:
             self.device.preset_mode = PRESET_NONE
 
@@ -179,8 +191,6 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the air conditioner."""
         return {
-            "current_temperature": self.device.temperature,
-            "target_temperature": self.device.target_temperature,
             "model": self.device.model,
         }
 
@@ -244,7 +254,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     ### Implementation of climate methods
     @property
-    def current_temperature(self) -> float:
+    def current_temperature(self) -> int:
         return self.device.temperature
     
     @property
@@ -252,12 +262,12 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.device_ranges[TEMP_RANGE][0]
 
     @property
-    def max_temp(self) -> float | None:
+    def max_temp(self) -> int | None:
         return self.device.device_definition.device_ranges[TEMP_RANGE][1]
     
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        self.device.target_temperature = kwargs.get(ATTR_TEMPERATURE)
+        self.device.target_temperature = int(kwargs.get(ATTR_TEMPERATURE))
         _LOGGER.debug("DreoAirConditionerHA::set_temperature(%s) %s --> %s", 
                       self.device.name, 
                       self._attr_target_temperature, 
@@ -266,11 +276,11 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         self.schedule_update_ha_state()
 
     @property
-    def target_temperature(self) -> float | None:
+    def target_temperature(self) -> int | None:
         return self.device.target_temperature
     
     @property
-    def target_temperature_low(self) -> float | None:
+    def target_temperature_low(self) -> int | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TARGET_TEMP_RANGE_ECO
         else:
@@ -278,7 +288,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.device_ranges[range_key][0]
 
     @property
-    def target_temperature_high(self) -> float | None:
+    def target_temperature_high(self) -> int | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TARGET_TEMP_RANGE_ECO
         else:
@@ -286,7 +296,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.device_ranges[range_key][1]
 
     @property
-    def target_temperature_step(self) -> float | None:
+    def target_temperature_step(self) -> int | None:
         return 1
 
     @property
@@ -331,13 +341,15 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         """Set new target hvac mode."""
         _LOGGER.debug("DreoAirConditionerHA:set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
         self._last_hvac_mode = self._attr_hvac_mode
-        self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
 
-        if hvac_mode != HVACMode.OFF:
-            self.device.poweron = True
-        else:
+        if hvac_mode == HVACMode.OFF:
             self.device.poweron = False
-            
+            self._attr_hvac_mode = HVACMode.OFF
+        else:
+            self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
+            self.device.poweron = True
+            self._attr_hvac_mode = hvac_mode
+
         self.schedule_update_ha_state()
 
     @property

@@ -24,6 +24,7 @@ OSCANGLE_KEY = "oscangle"
 CRUISECONF_KEY = "cruiseconf"
 TEMPERATURE_KEY = "temperature"
 TARGET_TEMPERATURE_KEY = "templevel"
+SLEEPTEMPOFFSET_KEY = "sleeptempoffset"
 VOICEON_KEY = "voiceon"
 LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
@@ -219,6 +220,9 @@ PRESET_NONE = "none"
 
 # Device is running an energy-saving mode
 PRESET_ECO = "eco"
+
+# Device is running in sleep mode
+PRESET_SLEEP = "sleep"
 
 class HVACMode(StrEnum):
     """HVAC mode for climate devices."""
