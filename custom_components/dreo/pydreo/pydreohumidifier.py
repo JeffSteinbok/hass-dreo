@@ -15,7 +15,7 @@ from .constant import (
 from .helpers import Helpers
 
 
-from .pydreobasedevice import PyDreoBaseDevice
+from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -23,7 +23,7 @@ _LOGGER = logging.getLogger(LOGGER_NAME)
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
-class PyDreoHumidifier(PyDreoBaseDevice):
+class PyDreoHumidifier(PyDreoFanBase):
     """Base class for Dreo Humidifiers"""
 
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
