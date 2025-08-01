@@ -18,7 +18,8 @@ from .pydreo.constant import (
     HUMIDITY_KEY,
     MODE_KEY,
     PM25_KEY,
-    DreoDeviceType
+    DreoDeviceType,
+    RGB_LEVEL
 )
 
 from .pydreo.pydreoevaporativecooler import (
@@ -47,6 +48,15 @@ from .pydreo.pydreochefmaker import (
     MODE_PAUSED,
 )
 
+#RPCO
+from .pydreo.pydreohumidifier import (
+    MODE_MANUAL,
+    MODE_AUTO,
+    MODE_SLEEP,
+    LIGHT_ON,
+    LIGHT_OFF,
+)
+#END
 _LOGGER = logging.getLogger(LOGGER)
 
 
@@ -61,7 +71,7 @@ class DreoSensorEntityDescription(SensorEntityDescription):
 
 SENSORS: tuple[DreoSensorEntityDescription, ...] = (
     DreoSensorEntityDescription(
-        key="temperature",
+        key="Temperature",
         translation_key="temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -70,7 +80,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: (not device.type in { DreoDeviceType.HEATER, DreoDeviceType.AIR_CONDITIONER }) and device.is_feature_supported("temperature"),
     ),
     DreoSensorEntityDescription(
-        key="humidity",
+        key="Humidity",
         translation_key="humidity",
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,
@@ -84,7 +94,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "h",
-        value_fn=lambda device: device.work_time,
+        value_fn=lambda device: device.worktime,
         exists_fn=lambda device: device.is_feature_supported(WORK_TIME),
     ),
     DreoSensorEntityDescription(
@@ -96,14 +106,6 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: device.is_feature_supported(TEMP_TARGET_REACHED),
     ),
     DreoSensorEntityDescription(
-        key="Status",
-        translation_key="status",
-        device_class=SensorDeviceClass.ENUM,
-        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
-        value_fn=lambda device: device.mode,
-        exists_fn=lambda device: device.is_feature_supported(MODE_KEY),
-    ),
-    DreoSensorEntityDescription(
         key="pm25",
         translation_key="pm25",
         device_class=SensorDeviceClass.PM25,
@@ -112,14 +114,24 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         value_fn=lambda device: device.pm25,
         exists_fn=lambda device: device.is_feature_supported(PM25_KEY),
     ),
+#RPCO
     DreoSensorEntityDescription(
         key="Water Level",
         translation_key="water",
         device_class=SensorDeviceClass.ENUM,
         options=[WATER_LEVEL_OK, WATER_LEVEL_EMPTY],
-        value_fn=lambda device: device.water_level,
+        value_fn=lambda device: device.wrong,
         exists_fn=lambda device: device.is_feature_supported(WATER_LEVEL_STATUS_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="Ambient Light",
+        translation_key="light",
+        device_class=SensorDeviceClass.ENUM,
+        options=[LIGHT_ON, LIGHT_OFF],
+        value_fn=lambda device: device.rgblevel,
+        exists_fn=lambda device: device.is_feature_supported(RGB_LEVEL),
     )
+#END
 )
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSensorHA]:
