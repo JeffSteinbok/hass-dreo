@@ -83,7 +83,6 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         supported_features = 0
         if self.device.modes is not None:
             supported_features |= HumidifierEntityFeature.MODES
-
         return supported_features
     
     @property
@@ -95,6 +94,20 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     def mode(self) -> str | None:
         """Get the current mode."""
         return self.device.mode
+
+#RPCO
+    @property
+    def wrong(self) -> str :
+        return self.device.wrong
+
+    @property
+    def worktime(self) -> int :
+        return self.device.worktime
+
+    @property
+    def rgblevel(self) -> int :
+        return self.device.rgblevel    
+#END
 
     @property
     def available_modes(self) -> int:
