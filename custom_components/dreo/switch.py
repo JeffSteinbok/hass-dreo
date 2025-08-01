@@ -92,7 +92,13 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         translation_key="humidify",
         attr_name="humidify",
         icon="mdi:air-humidifier",
-    )
+    ),
+        DreoSwitchEntityDescription(
+        key="Schedule",
+        translation_key="scheon",
+        attr_name="scheon",
+        icon="mdi:calendar",
+    )  
 )
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSwitchHA]:
