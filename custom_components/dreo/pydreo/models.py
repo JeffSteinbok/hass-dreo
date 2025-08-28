@@ -112,6 +112,7 @@ SUPPORTED_MODEL_PREFIXES = {
     "WH",
     "DR-HAC",
     "DR-HHM",
+    "DR-HDH",
     "DR-HEC"
 }
 
@@ -280,6 +281,15 @@ SUPPORTED_DEVICES = {
     ),
 
     "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER),
+
+    # Dehumidifiers
+    "DR-HDH001S": DreoDeviceDetails(
+        device_type=DreoDeviceType.DEHUMIDIFIER,
+        device_ranges={
+            HUMIDITY_RANGE: (30, 85),
+            SPEED_RANGE: (1, 3)
+        }
+    ),
 
     # Evaporative Coolers
     "DR-HEC": DreoDeviceDetails(

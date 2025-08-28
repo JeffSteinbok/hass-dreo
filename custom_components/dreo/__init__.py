@@ -96,6 +96,13 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
+    if (DreoDeviceType.DEHUMIDIFIER in device_types):
+        platforms.add(Platform.HUMIDIFIER)
+        platforms.add(Platform.FAN)
+        platforms.add(Platform.SENSOR)
+        platforms.add(Platform.SWITCH)
+        platforms.add(Platform.NUMBER)
+
     if (DreoDeviceType.CHEF_MAKER in device_types):
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
