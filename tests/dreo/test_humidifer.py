@@ -27,7 +27,7 @@ class TestDreoHumidifier(TestDeviceBase):
             self.create_mock_device( name="Test Air Conditioner", type="Air Conditioner")]
 
         entity_list = humidifier.get_entries(mocked_pydreo_devices)
-        assert len(entity_list) == 1
+        assert len(entity_list) == 2
 
     def test_humidifier_simple(self): 
         """Test the creation of the humidifier entity."""
