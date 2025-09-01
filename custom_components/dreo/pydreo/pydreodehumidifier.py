@@ -1,4 +1,4 @@
-"""Dreo API for controlling Dehumidifiers."""
+"""Dreo API for controlling Humidifiers."""
 
 import logging
 from typing import TYPE_CHECKING, Dict
@@ -9,45 +9,95 @@ from .constant import (
     MUTEON_KEY,
     POWERON_KEY,
     HUMIDITY_KEY,
-    WINDLEVEL_KEY,
-    CHILDLOCKON_KEY,
-    LIGHTON_KEY,
-    SPEED_RANGE,
-    TEMPERATURE_KEY
+    TARGET_AUTO_HUMIDITY_KEY,
+    RGB_LEVEL,
+    SCHEDULE_ENABLE
 )
+
+from .helpers import Helpers
+
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
+#RPCO
+WATER_LEVEL_STATUS_KEY = "wrong"
+WORKTIME_KEY = "worktime"
+
+# Status for water level indicator
+WATER_LEVEL_OK = "Ok"
+WATER_LEVEL_EMPTY = "Empty"
+
+LIGHT_ON = "Enable"
+LIGHT_OFF = "Disabled"
+
+WATER_LEVEL_STATUS_MAP = {
+    0: WATER_LEVEL_OK,
+    1: WATER_LEVEL_EMPTY,
+    WATER_LEVEL_OK: 0,
+    WATER_LEVEL_EMPTY: 1
+}
+
+RGB_MAP = {
+    0: LIGHT_OFF,
+    2: LIGHT_ON,
+    LIGHT_OFF: 0,
+    LIGHT_ON: 2
+}
+
+# Status for mode indicator
+MODE_MANUAL = "manual"
+MODE_AUTO = "auto" 
+MODE_SLEEP = "sleep"
+#END
+
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
-# Dehumidifier-specific constants
-RHAUTOLEVEL_KEY = "rhautolevel"
-AUTOON_KEY = "autoon"
-
-class PyDreoDehumidifier(PyDreoBaseDevice):
-    """Base class for Dreo Dehumidifiers"""
+class PyDreoHumidifier(PyDreoBaseDevice):
+    """Base class for Dreo Humidifiers"""
 
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
-        """Initialize dehumidifier devices."""
+        """Initialize air conditioner devices."""
         super().__init__(device_definition, details, dreo)
 
-        self._modes = [("Auto", 1), ("Continuous", 2)]
-        
+        self._modes = device_definition.preset_modes
+        if (self._modes is None):
+            self._modes = self.parse_modes(details)
+
         self._mode = None
         self._mute_on = None
         self._humidity = None
         self._target_humidity = None
-        self._wind_level = None
-        self._child_lock_on = None
-        self._light_on = None
-        self._auto_on = None
-        self._temperature = None
+#RPCO
+        self._wrong = None
+        self._worktime = None
+        self._rgblevel = None
+        self._scheon = None
+#END
         
-        self._speed_range = device_definition.device_ranges.get(SPEED_RANGE, (1, 3)) if device_definition.device_ranges else (1, 3)
+    def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
+        """Parse the preset modes from the details."""
+        modes = []
+        controls_conf = details.get("controlsConf", None)
+        if controls_conf is not None:
+            schedule = controls_conf.get("schedule", None)
+            if (schedule is not None):
+                modes_node = schedule.get("modes", None)
+                if (modes_node is not None):
+                    for mode_item in modes_node:
+                        text = self.get_mode_string(mode_item.get("title", None))
+                        value = mode_item.get("value", None)
+                        modes.append((text, value))
+
+        modes.sort(key=lambda tup: tup[1])  # sorts in place
+        if (len(modes) == 0):
+            _LOGGER.debug("PyDreoHumidifier:No preset modes detected")
+            modes = None
+        _LOGGER.debug("PyDreoHumidifier:Detected preset modes - %s", modes)
+        return modes
         
     @property
     def is_on(self):
@@ -56,226 +106,138 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
 
     @is_on.setter
     def is_on(self, value: bool):
-        """Set if the dehumidifier is on or off"""
-        _LOGGER.debug("PyDreoDehumidifier:is_on.setter - %s", value)
+        """Set if the fan is on or off"""
+        _LOGGER.debug("PyDreoHumidifier:is_on.setter - %s", value)
         self._send_command(POWERON_KEY, value)
 
     @property
     def modes(self) -> list[str]:
-        """Get the list of operating modes"""
-        return [mode[0] for mode in self._modes]
+        """Get the list of modes"""
+        return Helpers.get_name_list(self._modes)
 
     @property
     def humidity(self):
-        """Get the current humidity"""
+        """Get the humidity"""
         return self._humidity
 
     @property
     def target_humidity(self):
-        """Get the target humidity"""
+        """Get the target_humidity"""
         return self._target_humidity
+        
+#RPCO
+    @property
+    def wrong(self):
+        """Return the water level status"""
+        return self._wrong
+
+    @property
+    def worktime(self):
+        """Return the working time (used since cleaning)"""
+        return self._worktime
+
+    @property
+    def rgblevel(self):
+        """Return RGB Level to verify Light is ON/OFF """
+        return self._rgblevel
+    
+    @property
+    def scheon(self):
+        """Returns `True` if the device is on, `False` otherwise."""
+        return self._scheon
+
+    @scheon.setter
+    def scheon(self, value: bool):
+        """Set if the fan is on or off"""
+        _LOGGER.debug("PyDreoHumidifier:scheon.setter - %s", value)
+        self._send_command(SCHEDULE_ENABLE, value)        
+#END
 
     @target_humidity.setter
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
-        _LOGGER.debug("PyDreoDehumidifier:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
-        if value < 30 or value > 85:
-            raise ValueError(f"Target humidity {value} is out of range (30-85)")
+        _LOGGER.debug("PyDreoHumidifier:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         self._target_humidity = value
-        self._send_command(RHAUTOLEVEL_KEY, value)
+        self._send_command(TARGET_AUTO_HUMIDITY_KEY, value)
 
     @property
-    def wind_level(self):
-        """Get the fan speed level"""
-        return self._wind_level
-
-    @wind_level.setter 
-    def wind_level(self, value: int) -> None:
-        """Set the fan speed level (1-3)"""
-        _LOGGER.debug("PyDreoDehumidifier:wind_level.setter(%s) %s --> %s", self, self._wind_level, value)
-        if value < 1 or value > 3:
-            raise ValueError(f"Wind level {value} is out of range (1-3)")
-        self._wind_level = value
-        self._send_command(WINDLEVEL_KEY, value)
-
-    @property
-    def panel_sound(self) -> bool:
+    def panel_sound(self):
         """Is the panel sound on"""
-        if self._mute_on is not None:
-            return not self._mute_on
-        return None
+        return not self._mute_on
 
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
-        """Set if the panel sound is on"""
-        _LOGGER.debug("PyDreoDehumidifier:panel_sound.setter(%s) --> %s", self.name, value)
+        """Set if the panel sound"""
+        _LOGGER.debug("PyDreoHumidifier:panel_sound.setter(%s) --> %s", self.name, value)
         self._send_command(MUTEON_KEY, not value)
-
-    @property
-    def display_light(self) -> bool:
-        """Is the display light on"""
-        return self._light_on
-
-    @display_light.setter
-    def display_light(self, value: bool) -> None:
-        """Set if the display light is on"""
-        _LOGGER.debug("PyDreoDehumidifier:display_light.setter(%s) --> %s", self.name, value)
-        self._send_command(LIGHTON_KEY, value)
-
-    @property
-    def childlockon(self) -> bool:
-        """Is the child lock on"""
-        return self._child_lock_on
-
-    @childlockon.setter
-    def childlockon(self, value: bool) -> None:
-        """Set if the child lock is on"""
-        _LOGGER.debug("PyDreoDehumidifier:childlockon.setter(%s) --> %s", self.name, value)
-        self._send_command(CHILDLOCKON_KEY, value)
-
-    @property
-    def auto_mode(self) -> bool:
-        """Is auto mode on"""
-        return self._auto_on
-
-    @auto_mode.setter
-    def auto_mode(self, value: bool) -> None:
-        """Set if auto mode is on"""
-        _LOGGER.debug("PyDreoDehumidifier:auto_mode.setter(%s) --> %s", self.name, value)
-        self._send_command(AUTOON_KEY, value)
-
-    @property
-    def speed_range(self):
-        """Get the fan speed range"""
-        return self._speed_range
-
-    @property
-    def fan_speed(self):
-        """Get the current fan speed (alias for wind_level)"""
-        return self._wind_level
-
-    @fan_speed.setter
-    def fan_speed(self, value: int) -> None:
-        """Set the fan speed (alias for wind_level)"""
-        self.wind_level = value
-
-    @property
-    def preset_modes(self):
-        """Get the list of fan speed preset modes"""
-        return ["Low", "Medium", "High"]
-
-    @property
-    def preset_mode(self):
-        """Get the current fan speed preset mode"""
-        if self._wind_level == 1:
-            return "Low"
-        elif self._wind_level == 2:
-            return "Medium"
-        elif self._wind_level == 3:
-            return "High"
-        return None
-
-    def set_preset_mode(self, preset_mode: str) -> None:
-        """Set the fan speed preset mode"""
-        _LOGGER.debug("PyDreoDehumidifier:set_preset_mode(%s) --> %s", self.name, preset_mode)
-        if preset_mode == "Low":
-            self.wind_level = 1
-        elif preset_mode == "Medium":
-            self.wind_level = 2
-        elif preset_mode == "High":
-            self.wind_level = 3
-        else:
-            raise ValueError(f"Invalid fan preset mode: {preset_mode}")
-
-    @property
-    def oscillating(self):
-        """Get oscillating state (dehumidifier doesn't oscillate)"""
-        return False
-
-    @property 
-    def temperature(self):
-        """Get the current temperature"""
-        return self._temperature
         
     @property
     def mode(self):
-        """Return the current operating mode."""
-        for mode_name, mode_value in self._modes:
-            if self._mode == mode_value:
-                return mode_name
-        return None
+        """Return the current mode."""
+        
+        str_value : str = Helpers.name_from_value(self._modes, self._mode)
+        if (str_value is None):
+            return None
+        return str_value
 
     @mode.setter
     def mode(self, value: str) -> None:
-        """Set the operating mode"""
-        mode_value = None
-        for mode_name, mode_val in self._modes:
-            if mode_name == value:
-                mode_value = mode_val
-                break
-                
-        if mode_value is not None:
-            _LOGGER.debug("PyDreoDehumidifier:mode.setter(%s) %s --> %s", self, self._mode, mode_value)
-            self._send_command(MODE_KEY, mode_value)
+        numeric_value = Helpers.value_from_name(self._modes, value)
+        if numeric_value is not None:
+            self._send_command(MODE_KEY, numeric_value)
         else:
-            raise ValueError(f"Operating mode {value} is not in the acceptable list: {self.modes}")
+            raise ValueError(f"Preset mode {value} is not in the acceptable list: {self._modes}")
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        super().update_state(state)
+        super().update_state(state)  # handles _is_on
 
-        _LOGGER.debug("PyDreoDehumidifier(%s):update_state: %s", self.name, state)
+        _LOGGER.debug("PyDreoHumidifier(%s):update_state: %s", self.name, state)
         self._mode = self.get_state_update_value(state, MODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
-        self._target_humidity = self.get_state_update_value(state, RHAUTOLEVEL_KEY)
-        self._wind_level = self.get_state_update_value(state, WINDLEVEL_KEY)
-        self._child_lock_on = self.get_state_update_value(state, CHILDLOCKON_KEY)
-        self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
-        self._auto_on = self.get_state_update_value(state, AUTOON_KEY)
-        self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
+        self._target_humidity = self.get_state_update_value(state, TARGET_AUTO_HUMIDITY_KEY)
+#RPCO
+        self._wrong = WATER_LEVEL_STATUS_MAP[self.get_state_update_value(state, WATER_LEVEL_STATUS_KEY)]
+        self._worktime = self.get_state_update_value(state, WORKTIME_KEY)
+        self._rgblevel = RGB_MAP[self.get_state_update_value(state, RGB_LEVEL)]
+        self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
+        
+#END        
         
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoDehumidifier:handle_server_update(%s): %s", self.name, message)
+        _LOGGER.debug("PyDreoHumidifier:handle_server_update(%s): %s", self.name, message)
 
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_poweron, bool):
-            self._is_on = val_poweron
-            _LOGGER.debug("PyDreoDehumidifier:handle_server_update - poweron is %s", self._is_on)
+            self._is_on = val_poweron  # Ensure poweron state is updated
+            _LOGGER.debug("PyDreoHumidifier:handle_server_update - poweron is %s", self._is_on)
 
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
             self._mode = val_mode
+            
+#RPCO
+        val_worktime = self.get_server_update_key_value(message, WORKTIME_KEY)
+        if isinstance(val_worktime, int):
+            self._worktime = val_worktime
 
-        val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
-        if isinstance(val_humidity, int):
-            self._humidity = val_humidity
+        val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
+        if isinstance(val_water_level, int):
+            val_water_level = WATER_LEVEL_STATUS_MAP[val_water_level]
+            self._wrong = val_water_level		
 
-        val_target_humidity = self.get_server_update_key_value(message, RHAUTOLEVEL_KEY)
-        if isinstance(val_target_humidity, int):
-            self._target_humidity = val_target_humidity
+        val_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
+        if isinstance(val_rgblevel, int):
+            val_rgblevel = RGB_MAP[val_rgblevel]
+            self._rgblevel = val_rgblevel 
 
-        val_wind_level = self.get_server_update_key_value(message, WINDLEVEL_KEY)
-        if isinstance(val_wind_level, int):
-            self._wind_level = val_wind_level
+        val_scheon = self.get_server_update_key_value(message, SCHEDULE_ENABLE)
+        if isinstance(val_scheon, bool):
+            self._scheon = val_scheon  
 
-        val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
-        if isinstance(val_mute, bool):
-            self._mute_on = val_mute
-
-        val_light = self.get_server_update_key_value(message, LIGHTON_KEY)
-        if isinstance(val_light, bool):
-            self._light_on = val_light
-
-        val_child_lock = self.get_server_update_key_value(message, CHILDLOCKON_KEY)
-        if isinstance(val_child_lock, bool):
-            self._child_lock_on = val_child_lock
-
-        val_auto = self.get_server_update_key_value(message, AUTOON_KEY)
-        if isinstance(val_auto, bool):
-            self._auto_on = val_auto
-
-        val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
-        if isinstance(val_temperature, (int, float)):
-            self._temperature = val_temperature
+        val_mute_on = self.get_server_update_key_value(message, MUTEON_KEY)
+        if isinstance(val_mute_on, bool):
+            self._mute_on = val_mute_on      
+#END            
