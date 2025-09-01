@@ -25,6 +25,7 @@ from .pydreoheater import PyDreoHeater
 from .pydreoairconditioner import PyDreoAC
 from .pydreochefmaker import PyDreoChefMaker
 from .pydreohumidifier import PyDreoHumidifier
+from .pydreodehumidifier import PyDreoDehumidifier
 from .pydreoevaporativecooler import PyDreoEvaporativeCooler
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
@@ -38,6 +39,7 @@ _DREO_DEVICE_TYPE_TO_CLASS = {
     DreoDeviceType.AIR_CONDITIONER: PyDreoAC,
     DreoDeviceType.CHEF_MAKER: PyDreoChefMaker,
     DreoDeviceType.HUMIDIFIER: PyDreoHumidifier,
+    DreoDeviceType.DEHUMIDIFIER: PyDreoDehumidifier,
     DreoDeviceType.EVAPORATIVE_COOLER: PyDreoEvaporativeCooler
 }
 

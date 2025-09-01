@@ -27,10 +27,20 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         self.device = pyDreoFan
         if self.device.type is DreoDeviceType.CEILING_FAN:
             self._attr_icon = "mdi:ceiling-fan"
+        elif self.device.type is DreoDeviceType.DEHUMIDIFIER:
+            self._attr_name = f"{super().name} Fan Speed"
 
     @property
     def percentage(self) -> int | None:
         """Return the current speed."""
+        if self.device.type is DreoDeviceType.DEHUMIDIFIER:
+            if self.device.preset_mode == "Low":
+                return 33
+            elif self.device.preset_mode == "Medium": 
+                return 67
+            elif self.device.preset_mode == "High":
+                return 100
+            return None
         return ranged_value_to_percentage(
             self.device.speed_range, self.device.fan_speed
         )
@@ -43,6 +53,8 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def oscillating(self) -> bool:
         """This represents horizontal oscillation only"""
+        if self.device.type is DreoDeviceType.DEHUMIDIFIER:
+            return False
         return self.device.oscillating
 
     @property
@@ -74,7 +86,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         supported_features = FanEntityFeature.SET_SPEED | FanEntityFeature.TURN_ON | FanEntityFeature.TURN_OFF
         if (self.device.preset_modes is not None):
             supported_features = supported_features | FanEntityFeature.PRESET_MODE
-        if (self.device.oscillating is not None):
+        if (self.device.oscillating is not None and self.device.type is not DreoDeviceType.DEHUMIDIFIER):
             supported_features = supported_features | FanEntityFeature.OSCILLATE
 
         return supported_features
@@ -103,7 +115,15 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         if not self.device.is_on:
             self.device.is_on = True
 
-        self.device.fan_speed = math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
+        if self.device.type is DreoDeviceType.DEHUMIDIFIER:
+            if percentage <= 33:
+                self.device.set_preset_mode("Low")
+            elif percentage <= 67:
+                self.device.set_preset_mode("Medium")
+            else:
+                self.device.set_preset_mode("High")
+        else:
+            self.device.fan_speed = math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
         
         self.schedule_update_ha_state()
 
@@ -118,7 +138,10 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         if not self.device.is_on:
             self.device.is_on = True
 
-        self.device.preset_mode = preset_mode
+        if self.device.type is DreoDeviceType.DEHUMIDIFIER:
+            self.device.set_preset_mode(preset_mode)
+        else:
+            self.device.preset_mode = preset_mode
 
         self.schedule_update_ha_state()
 
