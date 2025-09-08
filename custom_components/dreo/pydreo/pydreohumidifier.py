@@ -192,7 +192,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_AUTO_HUMIDITY_KEY)
-         self._wrong = WATER_LEVEL_STATUS_MAP[self.get_state_update_value(state, WATER_LEVEL_STATUS_KEY)]
+        self._wrong = WATER_LEVEL_STATUS_MAP[self.get_state_update_value(state, WATER_LEVEL_STATUS_KEY)]
         self._worktime = self.get_state_update_value(state, WORKTIME_KEY)
         self._rgblevel = RGB_MAP[self.get_state_update_value(state, RGB_LEVEL)]
         self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
