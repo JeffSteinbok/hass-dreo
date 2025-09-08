@@ -94,7 +94,18 @@ class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     def is_on(self) -> bool:
         """Return True if device is on."""
         return self.device.is_on
+    @property
+    def wrong(self) -> str :
+        return self.device.wrong
 
+    @property
+    def worktime(self) -> int :
+        return self.device.worktime
+
+    @property
+    def rgblevel(self) -> int :
+        return self.device.rgblevel    
+    
     @property
     def mode(self) -> str | None:
         """Get the current mode."""
