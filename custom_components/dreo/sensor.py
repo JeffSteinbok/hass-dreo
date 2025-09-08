@@ -135,6 +135,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[LIGHT_ON, LIGHT_OFF],
         value_fn=lambda device: device.rgblevel,
         exists_fn=lambda device: device.is_feature_supported(RGB_LEVEL),
+         )
 )
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSensorHA]:
