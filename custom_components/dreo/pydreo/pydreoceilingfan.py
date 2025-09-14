@@ -10,7 +10,8 @@ from .constant import (
     WINDLEVEL_KEY,
     SPEED_RANGE,
     BRIGHTNESS_KEY,
-    COLORTEMP_KEY
+    COLORTEMP_KEY,
+    POWERON_KEY
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -159,3 +160,18 @@ class PyDreoCeilingFan(PyDreoFanBase):
         val_color_temp = self.get_server_update_key_value(message, COLORTEMP_KEY)
         if isinstance(val_color_temp, int):
             self._color_temp = val_color_temp    
+
+    def _handle_power_state_update(self, message):
+        """Override power state handling for ceiling fans"""
+        # Handle poweron: False = turn off entire device (both fan and light)
+        val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        if val_poweron is False:
+            self._is_on = False
+            self._light_on = False
+            _LOGGER.debug("PyDreoCeilingFan: Device powered off - fan and light off")
+            
+        # Handle fanon: True/False = specific fan motor control
+        val_fan_on = self.get_server_update_key_value(message, FANON_KEY)
+        if isinstance(val_fan_on, bool):
+            self._is_on = val_fan_on
+            _LOGGER.debug("PyDreoCeilingFan: Fan state updated from fanon: %s", val_fan_on)

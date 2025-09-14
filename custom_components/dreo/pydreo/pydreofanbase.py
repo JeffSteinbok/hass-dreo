@@ -343,12 +343,22 @@ class PyDreoFanBase(PyDreoBaseDevice):
         """Process a websocket update"""
         _LOGGER.debug("PyDreoFanBase:handle_server_update")
         super().handle_server_update(message)
+        
+        # Handle power state
+        self._handle_power_state_update(message)
+        
+        # Handle common fan properties
+        self._handle_fan_properties_update(message)
 
+    def _handle_power_state_update(self, message):
+        """Handle power state updates"""
         val_poweron = self.get_server_update_key_value(message, self._power_on_key)
         if isinstance(val_poweron, bool):
-            self._is_on = val_poweron  # Ensure poweron state is updated
-            _LOGGER.debug("PyDreoFanBase:handle_server_update - %s is %s", self._power_on_key, self._is_on)
+            self._is_on = val_poweron
+            _LOGGER.debug("PyDreoFanBase:_handle_power_state_update - %s is %s", self._power_on_key, self._is_on)
 
+    def _handle_fan_properties_update(self, message):
+        """Handle common fan properties"""
         val_wind_level = self.get_server_update_key_value(message, WINDLEVEL_KEY)
         if isinstance(val_wind_level, int):
             self._fan_speed = val_wind_level
