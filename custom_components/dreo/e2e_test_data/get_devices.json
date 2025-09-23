@@ -186,13 +186,13 @@
             "isVoiceControl": true
           },
           "resourcesConf": {
-            "imageSmallSrc": "https://resources.dreo-cloud.com/app/202302/154b19731975c74404ba60cc6a4af66c08.png",
-            "imageFullSrc": "https://resources.dreo-cloud.com/app/202302/16acefeb4c1aaa47c189c693cdf0beb612.zip"
+            "imageSmallSrc": "https://resources.dreo-tech.com/app/202302/154b19731975c74404ba60cc6a4af66c08.png",
+            "imageFullSrc": "https://resources.dreo-tech.com/app/202302/16acefeb4c1aaa47c189c693cdf0beb612.zip"
           },
           "servicesConf": [
             {
               "key": "user_manual",
-              "value": "https://resources.dreo-cloud.com/app/202302/15e71c34e2b2e24aa79e9b2b4a5733f852.pdf"
+              "value": "https://resources.dreo-tech.com/app/202302/15e71c34e2b2e24aa79e9b2b4a5733f852.pdf"
             }
           ]
         },
@@ -577,7 +577,7 @@
                     {
                         "type": 6,
                         "title": "base_maintenance",
-                        "icon": "https://resources.dreo-cloud.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
+                        "icon": "https://resources.dreo-tech.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
                         "image": "",
                         "url": "https://fe.dreo.com/article/dreo-air-conditioner-installation-maintenance",
                         "show": true
@@ -595,7 +595,7 @@
                 "urlConfig": [
                     {
                         "key": "clean",
-                        "url": "https://fe.dreo.com/en/guides/videos/v?source=https://resources.dreo-cloud.com/app/202404/9/1094c8bcd7fc4811bd5d944b6a70f658.mp4&coverImage=https://resources.dreo-cloud.com/app/202404/10/47672f46958c4605ba621683d5db57fb.png"
+                        "url": "https://fe.dreo.com/en/guides/videos/v?source=https://resources.dreo-tech.com/app/202404/9/1094c8bcd7fc4811bd5d944b6a70f658.mp4&coverImage=https://resources.dreo-tech.com/app/202404/10/47672f46958c4605ba621683d5db57fb.png"
                     }
                 ],
                 "feature": {
@@ -691,20 +691,20 @@
                 "isVoiceControl": true
             },
             "resourcesConf": {
-                "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202407/556eb3b7aab924e838315b41aba7536fb.png",
-                "imageFullSrc": "https://resources.dreo-cloud.com/app/202402/20/a82251e0d1ab44d89b356a5dcea07f1a.zip",
+                "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202407/556eb3b7aab924e838315b41aba7536fb.png",
+                "imageFullSrc": "https://resources.dreo-tech.com/app/202402/20/a82251e0d1ab44d89b356a5dcea07f1a.zip",
                 "imageSmallDarkSrc": "",
                 "imageFullDarkSrc": ""
             },
             "servicesConf": [
                 {
                     "key": "user_manual",
-                    "value": "https://resources.dreo-cloud.com/app/202403/16/b59dd99941cb4ca89390622f4e894428.pdf"
+                    "value": "https://resources.dreo-tech.com/app/202403/16/b59dd99941cb4ca89390622f4e894428.pdf"
                 }
             ],
             "userManuals": [
                 {
-                    "url": "https://resources.dreo-cloud.com/app/202403/16/b59dd99941cb4ca89390622f4e894428.pdf",
+                    "url": "https://resources.dreo-tech.com/app/202403/16/b59dd99941cb4ca89390622f4e894428.pdf",
                     "icon": null,
                     "desc": "User Manual",
                     "lang": "en"
@@ -932,20 +932,20 @@
                 "isVoiceControl": true
             },
             "resourcesConf": {
-                "imageSmallSrc": "https://resources.dreo-cloud.com/app/202403/5/2b990958eba64c5baf91e546e007f0dd.png",
-                "imageFullSrc": "https://resources.dreo-cloud.com/app/202402/6/8d6598eea10149d4a62d95eb3d3d948b.zip",
+                "imageSmallSrc": "https://resources.dreo-tech.com/app/202403/5/2b990958eba64c5baf91e546e007f0dd.png",
+                "imageFullSrc": "https://resources.dreo-tech.com/app/202402/6/8d6598eea10149d4a62d95eb3d3d948b.zip",
                 "imageSmallDarkSrc": "",
                 "imageFullDarkSrc": ""
             },
             "servicesConf": [
                 {
                     "key": "user_manual",
-                    "value": "https://resources.dreo-cloud.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf"
+                    "value": "https://resources.dreo-tech.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf"
                 }
             ],
             "userManuals": [
                 {
-                    "url": "https://resources.dreo-cloud.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf",
+                    "url": "https://resources.dreo-tech.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf",
                     "icon": null,
                     "desc": "User Manual",
                     "lang": "en"
@@ -971,8 +971,8 @@
             "roomName": null,
             "roomNameI18Key": "",
             "color": "b",
-            "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202411/13f1817764f9464d27b70c9628cb778eea.png",
-            "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202411/13e8391e5d8f0e4d8da47e03004782422b.png",
+            "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/13f1817764f9464d27b70c9628cb778eea.png",
+            "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/13e8391e5d8f0e4d8da47e03004782422b.png",
             "widgetAbnormalImage": null,
             "variantIconMd5": null,
             "controlsConf": {
@@ -1023,20 +1023,20 @@
               "isVoiceControl": true
             },
             "resourcesConf": {
-              "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202409/1127e0097ddfd14914abcce4fed5e7d36e.png",
-              "imageFullSrc": "https://resources.dreo-cloud.com/app/preSigned202406/288eb1e27a155b4b4c875393b04313706a.zip",
+              "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202409/1127e0097ddfd14914abcce4fed5e7d36e.png",
+              "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202406/288eb1e27a155b4b4c875393b04313706a.zip",
               "imageSmallDarkSrc": null,
               "imageFullDarkSrc": null
             },
             "servicesConf": [
               {
                 "key": "user_manual",
-                "value": "https://resources.dreo-cloud.com/app/202310/12056ea09c80d5455f9aa4e713ca8bd84e.pdf"
+                "value": "https://resources.dreo-tech.com/app/202310/12056ea09c80d5455f9aa4e713ca8bd84e.pdf"
               }
             ],
             "userManuals": [
               {
-                "url": "https://resources.dreo-cloud.com/app/preSigned202409/198fc99c74378d4ede81167661b6f663a3.pdf",
+                "url": "https://resources.dreo-tech.com/app/preSigned202409/198fc99c74378d4ede81167661b6f663a3.pdf",
                 "icon": null,
                 "desc": "DR-HSH004S User Manual (EU)",
                 "lang": "en"
@@ -1062,8 +1062,8 @@
             "roomName": null,
             "roomNameI18Key": "",
             "color": "b",
-            "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202412/26b695c7c2e4884fe6a4dfa743952e4887.png",
-            "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202412/26841547bbde3248e58c37c7c14e50eae8.png",
+            "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202412/26b695c7c2e4884fe6a4dfa743952e4887.png",
+            "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202412/26841547bbde3248e58c37c7c14e50eae8.png",
             "widgetAbnormalImage": null,
             "variantIconMd5": null,
             "controlsConf": {
@@ -1076,14 +1076,14 @@
               "isVoiceControl": true
             },
             "resourcesConf": {
-              "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202412/268954c7b5bf144537a771fc3639efa6fe.png",
-              "imageFullSrc": "https://resources.dreo-cloud.com/app/preSigned202412/26a0a0d2dab8c0427c908ec86bd3447d23.zip",
+              "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202412/268954c7b5bf144537a771fc3639efa6fe.png",
+              "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202412/26a0a0d2dab8c0427c908ec86bd3447d23.zip",
               "imageSmallDarkSrc": null,
               "imageFullDarkSrc": null
             },
             "userManuals": [
               {
-                "url": "https://resources.dreo-cloud.com/app/preSigned202501/175b69da3b02614a8d9b8a16bfb7e456c2.pdf",
+                "url": "https://resources.dreo-tech.com/app/preSigned202501/175b69da3b02614a8d9b8a16bfb7e456c2.pdf",
                 "icon": null,
                 "desc": "DR-HEC002S User Manual V1",
                 "lang": "en"
@@ -1357,31 +1357,31 @@
               "isVoiceControl": true
             },
             "resourcesConf": {
-              "imageSmallSrc": "https://resources.dreo-cloud.com/app/202306/20bad19da722a44238bb81ae3a6b87b689.png",
-              "imageFullSrc": "https://resources.dreo-cloud.com/app/202307/259dd80ef20e50432195beab4dc1939160.zip",
+              "imageSmallSrc": "https://resources.dreo-tech.com/app/202306/20bad19da722a44238bb81ae3a6b87b689.png",
+              "imageFullSrc": "https://resources.dreo-tech.com/app/202307/259dd80ef20e50432195beab4dc1939160.zip",
               "imageSmallDarkSrc": "",
               "imageFullDarkSrc": ""
             },
             "servicesConf": [
               {
                 "key": "user_manual",
-                "value": "https://resources.dreo-cloud.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf"
+                "value": "https://resources.dreo-tech.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf"
               }
             ],
             "userManuals": [
               {
-                "icon": "https://resources.dreo-cloud.com/app/202309/7c299b4e04b3842c3b7efe11e8b13b88d.png",
-                "url": "https://resources.dreo-cloud.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf",
+                "icon": "https://resources.dreo-tech.com/app/202309/7c299b4e04b3842c3b7efe11e8b13b88d.png",
+                "url": "https://resources.dreo-tech.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf",
                 "desc": "Wall-mounted Heater"
               },
               {
-                "icon": "https://resources.dreo-cloud.com/app/202309/71392605cead140a282abedfcdd49bbdf.png",
-                "url": "https://resources.dreo-cloud.com/app/202310/12a5ec101b8fa04ce2a65956acdce8e0ab.pdf",
+                "icon": "https://resources.dreo-tech.com/app/202309/71392605cead140a282abedfcdd49bbdf.png",
+                "url": "https://resources.dreo-tech.com/app/202310/12a5ec101b8fa04ce2a65956acdce8e0ab.pdf",
                 "desc": "Wall-mounted Heater with ALCI Plug"
               },
               {
-                "icon": "https://resources.dreo-cloud.com/app/202309/75e96dbcf73e14cb1ba94172c55968c11.png",
-                "url": "https://resources.dreo-cloud.com/app/202310/121c4cbb7fff054a72a105a74d1cb703aa.pdf",
+                "icon": "https://resources.dreo-tech.com/app/202309/75e96dbcf73e14cb1ba94172c55968c11.png",
+                "url": "https://resources.dreo-tech.com/app/202310/121c4cbb7fff054a72a105a74d1cb703aa.pdf",
                 "desc": "Wall-mounted Heater with Safety Plug"
               }
             ]
