@@ -87,7 +87,7 @@ class CommandTransport:
         This function exits when monitoring is stopped."""
         _LOGGER.info("Starting WebSocket for incoming changes and commands.")
         # open websocket
-        url = f"wss://wsb-{self._api_server_region}.dreo-cloud.com/websocket?accessToken={self._token}&timestamp={Helpers.api_timestamp()}"
+        url = f"wss://wsb-{self._api_server_region}.dreo-tech.com/websocket?accessToken={self._token}&timestamp={Helpers.api_timestamp()}"
         async for ws in websockets.connect(url):
             
             if self._signal_close:
