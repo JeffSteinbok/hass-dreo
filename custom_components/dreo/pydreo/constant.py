@@ -47,6 +47,8 @@ TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
 TARGET_AUTO_HUMIDITY_KEY = "rhautolevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
+RGB_LEVEL = 'rgblevel'
+SCHEDULE_ENABLE = 'scheon'
 
 # Preferences Names
 # It's possible we should switch to IDs instead of names
@@ -62,6 +64,7 @@ FANON_KEY = "fanon"
 
 DREO_API_URL_FORMAT = (
     "https://app-api-{0}.dreo-tech.com"  # {0} is the 2 letter region code
+    
 )
 
 DREO_API_PATH = "path"
