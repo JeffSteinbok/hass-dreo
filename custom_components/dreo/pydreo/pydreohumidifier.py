@@ -9,7 +9,9 @@ from .constant import (
     MUTEON_KEY,
     POWERON_KEY,
     HUMIDITY_KEY,
-    TARGET_AUTO_HUMIDITY_KEY
+    TARGET_AUTO_HUMIDITY_KEY,
+    RGB_LEVEL,
+    SCHEDULE_ENABLE     
 )
 
 from .helpers import Helpers
@@ -19,6 +21,35 @@ from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
+
+WATER_LEVEL_STATUS_KEY = "wrong"
+WORKTIME_KEY = "worktime"
+
+# Status for water level indicator
+WATER_LEVEL_OK = "Ok"
+WATER_LEVEL_EMPTY = "Empty"
+
+LIGHT_ON = "Enable"
+LIGHT_OFF = "Disabled"
+
+WATER_LEVEL_STATUS_MAP = {
+    0: WATER_LEVEL_OK,
+    1: WATER_LEVEL_EMPTY,
+    WATER_LEVEL_OK: 0,
+    WATER_LEVEL_EMPTY: 1
+}
+
+RGB_MAP = {
+    0: LIGHT_OFF,
+    2: LIGHT_ON,
+    LIGHT_OFF: 0,
+    LIGHT_ON: 2
+}
+
+# Status for mode indicator
+MODE_MANUAL = "manual"
+MODE_AUTO = "auto" 
+MODE_SLEEP = "sleep"
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -38,6 +69,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._mute_on = None
         self._humidity = None
         self._target_humidity = None
+        self._wrong = None
+        self._worktime = None
+        self._rgblevel = None
+        self._scheon = None
         
     def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -114,7 +149,32 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         if (str_value is None):
             return None
         return str_value
+        
+    @property
+    def wrong(self):
+        """Return the water level status"""
+        return self._wrong
 
+    @property
+    def worktime(self):
+        """Return the working time (used since cleaning)"""
+        return self._worktime
+
+    @property
+    def rgblevel(self):
+        """Return RGB Level to verify Light is ON/OFF """
+        return self._rgblevel
+    
+    @property
+    def scheon(self):
+        """Returns `True` if the device is on, `False` otherwise."""
+        return self._scheon
+
+    @scheon.setter
+    def scheon(self, value: bool):
+        """Set if the fan is on or off"""
+        _LOGGER.debug("PyDreoHumidifier:scheon.setter - %s", value)
+        self._send_command(SCHEDULE_ENABLE, value)        
     @mode.setter
     def mode(self, value: str) -> None:
         numeric_value = Helpers.value_from_name(self._modes, value)
@@ -132,6 +192,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_AUTO_HUMIDITY_KEY)
+        self._wrong = WATER_LEVEL_STATUS_MAP[self.get_state_update_value(state, WATER_LEVEL_STATUS_KEY)]
+        self._worktime = self.get_state_update_value(state, WORKTIME_KEY)
+        self._rgblevel = RGB_MAP[self.get_state_update_value(state, RGB_LEVEL)]
+        self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
         
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -145,3 +209,25 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
             self._mode = val_mode
+            
+        val_worktime = self.get_server_update_key_value(message, WORKTIME_KEY)
+        if isinstance(val_worktime, int):
+            self._worktime = val_worktime
+
+        val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
+        if isinstance(val_water_level, int):
+            val_water_level = WATER_LEVEL_STATUS_MAP[val_water_level]
+            self._wrong = val_water_level		
+
+        val_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
+        if isinstance(val_rgblevel, int):
+            val_rgblevel = RGB_MAP[val_rgblevel]
+            self._rgblevel = val_rgblevel 
+
+        val_scheon = self.get_server_update_key_value(message, SCHEDULE_ENABLE)
+        if isinstance(val_scheon, bool):
+            self._scheon = val_scheon  
+
+        val_mute_on = self.get_server_update_key_value(message, MUTEON_KEY)
+        if isinstance(val_mute_on, bool):
+            self._mute_on = val_mute_on      

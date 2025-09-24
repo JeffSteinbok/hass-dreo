@@ -104,7 +104,13 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         translation_key="auto_mode",
         attr_name="auto_mode",
         icon="mdi:autorenew",
-    )
+    ),
+    DreoSwitchEntityDescription(
+        key="Schedule",
+        translation_key="scheon",
+        attr_name="scheon",
+        icon="mdi:calendar",
+    )  
 )
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSwitchHA]:
