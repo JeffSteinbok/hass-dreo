@@ -1,254 +1,226 @@
 {
-    "code": 0,
-    "msg": "OK",
-    "data": {
-        "currentPage": 1,
-        "pageSize": 100,
-        "totalNum": 2,
-        "totalPage": 1,
-        "familyRooms": null,
-        "list": [
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 2,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1769274833431957506",
+        "sn": "HCF001S_1",
+        "brand": "Dreo",
+        "model": "DR-HCF001S",
+        "productId": "**REDACTED**",
+        "productName": "Ceiling Fan",
+        "deviceName": "Master Bedroom Ceiling Fan",
+        "shared": false,
+        "series": null,
+        "seriesName": "CLF521S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "controlsConf": {
+          "template": "DR-HCF001S",
+          "lottie": {
+            "key": "poweron",
+            "frames": [
+              {
+                "value": 0,
+                "frame": [0]
+              },
+              {
+                "value": 1,
+                "frame": [2]
+              }
+            ]
+          },
+          "schedule": {
+            "modes": []
+          },
+          "cards": [
             {
-                "deviceId": "1769274833431957506",
-                "sn": "HCF001S_1",
-                "brand": "Dreo",
-                "model": "DR-HCF001S",
-                "productId": "**REDACTED**",
-                "productName": "Ceiling Fan",
-                "deviceName": "Master Bedroom Ceiling Fan",
-                "shared": false,
-                "series": null,
-                "seriesName": "CLF521S",
-                "type": 0,
-                "owner": true,
-                "familyId": null,
-                "familyName": null,
-                "roomId": null,
-                "roomName": null,
-                "roomNameI18Key": "",
-                "color": "w",
-                "controlsConf": {
-                    "template": "DR-HCF001S",
-                    "lottie": {
-                        "key": "poweron",
-                        "frames": [
-                            {
-                                "value": 0,
-                                "frame": [
-                                    0
-                                ]
-                            },
-                            {
-                                "value": 1,
-                                "frame": [
-                                    2
-                                ]
-                            }
-                        ]
-                    },
-                    "schedule": {
-                        "modes": []
-                    },
-                    "cards": [
-                        {
-                            "type": 6,
-                            "title": "home_bedtime_light",
-                            "icon": "ic_bedtime_light",
-                            "image": "",
-                            "url": "dreo://nav/device/bedtimelight?deviceSn=${sn}",
-                            "show": true,
-                            "key": ""
-                        },
-                        {
-                            "type": 8,
-                            "title": "",
-                            "icon": "",
-                            "image": "",
-                            "url": "dreo://nav/device/schedule?deviceSn={sn}",
-                            "show": true,
-                            "key": ""
-                        },
-                        {
-                            "type": 6,
-                            "title": "device_settings_title",
-                            "icon": "ic_setting",
-                            "image": "",
-                            "url": "dreo://nav/device/setting?deviceSn=${sn}",
-                            "show": true,
-                            "key": "setting"
-                        }
-                    ],
-                    "feature": {
-                        "schedule": {
-                            "enable": "",
-                            "localSupport": true,
-                            "module": [
-                                {
-                                    "type": "HeFi",
-                                    "version": "0.0.1"
-                                }
-                            ]
-                        }
-                    },
-                    "preference": [
-                        {
-                            "id": "200",
-                            "type": "Panel Sound",
-                            "title": "dev_ctrl_audio_feedback",
-                            "image": "ic_mute",
-                            "reverse": true,
-                            "cmd": "muteon"
-                        }
-                    ],
-                    "control": [
-                        {
-                            "id": "110",
-                            "type": "Speed",
-                            "title": "device_control_speed",
-                            "items": [
-                                {
-                                    "text": "1",
-                                    "cmd": "windlevel",
-                                    "value": 1
-                                },
-                                {
-                                    "text": "12",
-                                    "cmd": "windlevel",
-                                    "value": 12
-                                }
-                            ]
-                        },
-                        {
-                            "id": "130",
-                            "type": "CFFan",
-                            "title": "base_fan",
-                            "cmd": "fanon",
-                            "items": [
-                                {
-                                    "text": "base_reverse",
-                                    "textColors": [
-                                        "#D5D6D7",
-                                        "#1D1D1D"
-                                    ],
-                                    "image": "ic_cf_mode_reverse",
-                                    "imageColors": [
-                                        "#D5D6D7",
-                                        "#FFBB33"
-                                    ],
-                                    "cmd": "mode",
-                                    "value": 4,
-                                    "toast": "dev_ctrl_reverse_toast"
-                                },
-                                {
-                                    "text": "device_fans_mode_straight",
-                                    "textColors": [
-                                        "#D5D6D7",
-                                        "#1D1D1D"
-                                    ],
-                                    "image": "ic_normal_wind",
-                                    "imageColors": [
-                                        "#D5D6D7",
-                                        "#25D7E4"
-                                    ],
-                                    "cmd": "mode",
-                                    "value": 1
-                                },
-                                {
-                                    "text": "device_fans_mode_natural",
-                                    "textColors": [
-                                        "#D5D6D7",
-                                        "#1D1D1D"
-                                    ],
-                                    "image": "ic_natural_wind",
-                                    "imageColors": [
-                                        "#D5D6D7",
-                                        "#2CDD96"
-                                    ],
-                                    "cmd": "mode",
-                                    "value": 2
-                                },
-                                {
-                                    "text": "device_control_mode_sleep",
-                                    "textColors": [
-                                        "#D5D6D7",
-                                        "#1D1D1D"
-                                    ],
-                                    "image": "ic_sleep_wind",
-                                    "imageColors": [
-                                        "#D5D6D7",
-                                        "#6249DF"
-                                    ],
-                                    "cmd": "mode",
-                                    "value": 3
-                                }
-                            ]
-                        },
-                        {
-                            "id": "140",
-                            "type": "CFLight",
-                            "title": "device_control_light",
-                            "cmd": "lighton",
-                            "items": [
-                                {
-                                    "type": "light",
-                                    "text": "device_fans_mode_natural",
-                                    "image": "ic_cf_light",
-                                    "cmd": "brightness",
-                                    "maxValue": 100,
-                                    "minValue": 1
-                                },
-                                {
-                                    "type": "color",
-                                    "text": "device_control_mode_sleep",
-                                    "image": "ic_color_bar",
-                                    "cmd": "colortemp",
-                                    "maxValue": 100,
-                                    "minValue": 0
-                                }
-                            ]
-                        }
-                    ],
-                    "category": "Ceiling Fan",
-                    "version": {
-                        "minControlVer": "2.6.2",
-                        "minPairingVer": "2.6.2"
-                    },
-                    "setting": [
-                        {
-                            "text": "Firmware Version",
-                            "image": "image.png",
-                            "value": "1.0.0",
-                            "url": "dreo://control"
-                        }
-                    ]
-                },
-                "mainConf": {
-                    "isSmart": true,
-                    "isWifi": true,
-                    "isBluetooth": true,
-                    "isVoiceControl": true
-                },
-                "resourcesConf": {
-                    "imageSmallSrc": "https://resources.dreo-cloud.com/app/202403/5/2b990958eba64c5baf91e546e007f0dd.png",
-                    "imageFullSrc": "https://resources.dreo-cloud.com/app/202402/6/8d6598eea10149d4a62d95eb3d3d948b.zip",
-                    "imageSmallDarkSrc": "",
-                    "imageFullDarkSrc": ""
-                },
-                "servicesConf": [
-                    {
-                        "key": "user_manual",
-                        "value": "https://resources.dreo-cloud.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf"
-                    }
-                ],
-                "userManuals": [
-                    {
-                        "url": "https://resources.dreo-cloud.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf",
-                        "icon": null,
-                        "desc": "User Manual",
-                        "lang": "en"
-                    }
-                ]
+              "type": 6,
+              "title": "home_bedtime_light",
+              "icon": "ic_bedtime_light",
+              "image": "",
+              "url": "dreo://nav/device/bedtimelight?deviceSn=${sn}",
+              "show": true,
+              "key": ""
+            },
+            {
+              "type": 8,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "dreo://nav/device/schedule?deviceSn={sn}",
+              "show": true,
+              "key": ""
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
             }
+          ],
+          "feature": {
+            "schedule": {
+              "enable": "",
+              "localSupport": true,
+              "module": [
+                {
+                  "type": "HeFi",
+                  "version": "0.0.1"
+                }
+              ]
+            }
+          },
+          "preference": [
+            {
+              "id": "200",
+              "type": "Panel Sound",
+              "title": "dev_ctrl_audio_feedback",
+              "image": "ic_mute",
+              "reverse": true,
+              "cmd": "muteon"
+            }
+          ],
+          "control": [
+            {
+              "id": "110",
+              "type": "Speed",
+              "title": "device_control_speed",
+              "items": [
+                {
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
+                },
+                {
+                  "text": "12",
+                  "cmd": "windlevel",
+                  "value": 12
+                }
+              ]
+            },
+            {
+              "id": "130",
+              "type": "CFFan",
+              "title": "base_fan",
+              "cmd": "fanon",
+              "items": [
+                {
+                  "text": "base_reverse",
+                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "image": "ic_cf_mode_reverse",
+                  "imageColors": ["#D5D6D7", "#FFBB33"],
+                  "cmd": "mode",
+                  "value": 4,
+                  "toast": "dev_ctrl_reverse_toast"
+                },
+                {
+                  "text": "device_fans_mode_straight",
+                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "image": "ic_normal_wind",
+                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "cmd": "mode",
+                  "value": 1
+                },
+                {
+                  "text": "device_fans_mode_natural",
+                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "image": "ic_natural_wind",
+                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "cmd": "mode",
+                  "value": 2
+                },
+                {
+                  "text": "device_control_mode_sleep",
+                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "image": "ic_sleep_wind",
+                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "cmd": "mode",
+                  "value": 3
+                }
+              ]
+            },
+            {
+              "id": "140",
+              "type": "CFLight",
+              "title": "device_control_light",
+              "cmd": "lighton",
+              "items": [
+                {
+                  "type": "light",
+                  "text": "device_fans_mode_natural",
+                  "image": "ic_cf_light",
+                  "cmd": "brightness",
+                  "maxValue": 100,
+                  "minValue": 1
+                },
+                {
+                  "type": "color",
+                  "text": "device_control_mode_sleep",
+                  "image": "ic_color_bar",
+                  "cmd": "colortemp",
+                  "maxValue": 100,
+                  "minValue": 0
+                }
+              ]
+            }
+          ],
+          "category": "Ceiling Fan",
+          "version": {
+            "minControlVer": "2.6.2",
+            "minPairingVer": "2.6.2"
+          },
+          "setting": [
+            {
+              "text": "Firmware Version",
+              "image": "image.png",
+              "value": "1.0.0",
+              "url": "dreo://control"
+            }
+          ]
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/202403/5/2b990958eba64c5baf91e546e007f0dd.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202402/6/8d6598eea10149d4a62d95eb3d3d948b.zip",
+          "imageSmallDarkSrc": "",
+          "imageFullDarkSrc": ""
+        },
+        "servicesConf": [
+          {
+            "key": "user_manual",
+            "value": "https://resources.dreo-tech.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf"
+          }
+        ],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/202403/11/5b809a25081d4a2ebf0f7b67504413fc.pdf",
+            "icon": null,
+            "desc": "User Manual",
+            "lang": "en"
+          }
         ]
-    }
+      }
+    ]
+  }
 }

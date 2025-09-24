@@ -1,1036 +1,1020 @@
 {
-    "code": 0,
-    "msg": "OK",
-    "data": {
-        "currentPage": 1,
-        "pageSize": 100,
-        "totalNum": 1,
-        "totalPage": 1,
-        "familyRooms": null,
-        "list": [
-            {
-                "deviceId": "1725532991514537985",
-                "sn": "KCM001S_1",
-                "brand": "Dreo",
-                "model": "DR-KCM001S",
-                "productId": "**REDACTED**",
-                "productName": "ChefMaker",
-                "deviceName": "ChefMaker",
-                "shared": false,
-                "series": null,
-                "seriesName": "ChefMaker",
-                "type": 0,
-                "owner": true,
-                "familyId": null,
-                "familyName": null,
-                "roomId": null,
-                "roomName": null,
-                "roomNameI18Key": "",
-                "color": "b",
-                "controlsConf": {
-                    "template": "DR-KAF003S",
-                    "recipeTabShow": "1",
-                    "lottie": {
-                        "key": "poweron",
-                        "frames": [
-                            {
-                                "value": 0,
-                                "frame": [
-                                    0
-                                ]
-                            },
-                            {
-                                "value": 1,
-                                "frame": [
-                                    2
-                                ]
-                            }
-                        ]
-                    },
-                    "cookSetting": {
-                        "multiPhase": {
-                            "highTemp": 300,
-                            "version": {
-                                "expression": {
-                                    "$or": [
-                                        {
-                                            "mcuVer": {
-                                                "$gt": "4.5.15"
-                                            },
-                                            "mcuModel": {
-                                                "$in": [
-                                                    "mcu.rev1"
-                                                ]
-                                            },
-                                            "moduleVer": {
-                                                "$gte": "1.3.6"
-                                            },
-                                            "moduleModel": {
-                                                "$in": [
-                                                    "PAI-051"
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            "mcuVer": {
-                                                "$gt": "3.6.15"
-                                            },
-                                            "mcuModel": {
-                                                "$in": [
-                                                    "mcu-eu"
-                                                ]
-                                            },
-                                            "moduleVer": {
-                                                "$gte": "1.3.6"
-                                            },
-                                            "moduleModel": {
-                                                "$in": [
-                                                    "PAI-051"
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            "mcuVer": {
-                                                "$gt": "3.5.15"
-                                            },
-                                            "mcuModel": {
-                                                "$in": [
-                                                    "mcu"
-                                                ]
-                                            },
-                                            "moduleVer": {
-                                                "$gte": "1.3.6"
-                                            },
-                                            "moduleModel": {
-                                                "$in": [
-                                                    "PAI-051"
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            "template": {
-                                "name": "dev_kcm_multi_tpl_nam1",
-                                "cookTime": 4560,
-                                "stageSize": 1,
-                                "coverImage": "https://resources.dreo-cloud.com/app/202406/25/f858b9a258264049818feccc172e0a75.png",
-                                "stages": [
-                                    {
-                                        "type": 3,
-                                        "mode": 0,
-                                        "sousVides": [
-                                            {
-                                                "pwrlv": 248,
-                                                "wndlv": 1,
-                                                "cookDuration": 0,
-                                                "hydrlv": 2,
-                                                "prblv": 135
-                                            },
-                                            {
-                                                "pwrlv": 140,
-                                                "wndlv": 1,
-                                                "cookDuration": 1200,
-                                                "hydrlv": 2,
-                                                "prblv": 0
-                                            }
-                                        ],
-                                        "pwrlv": 0,
-                                        "wndlv": 0,
-                                        "cookDuration": 0,
-                                        "hydrlv": 0,
-                                        "prblv": 0
-                                    }
-                                ]
-                            },
-                            "probe": {
-                                "title": "With Probe",
-                                "data": [
-                                    {
-                                        "name": "Probe Cook",
-                                        "nameKey": "dev_kcm_mode_probe",
-                                        "probeTempF": {
-                                            "defaultTemp": 130,
-                                            "minTemp": 100,
-                                            "maxTemp": 200
-                                        },
-                                        "probeTempC": {
-                                            "defaultTemp": 55,
-                                            "minTemp": 40,
-                                            "maxTemp": 95
-                                        },
-                                        "heatTempF": {
-                                            "defaultTemp": 380,
-                                            "maxTemp": 400,
-                                            "minTemp": 30
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 195,
-                                            "maxTemp": 204,
-                                            "minTemp": 15
-                                        },
-                                        "moisture": 0,
-                                        "windlv": 2,
-                                        "hydrlv": 0,
-                                        "multiType": 1
-                                    }
-                                ]
-                            },
-                            "classic": {
-                                "data": [
-                                    {
-                                        "name": "Air Fry",
-                                        "nameKey": "dev_kcm_mode_airfry",
-                                        "rid": 0,
-                                        "multiType": 0,
-                                        "heatTempF": {
-                                            "defaultTemp": 380,
-                                            "minTemp": 200,
-                                            "maxTemp": 400,
-                                            "limits": [
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 3600
-                                                },
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 900
-                                                }
-                                            ]
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 195,
-                                            "minTemp": 95,
-                                            "maxTemp": 204,
-                                            "limits": [
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 3600
-                                                },
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 900
-                                                }
-                                            ]
-                                        },
-                                        "duration": 900,
-                                        "minDuration": 60,
-                                        "moisture": 0,
-                                        "showMoisture": 1,
-                                        "windlv": 2,
-                                        "hydrlv": 0
-                                    },
-                                    {
-                                        "name": "Reheat",
-                                        "multiType": 0,
-                                        "nameKey": "dev_kcm_mode_reheat",
-                                        "rid": 2,
-                                        "heatTempF": {
-                                            "defaultTemp": 380,
-                                            "minTemp": 200,
-                                            "maxTemp": 400,
-                                            "limits": [
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 600
-                                                }
-                                            ]
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 190,
-                                            "minTemp": 95,
-                                            "maxTemp": 204,
-                                            "limits": [
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 600
-                                                }
-                                            ]
-                                        },
-                                        "duration": 240,
-                                        "minDuration": 60,
-                                        "moisture": 0,
-                                        "showMoisture": 1,
-                                        "windlv": 2,
-                                        "hydrlv": 0
-                                    },
-                                    {
-                                        "name": "Toast",
-                                        "nameKey": "dev_kcm_mode_toast",
-                                        "rid": 3,
-                                        "multiType": 0,
-                                        "heatTempF": {
-                                            "defaultTemp": 350,
-                                            "minTemp": 200,
-                                            "maxTemp": 400,
-                                            "limits": [
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 600
-                                                }
-                                            ]
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 175,
-                                            "minTemp": 95,
-                                            "maxTemp": 204,
-                                            "limits": [
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 600
-                                                }
-                                            ]
-                                        },
-                                        "duration": 300,
-                                        "minDuration": 60,
-                                        "moisture": 0,
-                                        "showMoisture": 1,
-                                        "windlv": 2,
-                                        "hydrlv": 0
-                                    },
-                                    {
-                                        "name": "Bake",
-                                        "multiType": 0,
-                                        "nameKey": "dev_kcm_mode_bake",
-                                        "rid": 4,
-                                        "heatTempF": {
-                                            "defaultTemp": 365,
-                                            "minTemp": 200,
-                                            "maxTemp": 400,
-                                            "limits": [
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 3600
-                                                }
-                                            ]
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 185,
-                                            "minTemp": 95,
-                                            "maxTemp": 204,
-                                            "limits": [
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 3600
-                                                }
-                                            ]
-                                        },
-                                        "duration": 1500,
-                                        "minDuration": 60,
-                                        "moisture": 0,
-                                        "showMoisture": 1,
-                                        "windlv": 2,
-                                        "hydrlv": 0
-                                    },
-                                    {
-                                        "name": "Roast",
-                                        "nameKey": "dev_kcm_mode_roast",
-                                        "rid": 6,
-                                        "multiType": 0,
-                                        "heatTempF": {
-                                            "defaultTemp": 350,
-                                            "minTemp": 200,
-                                            "maxTemp": 400,
-                                            "limits": [
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 3600
-                                                },
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 900
-                                                }
-                                            ]
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 175,
-                                            "minTemp": 95,
-                                            "maxTemp": 204,
-                                            "limits": [
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 3600
-                                                },
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 900
-                                                }
-                                            ]
-                                        },
-                                        "duration": 900,
-                                        "minDuration": 60,
-                                        "moisture": 0,
-                                        "showMoisture": 0,
-                                        "windlv": 2,
-                                        "hydrlv": 0
-                                    },
-                                    {
-                                        "name": "Broil",
-                                        "multiType": 0,
-                                        "nameKey": "dev_kcm_mode_broil",
-                                        "rid": 5,
-                                        "heatTempF": {
-                                            "defaultTemp": 400,
-                                            "minTemp": 350,
-                                            "maxTemp": 400,
-                                            "limits": [
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 3600
-                                                },
-                                                {
-                                                    "temp": 400,
-                                                    "duration": 900
-                                                }
-                                            ]
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 204,
-                                            "minTemp": 175,
-                                            "maxTemp": 204,
-                                            "limits": [
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 3600
-                                                },
-                                                {
-                                                    "temp": 204,
-                                                    "duration": 900
-                                                }
-                                            ]
-                                        },
-                                        "duration": 480,
-                                        "minDuration": 60,
-                                        "moisture": 0,
-                                        "showMoisture": 0,
-                                        "windlv": 2,
-                                        "lockWindlv": 2,
-                                        "hydrlv": 0
-                                    },
-                                    {
-                                        "name": "Dehydrate",
-                                        "multiType": 0,
-                                        "nameKey": "dev_kcm_mode_dehydrate",
-                                        "rid": 7,
-                                        "heatTempF": {
-                                            "defaultTemp": 125,
-                                            "minTemp": 100,
-                                            "maxTemp": 175,
-                                            "limits": [
-                                                {
-                                                    "temp": 175,
-                                                    "duration": 10800
-                                                }
-                                            ]
-                                        },
-                                        "heatTempC": {
-                                            "defaultTemp": 50,
-                                            "minTemp": 40,
-                                            "maxTemp": 75,
-                                            "limits": [
-                                                {
-                                                    "temp": 75,
-                                                    "duration": 10800
-                                                }
-                                            ]
-                                        },
-                                        "duration": 10800,
-                                        "minDuration": 3600,
-                                        "moisture": 0,
-                                        "showMoisture": 0,
-                                        "windlv": 1,
-                                        "hydrlv": 0
-                                    }
-                                ]
-                            }
-                        },
-                        "classic": {
-                            "title": "Classic Cook",
-                            "data": [
-                                {
-                                    "name": "Air Fry",
-                                    "nameKey": "dev_kcm_mode_airfry",
-                                    "rid": 0,
-                                    "multiType": 0,
-                                    "heatTempF": {
-                                        "defaultTemp": 380,
-                                        "minTemp": 200,
-                                        "maxTemp": 450,
-                                        "limits": [
-                                            {
-                                                "temp": 400,
-                                                "duration": 3600
-                                            },
-                                            {
-                                                "temp": 450,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 195,
-                                        "minTemp": 95,
-                                        "maxTemp": 230,
-                                        "limits": [
-                                            {
-                                                "temp": 205,
-                                                "duration": 3600
-                                            },
-                                            {
-                                                "temp": 230,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "duration": 900,
-                                    "minDuration": 60,
-                                    "moisture": 0,
-                                    "showMoisture": 1,
-                                    "windlv": 2,
-                                    "hydrlv": 0
-                                },
-                                {
-                                    "name": "Roast",
-                                    "nameKey": "dev_kcm_mode_roast",
-                                    "rid": 6,
-                                    "multiType": 0,
-                                    "heatTempF": {
-                                        "defaultTemp": 350,
-                                        "minTemp": 200,
-                                        "maxTemp": 450,
-                                        "limits": [
-                                            {
-                                                "temp": 400,
-                                                "duration": 3600
-                                            },
-                                            {
-                                                "temp": 450,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 175,
-                                        "minTemp": 95,
-                                        "maxTemp": 230,
-                                        "limits": [
-                                            {
-                                                "temp": 205,
-                                                "duration": 3600
-                                            },
-                                            {
-                                                "temp": 230,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "duration": 900,
-                                    "minDuration": 60,
-                                    "moisture": 0,
-                                    "showMoisture": 0,
-                                    "windlv": 2,
-                                    "hydrlv": 0
-                                },
-                                {
-                                    "name": "Defrost",
-                                    "nameKey": "dev_kcm_mode_defrost",
-                                    "rid": 1,
-                                    "multiType": 0,
-                                    "heatTempF": {
-                                        "defaultTemp": 120,
-                                        "minTemp": 100,
-                                        "maxTemp": 150,
-                                        "limits": [
-                                            {
-                                                "temp": 150,
-                                                "duration": 3600
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 50,
-                                        "minTemp": 40,
-                                        "maxTemp": 65,
-                                        "limits": [
-                                            {
-                                                "temp": 65,
-                                                "duration": 3600
-                                            }
-                                        ]
-                                    },
-                                    "duration": 900,
-                                    "minDuration": 60,
-                                    "moisture": 0,
-                                    "showMoisture": 1,
-                                    "windlv": 1,
-                                    "hydrlv": 0
-                                },
-                                {
-                                    "name": "Toast",
-                                    "nameKey": "dev_kcm_mode_toast",
-                                    "rid": 3,
-                                    "multiType": 0,
-                                    "heatTempF": {
-                                        "defaultTemp": 350,
-                                        "minTemp": 200,
-                                        "maxTemp": 400,
-                                        "limits": [
-                                            {
-                                                "temp": 400,
-                                                "duration": 600
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 175,
-                                        "minTemp": 95,
-                                        "maxTemp": 205,
-                                        "limits": [
-                                            {
-                                                "temp": 205,
-                                                "duration": 600
-                                            }
-                                        ]
-                                    },
-                                    "duration": 300,
-                                    "minDuration": 60,
-                                    "moisture": 0,
-                                    "showMoisture": 1,
-                                    "windlv": 2,
-                                    "hydrlv": 0
-                                },
-                                {
-                                    "name": "Reheat",
-                                    "multiType": 0,
-                                    "nameKey": "dev_kcm_mode_reheat",
-                                    "rid": 2,
-                                    "heatTempF": {
-                                        "defaultTemp": 380,
-                                        "minTemp": 200,
-                                        "maxTemp": 400,
-                                        "limits": [
-                                            {
-                                                "temp": 400,
-                                                "duration": 600
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 190,
-                                        "minTemp": 95,
-                                        "maxTemp": 205,
-                                        "limits": [
-                                            {
-                                                "temp": 205,
-                                                "duration": 600
-                                            }
-                                        ]
-                                    },
-                                    "duration": 240,
-                                    "minDuration": 60,
-                                    "moisture": 0,
-                                    "showMoisture": 1,
-                                    "windlv": 2,
-                                    "hydrlv": 0
-                                },
-                                {
-                                    "name": "Bake",
-                                    "multiType": 0,
-                                    "nameKey": "dev_kcm_mode_bake",
-                                    "rid": 4,
-                                    "heatTempF": {
-                                        "defaultTemp": 365,
-                                        "minTemp": 200,
-                                        "maxTemp": 400,
-                                        "limits": [
-                                            {
-                                                "temp": 400,
-                                                "duration": 3600
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 185,
-                                        "minTemp": 95,
-                                        "maxTemp": 205,
-                                        "limits": [
-                                            {
-                                                "temp": 205,
-                                                "duration": 3600
-                                            }
-                                        ]
-                                    },
-                                    "duration": 1500,
-                                    "minDuration": 60,
-                                    "moisture": 0,
-                                    "showMoisture": 1,
-                                    "windlv": 2,
-                                    "hydrlv": 0
-                                },
-                                {
-                                    "name": "Broil",
-                                    "multiType": 0,
-                                    "nameKey": "dev_kcm_mode_broil",
-                                    "rid": 5,
-                                    "heatTempF": {
-                                        "defaultTemp": 450,
-                                        "minTemp": 350,
-                                        "maxTemp": 450,
-                                        "limits": [
-                                            {
-                                                "temp": 400,
-                                                "duration": 3600
-                                            },
-                                            {
-                                                "temp": 450,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 230,
-                                        "minTemp": 175,
-                                        "maxTemp": 230,
-                                        "limits": [
-                                            {
-                                                "temp": 205,
-                                                "duration": 3600
-                                            },
-                                            {
-                                                "temp": 230,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "duration": 480,
-                                    "minDuration": 60,
-                                    "moisture": 0,
-                                    "showMoisture": 0,
-                                    "windlv": 2,
-                                    "lockWindlv": 2,
-                                    "hydrlv": 0
-                                },
-                                {
-                                    "name": "Dehydrate",
-                                    "multiType": 0,
-                                    "nameKey": "dev_kcm_mode_dehydrate",
-                                    "rid": 7,
-                                    "heatTempF": {
-                                        "defaultTemp": 125,
-                                        "minTemp": 100,
-                                        "maxTemp": 175,
-                                        "limits": [
-                                            {
-                                                "temp": 175,
-                                                "duration": 43200
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 50,
-                                        "minTemp": 40,
-                                        "maxTemp": 75,
-                                        "limits": [
-                                            {
-                                                "temp": 75,
-                                                "duration": 43200
-                                            }
-                                        ]
-                                    },
-                                    "duration": 21600,
-                                    "minDuration": 3600,
-                                    "moisture": 0,
-                                    "showMoisture": 0,
-                                    "windlv": 1,
-                                    "hydrlv": 0
-                                }
-                            ]
-                        },
-                        "probe": {
-                            "title": "With Probe",
-                            "data": [
-                                {
-                                    "name": "Probe Cook",
-                                    "nameKey": "dev_kcm_mode_probe",
-                                    "probeTempF": {
-                                        "defaultTemp": 130,
-                                        "minTemp": 100,
-                                        "maxTemp": 200
-                                    },
-                                    "probeTempC": {
-                                        "defaultTemp": 55,
-                                        "minTemp": 40,
-                                        "maxTemp": 95
-                                    },
-                                    "heatTempF": {
-                                        "defaultTemp": 380,
-                                        "maxTemp": 400,
-                                        "minTemp": 30
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 195,
-                                        "maxTemp": 205,
-                                        "minTemp": 15
-                                    },
-                                    "moisture": 0,
-                                    "windlv": 2,
-                                    "hydrlv": 0,
-                                    "multiType": 1
-                                }
-                            ]
-                        },
-                        "slowRoast": {
-                            "data": [
-                                {
-                                    "heatTempF": {
-                                        "defaultTemp": 250,
-                                        "maxTemp": 300,
-                                        "minTemp": 200,
-                                        "limits": [
-                                            {
-                                                "temp": 300,
-                                                "duration": 10800
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 120,
-                                        "maxTemp": 150,
-                                        "minTemp": 95,
-                                        "limits": [
-                                            {
-                                                "temp": 150,
-                                                "duration": 10800
-                                            }
-                                        ]
-                                    },
-                                    "duration": 7200,
-                                    "windlv": 1,
-                                    "lockWindlv": 1,
-                                    "hydrlv": 0,
-                                    "multiType": 2,
-                                    "minDuration": 60
-                                }
-                            ]
-                        },
-                        "resting": {
-                            "data": [
-                                {
-                                    "heatTempF": {
-                                        "defaultTemp": 0,
-                                        "maxTemp": 0,
-                                        "minTemp": 0,
-                                        "limits": [
-                                            {
-                                                "temp": 0,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 0,
-                                        "maxTemp": 0,
-                                        "minTemp": 0,
-                                        "limits": [
-                                            {
-                                                "temp": 0,
-                                                "duration": 900
-                                            }
-                                        ]
-                                    },
-                                    "duration": 720,
-                                    "multiType": 4,
-                                    "minDuration": 60
-                                }
-                            ]
-                        },
-                        "browning": {
-                            "data": [
-                                {
-                                    "heatTempF": {
-                                        "defaultTemp": 450,
-                                        "maxTemp": 450,
-                                        "minTemp": 400,
-                                        "limits": [
-                                            {
-                                                "temp": 450,
-                                                "duration": 600
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 230,
-                                        "maxTemp": 230,
-                                        "minTemp": 204,
-                                        "limits": [
-                                            {
-                                                "temp": 230,
-                                                "duration": 600
-                                            }
-                                        ]
-                                    },
-                                    "duration": 300,
-                                    "windlv": 2,
-                                    "lockWindlv": 2,
-                                    "hydrlv": 0,
-                                    "multiType": 5,
-                                    "minDuration": 60
-                                }
-                            ]
-                        },
-                        "sousVide": {
-                            "data": [
-                                {
-                                    "heatTempF": {
-                                        "defaultTemp": 230,
-                                        "maxTemp": 250,
-                                        "minTemp": 150
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 110,
-                                        "maxTemp": 120,
-                                        "minTemp": 65
-                                    },
-                                    "probeTempF": {
-                                        "defaultTemp": 130,
-                                        "minTemp": 100,
-                                        "maxTemp": 200
-                                    },
-                                    "probeTempC": {
-                                        "defaultTemp": 55,
-                                        "minTemp": 40,
-                                        "maxTemp": 95
-                                    },
-                                    "windlv": 1,
-                                    "hydrlv": 0,
-                                    "multiType": 3
-                                },
-                                {
-                                    "heatTempF": {
-                                        "defaultTemp": 125,
-                                        "minTemp": 100,
-                                        "maxTemp": 175,
-                                        "limits": [
-                                            {
-                                                "temp": 450,
-                                                "duration": 7200
-                                            }
-                                        ]
-                                    },
-                                    "heatTempC": {
-                                        "defaultTemp": 50,
-                                        "minTemp": 40,
-                                        "maxTemp": 75,
-                                        "limits": [
-                                            {
-                                                "temp": 450,
-                                                "duration": 7200
-                                            }
-                                        ]
-                                    },
-                                    "duration": 1200,
-                                    "windlv": 1,
-                                    "lockWindlv": 1,
-                                    "hydrlv": 0,
-                                    "multiType": 3,
-                                    "minDuration": 60
-                                }
-                            ]
-                        }
-                    },
-                    "urlConfig": [
-                        {
-                            "key": "probeGuide",
-                            "url": "https%3A%2F%2Fwww.fsis.usda.gov%2Fguidelines%2F2021-0014"
-                        },
-                        {
-                            "key": "buyProbe",
-                            "url": "%2Fproducts%2Fdreo-chefmaker-cook-probe%3Fpr_prod_strat%3Dpinned%26pr_rec_id%3De93edab5d%26pr_rec_pid%3D8019548176546%26pr_ref_pid%3D7995419000994%26pr_seq%3Duniform"
-                        },
-                        {
-                            "key": "multiWindGuide",
-                            "url": "%2Fpages%2Fhow-to-use-creative-cook%23wind"
-                        },
-                        {
-                            "key": "multiWaterGuide",
-                            "url": "%2Fpages%2Fhow-to-use-creative-cook%23wind"
-                        }
-                    ],
-                    "cards": [
-                        {
-                            "type": 9,
-                            "title": "dev_favorites_name",
-                            "icon": "https://resources.dreo-cloud.com/app/202303/14e3639eac73464297bfca52f0e3a6fc6e.png",
-                            "url": "dreo://nav/device/c1favorites?deviceSn=${sn}",
-                            "show": true,
-                            "minVersion": "2.1.5"
-                        },
-                        {
-                            "type": 6,
-                            "title": "dev_history_name",
-                            "icon": "ic_history",
-                            "url": "dreo://nav/device/c1histories?deviceSn=${sn}",
-                            "show": true,
-                            "key": "hist",
-                            "minVersion": "2.1.5"
-                        },
-                        {
-                            "type": 7,
-                            "show": true,
-                            "items": [
-                                {
-                                    "title": "dev_kcm_tutorial",
-                                    "icon": "ic_tutorial",
-                                    "image": "",
-                                    "url": "https://fe.dreo.com/guides/chefmaker-tutorial",
-                                    "key": "tutorial"
-                                },
-                                {
-                                    "title": "device_settings_title",
-                                    "icon": "ic_setting",
-                                    "image": "",
-                                    "url": "dreo://nav/device/setting?deviceSn=${sn}",
-                                    "show": true,
-                                    "key": "setting"
-                                }
-                            ]
-                        }
-                    ],
-                    "category": "Air Fryer",
-                    "version": {
-                        "minControlVer": "2.1.7",
-                        "minPairingVer": "2.1.0",
-                        "minMcuVer": "3.3.9",
-                        "minModuleVer": "1.3.6"
-                    }
-                },
-                "mainConf": {
-                    "isSmart": true,
-                    "isWifi": true,
-                    "isBluetooth": true,
-                    "isVoiceControl": false
-                },
-                "resourcesConf": {
-                    "imageSmallSrc": "https://resources.dreo-cloud.com/app/202309/752a0c2335ade465a917e09056a83a00e.png",
-                    "imageFullSrc": "https://resources.dreo-cloud.com/app/202307/25a62f5961f4fe4aa9ae701f7ad22efeae.zip",
-                    "imageSmallDarkSrc": "",
-                    "imageFullDarkSrc": ""
-                },
-                "servicesConf": [
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1725532991514537985",
+        "sn": "KCM001S_1",
+        "brand": "Dreo",
+        "model": "DR-KCM001S",
+        "productId": "**REDACTED**",
+        "productName": "ChefMaker",
+        "deviceName": "ChefMaker",
+        "shared": false,
+        "series": null,
+        "seriesName": "ChefMaker",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "controlsConf": {
+          "template": "DR-KAF003S",
+          "recipeTabShow": "1",
+          "lottie": {
+            "key": "poweron",
+            "frames": [
+              {
+                "value": 0,
+                "frame": [0]
+              },
+              {
+                "value": 1,
+                "frame": [2]
+              }
+            ]
+          },
+          "cookSetting": {
+            "multiPhase": {
+              "highTemp": 300,
+              "version": {
+                "expression": {
+                  "$or": [
                     {
-                        "key": "user_manual",
-                        "value": "https://resources.dreo-cloud.com/app/202309/130d71372217e94363abc8fb025c5ed676.pdf"
-                    }
-                ],
-                "userManuals": [
+                      "mcuVer": {
+                        "$gt": "4.5.15"
+                      },
+                      "mcuModel": {
+                        "$in": ["mcu.rev1"]
+                      },
+                      "moduleVer": {
+                        "$gte": "1.3.6"
+                      },
+                      "moduleModel": {
+                        "$in": ["PAI-051"]
+                      }
+                    },
                     {
-                        "url": "https://resources.dreo-cloud.com/app/202309/130d71372217e94363abc8fb025c5ed676.pdf",
-                        "icon": null,
-                        "desc": "User Manual",
-                        "lang": "en"
+                      "mcuVer": {
+                        "$gt": "3.6.15"
+                      },
+                      "mcuModel": {
+                        "$in": ["mcu-eu"]
+                      },
+                      "moduleVer": {
+                        "$gte": "1.3.6"
+                      },
+                      "moduleModel": {
+                        "$in": ["PAI-051"]
+                      }
+                    },
+                    {
+                      "mcuVer": {
+                        "$gt": "3.5.15"
+                      },
+                      "mcuModel": {
+                        "$in": ["mcu"]
+                      },
+                      "moduleVer": {
+                        "$gte": "1.3.6"
+                      },
+                      "moduleModel": {
+                        "$in": ["PAI-051"]
+                      }
                     }
+                  ]
+                }
+              },
+              "template": {
+                "name": "dev_kcm_multi_tpl_nam1",
+                "cookTime": 4560,
+                "stageSize": 1,
+                "coverImage": "https://resources.dreo-tech.com/app/202406/25/f858b9a258264049818feccc172e0a75.png",
+                "stages": [
+                  {
+                    "type": 3,
+                    "mode": 0,
+                    "sousVides": [
+                      {
+                        "pwrlv": 248,
+                        "wndlv": 1,
+                        "cookDuration": 0,
+                        "hydrlv": 2,
+                        "prblv": 135
+                      },
+                      {
+                        "pwrlv": 140,
+                        "wndlv": 1,
+                        "cookDuration": 1200,
+                        "hydrlv": 2,
+                        "prblv": 0
+                      }
+                    ],
+                    "pwrlv": 0,
+                    "wndlv": 0,
+                    "cookDuration": 0,
+                    "hydrlv": 0,
+                    "prblv": 0
+                  }
                 ]
+              },
+              "probe": {
+                "title": "With Probe",
+                "data": [
+                  {
+                    "name": "Probe Cook",
+                    "nameKey": "dev_kcm_mode_probe",
+                    "probeTempF": {
+                      "defaultTemp": 130,
+                      "minTemp": 100,
+                      "maxTemp": 200
+                    },
+                    "probeTempC": {
+                      "defaultTemp": 55,
+                      "minTemp": 40,
+                      "maxTemp": 95
+                    },
+                    "heatTempF": {
+                      "defaultTemp": 380,
+                      "maxTemp": 400,
+                      "minTemp": 30
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 195,
+                      "maxTemp": 204,
+                      "minTemp": 15
+                    },
+                    "moisture": 0,
+                    "windlv": 2,
+                    "hydrlv": 0,
+                    "multiType": 1
+                  }
+                ]
+              },
+              "classic": {
+                "data": [
+                  {
+                    "name": "Air Fry",
+                    "nameKey": "dev_kcm_mode_airfry",
+                    "rid": 0,
+                    "multiType": 0,
+                    "heatTempF": {
+                      "defaultTemp": 380,
+                      "minTemp": 200,
+                      "maxTemp": 400,
+                      "limits": [
+                        {
+                          "temp": 400,
+                          "duration": 3600
+                        },
+                        {
+                          "temp": 400,
+                          "duration": 900
+                        }
+                      ]
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 195,
+                      "minTemp": 95,
+                      "maxTemp": 204,
+                      "limits": [
+                        {
+                          "temp": 204,
+                          "duration": 3600
+                        },
+                        {
+                          "temp": 204,
+                          "duration": 900
+                        }
+                      ]
+                    },
+                    "duration": 900,
+                    "minDuration": 60,
+                    "moisture": 0,
+                    "showMoisture": 1,
+                    "windlv": 2,
+                    "hydrlv": 0
+                  },
+                  {
+                    "name": "Reheat",
+                    "multiType": 0,
+                    "nameKey": "dev_kcm_mode_reheat",
+                    "rid": 2,
+                    "heatTempF": {
+                      "defaultTemp": 380,
+                      "minTemp": 200,
+                      "maxTemp": 400,
+                      "limits": [
+                        {
+                          "temp": 400,
+                          "duration": 600
+                        }
+                      ]
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 190,
+                      "minTemp": 95,
+                      "maxTemp": 204,
+                      "limits": [
+                        {
+                          "temp": 204,
+                          "duration": 600
+                        }
+                      ]
+                    },
+                    "duration": 240,
+                    "minDuration": 60,
+                    "moisture": 0,
+                    "showMoisture": 1,
+                    "windlv": 2,
+                    "hydrlv": 0
+                  },
+                  {
+                    "name": "Toast",
+                    "nameKey": "dev_kcm_mode_toast",
+                    "rid": 3,
+                    "multiType": 0,
+                    "heatTempF": {
+                      "defaultTemp": 350,
+                      "minTemp": 200,
+                      "maxTemp": 400,
+                      "limits": [
+                        {
+                          "temp": 400,
+                          "duration": 600
+                        }
+                      ]
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 175,
+                      "minTemp": 95,
+                      "maxTemp": 204,
+                      "limits": [
+                        {
+                          "temp": 204,
+                          "duration": 600
+                        }
+                      ]
+                    },
+                    "duration": 300,
+                    "minDuration": 60,
+                    "moisture": 0,
+                    "showMoisture": 1,
+                    "windlv": 2,
+                    "hydrlv": 0
+                  },
+                  {
+                    "name": "Bake",
+                    "multiType": 0,
+                    "nameKey": "dev_kcm_mode_bake",
+                    "rid": 4,
+                    "heatTempF": {
+                      "defaultTemp": 365,
+                      "minTemp": 200,
+                      "maxTemp": 400,
+                      "limits": [
+                        {
+                          "temp": 400,
+                          "duration": 3600
+                        }
+                      ]
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 185,
+                      "minTemp": 95,
+                      "maxTemp": 204,
+                      "limits": [
+                        {
+                          "temp": 204,
+                          "duration": 3600
+                        }
+                      ]
+                    },
+                    "duration": 1500,
+                    "minDuration": 60,
+                    "moisture": 0,
+                    "showMoisture": 1,
+                    "windlv": 2,
+                    "hydrlv": 0
+                  },
+                  {
+                    "name": "Roast",
+                    "nameKey": "dev_kcm_mode_roast",
+                    "rid": 6,
+                    "multiType": 0,
+                    "heatTempF": {
+                      "defaultTemp": 350,
+                      "minTemp": 200,
+                      "maxTemp": 400,
+                      "limits": [
+                        {
+                          "temp": 400,
+                          "duration": 3600
+                        },
+                        {
+                          "temp": 400,
+                          "duration": 900
+                        }
+                      ]
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 175,
+                      "minTemp": 95,
+                      "maxTemp": 204,
+                      "limits": [
+                        {
+                          "temp": 204,
+                          "duration": 3600
+                        },
+                        {
+                          "temp": 204,
+                          "duration": 900
+                        }
+                      ]
+                    },
+                    "duration": 900,
+                    "minDuration": 60,
+                    "moisture": 0,
+                    "showMoisture": 0,
+                    "windlv": 2,
+                    "hydrlv": 0
+                  },
+                  {
+                    "name": "Broil",
+                    "multiType": 0,
+                    "nameKey": "dev_kcm_mode_broil",
+                    "rid": 5,
+                    "heatTempF": {
+                      "defaultTemp": 400,
+                      "minTemp": 350,
+                      "maxTemp": 400,
+                      "limits": [
+                        {
+                          "temp": 400,
+                          "duration": 3600
+                        },
+                        {
+                          "temp": 400,
+                          "duration": 900
+                        }
+                      ]
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 204,
+                      "minTemp": 175,
+                      "maxTemp": 204,
+                      "limits": [
+                        {
+                          "temp": 204,
+                          "duration": 3600
+                        },
+                        {
+                          "temp": 204,
+                          "duration": 900
+                        }
+                      ]
+                    },
+                    "duration": 480,
+                    "minDuration": 60,
+                    "moisture": 0,
+                    "showMoisture": 0,
+                    "windlv": 2,
+                    "lockWindlv": 2,
+                    "hydrlv": 0
+                  },
+                  {
+                    "name": "Dehydrate",
+                    "multiType": 0,
+                    "nameKey": "dev_kcm_mode_dehydrate",
+                    "rid": 7,
+                    "heatTempF": {
+                      "defaultTemp": 125,
+                      "minTemp": 100,
+                      "maxTemp": 175,
+                      "limits": [
+                        {
+                          "temp": 175,
+                          "duration": 10800
+                        }
+                      ]
+                    },
+                    "heatTempC": {
+                      "defaultTemp": 50,
+                      "minTemp": 40,
+                      "maxTemp": 75,
+                      "limits": [
+                        {
+                          "temp": 75,
+                          "duration": 10800
+                        }
+                      ]
+                    },
+                    "duration": 10800,
+                    "minDuration": 3600,
+                    "moisture": 0,
+                    "showMoisture": 0,
+                    "windlv": 1,
+                    "hydrlv": 0
+                  }
+                ]
+              }
+            },
+            "classic": {
+              "title": "Classic Cook",
+              "data": [
+                {
+                  "name": "Air Fry",
+                  "nameKey": "dev_kcm_mode_airfry",
+                  "rid": 0,
+                  "multiType": 0,
+                  "heatTempF": {
+                    "defaultTemp": 380,
+                    "minTemp": 200,
+                    "maxTemp": 450,
+                    "limits": [
+                      {
+                        "temp": 400,
+                        "duration": 3600
+                      },
+                      {
+                        "temp": 450,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 195,
+                    "minTemp": 95,
+                    "maxTemp": 230,
+                    "limits": [
+                      {
+                        "temp": 205,
+                        "duration": 3600
+                      },
+                      {
+                        "temp": 230,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "duration": 900,
+                  "minDuration": 60,
+                  "moisture": 0,
+                  "showMoisture": 1,
+                  "windlv": 2,
+                  "hydrlv": 0
+                },
+                {
+                  "name": "Roast",
+                  "nameKey": "dev_kcm_mode_roast",
+                  "rid": 6,
+                  "multiType": 0,
+                  "heatTempF": {
+                    "defaultTemp": 350,
+                    "minTemp": 200,
+                    "maxTemp": 450,
+                    "limits": [
+                      {
+                        "temp": 400,
+                        "duration": 3600
+                      },
+                      {
+                        "temp": 450,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 175,
+                    "minTemp": 95,
+                    "maxTemp": 230,
+                    "limits": [
+                      {
+                        "temp": 205,
+                        "duration": 3600
+                      },
+                      {
+                        "temp": 230,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "duration": 900,
+                  "minDuration": 60,
+                  "moisture": 0,
+                  "showMoisture": 0,
+                  "windlv": 2,
+                  "hydrlv": 0
+                },
+                {
+                  "name": "Defrost",
+                  "nameKey": "dev_kcm_mode_defrost",
+                  "rid": 1,
+                  "multiType": 0,
+                  "heatTempF": {
+                    "defaultTemp": 120,
+                    "minTemp": 100,
+                    "maxTemp": 150,
+                    "limits": [
+                      {
+                        "temp": 150,
+                        "duration": 3600
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 50,
+                    "minTemp": 40,
+                    "maxTemp": 65,
+                    "limits": [
+                      {
+                        "temp": 65,
+                        "duration": 3600
+                      }
+                    ]
+                  },
+                  "duration": 900,
+                  "minDuration": 60,
+                  "moisture": 0,
+                  "showMoisture": 1,
+                  "windlv": 1,
+                  "hydrlv": 0
+                },
+                {
+                  "name": "Toast",
+                  "nameKey": "dev_kcm_mode_toast",
+                  "rid": 3,
+                  "multiType": 0,
+                  "heatTempF": {
+                    "defaultTemp": 350,
+                    "minTemp": 200,
+                    "maxTemp": 400,
+                    "limits": [
+                      {
+                        "temp": 400,
+                        "duration": 600
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 175,
+                    "minTemp": 95,
+                    "maxTemp": 205,
+                    "limits": [
+                      {
+                        "temp": 205,
+                        "duration": 600
+                      }
+                    ]
+                  },
+                  "duration": 300,
+                  "minDuration": 60,
+                  "moisture": 0,
+                  "showMoisture": 1,
+                  "windlv": 2,
+                  "hydrlv": 0
+                },
+                {
+                  "name": "Reheat",
+                  "multiType": 0,
+                  "nameKey": "dev_kcm_mode_reheat",
+                  "rid": 2,
+                  "heatTempF": {
+                    "defaultTemp": 380,
+                    "minTemp": 200,
+                    "maxTemp": 400,
+                    "limits": [
+                      {
+                        "temp": 400,
+                        "duration": 600
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 190,
+                    "minTemp": 95,
+                    "maxTemp": 205,
+                    "limits": [
+                      {
+                        "temp": 205,
+                        "duration": 600
+                      }
+                    ]
+                  },
+                  "duration": 240,
+                  "minDuration": 60,
+                  "moisture": 0,
+                  "showMoisture": 1,
+                  "windlv": 2,
+                  "hydrlv": 0
+                },
+                {
+                  "name": "Bake",
+                  "multiType": 0,
+                  "nameKey": "dev_kcm_mode_bake",
+                  "rid": 4,
+                  "heatTempF": {
+                    "defaultTemp": 365,
+                    "minTemp": 200,
+                    "maxTemp": 400,
+                    "limits": [
+                      {
+                        "temp": 400,
+                        "duration": 3600
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 185,
+                    "minTemp": 95,
+                    "maxTemp": 205,
+                    "limits": [
+                      {
+                        "temp": 205,
+                        "duration": 3600
+                      }
+                    ]
+                  },
+                  "duration": 1500,
+                  "minDuration": 60,
+                  "moisture": 0,
+                  "showMoisture": 1,
+                  "windlv": 2,
+                  "hydrlv": 0
+                },
+                {
+                  "name": "Broil",
+                  "multiType": 0,
+                  "nameKey": "dev_kcm_mode_broil",
+                  "rid": 5,
+                  "heatTempF": {
+                    "defaultTemp": 450,
+                    "minTemp": 350,
+                    "maxTemp": 450,
+                    "limits": [
+                      {
+                        "temp": 400,
+                        "duration": 3600
+                      },
+                      {
+                        "temp": 450,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 230,
+                    "minTemp": 175,
+                    "maxTemp": 230,
+                    "limits": [
+                      {
+                        "temp": 205,
+                        "duration": 3600
+                      },
+                      {
+                        "temp": 230,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "duration": 480,
+                  "minDuration": 60,
+                  "moisture": 0,
+                  "showMoisture": 0,
+                  "windlv": 2,
+                  "lockWindlv": 2,
+                  "hydrlv": 0
+                },
+                {
+                  "name": "Dehydrate",
+                  "multiType": 0,
+                  "nameKey": "dev_kcm_mode_dehydrate",
+                  "rid": 7,
+                  "heatTempF": {
+                    "defaultTemp": 125,
+                    "minTemp": 100,
+                    "maxTemp": 175,
+                    "limits": [
+                      {
+                        "temp": 175,
+                        "duration": 43200
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 50,
+                    "minTemp": 40,
+                    "maxTemp": 75,
+                    "limits": [
+                      {
+                        "temp": 75,
+                        "duration": 43200
+                      }
+                    ]
+                  },
+                  "duration": 21600,
+                  "minDuration": 3600,
+                  "moisture": 0,
+                  "showMoisture": 0,
+                  "windlv": 1,
+                  "hydrlv": 0
+                }
+              ]
+            },
+            "probe": {
+              "title": "With Probe",
+              "data": [
+                {
+                  "name": "Probe Cook",
+                  "nameKey": "dev_kcm_mode_probe",
+                  "probeTempF": {
+                    "defaultTemp": 130,
+                    "minTemp": 100,
+                    "maxTemp": 200
+                  },
+                  "probeTempC": {
+                    "defaultTemp": 55,
+                    "minTemp": 40,
+                    "maxTemp": 95
+                  },
+                  "heatTempF": {
+                    "defaultTemp": 380,
+                    "maxTemp": 400,
+                    "minTemp": 30
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 195,
+                    "maxTemp": 205,
+                    "minTemp": 15
+                  },
+                  "moisture": 0,
+                  "windlv": 2,
+                  "hydrlv": 0,
+                  "multiType": 1
+                }
+              ]
+            },
+            "slowRoast": {
+              "data": [
+                {
+                  "heatTempF": {
+                    "defaultTemp": 250,
+                    "maxTemp": 300,
+                    "minTemp": 200,
+                    "limits": [
+                      {
+                        "temp": 300,
+                        "duration": 10800
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 120,
+                    "maxTemp": 150,
+                    "minTemp": 95,
+                    "limits": [
+                      {
+                        "temp": 150,
+                        "duration": 10800
+                      }
+                    ]
+                  },
+                  "duration": 7200,
+                  "windlv": 1,
+                  "lockWindlv": 1,
+                  "hydrlv": 0,
+                  "multiType": 2,
+                  "minDuration": 60
+                }
+              ]
+            },
+            "resting": {
+              "data": [
+                {
+                  "heatTempF": {
+                    "defaultTemp": 0,
+                    "maxTemp": 0,
+                    "minTemp": 0,
+                    "limits": [
+                      {
+                        "temp": 0,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 0,
+                    "maxTemp": 0,
+                    "minTemp": 0,
+                    "limits": [
+                      {
+                        "temp": 0,
+                        "duration": 900
+                      }
+                    ]
+                  },
+                  "duration": 720,
+                  "multiType": 4,
+                  "minDuration": 60
+                }
+              ]
+            },
+            "browning": {
+              "data": [
+                {
+                  "heatTempF": {
+                    "defaultTemp": 450,
+                    "maxTemp": 450,
+                    "minTemp": 400,
+                    "limits": [
+                      {
+                        "temp": 450,
+                        "duration": 600
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 230,
+                    "maxTemp": 230,
+                    "minTemp": 204,
+                    "limits": [
+                      {
+                        "temp": 230,
+                        "duration": 600
+                      }
+                    ]
+                  },
+                  "duration": 300,
+                  "windlv": 2,
+                  "lockWindlv": 2,
+                  "hydrlv": 0,
+                  "multiType": 5,
+                  "minDuration": 60
+                }
+              ]
+            },
+            "sousVide": {
+              "data": [
+                {
+                  "heatTempF": {
+                    "defaultTemp": 230,
+                    "maxTemp": 250,
+                    "minTemp": 150
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 110,
+                    "maxTemp": 120,
+                    "minTemp": 65
+                  },
+                  "probeTempF": {
+                    "defaultTemp": 130,
+                    "minTemp": 100,
+                    "maxTemp": 200
+                  },
+                  "probeTempC": {
+                    "defaultTemp": 55,
+                    "minTemp": 40,
+                    "maxTemp": 95
+                  },
+                  "windlv": 1,
+                  "hydrlv": 0,
+                  "multiType": 3
+                },
+                {
+                  "heatTempF": {
+                    "defaultTemp": 125,
+                    "minTemp": 100,
+                    "maxTemp": 175,
+                    "limits": [
+                      {
+                        "temp": 450,
+                        "duration": 7200
+                      }
+                    ]
+                  },
+                  "heatTempC": {
+                    "defaultTemp": 50,
+                    "minTemp": 40,
+                    "maxTemp": 75,
+                    "limits": [
+                      {
+                        "temp": 450,
+                        "duration": 7200
+                      }
+                    ]
+                  },
+                  "duration": 1200,
+                  "windlv": 1,
+                  "lockWindlv": 1,
+                  "hydrlv": 0,
+                  "multiType": 3,
+                  "minDuration": 60
+                }
+              ]
             }
+          },
+          "urlConfig": [
+            {
+              "key": "probeGuide",
+              "url": "https%3A%2F%2Fwww.fsis.usda.gov%2Fguidelines%2F2021-0014"
+            },
+            {
+              "key": "buyProbe",
+              "url": "%2Fproducts%2Fdreo-chefmaker-cook-probe%3Fpr_prod_strat%3Dpinned%26pr_rec_id%3De93edab5d%26pr_rec_pid%3D8019548176546%26pr_ref_pid%3D7995419000994%26pr_seq%3Duniform"
+            },
+            {
+              "key": "multiWindGuide",
+              "url": "%2Fpages%2Fhow-to-use-creative-cook%23wind"
+            },
+            {
+              "key": "multiWaterGuide",
+              "url": "%2Fpages%2Fhow-to-use-creative-cook%23wind"
+            }
+          ],
+          "cards": [
+            {
+              "type": 9,
+              "title": "dev_favorites_name",
+              "icon": "https://resources.dreo-tech.com/app/202303/14e3639eac73464297bfca52f0e3a6fc6e.png",
+              "url": "dreo://nav/device/c1favorites?deviceSn=${sn}",
+              "show": true,
+              "minVersion": "2.1.5"
+            },
+            {
+              "type": 6,
+              "title": "dev_history_name",
+              "icon": "ic_history",
+              "url": "dreo://nav/device/c1histories?deviceSn=${sn}",
+              "show": true,
+              "key": "hist",
+              "minVersion": "2.1.5"
+            },
+            {
+              "type": 7,
+              "show": true,
+              "items": [
+                {
+                  "title": "dev_kcm_tutorial",
+                  "icon": "ic_tutorial",
+                  "image": "",
+                  "url": "https://fe.dreo.com/guides/chefmaker-tutorial",
+                  "key": "tutorial"
+                },
+                {
+                  "title": "device_settings_title",
+                  "icon": "ic_setting",
+                  "image": "",
+                  "url": "dreo://nav/device/setting?deviceSn=${sn}",
+                  "show": true,
+                  "key": "setting"
+                }
+              ]
+            }
+          ],
+          "category": "Air Fryer",
+          "version": {
+            "minControlVer": "2.1.7",
+            "minPairingVer": "2.1.0",
+            "minMcuVer": "3.3.9",
+            "minModuleVer": "1.3.6"
+          }
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": false
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/202309/752a0c2335ade465a917e09056a83a00e.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202307/25a62f5961f4fe4aa9ae701f7ad22efeae.zip",
+          "imageSmallDarkSrc": "",
+          "imageFullDarkSrc": ""
+        },
+        "servicesConf": [
+          {
+            "key": "user_manual",
+            "value": "https://resources.dreo-tech.com/app/202309/130d71372217e94363abc8fb025c5ed676.pdf"
+          }
+        ],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/202309/130d71372217e94363abc8fb025c5ed676.pdf",
+            "icon": null,
+            "desc": "User Manual",
+            "lang": "en"
+          }
         ]
-    }
+      }
+    ]
+  }
 }

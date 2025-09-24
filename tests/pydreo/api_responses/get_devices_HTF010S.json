@@ -1,14 +1,14 @@
 {
-    "code": 0,
-    "msg": "OK",
-    "data": {
+  "code": 0,
+  "msg": "OK",
+  "data": {
     "currentPage": 1,
     "pageSize": 100,
     "totalNum": 1,
     "totalPage": 1,
     "familyRooms": null,
     "list": [
-        {
+      {
         "deviceId": "1828558438380138498",
         "sn": "HTF010S_1",
         "brand": "Dreo",
@@ -28,27 +28,23 @@
         "roomNameI18Key": "",
         "color": "s",
         "controlsConf": {
-            "template": "DR-HTF005S",
-            "lottie": {
+          "template": "DR-HTF005S",
+          "lottie": {
             "key": "poweron",
             "frames": [
-                {
+              {
                 "value": 0,
-                "frame": [
-                    0
-                ]
-                },
-                {
+                "frame": [0]
+              },
+              {
                 "value": 1,
-                "frame": [
-                    2
-                ]
-                }
+                "frame": [2]
+              }
             ]
-            },
-            "schedule": {
+          },
+          "schedule": {
             "modes": [
-                {
+              {
                 "icon": "ic_normal_wind_color",
                 "title": "device_fans_mode_straight",
                 "cmd": "windtype",
@@ -56,20 +52,18 @@
                 "valueType": 1,
                 "isSelected": true,
                 "attention": [
-                    "windtype",
-                    "windlevel",
-                    "poweron",
-                    "shakehorizon"
+                  "windtype",
+                  "windlevel",
+                  "poweron",
+                  "shakehorizon"
                 ],
                 "controls": [
-                    {
+                  {
                     "type": 0,
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": [
-                        "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 7,
                     "valueType": 1,
                     "startValue": 1,
@@ -77,10 +71,10 @@
                     "groupId": 0,
                     "icon": "ic_sch_wind_speed",
                     "isSelected": false
-                    }
+                  }
                 ]
-                },
-                {
+              },
+              {
                 "icon": "ic_natural_wind_color",
                 "title": "device_fans_mode_natural",
                 "cmd": "windtype",
@@ -88,32 +82,30 @@
                 "valueType": 1,
                 "isSelected": false,
                 "attention": [
-                    "windtype",
-                    "windlevel",
-                    "poweron",
-                    "shakehorizon",
-                    "shakehorizonangle"
+                  "windtype",
+                  "windlevel",
+                  "poweron",
+                  "shakehorizon",
+                  "shakehorizonangle"
                 ],
                 "controls": [
-                    {
+                  {
                     "type": 0,
                     "valueType": 1,
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": [
-                        "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 7,
                     "startValue": 1,
                     "endValue": 9,
                     "groupId": 0,
                     "icon": "ic_sch_wind_speed",
                     "isSelected": false
-                    }
+                  }
                 ]
-                },
-                {
+              },
+              {
                 "icon": "ic_sleep_wind_color",
                 "title": "device_fans_mode_sleep",
                 "cmd": "windtype",
@@ -121,21 +113,19 @@
                 "valueType": 1,
                 "isSelected": false,
                 "attention": [
-                    "windtype",
-                    "windlevel",
-                    "poweron",
-                    "shakehorizon",
-                    "shakehorizonangle"
+                  "windtype",
+                  "windlevel",
+                  "poweron",
+                  "shakehorizon",
+                  "shakehorizonangle"
                 ],
                 "controls": [
-                    {
+                  {
                     "type": 0,
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": [
-                        "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 7,
                     "valueType": 1,
                     "startValue": 1,
@@ -143,10 +133,10 @@
                     "groupId": 0,
                     "isSelected": false,
                     "icon": "ic_sch_wind_speed"
-                    }
+                  }
                 ]
-                },
-                {
+              },
+              {
                 "icon": "ic_auto_wind_color",
                 "title": "device_control_mode_auto",
                 "cmd": "windtype",
@@ -154,21 +144,19 @@
                 "valueType": 1,
                 "isSelected": false,
                 "attention": [
-                    "windtype",
-                    "windlevel",
-                    "poweron",
-                    "shakehorizon",
-                    "shakehorizonangle"
+                  "windtype",
+                  "windlevel",
+                  "poweron",
+                  "shakehorizon",
+                  "shakehorizonangle"
                 ],
                 "controls": [
-                    {
+                  {
                     "type": 0,
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": [
-                        "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 7,
                     "valueType": 1,
                     "startValue": 1,
@@ -176,247 +164,223 @@
                     "groupId": 0,
                     "isSelected": false,
                     "icon": "ic_sch_wind_speed"
-                    }
+                  }
                 ]
-                }
+              }
             ]
-            },
-            "cards": [
+          },
+          "cards": [
             {
-                "type": 2,
-                "title": "device_control_temp",
-                "icon": "",
-                "image": "",
-                "url": "",
-                "show": true
-            },
-            {
-                "type": 8,
-                "title": "",
-                "icon": "",
-                "image": "",
-                "url": "dreo://nav/device/schedule?deviceSn={sn}",
-                "show": true,
-                "key": "",
-                "minVersion": "2.5.0"
+              "type": 2,
+              "title": "device_control_temp",
+              "icon": "",
+              "image": "",
+              "url": "",
+              "show": true
             },
             {
-                "type": 6,
-                "title": "device_settings_title",
-                "icon": "ic_setting",
-                "image": "",
-                "url": "dreo://nav/device/setting?deviceSn=${sn}",
-                "show": true,
-                "key": "setting"
+              "type": 8,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "dreo://nav/device/schedule?deviceSn={sn}",
+              "show": true,
+              "key": "",
+              "minVersion": "2.5.0"
             },
             {
-                "type": 6,
-                "title": "base_clean_tutorial",
-                "icon": "https://resources.dreo-cloud.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
-                "image": "",
-                "url": "https://fe.dreo.com/guides/product-clean/pilot-pro-s",
-                "show": true,
-                "minVersion": "2.6.8"
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
+            },
+            {
+              "type": 6,
+              "title": "base_clean_tutorial",
+              "icon": "https://resources.dreo-tech.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
+              "image": "",
+              "url": "https://fe.dreo.com/guides/product-clean/pilot-pro-s",
+              "show": true,
+              "minVersion": "2.6.8"
             }
-            ],
-            "feature": {
+          ],
+          "feature": {
             "schedule": {
-                "enable": true,
-                "localSupport": true,
-                "module": [
+              "enable": true,
+              "localSupport": true,
+              "module": [
                 {
-                    "type": "HeFi",
-                    "version": "3.2.2"
+                  "type": "HeFi",
+                  "version": "3.2.2"
                 }
-                ]
+              ]
             }
-            },
-            "preference": [
+          },
+          "preference": [
             {
-                "id": "200",
-                "type": "Panel Sound",
-                "title": "device_control_panelsound",
-                "image": "ic_mute",
-                "reverse": false,
-                "cmd": "voiceon"
-            },
-            {
-                "id": "210",
-                "type": "Display Auto Off",
-                "title": "device_fans_mode_auto_display",
-                "image": "ic_display",
-                "reverse": true,
-                "cmd": "ledalwayson"
+              "id": "200",
+              "type": "Panel Sound",
+              "title": "device_control_panelsound",
+              "image": "ic_mute",
+              "reverse": false,
+              "cmd": "voiceon"
             },
             {
-                "id": "230",
-                "type": "Temperature Unit",
-                "title": "device_control_temp_unit",
-                "image": "ic_temp_unit"
+              "id": "210",
+              "type": "Display Auto Off",
+              "title": "device_fans_mode_auto_display",
+              "image": "ic_display",
+              "reverse": true,
+              "cmd": "ledalwayson"
             },
             {
-                "id": "250",
-                "type": "Temperature Calibration",
-                "title": "device_control_temp_calibration",
-                "image": "ic_temp_cal"
+              "id": "230",
+              "type": "Temperature Unit",
+              "title": "device_control_temp_unit",
+              "image": "ic_temp_unit"
+            },
+            {
+              "id": "250",
+              "type": "Temperature Calibration",
+              "title": "device_control_temp_calibration",
+              "image": "ic_temp_cal"
             }
-            ],
-            "extraConfigs": [
+          ],
+          "extraConfigs": [
             {
-                "key": "control",
-                "value": [
+              "key": "control",
+              "value": [
                 {
-                    "id": "110",
-                    "type": "Speed",
-                    "title": "device_control_speed",
-                    "items": [
+                  "id": "110",
+                  "type": "Speed",
+                  "title": "device_control_speed",
+                  "items": [
                     {
-                        "text": "1",
-                        "cmd": "windlevel",
-                        "value": 1
+                      "text": "1",
+                      "cmd": "windlevel",
+                      "value": 1
                     },
                     {
-                        "text": "12",
-                        "cmd": "windlevel",
-                        "value": 12
+                      "text": "12",
+                      "cmd": "windlevel",
+                      "value": 12
                     }
-                    ]
+                  ]
                 }
-                ],
-                "firmware": {
+              ],
+              "firmware": {
                 "minMcuVer": "",
                 "minModuleVer": "",
                 "mcuModel": "SC95F8613B-2/US",
                 "moduleModel": ""
-                }
+              }
             }
-            ],
-            "control": [
+          ],
+          "control": [
             {
-                "id": "100",
-                "type": "Mode",
-                "title": "device_mode",
-                "items": [
+              "id": "100",
+              "type": "Mode",
+              "title": "device_mode",
+              "items": [
                 {
-                    "text": "device_fans_mode_straight",
-                    "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                    ],
-                    "image": "ic_normal_wind",
-                    "imageColors": [
-                    "#D5D6D7",
-                    "#25D7E4"
-                    ],
-                    "cmd": "windtype",
-                    "value": 1
+                  "text": "device_fans_mode_straight",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_normal_wind",
+                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "cmd": "windtype",
+                  "value": 1
                 },
                 {
-                    "text": "device_fans_mode_natural",
-                    "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                    ],
-                    "image": "ic_natural_wind",
-                    "imageColors": [
-                    "#D5D6D7",
-                    "#2CDD96"
-                    ],
-                    "cmd": "windtype",
-                    "value": 2
+                  "text": "device_fans_mode_natural",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_natural_wind",
+                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "cmd": "windtype",
+                  "value": 2
                 },
                 {
-                    "text": "device_control_mode_sleep",
-                    "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                    ],
-                    "image": "ic_sleep_wind",
-                    "imageColors": [
-                    "#D5D6D7",
-                    "#6249DF"
-                    ],
-                    "cmd": "windtype",
-                    "value": 3
+                  "text": "device_control_mode_sleep",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_sleep_wind",
+                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "cmd": "windtype",
+                  "value": 3
                 },
                 {
-                    "text": "device_control_mode_auto",
-                    "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                    ],
-                    "image": "ic_auto_wind",
-                    "imageColors": [
-                    "#D5D6D7",
-                    "#0A80F5"
-                    ],
-                    "cmd": "windtype",
-                    "value": 4
+                  "text": "device_control_mode_auto",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_auto_wind",
+                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "cmd": "windtype",
+                  "value": 4
                 }
-                ]
+              ]
             },
             {
-                "id": "110",
-                "type": "Speed",
-                "title": "device_control_speed",
-                "items": [
+              "id": "110",
+              "type": "Speed",
+              "title": "device_control_speed",
+              "items": [
                 {
-                    "text": "1",
-                    "cmd": "windlevel",
-                    "value": 1
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
                 },
                 {
-                    "text": "9",
-                    "cmd": "windlevel",
-                    "value": 9
+                  "text": "9",
+                  "cmd": "windlevel",
+                  "value": 9
                 }
-                ]
+              ]
             },
             {
-                "id": "120",
-                "type": "Oscillation",
-                "title": "device_control_oscillation",
-                "items": [],
-                "cmd": "shakehorizon"
+              "id": "120",
+              "type": "Oscillation",
+              "title": "device_control_oscillation",
+              "items": [],
+              "cmd": "shakehorizon"
             }
-            ],
-            "category": "Tower Fan",
-            "setting": [
+          ],
+          "category": "Tower Fan",
+          "setting": [
             {
-                "text": "Firmware Version",
-                "image": "image.png",
-                "value": "1.0.0",
-                "url": "dreo://control"
+              "text": "Firmware Version",
+              "image": "image.png",
+              "value": "1.0.0",
+              "url": "dreo://control"
             }
-            ]
+          ]
         },
         "mainConf": {
-            "isSmart": true,
-            "isWifi": true,
-            "isBluetooth": true,
-            "isVoiceControl": true
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
         },
         "resourcesConf": {
-            "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202405/2302bbcd1232ac4326ae312abaa1cc6d70.png",
-            "imageFullSrc": "https://resources.dreo-cloud.com/app/202309/863baa919beea413783c2c6400029eb39.zip",
-            "imageSmallDarkSrc": "",
-            "imageFullDarkSrc": ""
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202405/2302bbcd1232ac4326ae312abaa1cc6d70.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202309/863baa919beea413783c2c6400029eb39.zip",
+          "imageSmallDarkSrc": "",
+          "imageFullDarkSrc": ""
         },
         "servicesConf": [
-            {
+          {
             "key": "user_manual",
-            "value": "https://resources.dreo-cloud.com/app/202310/123555bd6d00ab4ce6bb86c14a98d99204.pdf"
-            }
+            "value": "https://resources.dreo-tech.com/app/202310/123555bd6d00ab4ce6bb86c14a98d99204.pdf"
+          }
         ],
         "userManuals": [
-            {
-            "url": "https://resources.dreo-cloud.com/app/202310/123555bd6d00ab4ce6bb86c14a98d99204.pdf",
+          {
+            "url": "https://resources.dreo-tech.com/app/202310/123555bd6d00ab4ce6bb86c14a98d99204.pdf",
             "icon": null,
             "desc": "User Manual",
             "lang": "en"
-            }
+          }
         ]
-        }
+      }
     ]
-    }
+  }
 }

@@ -27,8 +27,8 @@
         "roomName": null,
         "roomNameI18Key": "",
         "color": "s",
-        "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202411/18b98b75a4afad403b8cea8739b904eff7.png",
-        "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202411/1879f0f7f030174cbd8820bebe66e9d45a.png",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/18b98b75a4afad403b8cea8739b904eff7.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/1879f0f7f030174cbd8820bebe66e9d45a.png",
         "widgetAbnormalImage": null,
         "variantIconMd5": null,
         "controlsConf": {
@@ -41,14 +41,14 @@
           "isVoiceControl": true
         },
         "resourcesConf": {
-          "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202411/18c5af0d6a0be7407994a41ff28115ea87.png",
-          "imageFullSrc": "https://resources.dreo-cloud.com/app/preSigned202411/180627bfc4f18944fd8d89545855a2c991.zip",
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202411/18c5af0d6a0be7407994a41ff28115ea87.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202411/180627bfc4f18944fd8d89545855a2c991.zip",
           "imageSmallDarkSrc": null,
           "imageFullDarkSrc": null
         },
         "userManuals": [
           {
-            "url": "https://resources.dreo-cloud.com/app/preSigned202412/6b83fc97752d74c96a6b43ee2051e9e81.pdf",
+            "url": "https://resources.dreo-tech.com/app/preSigned202412/6b83fc97752d74c96a6b43ee2051e9e81.pdf",
             "icon": null,
             "desc": "DR-HPF008S_User-Manual_V1",
             "lang": "en"

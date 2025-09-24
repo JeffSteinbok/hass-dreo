@@ -9,52 +9,52 @@
   "data": {
     "list": [
       {
-      "deviceId": "1924380451974754305",
-      "sn": "HEC002S_1",
-      "brand": "Dreo",
-      "model": "DR-HEC002S",
-      "productId": "**REDACTED**",
-      "productName": "Evaporative Cooler",
-      "deviceName": "Verdunstungsk\u00fchler",
-      "shared": false,
-      "series": null,
-      "seriesName": "IceWind 712S",
-      "type": 0,
-      "owner": true,
-      "familyId": null,
-      "familyName": null,
-      "roomId": null,
-      "roomName": null,
-      "roomNameI18Key": "",
-      "color": "b",
-      "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202412/26b695c7c2e4884fe6a4dfa743952e4887.png",
-      "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202412/26841547bbde3248e58c37c7c14e50eae8.png",
-      "widgetAbnormalImage": null,
-      "variantIconMd5": null,
-      "controlsConf": {
-        "template": "DR-HEC002S"
-      },
-      "mainConf": {
-        "isSmart": true,
-        "isWifi": true,
-        "isBluetooth": true,
-        "isVoiceControl": true
-      },
-      "resourcesConf": {
-        "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202412/268954c7b5bf144537a771fc3639efa6fe.png",
-        "imageFullSrc": "https://resources.dreo-cloud.com/app/preSigned202412/26a0a0d2dab8c0427c908ec86bd3447d23.zip",
-        "imageSmallDarkSrc": null,
-        "imageFullDarkSrc": null
-      },
-      "userManuals": [
-        {
-          "url": "https://resources.dreo-cloud.com/app/preSigned202501/175b69da3b02614a8d9b8a16bfb7e456c2.pdf",
-          "icon": null,
-          "desc": "DR-HEC002S User Manual V1",
-          "lang": "en"
-        }
-      ]
-    }
+        "deviceId": "1924380451974754305",
+        "sn": "HEC002S_1",
+        "brand": "Dreo",
+        "model": "DR-HEC002S",
+        "productId": "**REDACTED**",
+        "productName": "Evaporative Cooler",
+        "deviceName": "Verdunstungsk\u00fchler",
+        "shared": false,
+        "series": null,
+        "seriesName": "IceWind 712S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202412/26b695c7c2e4884fe6a4dfa743952e4887.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202412/26841547bbde3248e58c37c7c14e50eae8.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HEC002S"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202412/268954c7b5bf144537a771fc3639efa6fe.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202412/26a0a0d2dab8c0427c908ec86bd3447d23.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202501/175b69da3b02614a8d9b8a16bfb7e456c2.pdf",
+            "icon": null,
+            "desc": "DR-HEC002S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
     ],
     "mixed": {
       "wifi_rssi": {
