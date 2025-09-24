@@ -47,8 +47,6 @@ TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
 TARGET_AUTO_HUMIDITY_KEY = "rhautolevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
-RGB_LEVEL = 'rgblevel'
-SCHEDULE_ENABLE = 'scheon'
 
 # Preferences Names
 # It's possible we should switch to IDs instead of names
