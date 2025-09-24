@@ -17,13 +17,16 @@ class TestDiagnostics(IntegrationTestBase):
     def test_diagnostics_simple(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
 
-        self.get_devices_file_name = "get_devices_HTF005S.json"
+        self.get_devices_file_name = "get_devices_multiple_1.json"
         self.pydreo_manager.load_devices()
         diag = diagnostics._get_diagnostics(self.pydreo_manager) # pylint: disable=protected-access
         dreo = diag.get("dreo")
-        assert(dreo.get("device_count") == 1)
+        assert(dreo.get("device_count") == 2)
         raw_device_list = dreo.get("raw_devicelist").get("data")
-        assert raw_device_list.get("totalNum") == 1
+        assert raw_device_list.get("totalNum") == 2
         assert raw_device_list.get("list")[0].get("deviceName") == "Pilot Pro S"
         assert raw_device_list.get("list")[0].get("sn") == "**REDACTED**"
         assert raw_device_list.get("list")[0].get("productId") == "**REDACTED**"
+
+        assert raw_device_list.get("list")[1].get("deviceName") == "Electric AC"
+

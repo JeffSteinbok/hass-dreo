@@ -63,9 +63,12 @@ def _redact_values(data: dict) -> dict:
             if isinstance(item, dict):
                 new_data[key] = _redact_values(item)
             elif isinstance(item, list):
+                new_data[key] = []
                 for listitem in item:
                     if isinstance(listitem, dict):
-                        new_data[key] = [_redact_values(listitem)]
+                        new_data[key].append(_redact_values(listitem))
+                    else:
+                        new_data[key].append(listitem)
             else:
                 new_data[key] = item
         else:
