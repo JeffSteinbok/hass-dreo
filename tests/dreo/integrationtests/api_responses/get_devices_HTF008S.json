@@ -1,201 +1,173 @@
 {
-    "code": 0,
-    "msg": "OK",
-    "data": {
-      "currentPage": 1,
-      "pageSize": 10,
-      "totalNum": 1,
-      "totalPage": 1,
-      "list": [
-        {
-          "deviceId": "1234",
-          "sn": "HTF008S_1",
-          "brand": "Dreo",
-          "model": "DR-HTF008S",
-          "productId": "**REDACTED**",
-          "productName": "Tower Fan",
-          "deviceName": "Main Bedroom Fan",
-          "shared": false,
-          "series": null,
-          "seriesName": "Cruiser Pro T3 S",
-          "controlsConf": {
-            "template": "DR-HTF008S",
-            "lottie": {
-              "key": "poweron",
-              "frames": [
-                {
-                  "value": 0,
-                  "frame": [
-                    0
-                  ]
-                },
-                {
-                  "value": 1,
-                  "frame": [
-                    2
-                  ]
-                }
-              ]
-            },
-            "cards": [
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 10,
+    "totalNum": 1,
+    "totalPage": 1,
+    "list": [
+      {
+        "deviceId": "1234",
+        "sn": "HTF008S_1",
+        "brand": "Dreo",
+        "model": "DR-HTF008S",
+        "productId": "**REDACTED**",
+        "productName": "Tower Fan",
+        "deviceName": "Main Bedroom Fan",
+        "shared": false,
+        "series": null,
+        "seriesName": "Cruiser Pro T3 S",
+        "controlsConf": {
+          "template": "DR-HTF008S",
+          "lottie": {
+            "key": "poweron",
+            "frames": [
               {
-                "type": 2,
-                "title": "device_control_temp",
-                "icon": "",
-                "image": "",
-                "url": "",
-                "show": true
+                "value": 0,
+                "frame": [0]
               },
               {
-                "type": 6,
-                "title": "device_settings_title",
-                "icon": "ic_setting",
-                "image": "",
-                "url": "dreo://nav/device/setting?deviceSn=${sn}",
-                "show": true,
-                "key": "setting"
-              }
-            ],
-            "preference": [
-              {
-                "id": "200",
-                "type": "Panel Sound",
-                "title": "device_control_panelsound",
-                "image": "ic_mute",
-                "reverse": false,
-                "cmd": "voiceon"
-              },
-              {
-                "id": "210",
-                "type": "Display Auto Off",
-                "title": "device_fans_mode_auto_display",
-                "image": "ic_display",
-                "reverse": true,
-                "cmd": "ledalwayson"
-              },
-              {
-                "id": "230",
-                "type": "Temperature Unit",
-                "title": "device_control_temp_unit",
-                "image": "ic_temp_unit"
-              }
-            ],
-            "control": [
-              {
-                "id": "100",
-                "type": "Mode",
-                "title": "device_mode",
-                "items": [
-                  {
-                    "text": "device_fans_mode_straight",
-                    "textColors": [
-                      "#D5D6D7",
-                      "#D5D6D7"
-                    ],
-                    "image": "ic_normal_wind",
-                    "imageColors": [
-                      "#D5D6D7",
-                      "#25D7E4"
-                    ],
-                    "cmd": "windtype",
-                    "value": 1
-                  },
-                  {
-                    "text": "device_fans_mode_natural",
-                    "textColors": [
-                      "#D5D6D7",
-                      "#D5D6D7"
-                    ],
-                    "image": "ic_natural_wind",
-                    "imageColors": [
-                      "#D5D6D7",
-                      "#2CDD96"
-                    ],
-                    "cmd": "windtype",
-                    "value": 2
-                  },
-                  {
-                    "text": "device_control_mode_sleep",
-                    "textColors": [
-                      "#D5D6D7",
-                      "#D5D6D7"
-                    ],
-                    "image": "ic_sleep_wind",
-                    "imageColors": [
-                      "#D5D6D7",
-                      "#6249DF"
-                    ],
-                    "cmd": "windtype",
-                    "value": 3
-                  },
-                  {
-                    "text": "device_control_mode_auto",
-                    "textColors": [
-                      "#D5D6D7",
-                      "#D5D6D7"
-                    ],
-                    "image": "ic_auto_wind",
-                    "imageColors": [
-                      "#D5D6D7",
-                      "#0A80F5"
-                    ],
-                    "cmd": "windtype",
-                    "value": 4
-                  }
-                ]
-              },
-              {
-                "id": "110",
-                "type": "Speed",
-                "title": "device_control_speed",
-                "items": [
-                  {
-                    "text": "1",
-                    "cmd": "windlevel",
-                    "value": 1
-                  },
-                  {
-                    "text": "5",
-                    "cmd": "windlevel",
-                    "value": 5
-                  }
-                ]
-              },
-              {
-                "id": "120",
-                "type": "Oscillation",
-                "title": "device_control_oscillation",
-                "items": [],
-                "cmd": "shakehorizon"
-              }
-            ],
-            "category": "Tower Fan",
-            "setting": [
-              {
-                "text": "Firmware Version",
-                "image": "image.png",
-                "value": "1.0.0",
-                "url": "dreo://control"
+                "value": 1,
+                "frame": [2]
               }
             ]
           },
-          "mainConf": {
-            "isSmart": true,
-            "isWifi": true,
-            "isBluetooth": true,
-            "isVoiceControl": true
-          },
-          "resourcesConf": {
-            "imageSmallSrc": "https://resources.dreo-cloud.com/app/202302/154b19731975c74404ba60cc6a4af66c08.png",
-            "imageFullSrc": "https://resources.dreo-cloud.com/app/202302/16acefeb4c1aaa47c189c693cdf0beb612.zip"
-          },
-          "servicesConf": [
+          "cards": [
             {
-              "key": "user_manual",
-              "value": "https://resources.dreo-cloud.com/app/202302/15e71c34e2b2e24aa79e9b2b4a5733f852.pdf"
+              "type": 2,
+              "title": "device_control_temp",
+              "icon": "",
+              "image": "",
+              "url": "",
+              "show": true
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
+            }
+          ],
+          "preference": [
+            {
+              "id": "200",
+              "type": "Panel Sound",
+              "title": "device_control_panelsound",
+              "image": "ic_mute",
+              "reverse": false,
+              "cmd": "voiceon"
+            },
+            {
+              "id": "210",
+              "type": "Display Auto Off",
+              "title": "device_fans_mode_auto_display",
+              "image": "ic_display",
+              "reverse": true,
+              "cmd": "ledalwayson"
+            },
+            {
+              "id": "230",
+              "type": "Temperature Unit",
+              "title": "device_control_temp_unit",
+              "image": "ic_temp_unit"
+            }
+          ],
+          "control": [
+            {
+              "id": "100",
+              "type": "Mode",
+              "title": "device_mode",
+              "items": [
+                {
+                  "text": "device_fans_mode_straight",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_normal_wind",
+                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "cmd": "windtype",
+                  "value": 1
+                },
+                {
+                  "text": "device_fans_mode_natural",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_natural_wind",
+                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "cmd": "windtype",
+                  "value": 2
+                },
+                {
+                  "text": "device_control_mode_sleep",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_sleep_wind",
+                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "cmd": "windtype",
+                  "value": 3
+                },
+                {
+                  "text": "device_control_mode_auto",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_auto_wind",
+                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "cmd": "windtype",
+                  "value": 4
+                }
+              ]
+            },
+            {
+              "id": "110",
+              "type": "Speed",
+              "title": "device_control_speed",
+              "items": [
+                {
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
+                },
+                {
+                  "text": "5",
+                  "cmd": "windlevel",
+                  "value": 5
+                }
+              ]
+            },
+            {
+              "id": "120",
+              "type": "Oscillation",
+              "title": "device_control_oscillation",
+              "items": [],
+              "cmd": "shakehorizon"
+            }
+          ],
+          "category": "Tower Fan",
+          "setting": [
+            {
+              "text": "Firmware Version",
+              "image": "image.png",
+              "value": "1.0.0",
+              "url": "dreo://control"
             }
           ]
-        }
-      ]
-    }
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/202302/154b19731975c74404ba60cc6a4af66c08.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202302/16acefeb4c1aaa47c189c693cdf0beb612.zip"
+        },
+        "servicesConf": [
+          {
+            "key": "user_manual",
+            "value": "https://resources.dreo-tech.com/app/202302/15e71c34e2b2e24aa79e9b2b4a5733f852.pdf"
+          }
+        ]
+      }
+    ]
   }
+}

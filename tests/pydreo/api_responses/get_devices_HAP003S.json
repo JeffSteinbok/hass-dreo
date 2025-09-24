@@ -1,251 +1,223 @@
 {
-    "code": 0,
-    "msg": "OK",
-    "data": {
-      "currentPage": 1,
-      "pageSize": 100,
-      "totalNum": 1,
-      "totalPage": 1,
-      "list": [
-        {
-          "deviceId": "1821290685702082561",
-          "sn": "HAP003S_1",
-          "brand": "Dreo",
-          "model": "DR-HAP003S",
-          "productId": "**REDACTED**",
-          "productName": "Air Purifier",
-          "deviceName": "Air Purifier",
-          "shared": false,
-          "series": null,
-          "seriesName": "Macro Max S",
-          "color": "b",
-          "controlsConf": {
-            "template": "DR-HAP003S",
-            "lottie": {
-              "frames": [
-                {
-                  "value": 0,
-                  "frame": [
-                    0
-                  ]
-                },
-                {
-                  "value": 1,
-                  "frame": [
-                    2
-                  ]
-                },
-                {
-                  "value": 2,
-                  "frame": [
-                    4
-                  ]
-                },
-                {
-                  "value": 3,
-                  "frame": [
-                    6
-                  ]
-                },
-                {
-                  "value": 4,
-                  "frame": [
-                    8
-                  ]
-                }
-              ],
-              "key": "aq"
-            },
-            "cards": [
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "list": [
+      {
+        "deviceId": "1821290685702082561",
+        "sn": "HAP003S_1",
+        "brand": "Dreo",
+        "model": "DR-HAP003S",
+        "productId": "**REDACTED**",
+        "productName": "Air Purifier",
+        "deviceName": "Air Purifier",
+        "shared": false,
+        "series": null,
+        "seriesName": "Macro Max S",
+        "color": "b",
+        "controlsConf": {
+          "template": "DR-HAP003S",
+          "lottie": {
+            "frames": [
               {
-                "type": 1,
-                "title": "PM2.5",
-                "icon": "ic_air_quality",
-                "image": "",
-                "url": "",
-                "show": true
+                "value": 0,
+                "frame": [0]
               },
               {
-                "type": 3,
-                "title": "",
-                "icon": "",
-                "image": "",
-                "url": "",
-                "show": true
+                "value": 1,
+                "frame": [2]
               },
               {
-                "type": 6,
-                "title": "device_settings_title",
-                "icon": "ic_setting",
-                "image": "",
-                "url": "dreo://nav/device/setting?deviceSn=${sn}",
-                "show": true,
-                "key": "setting"
+                "value": 2,
+                "frame": [4]
+              },
+              {
+                "value": 3,
+                "frame": [6]
+              },
+              {
+                "value": 4,
+                "frame": [8]
               }
             ],
-            "urlConfig": [
-              {
-                "key": "filter",
-                "url": "https://www.dreo.com/products/dreo-air-purifiers-replacement-filter-for-macro-max-s?utm_source=app&utm_medium=airFilterLife003&utm_campaign=airFilter003"
-              }
-            ],
-            "preference": [
-              {
-                "id": "200",
-                "type": "Light",
-                "title": "device_control_light",
-                "image": "ic_display",
-                "reverse": false,
-                "cmd": "ledalwayson"
-              },
-              {
-                "id": "240",
-                "type": "Light Detection",
-                "title": "device_control_lightdetection",
-                "image": "ic_lightsensoron",
-                "reverse": false,
-                "cmd": "lightsenon"
-              },
-              {
-                "id": "210",
-                "type": "Panel Sound",
-                "title": "device_control_panelsound",
-                "image": "ic_mute",
-                "reverse": true,
-                "cmd": "muteon"
-              },
-              {
-                "id": "220",
-                "type": "Child Lock",
-                "title": "device_control_childlock",
-                "image": "ic_child_lock",
-                "reverse": false,
-                "cmd": "childlockon"
-              },
-              {
-                "id": "250",
-                "type": "Display Info",
-                "title": "device_control_displayinfo",
-                "image": "ic_display_info"
-              },
-              {
-                "id": "230",
-                "type": "Auto Mode Settings",
-                "title": "device_control_mode_auto_settings",
-                "image": "ic_mode_settings"
-              }
-            ],
-            "control": [
-              {
-                "id": "100",
-                "type": "Mode",
-                "title": "device_mode",
-                "items": [
-                  {
-                    "text": "device_control_mode_auto",
-                    "textColors": [
-                      "#D5D6D7",
-                      "#333333"
-                    ],
-                    "image": "ic_auto_wind",
-                    "imageColors": [
-                      "#D5D6D7",
-                      "#0A80F5"
-                    ],
-                    "cmd": "mode",
-                    "value": "auto"
-                  },
-                  {
-                    "text": "device_control_mode_turbo",
-                    "textColors": [
-                      "#D5D6D7",
-                      "#333333"
-                    ],
-                    "image": "ic_turbo_wind",
-                    "imageColors": [
-                      "#D5D6D7",
-                      "#FFAD0A"
-                    ],
-                    "cmd": "mode",
-                    "value": "turbo"
-                  },
-                  {
-                    "text": "device_control_mode_sleep",
-                    "textColors": [
-                      "#D5D6D7",
-                      "#333333"
-                    ],
-                    "image": "ic_sleep_wind",
-                    "imageColors": [
-                      "#D5D6D7",
-                      "#6249DF"
-                    ],
-                    "cmd": "mode",
-                    "value": "sleep"
-                  }
-                ]
-              },
-              {
-                "id": "110",
-                "type": "Manual",
-                "title": "device_control_mode_manual",
-                "cmd": "mode",
-                "value": "manual",
-                "items": [
-                  {
-                    "text": "1",
-                    "cmd": "windlevel",
-                    "value": 1
-                  },
-                  {
-                    "text": "18",
-                    "cmd": "windlevel",
-                    "value": 18
-                  }
-                ]
-              }
-            ],
-            "category": "Air Purifier",
-            "setting": [
-              {
-                "text": "Firmware Version",
-                "image": "image.png",
-                "value": "1.0.0",
-                "url": "dreo://control"
-              }
-            ]
+            "key": "aq"
           },
-          "mainConf": {
-            "isSmart": true,
-            "isWifi": true,
-            "isBluetooth": true,
-            "isVoiceControl": true
-          },
-          "resourcesConf": {
-            "imageSmallSrc": "https://resources.dreo-cloud.com/app/202212/21049d350c85b4bc6be1251a171761277.png",
-            "imageFullSrc": "https://resources.dreo-cloud.com/app/202307/31879efec9eabb47458072a8e3cea2937a.zip",
-            "imageSmallDarkSrc": "",
-            "imageFullDarkSrc": ""
-          },
-          "servicesConf": [
+          "cards": [
             {
-              "key": "user_manual",
-              "value": "https://resources.dreo-cloud.com/app/202208/1a2e3cd57ab1c45329fc827dabb2f8b48.pdf"
+              "type": 1,
+              "title": "PM2.5",
+              "icon": "ic_air_quality",
+              "image": "",
+              "url": "",
+              "show": true
             },
             {
-              "key": "airpurifier_filter_url",
-              "value": "https://www.dreo.com/zh/products/dreo-air-purifiers-replacement-filter-for-macro-max-s?utm_source=app&utm_medium=airFilterLife003&utm_campaign=airFilter003"
+              "type": 3,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "",
+              "show": true
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
             }
           ],
-          "userManuals": [
+          "urlConfig": [
             {
-              "url": "https://resources.dreo-cloud.com/app/202208/1a2e3cd57ab1c45329fc827dabb2f8b48.pdf",
-              "icon": null,
-              "desc": "User Manual",
-              "lang": "en"
+              "key": "filter",
+              "url": "https://www.dreo.com/products/dreo-air-purifiers-replacement-filter-for-macro-max-s?utm_source=app&utm_medium=airFilterLife003&utm_campaign=airFilter003"
+            }
+          ],
+          "preference": [
+            {
+              "id": "200",
+              "type": "Light",
+              "title": "device_control_light",
+              "image": "ic_display",
+              "reverse": false,
+              "cmd": "ledalwayson"
+            },
+            {
+              "id": "240",
+              "type": "Light Detection",
+              "title": "device_control_lightdetection",
+              "image": "ic_lightsensoron",
+              "reverse": false,
+              "cmd": "lightsenon"
+            },
+            {
+              "id": "210",
+              "type": "Panel Sound",
+              "title": "device_control_panelsound",
+              "image": "ic_mute",
+              "reverse": true,
+              "cmd": "muteon"
+            },
+            {
+              "id": "220",
+              "type": "Child Lock",
+              "title": "device_control_childlock",
+              "image": "ic_child_lock",
+              "reverse": false,
+              "cmd": "childlockon"
+            },
+            {
+              "id": "250",
+              "type": "Display Info",
+              "title": "device_control_displayinfo",
+              "image": "ic_display_info"
+            },
+            {
+              "id": "230",
+              "type": "Auto Mode Settings",
+              "title": "device_control_mode_auto_settings",
+              "image": "ic_mode_settings"
+            }
+          ],
+          "control": [
+            {
+              "id": "100",
+              "type": "Mode",
+              "title": "device_mode",
+              "items": [
+                {
+                  "text": "device_control_mode_auto",
+                  "textColors": ["#D5D6D7", "#333333"],
+                  "image": "ic_auto_wind",
+                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "cmd": "mode",
+                  "value": "auto"
+                },
+                {
+                  "text": "device_control_mode_turbo",
+                  "textColors": ["#D5D6D7", "#333333"],
+                  "image": "ic_turbo_wind",
+                  "imageColors": ["#D5D6D7", "#FFAD0A"],
+                  "cmd": "mode",
+                  "value": "turbo"
+                },
+                {
+                  "text": "device_control_mode_sleep",
+                  "textColors": ["#D5D6D7", "#333333"],
+                  "image": "ic_sleep_wind",
+                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "cmd": "mode",
+                  "value": "sleep"
+                }
+              ]
+            },
+            {
+              "id": "110",
+              "type": "Manual",
+              "title": "device_control_mode_manual",
+              "cmd": "mode",
+              "value": "manual",
+              "items": [
+                {
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
+                },
+                {
+                  "text": "18",
+                  "cmd": "windlevel",
+                  "value": 18
+                }
+              ]
+            }
+          ],
+          "category": "Air Purifier",
+          "setting": [
+            {
+              "text": "Firmware Version",
+              "image": "image.png",
+              "value": "1.0.0",
+              "url": "dreo://control"
             }
           ]
-        }
-      ]
-    }
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/202212/21049d350c85b4bc6be1251a171761277.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202307/31879efec9eabb47458072a8e3cea2937a.zip",
+          "imageSmallDarkSrc": "",
+          "imageFullDarkSrc": ""
+        },
+        "servicesConf": [
+          {
+            "key": "user_manual",
+            "value": "https://resources.dreo-tech.com/app/202208/1a2e3cd57ab1c45329fc827dabb2f8b48.pdf"
+          },
+          {
+            "key": "airpurifier_filter_url",
+            "value": "https://www.dreo.com/zh/products/dreo-air-purifiers-replacement-filter-for-macro-max-s?utm_source=app&utm_medium=airFilterLife003&utm_campaign=airFilter003"
+          }
+        ],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/202208/1a2e3cd57ab1c45329fc827dabb2f8b48.pdf",
+            "icon": null,
+            "desc": "User Manual",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
   }
+}

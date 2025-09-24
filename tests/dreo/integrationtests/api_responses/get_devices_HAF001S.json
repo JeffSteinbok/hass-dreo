@@ -34,15 +34,11 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [
-                  0
-                ]
+                "frame": [0]
               },
               {
                 "value": 1,
-                "frame": [
-                  2
-                ]
+                "frame": [2]
               }
             ]
           },
@@ -55,12 +51,7 @@
                 "value": 1,
                 "valueType": 1,
                 "isSelected": true,
-                "attention": [
-                  "mode",
-                  "windlevel",
-                  "poweron",
-                  "hoscon"
-                ],
+                "attention": ["mode", "windlevel", "poweron", "hoscon"],
                 "controls": [
                   {
                     "type": 1,
@@ -68,9 +59,7 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": [
-                      "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -89,12 +78,7 @@
                 "value": 2,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": [
-                  "mode",
-                  "windlevel",
-                  "poweron",
-                  "hoscon"
-                ],
+                "attention": ["mode", "windlevel", "poweron", "hoscon"],
                 "controls": [
                   {
                     "type": 1,
@@ -102,9 +86,7 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": [
-                      "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -123,12 +105,7 @@
                 "value": 3,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": [
-                  "mode",
-                  "windlevel",
-                  "poweron",
-                  "hoscon"
-                ],
+                "attention": ["mode", "windlevel", "poweron", "hoscon"],
                 "controls": [
                   {
                     "type": 1,
@@ -136,9 +113,7 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": [
-                      "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -157,12 +132,7 @@
                 "value": 4,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": [
-                  "mode",
-                  "windlevel",
-                  "poweron",
-                  "hoscon"
-                ],
+                "attention": ["mode", "windlevel", "poweron", "hoscon"],
                 "controls": [
                   {
                     "type": 1,
@@ -170,9 +140,7 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": [
-                      "windlevel"
-                    ],
+                    "cmd": ["windlevel"],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -191,11 +159,7 @@
                 "value": 6,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": [
-                  "mode",
-                  "poweron",
-                  "hoscon"
-                ],
+                "attention": ["mode", "poweron", "hoscon"],
                 "controls": []
               }
             ]
@@ -231,7 +195,7 @@
             {
               "type": 6,
               "title": "base_clean_tutorial",
-              "icon": "https://resources.dreo-cloud.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
+              "icon": "https://resources.dreo-tech.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
               "image": "",
               "url": "https://m.dreo.com/guides/product-clean/air-circulator-fan/cf511s?utm_source=device_card",
               "show": true,
@@ -290,57 +254,33 @@
               "items": [
                 {
                   "text": "device_fans_mode_straight",
-                  "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                  ],
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
                   "image": "ic_normal_wind",
-                  "imageColors": [
-                    "#D5D6D7",
-                    "#25D7E4"
-                  ],
+                  "imageColors": ["#D5D6D7", "#25D7E4"],
                   "cmd": "mode",
                   "value": 1
                 },
                 {
                   "text": "device_fans_mode_natural",
-                  "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                  ],
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
                   "image": "ic_natural_wind",
-                  "imageColors": [
-                    "#D5D6D7",
-                    "#2CDD96"
-                  ],
+                  "imageColors": ["#D5D6D7", "#2CDD96"],
                   "cmd": "mode",
                   "value": 2
                 },
                 {
                   "text": "device_control_mode_sleep",
-                  "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                  ],
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
                   "image": "ic_sleep_wind",
-                  "imageColors": [
-                    "#D5D6D7",
-                    "#6249DF"
-                  ],
+                  "imageColors": ["#D5D6D7", "#6249DF"],
                   "cmd": "mode",
                   "value": 3
                 },
                 {
                   "text": "device_control_mode_auto",
-                  "textColors": [
-                    "#D5D6D7",
-                    "#D5D6D7"
-                  ],
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
                   "image": "ic_auto_wind",
-                  "imageColors": [
-                    "#D5D6D7",
-                    "#0A80F5"
-                  ],
+                  "imageColors": ["#D5D6D7", "#0A80F5"],
                   "cmd": "mode",
                   "value": 4
                 }
@@ -389,20 +329,20 @@
           "isVoiceControl": true
         },
         "resourcesConf": {
-          "imageSmallSrc": "https://resources.dreo-cloud.com/app/202302/1562f474986ecd484f870a6b1874406b82.png",
-          "imageFullSrc": "https://resources.dreo-cloud.com/app/202307/25e0425cca23dc4b9692de9486b7f23ec0.zip",
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/202302/1562f474986ecd484f870a6b1874406b82.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202307/25e0425cca23dc4b9692de9486b7f23ec0.zip",
           "imageSmallDarkSrc": "",
           "imageFullDarkSrc": ""
         },
         "servicesConf": [
           {
             "key": "user_manual",
-            "value": "https://resources.dreo-cloud.com/app/202404/11/247aa01eddc545fbb3046dd5053ec2db.pdf"
+            "value": "https://resources.dreo-tech.com/app/202404/11/247aa01eddc545fbb3046dd5053ec2db.pdf"
           }
         ],
         "userManuals": [
           {
-            "url": "https://resources.dreo-cloud.com/app/202404/11/247aa01eddc545fbb3046dd5053ec2db.pdf",
+            "url": "https://resources.dreo-tech.com/app/202404/11/247aa01eddc545fbb3046dd5053ec2db.pdf",
             "icon": null,
             "desc": "User Manual",
             "lang": "en"
