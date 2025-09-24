@@ -1,207 +1,290 @@
-"""Support additional switches for some Dreo devices"""
-# Suppress warnings about DataClass constructors
-# pylint: disable=E1123
-
-# Suppress warnings about unused function arguments
-# pylint: disable=W0613
+"""HomeAssistant Humidifier platform for Dreo Humidifiers."""
 from __future__ import annotations
-
-from typing import Any
-from dataclasses import dataclass
 import logging
 
-from .haimports import *  # pylint: disable=W0401,W0614
-from .dreobasedevice import DreoBaseDeviceHA
-from .dreochefmaker import DreoChefMakerHA
-from .pydreo import PyDreo, PyDreoBaseDevice
-from .pydreo.constant import DreoDeviceType
+from homeassistant.components.humidifier import (
+    HumidifierEntity,
+    HumidifierEntityFeature,
+    HumidifierDeviceClass
+)
 
-from .const import LOGGER, DOMAIN, PYDREO_MANAGER
+from .haimports import * # pylint: disable=W0401,W0614
+from .pydreo import PyDreo, PyDreoBaseDevice, PyDreoHumidifier, PyDreoDehumidifier
+from .pydreo.constant import DreoDeviceType
+from .dreobasedevice import DreoBaseDeviceHA
+
+from .const import (
+    LOGGER,
+    DOMAIN,
+    PYDREO_MANAGER
+)
 
 _LOGGER = logging.getLogger(LOGGER)
 
-
-@dataclass
-class DreoSwitchEntityDescription(SwitchEntityDescription):
-    """Describe Dreo Switch entity."""
-
-    attr_name: str = None
-    icon: str = None
-
-
-SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
-    DreoSwitchEntityDescription(
-        key="Horizontally Oscillating",
-        translation_key="horizontally_oscillating",
-        attr_name="horizontally_oscillating",
-        icon="mdi:rotate-360",
-    ),
-    DreoSwitchEntityDescription(
-        key="Vertically Oscillating",
-        translation_key="vertically_oscillating",
-        attr_name="vertically_oscillating",
-        icon="mdi:rotate-360",
-    ),
-    DreoSwitchEntityDescription(
-        key="Display Auto Off",
-        translation_key="display_auto_off",
-        attr_name="display_auto_off",
-        icon="mdi:monitor",
-    ),
-    DreoSwitchEntityDescription(
-        key="Panel Sound",
-        translation_key="panel_sound",
-        attr_name="panel_sound",
-        icon="mdi:volume-high",
-    ),
-    DreoSwitchEntityDescription(
-        key="Adaptive Brightness",
-        translation_key="adaptive_brightness",
-        attr_name="adaptive_brightness",
-        icon="mdi:monitor",
-    ),
-    DreoSwitchEntityDescription(
-        key="Panel Mute",
-        translation_key="mute_on",
-        attr_name="mute_on",
-        icon="mdi:volume-high",
-    ),  
-    DreoSwitchEntityDescription(
-        key="Oscillating",
-        translation_key="oscon",
-        attr_name="oscon",
-        icon="mdi:rotate-360",
-    ),
-    DreoSwitchEntityDescription(
-        key="PTC", translation_key="ptcon", attr_name="ptcon", icon="mdi:help"
-    ),
-    DreoSwitchEntityDescription(
-        key="Child Lock",
-        translation_key="childlockon",
-        attr_name="childlockon",
-        icon="mdi:lock",
-    ),
-    DreoSwitchEntityDescription(    
-        key="Light",
-        translation_key="light",
-        attr_name="ledpotkepton",
-        icon="mdi:led-on",
-    ),
-    DreoSwitchEntityDescription(    
-        key="Humidify",
-        translation_key="humidify",
-        attr_name="humidify",
-        icon="mdi:air-humidifier",
-    ),
-    DreoSwitchEntityDescription(    
-        key="Display Light",
-        translation_key="display_light",
-        attr_name="display_light",
-        icon="mdi:led-on",
-    ),
-    DreoSwitchEntityDescription(    
-        key="Auto Turn On",
-        translation_key="auto_mode",
-        attr_name="auto_mode",
-        icon="mdi:autorenew",
-    ),
-    DreoSwitchEntityDescription(
-        key="Schedule",
-        translation_key="scheon",
-        attr_name="scheon",
-        icon="mdi:calendar",
-    )  
-)
-
-def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSwitchHA]:
-    """Get the Dreo Switches for the devices."""
-    switch_ha_collection : DreoSwitchHA = []
+def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list:
+    """Get the Dreo Humidifier entities for the devices."""
+    humidifier_entities_ha = []
 
     for pydreo_device in pydreo_devices:
-        _LOGGER.debug("Switch:get_entries: Adding switches for %s", pydreo_device.name)
-        switch_keys : list[str] = []
+        if (pydreo_device.type == DreoDeviceType.HUMIDIFIER):
+            _LOGGER.debug("Humidifier:get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
+            humidifier_entities_ha.append(DreoHumidifierHA(pydreo_device))
+        elif (pydreo_device.type == DreoDeviceType.DEHUMIDIFIER):
+            _LOGGER.debug("Humidifier:get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
+            humidifier_entities_ha.append(DreoDehumidifierHA(pydreo_device))
 
-        for switch_definition in SWITCHES:
-            _LOGGER.debug("Switch:get_entries: checking attribute: %s on %s", switch_definition.attr_name, pydreo_device.name)
-
-            if pydreo_device.is_feature_supported(switch_definition.attr_name):
-                if (switch_definition.key in switch_keys):
-                    _LOGGER.error("Switch:get_entries: Duplicate switch key %s", switch_definition.key)
-                    continue
-                
-                _LOGGER.debug("Switch:get_entries: Adding switch %s", switch_definition.key)
-                switch_keys.append(switch_definition.key)
-                switch_ha_collection.append(DreoSwitchHA(pydreo_device, switch_definition))
-
-    return switch_ha_collection
-
+    return humidifier_entities_ha
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: ConfigEntry, # pylint: disable=unused-argument
     async_add_entities: AddEntitiesCallback,
+    _discovery_info=None,
 ) -> None:
-    """Set up the Dreo Switch platform."""
-    _LOGGER.info("Starting Dreo Switch Platform")
+    """Set up the Dreo Humidifier platform."""
+    _LOGGER.info("Starting Dreo Humidifier Platform")
+    _LOGGER.debug("Dreo Humidifier:async_setup_entry")
 
-    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
-    switch_entities_ha : list[SwitchEntity] = []
-    for pydreo_device in pydreo_manager.devices:
-        if pydreo_device.type == DreoDeviceType.CHEF_MAKER:
-            switch_entities_ha.append(DreoChefMakerHA(pydreo_device))
-    switch_entities_to_add = get_entries(pydreo_manager.devices)
+    humidifier_entities_ha = get_entries(pydreo_manager.devices)
 
-    switch_entities_ha.extend(switch_entities_to_add)
+    _LOGGER.debug("Humidifier:async_setup_entry: Adding Humidifiers (%s)", len(humidifier_entities_ha))
+    async_add_entities(humidifier_entities_ha)
 
-    async_add_entities(switch_entities_ha)
+# Implementation of the Humidifier
+class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
+    """Representation of a Dreo Humidifier entity."""
 
-class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
-    """Representation of a Switch describing a read-write property of a Dreo device."""
-
-    def __init__(
-        self, 
-        pydreo_base_device: PyDreoBaseDevice, 
-        description: DreoSwitchEntityDescription
-    ) -> None:
-        super().__init__(pydreo_base_device)
-        self.pydreo_device = pydreo_base_device
-
-        # Note this is a "magic" HA property.  Don't rename
-        self.entity_description = description
-
-        self._attr_name = super().name + " " + description.key
-        self._attr_unique_id = f"{super().unique_id}-{description.key}"
+    def __init__(self, pyDreoDevice: PyDreoHumidifier) -> None:
+        super().__init__(pyDreoDevice)
+        self.device = pyDreoDevice
+        _LOGGER.info(
+            "DreoHumidifierHA:__init__(%s)",
+            pyDreoDevice.name
+        )
 
         _LOGGER.info(
-            "new DreoSwitchHA instance(%s), unique ID %s",
-            self._attr_name,
-            self._attr_unique_id)
+            "new DreoHumidifierHA instance(%s), mode %s, available_modes [%s]",
+            self.name,
+            self.mode,
+            self.available_modes,
+        )
 
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information for this humidifier."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.device.serial_number)},
+            manufacturer=self.device.brand,
+            model=f"{self.device.series_name} ({self.device.model}) {self.device.product_name}",
+            name=self.device.device_name,
+        )
+
+    @property
+    def supported_features(self) -> int:
+        """Return the list of supported features."""
+        supported_features = 0
+        if self.device.modes is not None:
+            supported_features |= HumidifierEntityFeature.MODES
+
+        return supported_features
+    
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
-        _LOGGER.debug(
-            "DreoSwitchHA:is_on for %s %s is %s",
-            self.pydreo_device.name,
-            self.entity_description.key,
-            getattr(self.pydreo_device, self.entity_description.attr_name),
-        )
-        return getattr(self.pydreo_device, self.entity_description.attr_name)
+        return self.device.is_on
 
-    def turn_on(
-        self,
-        percentage: int | None = None,
-        preset_mode: str | None = None,
-        **kwargs: Any,
-    ) -> None:
+    @property
+    def mode(self) -> str | None:
+        """Get the current mode."""
+        return self.device.mode
+
+    @property
+    def available_modes(self) -> int:
+        """Return the list of supported modes."""
+        return self.device.modes
+
+    @property
+    def current_humidity(self) -> float:
+        """Return the current humidity."""
+        return self.device.humidity
+    
+    @property
+    def target_humidity(self) -> float:
+        """Return the humidity level we try to reach."""
+        return self.device.target_humidity
+    
+    def turn_on(self, **kwargs: any) -> None:
         """Turn the device on."""
-        _LOGGER.debug("Turning on %s %s", self.pydreo_device.name, self.entity_description.key)
-        setattr(self.pydreo_device, self.entity_description.attr_name, True)
+        _LOGGER.debug("DreoHumidiferHA:turn_on(%s)", self.device.name)
+        self.device.is_on = True
 
-    def turn_off(self, **kwargs: Any) -> None:
+    def turn_off(self, **kwargs: any) -> None:
         """Turn the device off."""
+        _LOGGER.debug("DreoHumidiferHA:turn_off(%s)", self.device.name)
+        self.device.is_on = False
+
+    def set_mode(self, mode: str) -> None:
+        """Set the mode of the device."""
         _LOGGER.debug(
-            "Turning off %s %s", self.pydreo_device.name, self.entity_description.key
+            "DreoHumidiferHA:set_mode(%s) --> %s", self.device.name, mode
         )
-        setattr(self.pydreo_device, self.entity_description.attr_name, False)
+        
+        if not self.device.is_on:
+            self.device.is_on = True
+
+        if mode not in self.available_modes:
+            raise ValueError(
+                f"{mode} is not one of the valid preset modes: {self.available_modes}"
+            )
+
+        self.device.mode = mode
+
+    def set_humidity(self, humidity: float) -> None:
+        """Set the humidity level."""
+        _LOGGER.debug(
+            "DreoHumidiferHA:set_humidity(%s) --> %s", self.device.name, humidity
+        )
+        self.device.target_humidity = humidity
+
+
+# Implementation of the Dehumidifier
+class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
+    """Representation of a Dreo Dehumidifier entity."""
+
+    def __init__(self, pyDreoDevice: PyDreoDehumidifier) -> None:
+        super().__init__(pyDreoDevice)
+        self.device = pyDreoDevice
+        _LOGGER.info(
+            "DreoDehumidifierHA:__init__(%s)",
+            pyDreoDevice.name
+        )
+
+        _LOGGER.info(
+            "new DreoDehumidifierHA instance(%s), mode %s, available_modes [%s]",
+            self.name,
+            self.mode,
+            self.available_modes,
+        )
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information for this dehumidifier."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.device.serial_number)},
+            manufacturer=self.device.brand,
+            model=f"{self.device.series_name} ({self.device.model}) {self.device.product_name}",
+            name=self.device.device_name,
+        )
+
+    @property
+    def device_class(self) -> HumidifierDeviceClass:
+        """Return the device class for this dehumidifier."""
+        return HumidifierDeviceClass.DEHUMIDIFIER
+
+    @property
+    def supported_features(self) -> int:
+        """Return the list of supported features."""
+        supported_features = 0
+        if self.device.modes is not None:
+            supported_features |= HumidifierEntityFeature.MODES
+        
+        if self.device.mode == "Auto":
+            try:
+                supported_features |= HumidifierEntityFeature.TARGET_HUMIDITY
+            except AttributeError:
+                pass
+
+        return supported_features
+    
+    @property
+    def is_on(self) -> bool:
+        """Return True if device is on."""
+        return self.device.is_on
+
+    @property
+    def mode(self) -> str | None:
+        """Get the current mode."""
+        return self.device.mode
+
+    @property
+    def available_modes(self) -> list[str]:
+        """Return the list of supported modes."""
+        return self.device.modes
+
+    @property
+    def current_humidity(self) -> float:
+        """Return the current humidity."""
+        return self.device.humidity
+    
+    @property
+    def target_humidity(self) -> float:
+        """Return the humidity level we try to reach."""
+        return self.device.target_humidity
+
+    @property
+    def min_humidity(self) -> int:
+        """Return the minimum humidity."""
+        return 30
+
+    @property
+    def max_humidity(self) -> int:
+        """Return the maximum humidity."""
+        return 85
+    
+    def turn_on(self, **kwargs: any) -> None:
+        """Turn the device on."""
+        _LOGGER.debug("DreoDehumidifierHA:turn_on(%s)", self.device.name)
+        self.device.is_on = True
+
+    def turn_off(self, **kwargs: any) -> None:
+        """Turn the device off."""
+        _LOGGER.debug("DreoDehumidifierHA:turn_off(%s)", self.device.name)
+        self.device.is_on = False
+
+    def set_mode(self, mode: str) -> None:
+        """Set the mode of the device."""
+        _LOGGER.debug(
+            "DreoDehumidifierHA:set_mode(%s) --> %s", self.device.name, mode
+        )
+        
+        if not self.device.is_on:
+            self.device.is_on = True
+
+        if mode not in self.available_modes:
+            raise ValueError(
+                f"{mode} is not one of the valid preset modes: {self.available_modes}"
+            )
+
+        self.device.mode = mode
+
+    def set_humidity(self, humidity: float) -> None:
+        """Set the target humidity level."""
+        _LOGGER.debug(
+            "DreoDehumidifierHA:set_humidity(%s) --> %s", self.device.name, humidity
+        )
+        self.device.target_humidity = int(humidity)
+
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return additional state attributes."""
+        attributes = {}
+        
+        if hasattr(self.device, 'display_light'):
+            attributes["display_light"] = self.device.display_light
+        
+        if hasattr(self.device, 'childlockon'):
+            attributes["childlockon"] = self.device.childlockon
+            
+        if hasattr(self.device, 'auto_mode'):
+            attributes["auto_mode"] = self.device.auto_mode
+            
+        if hasattr(self.device, 'panel_sound'):
+            attributes["panel_sound"] = self.device.panel_sound
+            
+        if hasattr(self.device, 'temperature'):
+            attributes["temperature"] = f"{getattr(self.device, 'temperature', 'N/A')}°F"
+            
+        return attributes
