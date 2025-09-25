@@ -47,6 +47,10 @@ TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
 TARGET_AUTO_HUMIDITY_KEY = "rhautolevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
+ATMON_KEY = 'atmon'
+ATMCOLOR_KEY = 'atmcolor'
+ATMBRI_KEY = 'atmbri'
+ATMMODE_KEY = 'atmmode'
 
 # Preferences Names
 # It's possible we should switch to IDs instead of names
