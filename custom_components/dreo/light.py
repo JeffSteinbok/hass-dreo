@@ -34,6 +34,10 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoLightHA]:
             _LOGGER.debug("Light:get_entries: Adding Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoLightHA(pydreo_device))
 
+        if pydreo_device.is_feature_supported("atm_light"):
+            _LOGGER.debug("Light:get_entries: Adding RGB Light for %s", pydreo_device.name)
+            light_ha_collection.append(DreoRGBLightHA(pydreo_device))
+
     return light_ha_collection
 
 async def async_setup_entry(
@@ -134,3 +138,77 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity): # pylint: disable=abstract-met
             return None
             
         return math.ceil(percentage_to_ranged_value((self.min_color_temp_kelvin,self.max_color_temp_kelvin), getattr(self.pydreo_device, "color_temperature", 0)))
+
+
+class DreoRGBLightHA(DreoBaseDeviceHA, LightEntity):
+    """RGB atmosphere light for Dreo ceiling fans."""
+    
+    def __init__(self, pyDreoDevice: PyDreoBaseDevice) -> None:
+        super().__init__(pyDreoDevice)
+        self.device = pyDreoDevice
+
+        self.entity_description = EntityDescription("RGB Light")
+        self._attr_name = super().name + " RGB Light"
+        self._attr_unique_id = f"{super().unique_id}-rgb-light"
+        self._attr_icon = "mdi:led-strip-variant"
+
+        _LOGGER.info(
+            "new DreoRGBLightHA instance(%s), unique ID %s",
+            self._attr_name,
+            self._attr_unique_id)
+
+    @property
+    def supported_color_modes(self) -> set[ColorMode]:
+        """Return the supported color modes."""
+        return {ColorMode.RGB}
+    
+    @property
+    def color_mode(self) -> ColorMode:
+        """Return the current color mode."""
+        return ColorMode.RGB
+        
+    @property
+    def is_on(self) -> bool:
+        """Return True if RGB light is on."""
+        _LOGGER.debug(
+            "DreoRGBLightHA:is_on for %s is %s",
+            self.pydreo_device.name,
+            getattr(self.pydreo_device, "atm_light_on")
+        )
+        return getattr(self.pydreo_device, "atm_light_on", False) or False
+    
+    @property
+    def brightness(self) -> int | None:
+        """Return the current brightness (0-255 scale)."""
+        device_brightness = getattr(self.pydreo_device, "atm_brightness", None)
+        if device_brightness is None:
+            return None
+        # Convert device 1-5 scale to HA 0-255 scale
+        return round(device_brightness * 255 / 5)
+    
+    @property 
+    def rgb_color(self) -> tuple[int, int, int] | None:
+        """Return the current RGB color."""
+        return getattr(self.pydreo_device, "atm_color_rgb", None)
+    
+    def turn_on(self, **kwargs: Any) -> None:
+        """Turn the RGB light on."""
+        _LOGGER.debug("Turning on RGB light %s", self.pydreo_device.name)
+        setattr(self.pydreo_device, "atm_light_on", True)
+        
+        if ATTR_BRIGHTNESS in kwargs:
+            brightness = kwargs[ATTR_BRIGHTNESS]
+            # Convert HA 0-255 scale to device 1-5 scale
+            device_brightness = max(1, min(5, round(brightness * 5 / 255)))
+            _LOGGER.debug("Setting RGB brightness to %s (device: %s)", brightness, device_brightness)
+            setattr(self.pydreo_device, "atm_brightness", device_brightness)
+            
+        if ATTR_RGB_COLOR in kwargs:
+            rgb = kwargs[ATTR_RGB_COLOR]
+            _LOGGER.debug("Setting RGB color to %s", rgb)
+            setattr(self.pydreo_device, "atm_color_rgb", rgb)
+    
+    def turn_off(self, **kwargs: Any) -> None:
+        """Turn the RGB light off."""
+        _LOGGER.debug("Turning off RGB light %s", self.pydreo_device.name)
+        setattr(self.pydreo_device, "atm_light_on", False)

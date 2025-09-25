@@ -79,7 +79,8 @@ from homeassistant.components.light import (
     LightEntityFeature,
     ColorMode,
     ATTR_COLOR_TEMP_KELVIN,
-    ATTR_BRIGHTNESS
+    ATTR_BRIGHTNESS,
+    ATTR_RGB_COLOR
 )
 
 from homeassistant.util.color import (
