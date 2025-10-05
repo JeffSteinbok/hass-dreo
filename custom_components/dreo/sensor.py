@@ -43,6 +43,13 @@ from .pydreo.pydreochefmaker import (
     MODE_PAUSED,
 )
 
+from .pydreo.constant import (
+    HEATER_MODE_COOLAIR,
+    HEATER_MODE_HOTAIR,
+    HEATER_MODE_ECO,
+    HEATER_MODE_OFF,
+)
+
 from .pydreo.pydreohumidifier import (
     WORKTIME_KEY,
     MODE_MANUAL,
@@ -104,7 +111,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         key="Status",
         translation_key="status",
         device_class=SensorDeviceClass.ENUM,
-        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
+        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED, HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: (device.type in { DreoDeviceType.CHEF_MAKER }) and device.is_feature_supported(MODE_KEY),
     ),
