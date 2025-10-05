@@ -9,9 +9,4 @@ DREO_PLATFORMS = "platforms"
 
 CONF_AUTO_RECONNECT = "auto_reconnect"
 
-DEBUG_TEST_MODE : bool = False
-# Uncomment to enable test mode.
-# Tests will not pass if this is set to True to prevent accidental commits.
-# DEBUG_TEST_MODE = True
-DEBUG_TEST_MODE_DIRECTORY_NAME = "e2e_test_data"
-DEBUG_TEST_MODE_DEVICES_FILE_NAME = "get_devices.json"
+from .const_debug_test_mode import *  # pylint: disable=W0401,W0614
