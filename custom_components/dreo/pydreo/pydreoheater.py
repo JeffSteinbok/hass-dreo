@@ -85,35 +85,6 @@ class PyDreoHeater(PyDreoBaseDevice):
             self._htalevel_range = device_definition.device_ranges[HEAT_RANGE]
 
         self._timeron = None
-    
-    def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
-        """Parse the preset modes from the details."""
-        preset_modes = []
-        controls_conf = details.get("controlsConf", None)
-        if controls_conf is not None:
-            schedule = controls_conf.get("schedule", None)
-            if (schedule is not None):
-                modes = schedule.get("modes", None)
-                if (modes is not None):
-                    for mode_item in modes:
-                        text = self.get_mode_string(mode_item.get("title", None))
-                        value = mode_item.get("value", None)
-                        if (text, value) not in preset_modes:
-                            preset_modes.append((text, value))
-
-        preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (len(preset_modes) == 0):
-            _LOGGER.debug("PyDreoHeater:No preset modes detected")
-            preset_modes = None
-        _LOGGER.debug("PyDreoHeater:Detected preset modes - %s", preset_modes)
-        return preset_modes
-    
-    @property
-    def preset_modes(self) -> list[str]:
-        """Get the list of preset modes"""
-        if self._preset_modes is None:
-            return None
-        return Helpers.get_name_list(self._preset_modes)
         
     @property
     def poweron(self):
