@@ -26,7 +26,7 @@ class TestDebugTestMode:
 
         pydreo_manager.login()
         pydreo_manager.load_devices()
-        assert len(pydreo_manager.devices) == 7
+        assert len(pydreo_manager.devices) == 8
         fan = pydreo_manager.devices[0]
         assert fan.speed_range == (1, 5)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
