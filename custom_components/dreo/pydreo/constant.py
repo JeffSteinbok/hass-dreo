@@ -118,18 +118,6 @@ HEATER_MODE_HOTAIR = "hotair"
 HEATER_MODE_ECO = "eco"
 HEATER_MODE_OFF = "off"
 
-MODE_LEVEL_MAP = {
-    "H1" : 1,
-    "H2" : 2,
-    "H3" : 3
-}
-
-LEVEL_MODE_MAP = {
-    1 : "H1",
-    2 : "H2",
-    3 : "H3"
-}
-
 HEATER_MODES = [
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,

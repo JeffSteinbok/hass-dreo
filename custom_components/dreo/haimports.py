@@ -52,13 +52,19 @@ from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     ClimateEntityDescription,
+    FAN_AUTO,
+    FAN_LOW,
+    FAN_MEDIUM,
+    FAN_HIGH,
+    PRESET_NONE,
+    PRESET_ECO,
+    SWING_OFF,
+    SWING_ON,
+    SWING_VERTICAL,
+    SWING_HORIZONTAL,
+    SWING_BOTH,
+    HVACAction,
     HVACMode
-)
-
-from homeassistant.components.humidifier import (
-    HumidifierEntity,
-    HumidifierEntityFeature,
-    HumidifierDeviceClass
 )
 
 from homeassistant.components.humidifier import (
@@ -108,21 +114,5 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
     UnitOfTemperature)
-
-from homeassistant.components.climate import (
-    FAN_AUTO,
-    FAN_LOW,
-    FAN_MEDIUM,
-    FAN_HIGH,
-    PRESET_NONE,
-    PRESET_ECO,
-    SWING_OFF,
-    SWING_ON,
-    SWING_VERTICAL,
-    SWING_HORIZONTAL,
-    SWING_BOTH,
-    HVACAction,
-    HVACMode,
-)
 
 from homeassistant.helpers import entity_platform

@@ -16,8 +16,6 @@ from .pydreo import (
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
     HEATER_MODE_ECO,
-    MODE_LEVEL_MAP,
-    LEVEL_MODE_MAP,
     ECOLEVEL_RANGE,
     ANGLE_OSCANGLE_MAP,
     OSCANGLE_ANGLE_MAP,
@@ -154,7 +152,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         _LOGGER.debug("DreoHeaterHA:turn_on(%s)", self.device.name)
         self.device.poweron = True
         self.device.mode = HVAC_MODE_MAP[self._last_hvac_mode]
-        self.device._attr_hvac_mode = self._last_hvac_mode
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
@@ -272,3 +269,34 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             self.oscon = False if swing_mode != SWING_ON and swing_mode in self._attr_swing_modes else True
         elif self.device.oscangle is not None:
             self.oscangle = swing_mode
+
+    def set_fan_mode(self, fan_mode: str) -> None:
+        """Set fan mode (not supported by heaters)."""
+        raise NotImplementedError("Fan mode is not supported by heaters")
+
+    def set_humidity(self, humidity: int) -> None:
+        """Set target humidity (not supported by heaters)."""
+        raise NotImplementedError("Humidity control is not supported by heaters")
+
+    def set_preset_mode(self, preset_mode: str) -> None:
+        """Set preset mode (not supported by heaters)."""
+        raise NotImplementedError("Preset mode is not supported by heaters")
+
+    def set_swing_horizontal_mode(self, swing_horizontal_mode: str) -> None:
+        """Set horizontal swing mode (not supported by heaters)."""
+        raise NotImplementedError("Horizontal swing mode is not supported by heaters")
+
+    def toggle(self) -> None:
+        """Toggle the heater on/off."""
+        if self.device.poweron:
+            self.turn_off()
+        else:
+            self.turn_on()
+
+    def turn_aux_heat_off(self) -> None:
+        """Turn auxiliary heater off (not supported by heaters)."""
+        raise NotImplementedError("Auxiliary heat is not supported by heaters")
+
+    def turn_aux_heat_on(self) -> None:
+        """Turn auxiliary heater on (not supported by heaters)."""
+        raise NotImplementedError("Auxiliary heat is not supported by heaters")

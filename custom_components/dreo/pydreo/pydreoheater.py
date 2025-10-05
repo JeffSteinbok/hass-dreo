@@ -23,19 +23,15 @@ from .constant import (
     CHILDLOCKON_KEY,
     TEMPOFFSET_KEY,
     FIXEDCONF_KEY,
-    HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
     HEATER_MODE_OFF,
     HEATER_MODES,
-    MODE_LEVEL_MAP,
-    LEVEL_MODE_MAP,
     TemperatureUnit,
     HeaterOscillationAngles
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE
-from .helpers import Helpers
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -162,9 +158,7 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @hvac_mode.setter
     def hvac_mode(self, value: str) -> None:
-        key: str = None
-
-        if value in self.hvac_modes is not None:
+        if value in self.hvac_modes:
             self._send_command(MODE_KEY, value)
         else:
             raise ValueError(f"HVAC mode {value} is not in the acceptable list: {self.hvac_modes}")
