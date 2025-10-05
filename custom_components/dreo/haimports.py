@@ -61,6 +61,12 @@ from homeassistant.components.humidifier import (
     HumidifierDeviceClass
 )
 
+from homeassistant.components.humidifier import (
+    HumidifierEntity,
+    HumidifierEntityFeature,
+    HumidifierDeviceClass
+)
+
 from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription
