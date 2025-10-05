@@ -1,0 +1,137 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {
+                "state": -43,
+                "timestamp": 1726026575
+            },
+            "ledlevel": {
+                "state": 2,
+                "timestamp": 1726026575
+            },
+            "poweron": {
+                "state": true,
+                "timestamp": 1726026575
+            },
+            "scheid": {
+                "state": 0,
+                "timestamp": 1726026575
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 0
+                },
+                "timestamp": null
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1726026575
+            },
+            "rhsleeplevel": {
+                "state": 70,
+                "timestamp": 1726026575
+            },
+            "mode": {
+                "state": 1,
+                "timestamp": 1726026575
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1726026575
+            },
+            "network_latency": {
+                "state": 30,
+                "timestamp": 1726026575
+            },
+            "module_hardware_model": {
+                "state": "HeFi",
+                "timestamp": 1726026575
+            },
+            "rgblevel": {
+                "state": 2,
+                "timestamp": 1726026575
+            },
+            "mcu_firmware_version": {
+                "state": "1.0.5",
+                "timestamp": 1726026575
+            },
+            "lightsensoron": {
+                "state": false,
+                "timestamp": 1726026575
+            },
+            "module_hardware_mac": {
+                "state": "REDACTED",
+                "timestamp": 1726026575
+            },
+            "rhautolevel": {
+                "state": 60,
+                "timestamp": 1726026575
+            },
+            "muteon": {
+                "state": false,
+                "timestamp": 1726026575
+            },
+            "suspend": {
+                "state": false,
+                "timestamp": 1726026575
+            },
+            "wifi_ssid": {
+                "state": "REDACTED",
+                "timestamp": 1725983532
+            },
+            "mcu_hardware_model": {
+                "state": "SC95F8613B/EU",
+                "timestamp": 1726026575
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1726026575
+            },
+            "module_firmware_version": {
+                "state": "3.2.2",
+                "timestamp": 1726026575
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1726026575
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 0
+                },
+                "timestamp": null
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1726026575
+            },
+            "rh": {
+                "state": 47,
+                "timestamp": 1726046845
+            },
+            "foglevel": {
+                "state": 6,
+                "timestamp": 1726026575
+            },
+            "rgbth": {
+                "state": "30,60",
+                "timestamp": 1726026575
+            },
+            "ledkepton": {
+                "state": false,
+                "timestamp": 1726026575
+            },
+            "worktime": {
+                "state": 0,
+                "timestamp": 1726026575
+            }
+        },
+        "sn": "HHM001S_1",
+        "productId": "1513802928134631426",
+        "region": "eu-central-1/emq"
+    }
+}

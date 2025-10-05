@@ -1,4 +1,4 @@
-"""Support temperature for some Dreo fans"""
+"""Support Sensors for some Dreo devices"""
 # Suppress warnings about DataClass constructors
 # pylint: disable=E1123
 
@@ -37,7 +37,6 @@ from .const import (
 )
 
 from .pydreo.pydreoairconditioner import (
-    WORK_TIME,
     TEMP_TARGET_REACHED,
 )
 
@@ -86,7 +85,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "%",
         value_fn=lambda device: device.humidity,
-        exists_fn=lambda device: device.is_feature_supported(HUMIDITY_KEY),
+        exists_fn=lambda device:  (not device.type in { DreoDeviceType.HEATER, DreoDeviceType.AIR_CONDITIONER, DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported("humidity"),
     ),
     DreoSensorEntityDescription(
         key="Use since cleaning",
@@ -95,7 +94,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "h",
         value_fn=lambda device: device.work_time,
-        exists_fn=lambda device: (not device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(WORK_TIME),
+        exists_fn=lambda device: device.is_feature_supported("work_time"),
     ),
     DreoSensorEntityDescription(
         key="Target temp reached",
@@ -129,7 +128,6 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[WATER_LEVEL_OK, WATER_LEVEL_EMPTY],
         value_fn=lambda device: device.water_level,
         exists_fn=lambda device: (not device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(WATER_LEVEL_STATUS_KEY),
-        
     ),
         DreoSensorEntityDescription(
         key="Water Level",
@@ -146,15 +144,6 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[LIGHT_ON, LIGHT_OFF],
         value_fn=lambda device: device.rgblevel,
         exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(RGB_LEVEL),
-    ),
-    DreoSensorEntityDescription(
-        key="Use since cleaning",
-        translation_key="use_hours_HM",
-        device_class=SensorDeviceClass.DURATION,
-        state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement_fn=lambda device: "h",
-        value_fn=lambda device: device.worktime,
-        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(WORKTIME_KEY),
     )
 )
 
@@ -198,6 +187,7 @@ async def async_setup_entry(
 class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
     """Representation of a sensor describing a read-only property of a Dreo device."""
 
+
     def __init__(
         self, pyDreoDevice: PyDreoBaseDevice, description: DreoSensorEntityDescription
     ) -> None:
@@ -220,6 +210,10 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
             self._attr_name,
             self._attr_unique_id)
 
+    def __repr__(self):
+        # Representation string of object.
+        return f"<{self.__class__.__name__}:{self.entity_description}"
+    
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""

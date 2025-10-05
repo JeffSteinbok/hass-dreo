@@ -1,0 +1,58 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {"state": -45, "timestamp": 1745612915},
+            "poweron": {"state": false, "timestamp": 1745612915},
+            "mode": {"state": 1, "timestamp": 1745612915},
+            "windlevel": {"state": 4, "timestamp": 1745612915},
+            "temperature": {"state": 74, "timestamp": 1745612915},
+            "templevel": {"state": 76, "timestamp": 1745612915},
+            "muteon": {"state": true, "timestamp": 1745612915},
+            "mcuon": {"state": true, "timestamp": 1745612915},
+            "network_latency": {"state": 62, "timestamp": 1745612915},
+            "module_hardware_model": {"state": "HeFi", "timestamp": 1745612915},
+            "mcu_firmware_version": {"state": "1.0.0", "timestamp": 1745612915},
+            "module_hardware_mac": {"state": "REDACTED", "timestamp": 1745612915},
+            "wifi_ssid": {"state": "REDACTED", "timestamp": 1745612915},
+            "module_firmware_version": {"state": "3.6.3", "timestamp": 1745612915},
+            "connected": {"state": true, "timestamp": 1745612915},
+            "wrong": {"state": 0, "timestamp": 1745612915},
+            "childlockon": {"state": false, "timestamp": 1745612915},
+            "tempoffset": {"state": 0, "timestamp": 1745612915},
+            "scheid": {"state": 0, "timestamp": 1745612915},
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 0
+                },
+                "timestamp": null
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 0
+                },
+                "timestamp": null
+            },
+            "tempunit": {"state": 2, "timestamp": 1745612915},
+            "sleeptempoffset": {"state": 0, "timestamp": 1745612915},
+            "oscmode": {"state": 0, "timestamp": 1745612915},
+            "devon": {"state": true, "timestamp": 1745612915},
+            "cooldown": {"state": 0, "timestamp": 1745612915},
+            "ptcon": {"state": false, "timestamp": 1745612915},
+            "lighton": {"state": true, "timestamp": 1745612915},
+            "ctlstatus": {"state": "normal", "timestamp": 1745612915},
+            "fixedconf": {"state": "0,0", "timestamp": 1745612915},
+            "rh": {"state": 45, "timestamp": 1745612915},
+            "rhlevel": {"state": 50, "timestamp": 1745612915},
+            "worktime": {"state": 3600, "timestamp": 1745612915},
+            "reachtarget": {"state": 0, "timestamp": 1745612915}
+        },
+        "sn": "HAC006S_1",
+        "productId": "**REDACTED**",
+        "region": "us-east-2",
+        "deviceInfo": null
+    }
+} 

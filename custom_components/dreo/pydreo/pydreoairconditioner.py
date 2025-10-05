@@ -26,6 +26,7 @@ from .constant import (
     WINDLEVEL_KEY,
     HUMIDITY_KEY,
     TARGET_HUMIDITY_KEY,
+    WORKTIME_KEY,
     FAN_AUTO,
     FAN_LOW,
     FAN_MEDIUM,
@@ -65,7 +66,6 @@ DREO_AC_FAN_MODE_MAP = {
 AC_OSC_ON = 2
 AC_OSC_OFF = 0
 
-WORK_TIME = "worktime"
 TEMP_TARGET_REACHED = "reachtarget"
 
 # Map: Celsius setting → Fahrenheit value to send to API
@@ -388,7 +388,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
-        self.work_time = self.get_state_update_value(state, WORK_TIME)
+        self.work_time = self.get_state_update_value(state, WORKTIME_KEY)
         self.temp_target_reached = "Yes" if self.get_state_update_value(state, TEMP_TARGET_REACHED) > 0 else "No"
         # TODO ecopauserate
 

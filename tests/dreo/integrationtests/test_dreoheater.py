@@ -1,0 +1,46 @@
+"""Integration Tests for Dreo Ceiling Fans"""
+# pylint: disable=used-before-assignment
+import logging
+from unittest.mock import patch
+from custom_components.dreo import dreoheater
+from custom_components.dreo import sensor
+from custom_components.dreo import number
+
+from homeassistant.components.climate import (
+    ClimateEntity,
+    ClimateEntityFeature
+)
+
+from  .imports import * # pylint: disable=W0401,W0614
+from .integrationtestbase import IntegrationTestBase
+
+PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
+PATCH_SCHEDULE_UPDATE_HA_STATE= f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+class TestDreoHeater(IntegrationTestBase):
+    """Test Dreo Heaters and PyDreo together."""
+
+    def test_HSH009S(self):  # pylint: disable=invalid-name
+        """Load heater and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+
+            self.get_devices_file_name = "get_devices_HSH009S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.type == 'Heater'
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.preset_mode is "Heat"
+            assert heater_ha.supported_features & ClimateEntityFeature.PRESET_MODE
+
+            numbers = number.get_entries([pydreo_heater])
+            self.verify_expected_entities(numbers, ["Heat Level"])
+
+            sensors = sensor.get_entries([pydreo_heater])
+            self.verify_expected_entities(sensors, [])
+

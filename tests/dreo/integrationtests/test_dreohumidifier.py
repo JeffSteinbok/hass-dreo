@@ -25,8 +25,9 @@ class TestDreoHumidifier(IntegrationTestBase):
             self.pydreo_manager.load_devices()
             assert len(self.pydreo_manager.devices) == 1
             
-            pydreo_humidifier = self.pydreo_manager.devices[0]
+            pydreo_humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
             assert pydreo_humidifier.type == 'Humidifier'
+            assert pydreo_humidifier.humidity == 47
 
             ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
             assert ha_humidifier.is_on is True
@@ -35,6 +36,6 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(numbers, ['Target Humidity'])
+            self.verify_expected_entities(numbers, [])
 
         
