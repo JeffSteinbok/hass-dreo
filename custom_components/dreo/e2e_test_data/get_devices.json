@@ -14,7 +14,7 @@
           "model": "DR-HTF008S",
           "productId": "**REDACTED**",
           "productName": "Tower Fan",
-          "deviceName": "DEVTEST - Main Bedroom Fan",
+          "deviceName": "DEBUGTEST - Tower Fan - HTF008S",
           "shared": false,
           "series": null,
           "seriesName": "Cruiser Pro T3 S",
@@ -203,7 +203,7 @@
             "model": "DR-HAC005S",
             "productId": "REDACTED",
             "productName": "Air Conditioner",
-            "deviceName": "DEVTEST - Electric AC",
+            "deviceName": "DEBUGTEST - AC - HAC005S",
             "shared": false,
             "series": null,
             "seriesName": "AC515S",
@@ -718,7 +718,7 @@
             "model": "DR-HCF001S",
             "productId": "**REDACTED**",
             "productName": "Ceiling Fan",
-            "deviceName": "DEVTEST - Ceiling Fan",
+            "deviceName": "DEBUGTEST - Ceiling Fan - HCF001S",
             "shared": false,
             "series": null,
             "seriesName": "CLF521S",
@@ -959,7 +959,7 @@
             "model": "DR-HSH004S",
             "productId": "**REDACTED**",
             "productName": "Heater",
-            "deviceName": "DEVTEST - HSH004S",
+            "deviceName": "DEBUGTEST - Heater - HSH004S",
             "shared": false,
             "series": null,
             "seriesName": "Atom One S",
@@ -1050,7 +1050,7 @@
             "model": "DR-HEC002S",
             "productId": "**REDACTED**",
             "productName": "Evaporative Cooler",
-            "deviceName": "DEVTEST - Evaporative Cooler - HEC002S",
+            "deviceName": "DEBUGTEST - Evaporative Cooler - HEC002S",
             "shared": false,
             "series": null,
             "seriesName": "IceWind 712S",
@@ -1097,7 +1097,7 @@
             "model": "DR-HSH009S",
             "productId": "**REDACTED**",
             "productName": "Heater",
-            "deviceName": "DEVTEST - Heater - HSH009S",
+            "deviceName": "DEBUGTEST - Heater - HSH009S",
             "shared": false,
             "series": null,
             "seriesName": "Wall-mounted Heater",
@@ -1393,7 +1393,7 @@
           "model": "DR-HHM001S",
           "productId": "**REDACTED**",
           "productName": "Humidifier",
-          "deviceName": "DEVTEST - Humidifier - HHM001S",
+          "deviceName": "DEBUGTEST - Humidifier - HHM001S",
           "shared": false,
           "series": null,
           "seriesName": "HM311S",
@@ -1631,7 +1631,54 @@
               "desc": "User Manual"
             }
           ]
-        }
+        },
+        {
+        "deviceId": "1907411808942632961",
+        "sn": "HPF008S_1",
+        "brand": "Dreo",
+        "model": "DR-HPF008S",
+        "productId": "**REDACTED**",
+        "productName": "Air Circulator",
+        "deviceName": "DEBUGTEST - Air Circulator - HPF008S",
+        "shared": false,
+        "series": null,
+        "seriesName": "PF508S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "s",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/18b98b75a4afad403b8cea8739b904eff7.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/1879f0f7f030174cbd8820bebe66e9d45a.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HPF008S"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202411/18c5af0d6a0be7407994a41ff28115ea87.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202411/180627bfc4f18944fd8d89545855a2c991.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202412/6b83fc97752d74c96a6b43ee2051e9e81.pdf",
+            "icon": null,
+            "desc": "DR-HPF008S_User-Manual_V1",
+            "lang": "en"
+          }
+        ]
+      }
       ]
     }
   }
