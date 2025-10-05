@@ -12,7 +12,7 @@
         "timestamp": 1758415884
       },
       "poweron": {
-        "state": false,
+        "state": true,
         "timestamp": 1758512621
       },
       "scheid": {

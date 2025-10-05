@@ -118,18 +118,6 @@ HEATER_MODE_HOTAIR = "hotair"
 HEATER_MODE_ECO = "eco"
 HEATER_MODE_OFF = "off"
 
-MODE_LEVEL_MAP = {
-    "H1" : 1,
-    "H2" : 2,
-    "H3" : 3
-}
-
-LEVEL_MODE_MAP = {
-    1 : "H1",
-    2 : "H2",
-    3 : "H3"
-}
-
 HEATER_MODES = [
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
@@ -227,31 +215,6 @@ PRESET_ECO = "eco"
 
 # Device is running in sleep mode
 PRESET_SLEEP = "sleep"
-
-class HVACMode(StrEnum):
-    """HVAC mode for climate devices."""
-
-    # All activity disabled / Device is off/standby
-    OFF = "off"
-
-    # Heating
-    HEAT = "heat"
-
-    # Cooling
-    COOL = "cool"
-
-    # The device supports heating/cooling to a range
-    HEAT_COOL = "heat_cool"
-
-    # The temperature is set based on a schedule, learned behavior, AI or some
-    # other related mechanism. User is not able to adjust the temperature
-    AUTO = "auto"
-
-    # Device is in Dry/Humidity mode
-    DRY = "dry"
-
-    # Only the fan is on, not fan and another mode like cool
-    FAN_ONLY = "fan_only"
 
 PRESET_MODE_STRINGS = {
     "device_fans_mode_straight": "normal",

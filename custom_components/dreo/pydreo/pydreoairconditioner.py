@@ -123,6 +123,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self.work_time = None
         self.temp_target_reached = None
         self._sleep_preset_initialization_temp = None
+        self._ha_uses_celsius = None
         
     @property
     def poweron(self):
