@@ -52,8 +52,7 @@ from homeassistant.components.climate import (
     ClimateEntity,
     ClimateEntityFeature,
     ClimateEntityDescription,
-    FAN_ON,
-    FAN_OFF
+    HVACMode
 )
 
 from homeassistant.components.humidifier import (

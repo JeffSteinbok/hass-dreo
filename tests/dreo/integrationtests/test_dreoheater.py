@@ -35,8 +35,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.type == 'Heater'
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.preset_mode is "Heat"
-            assert heater_ha.supported_features & ClimateEntityFeature.PRESET_MODE
+            assert heater_ha.hvac_mode is HVACMode.HEAT
 
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, ["Heat Level"])
