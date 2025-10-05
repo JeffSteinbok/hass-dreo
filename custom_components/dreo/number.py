@@ -50,16 +50,6 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         max_value=90
     ),
     DreoNumberEntityDescription(
-        key="Target Temperature",
-        translation_key="target_temp",
-        attr_name="ecolevel",
-        native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
-        icon="mdi:thermometer",
-        min_value=0,
-        max_value=100,
-        device_class=NumberDeviceClass.TEMPERATURE,
-    ),
-    DreoNumberEntityDescription(
         key="Horizontal Oscillation Angle Left",
         translation_key="horizontal_osc_angle_left",
         attr_name="horizontal_osc_angle_left",
@@ -101,13 +91,11 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         step = 30
     ),
     DreoNumberEntityDescription(
-        key="Target Humidity",
-        translation_key="target_humidity",
-        attr_name="target_humidity",
-        icon="mdi:water-percent",
-        min_value=40,
-        max_value=90,
-    )
+        key="Heat Level",
+        translation_key="htalevel",
+        attr_name="htalevel",
+        icon="mdi:heat-wave"
+    )    
 )
 
 
@@ -204,6 +192,10 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-m
             self._attr_name,
             self._attr_unique_id)
 
+    def __repr__(self):
+        # Representation string of object.
+        return f"<{self.__class__.__name__}:{self.entity_description}"
+    
     @property
     def native_value(self) -> float:
         """Return the state of the number."""

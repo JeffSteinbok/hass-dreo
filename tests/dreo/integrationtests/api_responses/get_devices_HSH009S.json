@@ -1,0 +1,323 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1861436909187821569",
+        "sn": "HSH009S_1",
+        "brand": "Dreo",
+        "model": "DR-HSH009S",
+        "productId": "**REDACTED**",
+        "productName": "Heater",
+        "deviceName": "Heater",
+        "shared": false,
+        "series": null,
+        "seriesName": "Wall-mounted Heater",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/1315991517d5cf4139a9fee8eb54ec8e3f.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/13207dbe0608bf4dc58f5602584ef9c269.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HSH009S",
+          "lottie": {
+            "key": "poweron",
+            "frames": [
+              {
+                "value": 0,
+                "frame": [
+                  0
+                ]
+              },
+              {
+                "value": 1,
+                "frame": [
+                  3
+                ]
+              }
+            ]
+          },
+          "schedule": {
+            "duration": [
+              {
+                "text": "schedule_control_turnoff_never",
+                "desc": "schedule_control_turnoff_never_desc",
+                "time": 0
+              },
+              {
+                "text": "schedule_control_turnoff_30min",
+                "desc": "schedule_control_turnoff_30min_desc",
+                "time": 1800
+              },
+              {
+                "text": "schedule_control_turnoff_1h",
+                "desc": "schedule_control_turnoff_1h_desc",
+                "time": 3600
+              },
+              {
+                "text": "schedule_control_turnoff_2h",
+                "desc": "schedule_control_turnoff_2h_desc",
+                "time": 7200
+              },
+              {
+                "text": "schedule_control_turnoff_4h",
+                "desc": "schedule_control_turnoff_4h_desc",
+                "time": 14400
+              },
+              {
+                "text": "schedule_control_turnoff_6h",
+                "desc": "schedule_control_turnoff_6h_desc",
+                "time": 21600
+              },
+              {
+                "text": "schedule_control_turnoff_8h",
+                "desc": "schedule_control_turnoff_8h_desc",
+                "time": 28800
+              }
+            ],
+            "modes": [
+              {
+                "icon": "ic_hsh_item_heat",
+                "title": "device_heater_mode_heat",
+                "cmd": "mode",
+                "value": "hotair",
+                "valueType": 2,
+                "isSelected": true,
+                "attention": [
+                  "mode",
+                  "htalevel",
+                  "poweron",
+                  "oscangle"
+                ],
+                "controls": [
+                  {
+                    "type": 1,
+                    "title": "device_control_mode_manual_level",
+                    "cmd": [
+                      "htalevel"
+                    ],
+                    "value": 3,
+                    "valueType": 1,
+                    "startValue": 0,
+                    "validValue": 1,
+                    "periodColor": "#FF9500",
+                    "endValue": 3,
+                    "groupId": 0,
+                    "startColor": "#FFD666",
+                    "endColor": "#FF7214",
+                    "isSelected": false,
+                    "preUnit": "H"
+                  }
+                ]
+              },
+              {
+                "icon": "ic_hsh_item_eco",
+                "title": "device_heater_mode_eco",
+                "cmd": "mode",
+                "value": "eco",
+                "valueType": 2,
+                "isSelected": false,
+                "attention": [
+                  "mode",
+                  "ecolevel",
+                  "poweron",
+                  "oscangle"
+                ],
+                "controls": [
+                  {
+                    "type": 4,
+                    "valueType": 1,
+                    "title": "device_control_temp",
+                    "startColor": "#FFD666",
+                    "endColor": "#FF7214",
+                    "cmd": [
+                      "ecolevel"
+                    ],
+                    "value": 85,
+                    "startValue": 41,
+                    "endValue": 95,
+                    "groupId": 0,
+                    "isSelected": false,
+                    "unit": "\u2109"
+                  }
+                ]
+              },
+              {
+                "icon": "ic_hsh_item_fanonly",
+                "title": "device_heater_mode_fan_only",
+                "cmd": "mode",
+                "value": "coolair",
+                "valueType": 2,
+                "isSelected": false,
+                "attention": [
+                  "mode",
+                  "poweron",
+                  "oscangle"
+                ],
+                "controls": []
+              }
+            ]
+          },
+          "timer": {
+            "maxHour": 23
+          },
+          "cards": [
+            {
+              "type": 2,
+              "title": "home_temp",
+              "icon": "",
+              "image": "",
+              "url": "",
+              "show": true
+            },
+            {
+              "type": 8,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "dreo://nav/device/schedule?deviceSn={sn}",
+              "show": true,
+              "key": "",
+              "minVersion": "2.2.2"
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
+            }
+          ],
+          "feature": {
+            "schedule": {
+              "enable": true,
+              "localSupport": true,
+              "module": [
+                {
+                  "type": "HeFi",
+                  "version": "0.0.1"
+                }
+              ]
+            }
+          },
+          "preference": [
+            {
+              "id": "270",
+              "type": "Display List",
+              "title": "dev_ctrl_heater_display",
+              "image": "ic_display",
+              "reverse": false
+            },
+            {
+              "id": "200",
+              "type": "Panel Sound",
+              "title": "device_control_panelsound",
+              "image": "ic_mute",
+              "reverse": true,
+              "cmd": "muteon"
+            },
+            {
+              "id": "220",
+              "type": "Child Lock",
+              "title": "device_control_childlock",
+              "image": "ic_child_lock",
+              "reverse": false,
+              "cmd": "childlockon"
+            },
+            {
+              "id": "250",
+              "type": "Open Window Detection",
+              "title": "dev_ctrl_open_win_dect",
+              "image": "ic_winopen",
+              "cmd": "winopenon"
+            },
+            {
+              "id": "280",
+              "type": "Show Temp",
+              "title": "ambient_temp_always_on",
+              "image": "ic_temp_unit_show",
+              "reverse": false,
+              "cmd": "dispmode"
+            },
+            {
+              "id": "230",
+              "type": "Temperature Unit",
+              "title": "dev_ctrl_dev_temp_unit",
+              "image": "ic_temp_unit"
+            },
+            {
+              "id": "240",
+              "type": "Temperature Calibration",
+              "title": "device_control_temp_calibration",
+              "image": "ic_temp_cal"
+            }
+          ],
+          "control": [
+            {
+              "swingtype": true,
+              "hideSafeMode": true
+            }
+          ],
+          "category": "Space Heater",
+          "version": {
+            "minControlVer": "2.2.2",
+            "minPairingVer": "2.0.0"
+          }
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202409/1102a14281ba5a4a878c4f0eaadf5cad6c.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202307/259dd80ef20e50432195beab4dc1939160.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [
+          {
+            "key": "user_manual",
+            "value": "https://resources.dreo-tech.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf"
+          }
+        ],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202505/29398cb24392004e87a09a45009882a817.pdf",
+            "icon": "https://resources.dreo-tech.com/app/202410/10/d168d237f41d435d9699a2165f4e992a.png",
+            "desc": "DR-HSH009S User Manual",
+            "lang": "en"
+          },
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202410/1066808e443b72471681ef12ff39d7abcf.pdf",
+            "icon": "https://resources.dreo-tech.com/app/202410/10/1fd8481c33904d5390a2a476073d3eba.png",
+            "desc": "DR-HSH009S ALCI Plug User Manual",
+            "lang": "en"
+          },
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202410/10160683ff923343e1a271f1f3fb142fb8.pdf",
+            "icon": "https://resources.dreo-tech.com/app/202410/10/9ba0b2340d1a46d1bfd265b346458914.png",
+            "desc": "DR-HSH009S Fort Plug User Manual",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

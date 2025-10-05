@@ -37,6 +37,7 @@ from .constant import (
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE
+from .helpers import Helpers
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -69,8 +70,48 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._tempoffset = None
         self._fixed_conf = None
 
-        self._timeron = None
+        self._preset_modes = device_definition.preset_modes
 
+        if (self._preset_modes is None):
+            self._preset_modes = self.parse_preset_modes(details)     
+
+        self._htalevel_range = None
+        # Check if the device has a speed range defined in the device definition
+        # If not, parse the speed range from the details
+        if device_definition.device_ranges is not None and HEAT_RANGE in device_definition.device_ranges:
+            self._htalevel_range = device_definition.device_ranges[HEAT_RANGE]
+
+        self._timeron = None
+    
+    def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
+        """Parse the preset modes from the details."""
+        preset_modes = []
+        controls_conf = details.get("controlsConf", None)
+        if controls_conf is not None:
+            schedule = controls_conf.get("schedule", None)
+            if (schedule is not None):
+                modes = schedule.get("modes", None)
+                if (modes is not None):
+                    for mode_item in modes:
+                        text = self.get_mode_string(mode_item.get("title", None))
+                        value = mode_item.get("value", None)
+                        if (text, value) not in preset_modes:
+                            preset_modes.append((text, value))
+
+        preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
+        if (len(preset_modes) == 0):
+            _LOGGER.debug("PyDreoHeater:No preset modes detected")
+            preset_modes = None
+        _LOGGER.debug("PyDreoHeater:Detected preset modes - %s", preset_modes)
+        return preset_modes
+    
+    @property
+    def preset_modes(self) -> list[str]:
+        """Get the list of preset modes"""
+        if self._preset_modes is None:
+            return None
+        return Helpers.get_name_list(self._preset_modes)
+        
     @property
     def poweron(self):
         """Returns `True` if the device is on, `False` otherwise."""
@@ -83,14 +124,9 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._send_command(POWERON_KEY, value)
 
     @property
-    def heat_range(self):
+    def htalevel_range(self):
         """Get the heat range"""
-        return self._device_definition.device_ranges[HEAT_RANGE]
-
-    @property
-    def preset_modes(self):
-        """Get the list of preset modes"""
-        return self._device_definition.preset_modes
+        return self._htalevel_range
 
     @property
     def hvac_modes(self):
@@ -148,32 +184,31 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def preset_mode(self):
         """Return the current preset mode."""
-        return LEVEL_MODE_MAP[self._htalevel]
-
-    @property
-    def mode(self):
-        """Return the current preset mode."""
-        return self._mode
+        """There seems to be a bug in HA fan entity where it does call into preset_mode even if the
+        preset_mode is not supported.  So we need to check if the preset mode is supported before
+        returning the value."""
+        if self._preset_modes is None:
+            return None
+        
+        mode = self._mode
+        if mode is None:
+            return None
+        
+        str_value : str = Helpers.name_from_value(self._preset_modes, mode)
+        if (str_value is None):
+            return None
+        
+        return str_value    
 
     @preset_mode.setter
-    def preset_mode(self, level: str) -> None:
-        _LOGGER.debug("PyDreoHeater:set_preset_mode(%s)", level)
-        if level in self.preset_modes:
-            # Don't need self.mode = HEATER_MODE_HOTAIR because the htalevel setter will set the mode
-            self.htalevel = MODE_LEVEL_MAP[level]
-        else:
-            _LOGGER.error("Preset mode %s is not in the acceptable list: %s",
-                            level,
-                            self._device_definition.preset_modes)
-            raise ValueError(f"preset_mode must be one of: {self.preset_modes}")
+    def preset_mode(self, value: str) -> None:
+        key: str = None
 
-    @mode.setter
-    def mode(self, mode: str) -> None:
-        _LOGGER.debug("PyDreoHeater:mode(%s) --> %s", self.name, mode)
-        # setting heater mode to OFF is redundand because 'poweron' will be set
-        # and can prevent it from properly turning back on (tested on DR-HSH004S)
-        if not mode == HEATER_MODE_OFF:
-            self._send_command(MODE_KEY, mode)
+        actual_value = Helpers.value_from_name(self._preset_modes, value)
+        if actual_value is not None:
+            self._send_command(MODE_KEY, actual_value)
+        else:
+            raise ValueError(f"Preset mode {value} is not in the acceptable list: {self.preset_modes}")
 
     @property
     def fan_mode(self) -> str:

@@ -45,6 +45,8 @@ ECOLEVEL_RANGE_KEY = "ecolevel_range"
 CHILDLOCKON_KEY = "childlockon"
 TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
+WORKTIME_KEY = "worktime"
+TEMP_TARGET_REACHED_KEY = "reachtarget"
 TARGET_AUTO_HUMIDITY_KEY = "rhautolevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
 RGB_LEVEL = 'rgblevel'
@@ -251,7 +253,7 @@ class HVACMode(StrEnum):
     # Only the fan is on, not fan and another mode like cool
     FAN_ONLY = "fan_only"
 
-FAN_MODE_STRINGS = {
+PRESET_MODE_STRINGS = {
     "device_fans_mode_straight": "normal",
     "device_fans_mode_natural": "natural",
     "device_control_mode_sleep": "sleep",
@@ -262,8 +264,12 @@ FAN_MODE_STRINGS = {
     "base_reverse": "reverse",
     "device_control_custom": "custom",
     "fan_2in1_breeze": "2-in-1 Breeze Mode",
-    "device_control_mode_manual": "manual"
+    "device_control_mode_manual": "manual",
+    "device_heater_mode_heat": "Heat",
+    "device_heater_mode_eco": "Eco",
+    "device_heater_mode_fan_only": "Cool Air",
 }
+
 
 class DreoDeviceType(StrEnum):
     """Product names for Dreo devices"""

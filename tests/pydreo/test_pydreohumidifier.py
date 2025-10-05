@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 class TestPyDreoHumidifier(TestBase):
-    """Test PyDreoFan class."""
-  
+    """Test PyDreoHumidifier class."""
+    
     def test_HHM001S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
 

@@ -73,7 +73,10 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         icon="mdi:rotate-360",
     ),
     DreoSwitchEntityDescription(
-        key="PTC", translation_key="ptcon", attr_name="ptcon", icon="mdi:help"
+        key="PTC", 
+        translation_key="ptcon", 
+        attr_name="ptcon", 
+        icon="mdi:help"
     ),
     DreoSwitchEntityDescription(
         key="Child Lock",

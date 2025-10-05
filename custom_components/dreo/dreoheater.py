@@ -69,12 +69,12 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             pyDreoDevice.name,
             pyDreoDevice.temperature,
             pyDreoDevice.ecolevel,
-            pyDreoDevice.mode,
+            pyDreoDevice.preset_mode,
         )
 
         self._attr_name = "Heater"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
-        self._attr_preset_mode = LEVEL_MODE_MAP[self.device.htalevel]
+        self._attr_preset_mode = self.device.preset_mode
         self._attr_target_temperature = self.device.ecolevel
         self._attr_current_temperature = self.device.temperature
         self._attr_swing_mode = self.device.device_definition.swing_modes[0]
@@ -82,7 +82,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_hvac_mode = (
             HEATER_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
         )
-        self._attr_preset_modes = pyDreoDevice.preset_modes
         self._attr_hvac_modes = [
             HEATER_MODE_MAP[h] for h in self.device.device_definition.hvac_modes
         ]
@@ -95,9 +94,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             self._attr_target_temperature,
             self._attr_current_temperature,
             self._attr_swing_mode,
-            self._attr_preset_mode,
+            self.preset_mode,
             self._attr_swing_modes,
-            self._attr_preset_modes,
+            self.preset_modes,
         )
 
     @property
@@ -203,8 +202,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             )
 
         self.device.preset_mode = preset_mode
-        self.device.htalevel = MODE_LEVEL_MAP[preset_mode]
-        self.device.mode = HEATER_MODE_HOTAIR
 
     @oscon.setter
     def oscon(self, oscon: bool) -> None:

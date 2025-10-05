@@ -112,7 +112,6 @@ SUPPORTED_MODEL_PREFIXES = {
     "WH",
     "DR-HAC",
     "DR-HHM",
-    "DR-HDH",
     "DR-HEC"
 }
 
@@ -127,6 +126,10 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         device_ranges={SPEED_RANGE: (1, 9)}),
 
+    "DR-HPF007S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        device_ranges={SPEED_RANGE: (1, 10)}),        
+
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),
 
@@ -136,8 +139,9 @@ SUPPORTED_DEVICES = {
     # Heaters
     "DR-HSH017BS": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 85)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -147,8 +151,9 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HSH004S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 85)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 85)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -159,8 +164,9 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HSH006S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -171,8 +177,9 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HSH009S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -188,8 +195,9 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HSH009AS": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -205,8 +213,9 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HSH017S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -218,8 +227,9 @@ SUPPORTED_DEVICES = {
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH719S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -235,8 +245,9 @@ SUPPORTED_DEVICES = {
     ),
     "WH739S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
-        preset_modes=["H1", "H2", "H3"],
-        device_ranges={HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
@@ -283,7 +294,15 @@ SUPPORTED_DEVICES = {
     "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER),
 
     # Dehumidifiers
-    "DR-HDH001S": DreoDeviceDetails(
+        "DR-HDH001S": DreoDeviceDetails(
+        device_type=DreoDeviceType.DEHUMIDIFIER,
+        device_ranges={
+            HUMIDITY_RANGE: (30, 85),
+            SPEED_RANGE: (1, 3)
+        }
+    ),
+
+    "DR-HDH002S": DreoDeviceDetails(
         device_type=DreoDeviceType.DEHUMIDIFIER,
         device_ranges={
             HUMIDITY_RANGE: (30, 85),
