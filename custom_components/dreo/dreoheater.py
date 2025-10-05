@@ -52,8 +52,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
     _attr_target_temperature = None
     _attr_current_temperature = None
-    _attr_fan_mode = None
-    _attr_fan_modes = [FAN_ON, FAN_OFF]
     _attr_name = None
     _attr_has_entity_name = True
     _attr_hvac_mode = HVACMode.OFF
@@ -106,11 +104,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         )
 
     @property
-    def fan_mode(self) -> str:
-        """Return the current fan mode - if on, it means that we're in 'coolair' mode"""
-        return self.device.fan_mode
-
-    @property
     def is_on(self) -> bool:
         """Return True if device is on."""
         return self.device.poweron
@@ -150,8 +143,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self.device.oscon is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
-        if self.device.fan_mode is not None:
-            supported_features |= ClimateEntityFeature.FAN_MODE
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF
             supported_features |= ClimateEntityFeature.TURN_ON
@@ -241,14 +232,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         """Return the list of available hvac operation modes."""
         return self._attr_hvac_modes
 
-    def set_fan_mode(self, fan_mode: str) -> None:
-        """Set new target fan mode."""
-        _LOGGER.debug(
-            "DreoHeaterHA:set_fan_mode(%s) --> %s", self.device.name, fan_mode
-        )
-        self.device.fan_mode = True if fan_mode == FAN_ON else False
-        self._last_hvac_mode = self._attr_hvac_mode
-
     def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode."""
         _LOGGER.debug(
@@ -258,7 +241,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             HVAC_MODE_MAP[hvac_mode],
         )
         self._last_hvac_mode = self._attr_hvac_mode
-        self.device.mode = HVAC_MODE_MAP[hvac_mode]
+        self.device.hvac_mode = HVAC_MODE_MAP[hvac_mode]
 
         if hvac_mode != HVACMode.OFF:
             self.device.poweron = True

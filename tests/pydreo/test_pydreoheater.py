@@ -1,4 +1,4 @@
-"""Tests for Dreo Fans"""
+"""Tests for Dreo Heaters"""
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch, call

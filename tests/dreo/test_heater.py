@@ -9,6 +9,10 @@ from custom_components.dreo import sensor
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
+from homeassistant.components.climate import (
+    HVACMode
+)
+
 from custom_components.dreo.pydreo.constant import (
     SPEED_RANGE,
     HEATER_MODE_COOLAIR,
@@ -31,7 +35,6 @@ from custom_components.dreo.pydreo.constant import (
     FAN_HIGH,
     PRESET_NONE,
     PRESET_ECO,
-    HVACMode,
     DreoDeviceType
 )
 
@@ -45,10 +48,9 @@ class TestDreoHeaterHA(TestDeviceBase):
                                                                             serial_number="123456", 
                                                                             features= { "poweron" : True,
                                                                                         "temperature" : 75,
-                                                                                        "preset_modes": ["H1", "H2", "H3"],
                                                                                         "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
                                                                                         "htalevel": 2,
-                                                                                        "mode": HVACMode.OFF,
+                                                                                        "hvac_mode": HVACMode.OFF,
                                                                                         "hvac_modes" : [
                                                                                             HEATER_MODE_COOLAIR,
                                                                                             HEATER_MODE_HOTAIR,
