@@ -56,6 +56,12 @@ from homeassistant.components.climate import (
     FAN_OFF
 )
 
+from homeassistant.components.humidifier import (
+    HumidifierEntity,
+    HumidifierEntityFeature,
+    HumidifierDeviceClass
+)
+
 from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription

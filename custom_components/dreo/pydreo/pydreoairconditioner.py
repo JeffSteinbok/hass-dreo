@@ -485,11 +485,11 @@ class PyDreoAC(PyDreoBaseDevice):
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
 
-        val_work_time = self.get_server_update_key_value(message, WORK_TIME)
+        val_work_time = self.get_server_update_key_value(message, WORKTIME_KEY)
         if isinstance(val_work_time, int):
             self.work_time = val_work_time
 
-        val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED)
+        val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED_KEY)
         if isinstance(val_work_time, int):
             self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"
 
