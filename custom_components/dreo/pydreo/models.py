@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from .constant import (
+    HORIZONTAL_ANGLE_RANGE,
     SPEED_RANGE,
     HEATER_MODE_COOLAIR,
     HEATER_MODE_HOTAIR,
@@ -131,7 +132,11 @@ SUPPORTED_DEVICES = {
 
     "DR-HPF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
-        device_ranges={SPEED_RANGE: (1, 10)}),        
+        device_ranges={
+            SPEED_RANGE: (1, 10),
+            HORIZONTAL_ANGLE_RANGE: (-75,75),
+            VERTICAL_ANGLE_RANGE: (-30,90)
+        }),
 
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),
@@ -226,7 +231,20 @@ SUPPORTED_DEVICES = {
             HEATER_MODE_OFF,
         ],
         swing_modes=[SWING_OFF, SWING_ON],
-    ),    
+    ),
+    "DR-HSH034S": DreoDeviceDetails(
+        device_type=DreoDeviceType.HEATER,
+        device_ranges={
+            HEAT_RANGE: (1, 5), 
+            ECOLEVEL_RANGE: (41, 95)},
+        hvac_modes=[
+            HEATER_MODE_COOLAIR,
+            HEATER_MODE_HOTAIR,
+            HEATER_MODE_ECO,
+            HEATER_MODE_OFF,
+        ],
+        swing_modes=[SWING_OFF, SWING_ON]
+    ),
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH719S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
