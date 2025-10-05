@@ -46,6 +46,7 @@ CHILDLOCKON_KEY = "childlockon"
 TEMPOFFSET_KEY = "tempoffset"
 HUMIDITY_KEY = "rh"
 WORKTIME_KEY = "worktime"
+TEMP_TARGET_REACHED_KEY = "reachtarget"
 TARGET_AUTO_HUMIDITY_KEY = "rhautolevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
 RGB_LEVEL = 'rgblevel'

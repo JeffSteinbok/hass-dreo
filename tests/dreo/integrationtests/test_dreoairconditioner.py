@@ -47,5 +47,5 @@ class TestDreoAirConditioner(IntegrationTestBase):
             self.verify_expected_entities(numbers, [])
 
             sensors = sensor.get_entries([pydreo_ac])
-            self.verify_expected_entities(sensors, ["Use since cleaning"])
+            self.verify_expected_entities(sensors, ["Use since cleaning", "Target temp reached"])
 

@@ -37,5 +37,5 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             self.verify_expected_entities(numbers, [])
 
             sensors = sensor.get_entries([pydreo_ec])
-            self.verify_expected_entities(sensors, ["temperature", "Use since cleaning"])
+            self.verify_expected_entities(sensors, ["temperature", "humidity","Use since cleaning"])
 

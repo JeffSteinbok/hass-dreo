@@ -36,10 +36,6 @@ from .const import (
     PYDREO_MANAGER,
 )
 
-from .pydreo.pydreoairconditioner import (
-    TEMP_TARGET_REACHED,
-)
-
 from .pydreo.pydreochefmaker import (
     MODE_OFF,
     MODE_COOKING,
@@ -102,7 +98,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         options=["Yes", "No"],
         value_fn=lambda device: device.temp_target_reached,
-        exists_fn=lambda device: device.is_feature_supported(TEMP_TARGET_REACHED),
+        exists_fn=lambda device: device.is_feature_supported("temp_target_reached"),
     ),
     DreoSensorEntityDescription(
         key="Status",
