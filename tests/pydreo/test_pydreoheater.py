@@ -1,4 +1,4 @@
-"""Tests for Dreo Fans"""
+"""Tests for Dreo Heaters"""
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch, call
@@ -19,16 +19,16 @@ class TestPyDreoHeater(TestBase):
         assert len(self.pydreo_manager.devices) == 1
         heater = self.pydreo_manager.devices[0]
 
-        assert heater.heat_range == (1, 3)
-        assert heater.preset_modes == ['H1', 'H2', 'H3']
+        assert heater.htalevel_range == (1, 3)
+        assert heater.hvac_modes == ['coolair', 'hotair', 'eco', 'off']
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
             mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
 
         with (patch(PATCH_SEND_COMMAND) as mock_send_command):
-            heater.preset_mode = 'H1'
+            heater.htalevel = 1
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
 
         with pytest.raises(ValueError):
-            heater.preset_mode = 'not_a_mode'
+            heater.hvac_mode = 'not_a_mode'

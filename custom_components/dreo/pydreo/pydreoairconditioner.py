@@ -26,6 +26,8 @@ from .constant import (
     WINDLEVEL_KEY,
     HUMIDITY_KEY,
     TARGET_HUMIDITY_KEY,
+    TEMP_TARGET_REACHED_KEY,
+    WORKTIME_KEY,
     FAN_AUTO,
     FAN_LOW,
     FAN_MEDIUM,
@@ -64,9 +66,6 @@ DREO_AC_FAN_MODE_MAP = {
 
 AC_OSC_ON = 2
 AC_OSC_OFF = 0
-
-WORK_TIME = "worktime"
-TEMP_TARGET_REACHED = "reachtarget"
 
 # Map: Celsius setting → Fahrenheit value to send to API
 # This is based on actual Fahrenheit values sent to the AC when using the remote control while AC is set to Celsius
@@ -124,6 +123,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self.work_time = None
         self.temp_target_reached = None
         self._sleep_preset_initialization_temp = None
+        self._ha_uses_celsius = None
         
     @property
     def poweron(self):
@@ -388,8 +388,8 @@ class PyDreoAC(PyDreoBaseDevice):
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
-        self.work_time = self.get_state_update_value(state, WORK_TIME)
-        self.temp_target_reached = "Yes" if self.get_state_update_value(state, TEMP_TARGET_REACHED) > 0 else "No"
+        self.work_time = self.get_state_update_value(state, WORKTIME_KEY)
+        self.temp_target_reached = "Yes" if self.get_state_update_value(state, TEMP_TARGET_REACHED_KEY) > 0 else "No"
         # TODO ecopauserate
 
     def handle_server_update(self, message):
@@ -486,11 +486,11 @@ class PyDreoAC(PyDreoBaseDevice):
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
 
-        val_work_time = self.get_server_update_key_value(message, WORK_TIME)
+        val_work_time = self.get_server_update_key_value(message, WORKTIME_KEY)
         if isinstance(val_work_time, int):
             self.work_time = val_work_time
 
-        val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED)
+        val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED_KEY)
         if isinstance(val_work_time, int):
             self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"
 

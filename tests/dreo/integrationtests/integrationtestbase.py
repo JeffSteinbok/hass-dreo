@@ -111,9 +111,10 @@ class IntegrationTestBase:
         for ha_entity in ha_entities:
             found_entity_keys.append(ha_entity.entity_description.key)
         found_entity_keys.sort()
+        expected_keys.sort()
         logger.debug("Found entity keys: %s", found_entity_keys)
         logger.debug("Expected entity keys: %s", expected_keys)
-        assert found_entity_keys == expected_keys
+        assert found_entity_keys == expected_keys, f"Found entity keys {found_entity_keys} do not match expected {expected_keys}"
 
     def get_entity_by_key(self, ha_entities: list, key: str) -> None:
         """Verify the expected entities are present."""

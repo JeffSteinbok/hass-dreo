@@ -1,5 +1,5 @@
 {
     "name": "Dreo Smart Device Integration",
-    "homeassistant": "2024.8.0",
+    "homeassistant": "2025.10.0",
     "render_readme": true
   }

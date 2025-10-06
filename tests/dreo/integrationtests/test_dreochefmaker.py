@@ -18,7 +18,7 @@ class TestDreoChefMaker(IntegrationTestBase):
     
     def test_KCM001S(self):  # pylint: disable=invalid-name
         """Load chef maker and test sending commands."""
-        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
 
             self.get_devices_file_name = "get_devices_KCM001S.json"
             self.pydreo_manager.load_devices()

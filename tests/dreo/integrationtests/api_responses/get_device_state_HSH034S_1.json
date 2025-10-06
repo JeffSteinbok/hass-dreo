@@ -1,0 +1,140 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+    "mixed": {
+        "coollevel": {
+        "state": 3,
+        "timestamp": 1759047085
+        },
+        "wifi_rssi": {
+        "state": -31,
+        "timestamp": 1759047085
+        },
+        "poweron": {
+        "state": false,
+        "timestamp": 1759047085
+        },
+        "scheid": {
+        "state": 0,
+        "timestamp": 1759047085
+        },
+        "cruiseconf": {
+        "state": "45,45,-15,-45",
+        "timestamp": 1759047085
+        },
+        "timeron": {
+        "state": {
+            "du": 0,
+            "ts": 1759047083
+        },
+        "timestamp": null
+        },
+        "scheon": {
+        "state": false,
+        "timestamp": 1759047085
+        },
+        "mode": {
+        "state": "hotair",
+        "timestamp": 1759047085
+        },
+        "mcuon": {
+        "state": true,
+        "timestamp": 1759047085
+        },
+        "network_latency": {
+        "state": 6,
+        "timestamp": 1759047085
+        },
+        "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1759047085
+        },
+        "mcu_firmware_version": {
+        "state": "0.3.0",
+        "timestamp": 1759047085
+        },
+        "oscmode": {
+        "state": 0,
+        "timestamp": 1759047085
+        },
+        "temperature": {
+        "state": 67,
+        "timestamp": 1759047089
+        },
+        "cooldown": {
+        "state": 0,
+        "timestamp": 1759047085
+        },
+        "winopenon": {
+        "state": false,
+        "timestamp": 1759047085
+        },
+        "winopened": {
+        "state": 0,
+        "timestamp": 1759047085
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "ptcon": {
+        "state": false,
+        "timestamp": 1759047085
+        },
+        "muteon": {
+        "state": true,
+        "timestamp": 1759047085
+        },
+        "lighton": {
+        "state": false,
+        "timestamp": 1759047085
+        },
+        "wifi_ssid": "**REDACTED**",
+        "mcu_hardware_model": {
+        "state": "SC95F8613B/EU",
+        "timestamp": 1759047085
+        },
+        "wrong": {
+        "state": 0,
+        "timestamp": 1759047085
+        },
+        "module_firmware_version": {
+        "state": "3.7.6",
+        "timestamp": 1759047085
+        },
+        "connected": {
+        "state": true,
+        "timestamp": 1759047085
+        },
+        "timeroff": {
+        "state": {
+            "du": 0,
+            "ts": 1759047083
+        },
+        "timestamp": null
+        },
+        "_ota": {
+        "state": 0,
+        "timestamp": 1759047085
+        },
+        "ecolevel": {
+        "state": 85,
+        "timestamp": 1759047085
+        },
+        "childlockon": {
+        "state": false,
+        "timestamp": 1759047085
+        },
+        "htalevel": {
+        "state": 3,
+        "timestamp": 1759047085
+        },
+        "tempoffset": {
+        "state": 0,
+        "timestamp": 1759047085
+        }
+    },
+    "sn": "**REDACTED**",
+    "productId": "**REDACTED**",
+    "region": "eu-central-1/emq",
+    "deviceInfo": null
+    }
+}

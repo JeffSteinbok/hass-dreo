@@ -15,8 +15,7 @@ from .constant import (
     FIXEDCONF_KEY,
     OscillationMode,
     HORIZONTAL_ANGLE_RANGE,
-    VERTICAL_ANGLE_RANGE,
-    SPEED_RANGE
+    VERTICAL_ANGLE_RANGE
 )
 
 from .pydreofanbase import PyDreoFanBase

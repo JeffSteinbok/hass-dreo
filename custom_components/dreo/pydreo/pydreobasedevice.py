@@ -4,7 +4,7 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY, FAN_MODE_STRINGS
+from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY, PRESET_MODE_STRINGS
 from .models import DreoDeviceDetails
 
 if TYPE_CHECKING:
@@ -104,8 +104,8 @@ class PyDreoBaseDevice(object):
     
     def get_mode_string(self, mode_id: str) -> str:
         """Get the mode string from the device definition."""
-        if (mode_id in FAN_MODE_STRINGS):
-            text = FAN_MODE_STRINGS[mode_id]
+        if (mode_id in PRESET_MODE_STRINGS):
+            text = PRESET_MODE_STRINGS[mode_id]
         else:
             text = mode_id
 
