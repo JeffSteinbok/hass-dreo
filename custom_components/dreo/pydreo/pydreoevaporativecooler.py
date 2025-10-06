@@ -189,12 +189,12 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, HUMIDITY_TARGET_KEY)
-        self._humidify = HUMIDIFY_MODE_MAP[self.get_state_update_value(state, HUMIDIFY_MODE_KEY)]
+        self._humidify = self.get_state_update_value_mapped(state, HUMIDIFY_MODE_KEY, HUMIDIFY_MODE_MAP)
         self._oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._wind_mode = WINDMODE_MAP[WINDMODES[self.get_state_update_value(state, WIND_MODE_KEY)]]
         self._work_time = self.get_state_update_value(state, WORKTIME_KEY)
-        self._water_level = WATER_LEVEL_STATUS_MAP[self.get_state_update_value(state, WATER_LEVEL_STATUS_KEY)]
+        self._water_level = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
