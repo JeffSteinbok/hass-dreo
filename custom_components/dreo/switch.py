@@ -181,6 +181,10 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
             self._attr_name,
             self._attr_unique_id)
 
+    def __repr__(self):
+        # Representation string of object.
+        return f"<{self.__class__.__name__}:{self.entity_description}"
+    
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
