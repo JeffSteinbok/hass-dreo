@@ -154,6 +154,20 @@ class PyDreoBaseDevice(object):
 
         _LOGGER.debug("State value (%s) not present.  Device: %s", key, self.name)
         return None
+    
+    def get_state_update_value_mapped(self, state: dict, key: str, mapping: dict):
+        """Get a value from the state update in a safe manner, and map it to something."""
+        raw_value = self.get_state_update_value(state, key)
+
+        if raw_value is not None:
+            if raw_value in mapping:
+                return mapping[raw_value]
+            else:
+                _LOGGER.error("Value (%s) not in mapping for key %s.  Device: %s", raw_value, key, self.name)
+        else:
+            _LOGGER.debug("State value (%s) not present.  Device: %s", key, self.name)
+
+        return None    
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""

@@ -1,5 +1,7 @@
 {
     "pylint.args": [
     ],
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "python.terminal.activateEnvInCurrentTerminal": true,
+    "python.defaultInterpreterPath": "~/venv/bin/python"
 }
