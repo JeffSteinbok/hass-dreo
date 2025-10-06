@@ -30,6 +30,25 @@ if TYPE_CHECKING:
 class PyDreoCeilingFan(PyDreoFanBase):
     """Base class for Dreo Fan API Calls."""
 
+    @staticmethod
+    def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:
+        """Clamp RGB tuple values to 0-255 integers."""
+        return tuple(max(0, min(255, int(round(c)))) for c in rgb)
+
+    @staticmethod
+    def _pack_rgb_to_int(rgb: tuple[int, int, int]) -> int:
+        """Pack RGB tuple into 24-bit integer."""
+        r, g, b = rgb
+        return (r << 16) | (g << 8) | b
+
+    @staticmethod
+    def _unpack_int_to_rgb(color: int) -> tuple[int, int, int]:
+        """Unpack 24-bit integer to RGB tuple."""
+        r = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        b = color & 0xFF
+        return (r, g, b)
+
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
         super().__init__(device_definition, details, dreo)
@@ -171,21 +190,14 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if self._atm_color is None:
             return None
         # Extract RGB from 24-bit integer
-        r = (self._atm_color >> 16) & 0xFF
-        g = (self._atm_color >> 8) & 0xFF  
-        b = self._atm_color & 0xFF
-        return (r, g, b)
+        return self._unpack_int_to_rgb(self._atm_color)
 
     @atm_color_rgb.setter
     def atm_color_rgb(self, rgb: tuple[int | float, int | float, int | float]):
         """Set the RGB color of the atmosphere light."""
-        r, g, b = rgb
-        # Convert to integers and clamp to 0-255 range
-        r_int = max(0, min(255, int(round(r))))
-        g_int = max(0, min(255, int(round(g))))
-        b_int = max(0, min(255, int(round(b))))
-        # Pack RGB into 24-bit integer
-        color_value = (r_int << 16) | (g_int << 8) | b_int
+        # Clamp RGB values and pack into 24-bit integer
+        r_int, g_int, b_int = self._clamp_rgb_tuple(rgb)
+        color_value = self._pack_rgb_to_int((r_int, g_int, b_int))
         _LOGGER.debug("PyDreoCeilingFan:atm_color_rgb.setter - RGB(%d,%d,%d) -> %d", r_int, g_int, b_int, color_value)
         if (self._atm_color is None):
             _LOGGER.error("Atmosphere color not supported by this fan model.")
