@@ -109,7 +109,6 @@ SUPPORTED_MODEL_PREFIXES = {
     "DR-HAP",
     "DR-HPF",
     "DR-HCF",
-    "DR-HSH",
     "WH",
     "DR-HAC",
     "DR-HHM",
@@ -157,6 +156,19 @@ SUPPORTED_DEVICES = {
             HEATER_MODE_OFF,
         ],
     ),
+    "DR-HSH003S": DreoDeviceDetails(
+        device_type=DreoDeviceType.HEATER,
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 85)},
+        hvac_modes=[
+            HEATER_MODE_COOLAIR,
+            HEATER_MODE_HOTAIR,
+            HEATER_MODE_ECO,
+            HEATER_MODE_OFF,
+        ],
+        swing_modes=[SWING_OFF, SWING_ON],
+    ),    
     "DR-HSH004S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         device_ranges={
