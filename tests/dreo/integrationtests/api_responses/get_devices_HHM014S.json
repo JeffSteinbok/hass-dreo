@@ -1,0 +1,64 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+    {
+        "deviceId": "1974920854696423426",
+        "sn": "HHM014S_1",
+        "brand": "Dreo",
+        "model": "DR-HHM014S",
+        "productId": "**REDACTED**",
+        "productName": "Humidifier",
+        "deviceName": "Humidifier",
+        "shared": false,
+        "series": null,
+        "seriesName": "HM774S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202507/3bf64f82b3ae2411c96e713f2eec52334.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202507/3e66b7a1b39c6465980fbdc1b1a8d0e1f.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+        "isSmart": true,
+        "isWifi": true,
+        "isBluetooth": true,
+        "isVoiceControl": true
+        },
+        "resourcesConf": {
+        "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202507/3bbb57ff470d74a84b10c7eb01828ae19.png",
+        "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202507/37978a5f851a04a78934d73f247c40011.zip",
+        "imageSmallDarkSrc": null,
+        "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+        {
+            "url": "https://resources.dreo-tech.com/app/preSigned202507/11713e9c01fe31472ea7d29d3b69a142a6.pdf",
+            "icon": null,
+            "desc": "DR-HHM014S User Manual V1",
+            "lang": "en"
+        },
+        {
+            "url": "https://resources.dreo-tech.com/app/preSigned202509/18113abe9fa6234d34a4a7adbd29cd74a3.pdf",
+            "icon": null,
+            "desc": "DR-HHM014S User Manual-US",
+            "lang": "en"
+        }
+        ]
+    }]
+}
+}

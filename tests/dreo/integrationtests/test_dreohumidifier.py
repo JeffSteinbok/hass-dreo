@@ -38,4 +38,23 @@ class TestDreoHumidifier(IntegrationTestBase):
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(numbers, [])
 
-        
+    def test_HHM014S(self):  # pylint: disable=invalid-name
+        """Load air conditioner and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+
+            self.get_devices_file_name = "get_devices_HHM014S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+            
+            pydreo_humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+            assert pydreo_humidifier.type == 'Humidifier'
+            assert pydreo_humidifier.humidity == 58
+
+            ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
+            assert ha_humidifier.is_on is True
+            assert ha_humidifier.current_humidity == 58
+            assert ha_humidifier.target_humidity == 60
+
+            # Check to see what numbers are added to chef makers
+            numbers = number.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(numbers, [])        

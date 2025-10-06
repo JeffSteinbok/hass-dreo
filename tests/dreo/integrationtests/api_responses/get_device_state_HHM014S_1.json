@@ -1,0 +1,168 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+    "mixed": {
+        "wifi_rssi": {
+        "state": -46,
+        "timestamp": 1759717269
+        },
+        "ledlevel": {
+        "state": 2,
+        "timestamp": 1759717269
+        },
+        "poweron": {
+        "state": true,
+        "timestamp": 1759717269
+        },
+        "drystate": {
+        "state": 3,
+        "timestamp": 1759717269
+        },
+        "scheid": {
+        "state": 0,
+        "timestamp": 1759717269
+        },
+        "timeron": {
+        "state": {
+            "du": 0,
+            "ts": 1759692805
+        },
+        "timestamp": null
+        },
+        "rhoffset": {
+        "state": 0,
+        "timestamp": 1759717269
+        },
+        "scheon": {
+        "state": false,
+        "timestamp": 1759717269
+        },
+        "rhsleeplevel": {
+        "state": 70,
+        "timestamp": 1759717269
+        },
+        "mcuon": {
+        "state": true,
+        "timestamp": 1759717269
+        },
+        "mode": {
+        "state": 0,
+        "timestamp": 1759717269
+        },
+        "fmtime": {
+        "state": 100,
+        "timestamp": 1759717269
+        },
+        "network_latency": {
+        "state": 181,
+        "timestamp": 1759717269
+        },
+        "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1759717269
+        },
+        "mcu_firmware_version": {
+        "state": "0.2.9",
+        "timestamp": 1759717269
+        },
+        "waterlevel": {
+        "state": 48,
+        "timestamp": 1759721298
+        },
+        "filteron": {
+        "state": false,
+        "timestamp": 1759717269
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "rhautolevel": {
+        "state": 60,
+        "timestamp": 1759717269
+        },
+        "muteon": {
+        "state": false,
+        "timestamp": 1759717269
+        },
+        "suspend": {
+        "state": false,
+        "timestamp": 1759717269
+        },
+        "mcu_hardware_model": {
+        "state": "SC95F8613B/US",
+        "timestamp": 1759717269
+        },
+        "wifi_ssid": "**REDACTED**",
+        "drytimeleft": {
+        "state": 0,
+        "timestamp": 1759717269
+        },
+        "drylevel": {
+        "state": 2,
+        "timestamp": 1759717269
+        },
+        "watertime": {
+        "state": 21600,
+        "timestamp": 1759724410
+        },
+        "module_firmware_version": {
+        "state": "3.8.63",
+        "timestamp": 1759717269
+        },
+        "wrong": {
+        "state": 0,
+        "timestamp": 1759717269
+        },
+        "connected": {
+        "state": true,
+        "timestamp": 1759717269
+        },
+        "autodryon": {
+        "state": true,
+        "timestamp": 1759717269
+        },
+        "timeroff": {
+        "state": {
+            "du": 0,
+            "ts": 1759692805
+        },
+        "timestamp": null
+        },
+        "_ota": {
+        "state": 0,
+        "timestamp": 1759717269
+        },
+        "rhmanuallevelon": {
+        "state": true,
+        "timestamp": 1759717269
+        },
+        "rh": {
+        "state": 58,
+        "timestamp": 1759722375
+        },
+        "foglevel": {
+        "state": 6,
+        "timestamp": 1759717269
+        },
+        "rgbth": {
+        "state": "30,60",
+        "timestamp": 1759717269
+        },
+        "filtertime": {
+        "state": 100,
+        "timestamp": 1759717269
+        },
+        "rhmanuallevel": {
+        "state": 65,
+        "timestamp": 1759717269
+        },
+        "worktime": {
+        "state": 6,
+        "timestamp": 1759724410
+        }
+    },
+    "sn": "**REDACTED**",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+    }
+}
