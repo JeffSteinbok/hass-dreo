@@ -2,7 +2,7 @@
 
 import logging
 from typing import TYPE_CHECKING, Dict
-from custom_components.dreo.pydreo.pydreofanbase import PyDreoFanBase
+from .pydreofanbase import PyDreoFanBase
 
 from .constant import (
     CHILDLOCKON_KEY,
