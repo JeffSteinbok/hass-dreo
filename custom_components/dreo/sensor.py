@@ -140,7 +140,16 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[LIGHT_ON, LIGHT_OFF],
         value_fn=lambda device: device.rgblevel,
         exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(RGB_LEVEL),
-    )
+    ),
+    DreoSensorEntityDescription(
+        key="Use since cleaning",
+        translation_key="use_hours_HM",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "h",
+        value_fn=lambda device: device.worktime,
+        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(WORKTIME_KEY),
+    ) 
 )
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSensorHA]:
