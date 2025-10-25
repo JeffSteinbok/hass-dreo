@@ -135,6 +135,7 @@ class Helpers:
                     headers=headers,
                     params={**json_object, "timestamp": Helpers.api_timestamp()},
                     timeout=API_TIMEOUT,
+                    verify=False
                 )
             elif method.lower() == "post":
                 r = requests.post(
@@ -143,10 +144,11 @@ class Helpers:
                     headers=headers,
                     params={"timestamp": Helpers.api_timestamp()},
                     timeout=API_TIMEOUT,
+                    verify=False
                 )
             elif method.lower() == "put":
                 r = requests.put(
-                    url + api, json=json_object, headers=headers, timeout=API_TIMEOUT
+                    url + api, json=json_object, headers=headers, timeout=API_TIMEOUT, verify=False
                 )
         except requests.exceptions.RequestException as exception:
             _LOGGER.debug(exception)
