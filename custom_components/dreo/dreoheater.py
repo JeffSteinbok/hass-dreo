@@ -238,12 +238,13 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             HVAC_MODE_MAP[hvac_mode],
         )
         self._last_hvac_mode = self._attr_hvac_mode
-        self.device.hvac_mode = HVAC_MODE_MAP[hvac_mode]
 
         if hvac_mode != HVACMode.OFF:
             self.device.poweron = True
         else:
             self.device.poweron = False
+
+        self.device.hvac_mode = HVAC_MODE_MAP[hvac_mode]
 
     @property
     def swing_modes(self) -> list[str] | None:
