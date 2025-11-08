@@ -151,7 +151,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         """Turn the device on."""
         _LOGGER.debug("DreoHeaterHA:turn_on(%s)", self.device.name)
         self.device.poweron = True
-        self.device.mode = HVAC_MODE_MAP[self._last_hvac_mode]
+        self.device.hvac_mode = HVAC_MODE_MAP[self._last_hvac_mode]
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
