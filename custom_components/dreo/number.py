@@ -95,7 +95,23 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         translation_key="htalevel",
         attr_name="htalevel",
         icon="mdi:heat-wave"
-    )    
+    ),
+    DreoNumberEntityDescription(
+        key="Fan Speed",
+        translation_key="fan_speed",
+        attr_name="mist_level",
+        icon="mdi:fan",
+        min_value=1,
+        max_value=6,
+    ),
+    DreoNumberEntityDescription(
+        key="LED Brightness",
+        translation_key="led_brightness",
+        attr_name="led_level",
+        icon="mdi:brightness-6",
+        min_value=0,
+        max_value=2,
+    )
 )
 
 

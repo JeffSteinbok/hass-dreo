@@ -19,7 +19,10 @@ from .pydreo.constant import (
     MODE_KEY,
     PM25_KEY,
     DreoDeviceType,
-    RGB_LEVEL
+    RGB_LEVEL,
+    WATERLEVEL_KEY,
+    FILTERTIME_KEY,
+    WORKTIME_KEY
 )
 
 from .pydreo.pydreoevaporativecooler import (
@@ -140,6 +143,35 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[LIGHT_ON, LIGHT_OFF],
         value_fn=lambda device: device.rgblevel,
         exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(RGB_LEVEL),
+    ),
+    # Humidifier-specific sensors
+    DreoSensorEntityDescription(
+        key="Water Tank Level",
+        translation_key="water_tank_level",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        icon="mdi:water-percent",
+        value_fn=lambda device: device.water_level,
+        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("water_level"),
+    ),
+    DreoSensorEntityDescription(
+        key="Filter Life",
+        translation_key="filter_life",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        icon="mdi:air-filter",
+        value_fn=lambda device: device.filter_time,
+        exists_fn=lambda device: device.is_feature_supported("filter_time"),
+    ),
+    DreoSensorEntityDescription(
+        key="Runtime",
+        translation_key="runtime",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement_fn=lambda device: "h",
+        icon="mdi:clock-outline",
+        value_fn=lambda device: device.work_time,
+        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("work_time"),
     )
 )
 

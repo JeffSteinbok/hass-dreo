@@ -11,7 +11,14 @@ from .constant import (
     HUMIDITY_KEY,
     TARGET_AUTO_HUMIDITY_KEY,
     RGB_LEVEL,
-    SCHEDULE_ENABLE     
+    SCHEDULE_ENABLE,
+    FOGLEVEL_KEY,
+    WATERLEVEL_KEY,
+    FILTERTIME_KEY,
+    WORKTIME_KEY,
+    LEDLEVEL_KEY,
+    AUTODRYON_KEY,
+    WRONG_KEY
 )
 
 from .helpers import Helpers
@@ -64,6 +71,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._modes = device_definition.preset_modes
         if (self._modes is None):
             self._modes = self.parse_modes(details)
+        if (self._modes is None):
+            # Default modes for humidifiers (DR-HHM014S and similar)
+            self._modes = [("Manual", 0), ("Auto", 1), ("Sleep", 2)]
+            _LOGGER.debug("PyDreoHumidifier: Using default modes %s", self._modes)
 
         self._mode = None
         self._mute_on = None
@@ -73,6 +84,14 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._worktime = None
         self._rgblevel = None
         self._scheon = None
+        self._mist_level = None
+        self._mist_level_range = (1, 6)  # DR-HHM014S has 6 mist levels (1-, 1, 2-, 2, 3-, 3)
+        self._water_level = None
+        self._filter_time = None
+        self._work_time = None
+        self._led_level = None
+        self._auto_dry_on = None
+        self._error_code = None
         
     def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -140,7 +159,69 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         """Set if the panel sound"""
         _LOGGER.debug("PyDreoHumidifier:panel_sound.setter(%s) --> %s", self.name, value)
         self._send_command(MUTEON_KEY, not value)
-        
+
+    @property
+    def mist_level(self) -> int:
+        """Get the mist level (1-3 for Manual mode)"""
+        return self._mist_level
+
+    @mist_level.setter
+    def mist_level(self, value: int) -> None:
+        """Set the mist level"""
+        value = int(value)
+        _LOGGER.debug("PyDreoHumidifier:mist_level.setter(%s) %s --> %s", self.name, self._mist_level, value)
+        if value < self._mist_level_range[0] or value > self._mist_level_range[1]:
+            raise ValueError(f"Mist level {value} is out of range {self._mist_level_range}")
+        self._send_command(FOGLEVEL_KEY, value)
+
+    @property
+    def mist_level_range(self) -> tuple:
+        """Get the mist level range"""
+        return self._mist_level_range
+
+    @property
+    def water_level(self) -> int:
+        """Get the water level percentage"""
+        return self._water_level
+
+    @property
+    def filter_time(self) -> int:
+        """Get the filter life remaining percentage"""
+        return self._filter_time
+
+    @property
+    def work_time(self) -> int:
+        """Get the work time in hours"""
+        return self._work_time
+
+    @property
+    def led_level(self) -> int:
+        """Get the LED brightness level"""
+        return self._led_level
+
+    @led_level.setter
+    def led_level(self, value: int) -> None:
+        """Set the LED brightness level"""
+        value = int(value)
+        _LOGGER.debug("PyDreoHumidifier:led_level.setter(%s) %s --> %s", self.name, self._led_level, value)
+        self._send_command(LEDLEVEL_KEY, value)
+
+    @property
+    def auto_dry_on(self) -> bool:
+        """Get the auto dry feature state"""
+        return self._auto_dry_on
+
+    @auto_dry_on.setter
+    def auto_dry_on(self, value: bool) -> None:
+        """Set the auto dry feature state"""
+        _LOGGER.debug("PyDreoHumidifier:auto_dry_on.setter(%s) --> %s", self.name, value)
+        self._send_command(AUTODRYON_KEY, value)
+
+    @property
+    def error_code(self) -> int:
+        """Get the error code (0 = no error)"""
+        return self._error_code
+
     @property
     def mode(self):
         """Return the current mode."""
@@ -209,7 +290,39 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
             self._mode = val_mode
-            
+
+        val_mist_level = self.get_server_update_key_value(message, FOGLEVEL_KEY)
+        if isinstance(val_mist_level, int):
+            self._mist_level = val_mist_level
+
+        val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
+        if isinstance(val_humidity, int):
+            self._humidity = val_humidity
+
+        val_target_humidity = self.get_server_update_key_value(message, TARGET_AUTO_HUMIDITY_KEY)
+        if isinstance(val_target_humidity, int):
+            self._target_humidity = val_target_humidity
+
+        val_water_level = self.get_server_update_key_value(message, WATERLEVEL_KEY)
+        if isinstance(val_water_level, int):
+            self._water_level = val_water_level
+
+        val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
+        if isinstance(val_mute, bool):
+            self._mute_on = val_mute
+
+        val_led = self.get_server_update_key_value(message, LEDLEVEL_KEY)
+        if isinstance(val_led, int):
+            self._led_level = val_led
+
+        val_auto_dry = self.get_server_update_key_value(message, AUTODRYON_KEY)
+        if isinstance(val_auto_dry, bool):
+            self._auto_dry_on = val_auto_dry
+
+        val_error = self.get_server_update_key_value(message, WRONG_KEY)
+        if isinstance(val_error, int):
+            self._error_code = val_error
+
         val_worktime = self.get_server_update_key_value(message, WORKTIME_KEY)
         if isinstance(val_worktime, int):
             self._worktime = val_worktime

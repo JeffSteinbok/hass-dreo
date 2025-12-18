@@ -102,7 +102,7 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="display_light",
         icon="mdi:led-on",
     ),
-    DreoSwitchEntityDescription(    
+    DreoSwitchEntityDescription(
         key="Auto Turn On",
         translation_key="auto_mode",
         attr_name="auto_mode",
@@ -113,6 +113,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         translation_key="scheon",
         attr_name="scheon",
         icon="mdi:calendar",
+    ),
+    DreoSwitchEntityDescription(
+        key="Auto Dry",
+        translation_key="auto_dry_on",
+        attr_name="auto_dry_on",
+        icon="mdi:hair-dryer",
     )  
 )
 

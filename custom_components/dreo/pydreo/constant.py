@@ -52,6 +52,15 @@ TARGET_HUMIDITY_KEY = "rhlevel"
 RGB_LEVEL = 'rgblevel'
 SCHEDULE_ENABLE = 'scheon'
 
+# Humidifier-specific keys
+FOGLEVEL_KEY = "foglevel"
+WATERLEVEL_KEY = "waterlevel"
+FILTERTIME_KEY = "filtertime"
+WORKTIME_KEY = "worktime"
+LEDLEVEL_KEY = "ledlevel"
+AUTODRYON_KEY = "autodryon"
+WRONG_KEY = "wrong"
+
 # Preferences Names
 # It's possible we should switch to IDs instead of names
 PREFERENCE_TYPE_TEMPERATURE_CALIBRATION = "Temperature Calibration"  # ID: 250
