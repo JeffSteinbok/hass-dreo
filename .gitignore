@@ -3,6 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Test scripts secrets (credentials, tokens, etc.)
+testScripts/secrets/
+!testScripts/secrets/.gitignore
+!testScripts/secrets/credentials.example.py
+
 # Distribution / packaging
 .Python
 build/
