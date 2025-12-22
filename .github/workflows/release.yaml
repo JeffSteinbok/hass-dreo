@@ -1,0 +1,108 @@
+name: Release Automation
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.4.0)'
+        required: true
+        default: '1.4.0'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.9"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pylint bump2version
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements.test.txt ]; then pip install -r requirements.test.txt; fi
+    
+    - name: Lint with pylint - Errors only
+      run: |
+        pylint --recursive=yes --reports=yes --disable=W,C,R .
+    
+    - name: Run tests with pytest
+      run: |
+        pytest
+    
+    - name: Configure Git
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+    
+    - name: Bump version
+      run: |
+        # Extract current version from manifest.json
+        CURRENT_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
+        TARGET_VERSION="${{ github.event.inputs.version }}"
+        
+        echo "Current version: $CURRENT_VERSION"
+        echo "Target version: $TARGET_VERSION"
+        
+        # Only bump if versions are different
+        if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
+          echo "Bumping version to $TARGET_VERSION"
+          bump2version --new-version "$TARGET_VERSION" patch
+        else
+          echo "Version is already at $TARGET_VERSION, skipping bump"
+        fi
+    
+    - name: Push version bump
+      run: |
+        # Check if there are any changes to push
+        if ! git diff --quiet HEAD; then
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin --tags
+        else
+          echo "No version changes to push"
+        fi
+    
+    - name: Create release artifact
+      run: |
+        # Create a zip file of the custom component
+        cd custom_components
+        zip -r ../dreo-v${{ github.event.inputs.version }}.zip dreo/
+        cd ..
+    
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ github.event.inputs.version }}
+        name: Release v${{ github.event.inputs.version }}
+        body: |
+          ## Release v${{ github.event.inputs.version }}
+          
+          ### Changes
+          This release includes updates to the Dreo Smart Device Integration for Home Assistant.
+          
+          ### Installation
+          1. Download the `dreo-v${{ github.event.inputs.version }}.zip` file
+          2. Extract it to your `custom_components` directory in Home Assistant
+          3. Restart Home Assistant
+          
+          For HACS users, this release will be automatically available through HACS.
+          
+          See the [README](https://github.com/${{ github.repository }}/blob/v${{ github.event.inputs.version }}/README.md) for full documentation.
+        files: |
+          dreo-v${{ github.event.inputs.version }}.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
