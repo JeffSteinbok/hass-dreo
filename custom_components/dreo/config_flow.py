@@ -20,7 +20,13 @@ OPTIONS_SCHEMA = vol.Schema(
 )
 
 class OptionsFlowHandler(OptionsFlow):
-    """Handles options flow for the component."""
+    """Handles options flow for the component.
+    
+    Note: This class follows Home Assistant 2025.12 best practices:
+    - Does not explicitly set self.config_entry (provided by parent class)
+    - Access config_entry via self.config_entry property
+    - No constructor arguments needed
+    """
 
     async def async_step_init(self, user_input: Dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options for the custom component."""
@@ -85,6 +91,11 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowHandler:
-        """Get the options flow for this handler."""
+        """Get the options flow for this handler.
+        
+        Note: Following Home Assistant 2025.12 pattern:
+        - Returns OptionsFlowHandler() without passing config_entry
+        - config_entry is automatically provided by Home Assistant
+        """
         return OptionsFlowHandler()
 
