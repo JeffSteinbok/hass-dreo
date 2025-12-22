@@ -40,7 +40,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Heat Level"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Status"])
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.AUTO)
@@ -68,7 +68,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Heat Level"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Status"])
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.AUTO)
@@ -98,7 +98,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Heat Level"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Status"])
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.AUTO)
@@ -111,3 +111,30 @@ class TestDreoHeater(IntegrationTestBase):
 
 
 
+
+    def test_heater_status_sensor_eco_mode(self):  # pylint: disable=invalid-name
+        """Test that the Status sensor correctly handles eco mode."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+
+            self.get_devices_file_name = "get_devices_HSH009S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater : PyDreoHeater = self.pydreo_manager.devices[0]
+            
+            # Get sensors and find the Status sensor
+            sensors = sensor.get_entries([pydreo_heater])
+            status_sensor = next((s for s in sensors if s.entity_description.key == "Status"), None)
+            assert status_sensor is not None, "Status sensor should exist"
+            
+            # Verify that eco is in the options
+            assert "eco" in status_sensor.entity_description.options, "eco should be in Status sensor options"
+            
+            # Verify all heater modes are in the options
+            expected_modes = ["coolair", "hotair", "eco", "off"]
+            for mode in expected_modes:
+                assert mode in status_sensor.entity_description.options, f"{mode} should be in Status sensor options"
+            
+            # Test that the sensor correctly reports eco mode
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
+            assert status_sensor.native_value == "eco", "Status sensor should report eco mode"

@@ -19,7 +19,11 @@ from .pydreo.constant import (
     MODE_KEY,
     PM25_KEY,
     DreoDeviceType,
-    RGB_LEVEL
+    RGB_LEVEL,
+    HEATER_MODE_COOLAIR,
+    HEATER_MODE_HOTAIR,
+    HEATER_MODE_ECO,
+    HEATER_MODE_OFF
 )
 
 from .pydreo.pydreoevaporativecooler import (
@@ -107,6 +111,14 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: (device.type in { DreoDeviceType.CHEF_MAKER }) and device.is_feature_supported(MODE_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="Status",
+        translation_key="status",
+        device_class=SensorDeviceClass.ENUM,
+        options=[HEATER_MODE_COOLAIR, HEATER_MODE_HOTAIR, HEATER_MODE_ECO, HEATER_MODE_OFF],
+        value_fn=lambda device: device.hvac_mode,
+        exists_fn=lambda device: (device.type in { DreoDeviceType.HEATER }) and device.is_feature_supported("hvac_mode"),
     ),
     DreoSensorEntityDescription(
         key="pm25",
