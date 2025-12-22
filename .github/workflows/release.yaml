@@ -48,6 +48,7 @@ jobs:
         git config --local user.name "github-actions[bot]"
     
     - name: Bump version
+      id: bump
       run: |
         # Extract current version from manifest.json
         CURRENT_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
@@ -60,19 +61,18 @@ jobs:
         if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
           echo "Bumping version to $TARGET_VERSION"
           bump2version --new-version "$TARGET_VERSION" patch
+          echo "bumped=true" >> $GITHUB_OUTPUT
         else
           echo "Version is already at $TARGET_VERSION, skipping bump"
+          echo "bumped=false" >> $GITHUB_OUTPUT
         fi
     
     - name: Push version bump
+      if: steps.bump.outputs.bumped == 'true'
       run: |
-        # Check if there are any changes to push
-        if ! git diff --quiet HEAD; then
-          git push origin HEAD:${{ github.ref_name }}
-          git push origin --tags
-        else
-          echo "No version changes to push"
-        fi
+        # Push the commit and tag created by bump2version
+        git push origin HEAD:${{ github.ref_name }}
+        git push origin --tags
     
     - name: Create release artifact
       run: |
