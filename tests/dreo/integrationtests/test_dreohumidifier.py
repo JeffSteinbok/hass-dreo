@@ -4,6 +4,7 @@ import logging
 from unittest.mock import patch
 from custom_components.dreo import number
 from custom_components.dreo import humidifier
+from custom_components.dreo import sensor
 
 from  .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
@@ -43,8 +44,12 @@ class TestDreoHumidifier(IntegrationTestBase):
                 current_mode = ha_humidifier.mode
                 assert current_mode is not None or current_mode in ha_humidifier.available_modes
 
-            # Check to see what numbers are added to chef makers
+            # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(numbers, [])
+
+            # Check to see what sensors are added to humidifiers
+            sensors = sensor.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
         
