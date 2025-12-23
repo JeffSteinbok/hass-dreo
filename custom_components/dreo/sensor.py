@@ -66,7 +66,7 @@ class DreoSensorEntityDescription(SensorEntityDescription):
 
 SENSORS: tuple[DreoSensorEntityDescription, ...] = (
     DreoSensorEntityDescription(
-        key="temperature",
+        key="Temperature",
         translation_key="temperature",
         device_class=SensorDeviceClass.TEMPERATURE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -75,7 +75,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: (not device.type in { DreoDeviceType.HEATER, DreoDeviceType.AIR_CONDITIONER }) and device.is_feature_supported("temperature"),
     ),
     DreoSensorEntityDescription(
-        key="humidity",
+        key="Humidity",
         translation_key="humidity",
         device_class=SensorDeviceClass.HUMIDITY,
         state_class=SensorStateClass.MEASUREMENT,

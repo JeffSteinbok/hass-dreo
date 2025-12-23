@@ -50,6 +50,6 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added to humidifiers
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Water Level", "Ambient Light Humidifier", "Use since cleaning"])
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
         
