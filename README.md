@@ -2,8 +2,9 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
-[![Release Automation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml)
 [![PyTest](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/pytest.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/pytest.yaml)
+[![Release Automation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml)
+
 
 Unofficial HomeAssistant integration for Dreo brand smart devices. Currently supports most models of Fans, Air Conditioners, Humidifiers, Dehumidifiers and Space Heaters as well as ChefMaker. I do not work for Dreo; just something I'm doing for fun.
 
