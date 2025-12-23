@@ -14,7 +14,7 @@
         "model": "DR-HHM001S",
         "productId": "**REDACTED**",
         "productName": "Humidifier",
-        "deviceName": "Olivia Humidifier",
+        "deviceName": "DEBUGTEST - Humidifier - DR-HHM001S",
         "shared": false,
         "series": null,
         "seriesName": "HM311S",
@@ -29,19 +29,27 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [9]
+                "frame": [
+                  9
+                ]
               },
               {
                 "value": 31,
-                "frame": [7]
+                "frame": [
+                  7
+                ]
               },
               {
                 "value": 61,
-                "frame": [5]
+                "frame": [
+                  5
+                ]
               }
             ]
           },
@@ -91,14 +99,21 @@
                 "value": 1,
                 "valueType": 1,
                 "isSelected": true,
-                "attention": ["mode", "rhautolevel", "rgblevel", "poweron"],
+                "attention": [
+                  "mode",
+                  "rhautolevel",
+                  "rgblevel",
+                  "poweron"
+                ],
                 "controls": [
                   {
                     "type": 0,
                     "title": "home_humidity",
                     "startColor": "#1FD3E0",
                     "endColor": "#4663F7",
-                    "cmd": ["rhautolevel"],
+                    "cmd": [
+                      "rhautolevel"
+                    ],
                     "value": 60,
                     "valueType": 1,
                     "startValue": 30,
@@ -116,7 +131,12 @@
                 "value": 0,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": ["mode", "foglevel", "rgblevel", "poweron"],
+                "attention": [
+                  "mode",
+                  "foglevel",
+                  "rgblevel",
+                  "poweron"
+                ],
                 "controls": [
                   {
                     "type": 1,
@@ -125,7 +145,9 @@
                     "startColor": "#1FD3E0",
                     "endColor": "#4663F7",
                     "periodColor": "#0051CF",
-                    "cmd": ["foglevel"],
+                    "cmd": [
+                      "foglevel"
+                    ],
                     "value": 6,
                     "startValue": 0,
                     "validValue": 1,
@@ -143,7 +165,12 @@
                 "value": 2,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": ["mode", "rhsleeplevel", "rgblevel", "poweron"],
+                "attention": [
+                  "mode",
+                  "rhsleeplevel",
+                  "rgblevel",
+                  "poweron"
+                ],
                 "controls": []
               }
             ]

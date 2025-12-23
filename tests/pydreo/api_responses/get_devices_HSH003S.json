@@ -1,265 +1,265 @@
 {
-        "code": 0,
-        "msg": "OK",
-        "data": {        
-          "currentPage": 1,
-          "pageSize": 100,
-          "totalNum": 1,
-          "totalPage": 1,
-          "familyRooms": null,
-          "list": [
-            {
-              "deviceId": "1970329093398933506",
-              "sn": "HSH003S_1",
-              "brand": "Dreo",
-              "model": "DR-HSH003S",
-              "productId": "**REDACTED**",
-              "productName": "Heater",
-              "deviceName": "Heizger\u00e4t",
-              "shared": false,
-              "series": null,
-              "seriesName": "Solaris Slim H3",
-              "type": 0,
-              "owner": true,
-              "familyId": null,
-              "familyName": null,
-              "roomId": null,
-              "roomName": null,
-              "roomNameI18Key": "",
-              "color": "b",
-              "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/5c1cc00320b7740959cb1ac36cfb3af53.png",
-              "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/506001213fd6f4d74bd431a4b9aa3b845.png",
-              "widgetAbnormalImage": null,
-              "variantIconMd5": null,
-              "controlsConf": {
-                "template": "DR-HSH004S",
-                "lottie": {
-                  "key": "poweron",
-                  "frames": [
-                    {
-                      "value": 0,
-                      "frame": [
-                        0
-                      ]
-                    },
-                    {
-                      "value": 1,
-                      "frame": [
-                        2
-                      ]
-                    }
-                  ]
-                },
-                "instructions": {
-                  "en": "https://fe-fat.dreo.com:18005/en/safety-protection-instructions/",
-                  "zh": "https://fe-fat.dreo.com:18005/zh/safety-protection-instructions/"
-                },
-                "schedule": {
-                  "modes": [
-                    {
-                      "icon": "ic_hsh_item_heat",
-                      "title": "device_heater_mode_heat",
-                      "cmd": "mode",
-                      "value": "hotair",
-                      "valueType": 2,
-                      "isSelected": true,
-                      "attention": [
-                        "mode",
-                        "htalevel",
-                        "poweron",
-                        "oscon"
-                      ],
-                      "controls": [
-                        {
-                          "type": 1,
-                          "title": "device_control_mode_manual_level",
-                          "cmd": [
-                            "htalevel"
-                          ],
-                          "value": 3,
-                          "valueType": 1,
-                          "startValue": 0,
-                          "validValue": 1,
-                          "periodColor": "#FF9500",
-                          "endValue": 3,
-                          "groupId": 0,
-                          "startColor": "#FFD666",
-                          "endColor": "#FF7214",
-                          "isSelected": false,
-                          "preUnit": "H"
-                        }
-                      ]
-                    },
-                    {
-                      "icon": "ic_hsh_item_eco",
-                      "title": "device_heater_mode_eco",
-                      "cmd": "mode",
-                      "value": "eco",
-                      "valueType": 2,
-                      "isSelected": false,
-                      "attention": [
-                        "mode",
-                        "ecolevel",
-                        "poweron",
-                        "oscon"
-                      ],
-                      "controls": [
-                        {
-                          "type": 4,
-                          "valueType": 1,
-                          "title": "device_control_temp",
-                          "startColor": "#FFD666",
-                          "endColor": "#FF7214",
-                          "cmd": [
-                            "ecolevel"
-                          ],
-                          "value": 85,
-                          "startValue": 41,
-                          "endValue": 95,
-                          "groupId": 0,
-                          "isSelected": false,
-                          "unit": "\u2109"
-                        }
-                      ]
-                    },
-                    {
-                      "icon": "ic_hsh_item_fanonly",
-                      "title": "device_heater_mode_fan_only",
-                      "cmd": "mode",
-                      "value": "coolair",
-                      "valueType": 2,
-                      "isSelected": false,
-                      "attention": [
-                        "mode",
-                        "poweron",
-                        "oscon"
-                      ],
-                      "controls": []
-                    }
-                  ]
-                },
-                "cards": [
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1970329093398933506",
+        "sn": "HSH003S_1",
+        "brand": "Dreo",
+        "model": "DR-HSH003S",
+        "productId": "**REDACTED**",
+        "productName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH003S",
+        "shared": false,
+        "series": null,
+        "seriesName": "Solaris Slim H3",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/5c1cc00320b7740959cb1ac36cfb3af53.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/506001213fd6f4d74bd431a4b9aa3b845.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HSH004S",
+          "lottie": {
+            "key": "poweron",
+            "frames": [
+              {
+                "value": 0,
+                "frame": [
+                  0
+                ]
+              },
+              {
+                "value": 1,
+                "frame": [
+                  2
+                ]
+              }
+            ]
+          },
+          "instructions": {
+            "en": "https://fe-fat.dreo.com:18005/en/safety-protection-instructions/",
+            "zh": "https://fe-fat.dreo.com:18005/zh/safety-protection-instructions/"
+          },
+          "schedule": {
+            "modes": [
+              {
+                "icon": "ic_hsh_item_heat",
+                "title": "device_heater_mode_heat",
+                "cmd": "mode",
+                "value": "hotair",
+                "valueType": 2,
+                "isSelected": true,
+                "attention": [
+                  "mode",
+                  "htalevel",
+                  "poweron",
+                  "oscon"
+                ],
+                "controls": [
                   {
-                    "type": 2,
+                    "type": 1,
+                    "title": "device_control_mode_manual_level",
+                    "cmd": [
+                      "htalevel"
+                    ],
+                    "value": 3,
+                    "valueType": 1,
+                    "startValue": 0,
+                    "validValue": 1,
+                    "periodColor": "#FF9500",
+                    "endValue": 3,
+                    "groupId": 0,
+                    "startColor": "#FFD666",
+                    "endColor": "#FF7214",
+                    "isSelected": false,
+                    "preUnit": "H"
+                  }
+                ]
+              },
+              {
+                "icon": "ic_hsh_item_eco",
+                "title": "device_heater_mode_eco",
+                "cmd": "mode",
+                "value": "eco",
+                "valueType": 2,
+                "isSelected": false,
+                "attention": [
+                  "mode",
+                  "ecolevel",
+                  "poweron",
+                  "oscon"
+                ],
+                "controls": [
+                  {
+                    "type": 4,
+                    "valueType": 1,
                     "title": "device_control_temp",
-                    "icon": "",
-                    "image": "",
-                    "url": "",
-                    "show": true
-                  },
-                  {
-                    "type": 8,
-                    "title": "",
-                    "icon": "",
-                    "image": "",
-                    "url": "dreo://nav/device/schedule?deviceSn={sn}",
-                    "show": true,
-                    "key": "",
-                    "minVersion": "2.2.2"
-                  },
-                  {
-                    "type": 6,
-                    "title": "device_chart_usage",
-                    "icon": "ic_usage",
-                    "image": "",
-                    "url": "dreo://nav/device/hacstatistics?deviceSn=${sn}",
-                    "show": true,
-                    "key": "usage"
-                  },
-                  {
-                    "type": 6,
-                    "title": "device_settings_title",
-                    "icon": "ic_setting",
-                    "image": "",
-                    "url": "dreo://nav/device/setting?deviceSn=${sn}",
-                    "show": true,
-                    "key": "setting"
+                    "startColor": "#FFD666",
+                    "endColor": "#FF7214",
+                    "cmd": [
+                      "ecolevel"
+                    ],
+                    "value": 85,
+                    "startValue": 41,
+                    "endValue": 95,
+                    "groupId": 0,
+                    "isSelected": false,
+                    "unit": "\u2109"
                   }
-                ],
-                "feature": {
-                  "schedule": {
-                    "enable": true,
-                    "localSupport": true,
-                    "module": [
-                      {
-                        "type": "HeFi",
-                        "version": "0.0.1"
-                      }
-                    ]
-                  }
-                },
-                "preference": [
-                  {
-                    "id": "200",
-                    "type": "Panel Sound",
-                    "title": "device_control_panelsound",
-                    "image": "ic_mute",
-                    "reverse": true,
-                    "cmd": "muteon"
-                  },
-                  {
-                    "id": "210",
-                    "type": "Display Auto Off",
-                    "title": "device_fans_mode_auto_display",
-                    "image": "ic_display",
-                    "reverse": true,
-                    "cmd": "lighton"
-                  },
-                  {
-                    "id": "220",
-                    "type": "Child Lock",
-                    "title": "device_control_childlock",
-                    "image": "ic_child_lock",
-                    "reverse": false,
-                    "cmd": "childlockon"
-                  },
-                  {
-                    "id": "230",
-                    "type": "Temperature Unit",
-                    "title": "device_control_temp_unit",
-                    "image": "ic_temp_unit"
-                  },
-                  {
-                    "id": "240",
-                    "type": "Temperature Calibration",
-                    "title": "device_control_temp_calibration",
-                    "image": "ic_temp_cal"
-                  }
-                ],
-                "control": [
-                  {
-                    "swingtype": false,
-                    "hideSafeMode": false
-                  }
-                ],
-                "category": "Space Heater",
-                "version": {
-                  "minControlVer": "2.1.3",
-                  "minPairingVer": "2.0.7"
-                }
+                ]
               },
-              "mainConf": {
-                "isSmart": true,
-                "isWifi": true,
-                "isBluetooth": true,
-                "isVoiceControl": true
-              },
-              "resourcesConf": {
-                "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/5ef4c262447104baeb951835fd4d8fb56.png",
-                "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/511bc7841fb384de99bc06f92cc681c64.zip",
-                "imageSmallDarkSrc": null,
-                "imageFullDarkSrc": null
-              },
-              "servicesConf": [],
-              "userManuals": [
+              {
+                "icon": "ic_hsh_item_fanonly",
+                "title": "device_heater_mode_fan_only",
+                "cmd": "mode",
+                "value": "coolair",
+                "valueType": 2,
+                "isSelected": false,
+                "attention": [
+                  "mode",
+                  "poweron",
+                  "oscon"
+                ],
+                "controls": []
+              }
+            ]
+          },
+          "cards": [
+            {
+              "type": 2,
+              "title": "device_control_temp",
+              "icon": "",
+              "image": "",
+              "url": "",
+              "show": true
+            },
+            {
+              "type": 8,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "dreo://nav/device/schedule?deviceSn={sn}",
+              "show": true,
+              "key": "",
+              "minVersion": "2.2.2"
+            },
+            {
+              "type": 6,
+              "title": "device_chart_usage",
+              "icon": "ic_usage",
+              "image": "",
+              "url": "dreo://nav/device/hacstatistics?deviceSn=${sn}",
+              "show": true,
+              "key": "usage"
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
+            }
+          ],
+          "feature": {
+            "schedule": {
+              "enable": true,
+              "localSupport": true,
+              "module": [
                 {
-                  "url": "https://resources.dreo-tech.com/app/preSigned202506/12a736d06b5b6549fcb181bac2018c508e.pdf",
-                  "icon": null,
-                  "desc": "DR-HSH003S User Manual V1",
-                  "lang": "en"
+                  "type": "HeFi",
+                  "version": "0.0.1"
                 }
               ]
             }
-          ]
-        }
+          },
+          "preference": [
+            {
+              "id": "200",
+              "type": "Panel Sound",
+              "title": "device_control_panelsound",
+              "image": "ic_mute",
+              "reverse": true,
+              "cmd": "muteon"
+            },
+            {
+              "id": "210",
+              "type": "Display Auto Off",
+              "title": "device_fans_mode_auto_display",
+              "image": "ic_display",
+              "reverse": true,
+              "cmd": "lighton"
+            },
+            {
+              "id": "220",
+              "type": "Child Lock",
+              "title": "device_control_childlock",
+              "image": "ic_child_lock",
+              "reverse": false,
+              "cmd": "childlockon"
+            },
+            {
+              "id": "230",
+              "type": "Temperature Unit",
+              "title": "device_control_temp_unit",
+              "image": "ic_temp_unit"
+            },
+            {
+              "id": "240",
+              "type": "Temperature Calibration",
+              "title": "device_control_temp_calibration",
+              "image": "ic_temp_cal"
+            }
+          ],
+          "control": [
+            {
+              "swingtype": false,
+              "hideSafeMode": false
+            }
+          ],
+          "category": "Space Heater",
+          "version": {
+            "minControlVer": "2.1.3",
+            "minPairingVer": "2.0.7"
+          }
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/5ef4c262447104baeb951835fd4d8fb56.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/511bc7841fb384de99bc06f92cc681c64.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202506/12a736d06b5b6549fcb181bac2018c508e.pdf",
+            "icon": null,
+            "desc": "DR-HSH003S User Manual V1",
+            "lang": "en"
+          }
+        ]
       }
+    ]
+  }
+}

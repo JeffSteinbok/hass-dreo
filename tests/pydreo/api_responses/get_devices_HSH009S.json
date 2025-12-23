@@ -15,7 +15,7 @@
         "model": "DR-HSH009S",
         "productId": "**REDACTED**",
         "productName": "Heater",
-        "deviceName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH009S",
         "shared": false,
         "series": null,
         "seriesName": "Wall-mounted Heater",

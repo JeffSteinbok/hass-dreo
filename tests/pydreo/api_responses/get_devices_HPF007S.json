@@ -1,60 +1,60 @@
 {
-        "code": 0,
-        "msg": "OK",
-        "data": {
-          "currentPage": 1,
-          "pageSize": 100,
-          "totalNum": 1,
-          "totalPage": 1,
-          "familyRooms": null,
-          "list": [
-            {
-              "deviceId": "1959069279151255554",
-              "sn": "DR-HPF007S_1",
-              "brand": "Dreo",
-              "model": "DR-HPF007S",
-              "productId": "**REDACTED**",
-              "productName": "Air Circulator",
-              "deviceName": "Air Circulator",
-              "shared": false,
-              "series": null,
-              "seriesName": "707S",
-              "type": 0,
-              "owner": true,
-              "familyId": null,
-              "familyName": null,
-              "roomId": null,
-              "roomName": null,
-              "roomNameI18Key": "",
-              "color": "s",
-              "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/4d9876e9d7e8349ac900798e084d99a85.png",
-              "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/41e74e889c19d4a829d99c859e61b9795.png",
-              "widgetAbnormalImage": null,
-              "variantIconMd5": null,
-              "controlsConf": {
-                "template": "DR-HPF002S"
-              },
-              "mainConf": {
-                "isSmart": true,
-                "isWifi": true,
-                "isBluetooth": true,
-                "isVoiceControl": true
-              },
-              "resourcesConf": {
-                "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/4067f84773b4b49a3ac9cd321036cb070.png",
-                "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/46c0241b21be04f68bc33f81b9fa367ed.zip",
-                "imageSmallDarkSrc": null,
-                "imageFullDarkSrc": null
-              },
-              "userManuals": [
-                {
-                  "url": "https://resources.dreo-tech.com/app/preSigned202505/2917d7217e85b44803870a050d2a8c1fb3.pdf",
-                  "icon": null,
-                  "desc": "DR-HPF007S User Manual",
-                  "lang": "en"
-                }
-              ]
-            }
-          ]
-        }
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1959069279151255554",
+        "sn": "DR-HPF007S_1",
+        "brand": "Dreo",
+        "model": "DR-HPF007S",
+        "productId": "**REDACTED**",
+        "productName": "Air Circulator",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HPF007S",
+        "shared": false,
+        "series": null,
+        "seriesName": "707S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "s",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/4d9876e9d7e8349ac900798e084d99a85.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/41e74e889c19d4a829d99c859e61b9795.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HPF002S"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/4067f84773b4b49a3ac9cd321036cb070.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/46c0241b21be04f68bc33f81b9fa367ed.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202505/2917d7217e85b44803870a050d2a8c1fb3.pdf",
+            "icon": null,
+            "desc": "DR-HPF007S User Manual",
+            "lang": "en"
+          }
+        ]
       }
+    ]
+  }
+}

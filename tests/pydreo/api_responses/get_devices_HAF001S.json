@@ -15,7 +15,7 @@
         "model": "DR-HAF001S",
         "productId": "***REMOVED BY ME ***",
         "productName": "Air Circulator",
-        "deviceName": "Ventilator",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HAF001S",
         "shared": false,
         "series": null,
         "seriesName": "CF511S/CF611S",
@@ -34,11 +34,15 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               }
             ]
           },
@@ -51,7 +55,12 @@
                 "value": 1,
                 "valueType": 1,
                 "isSelected": true,
-                "attention": ["mode", "windlevel", "poweron", "hoscon"],
+                "attention": [
+                  "mode",
+                  "windlevel",
+                  "poweron",
+                  "hoscon"
+                ],
                 "controls": [
                   {
                     "type": 1,
@@ -59,7 +68,9 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -78,7 +89,12 @@
                 "value": 2,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": ["mode", "windlevel", "poweron", "hoscon"],
+                "attention": [
+                  "mode",
+                  "windlevel",
+                  "poweron",
+                  "hoscon"
+                ],
                 "controls": [
                   {
                     "type": 1,
@@ -86,7 +102,9 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -105,7 +123,12 @@
                 "value": 3,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": ["mode", "windlevel", "poweron", "hoscon"],
+                "attention": [
+                  "mode",
+                  "windlevel",
+                  "poweron",
+                  "hoscon"
+                ],
                 "controls": [
                   {
                     "type": 1,
@@ -113,7 +136,9 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -132,7 +157,12 @@
                 "value": 4,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": ["mode", "windlevel", "poweron", "hoscon"],
+                "attention": [
+                  "mode",
+                  "windlevel",
+                  "poweron",
+                  "hoscon"
+                ],
                 "controls": [
                   {
                     "type": 1,
@@ -140,7 +170,9 @@
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
                     "periodColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -159,7 +191,11 @@
                 "value": 6,
                 "valueType": 1,
                 "isSelected": false,
-                "attention": ["mode", "poweron", "hoscon"],
+                "attention": [
+                  "mode",
+                  "poweron",
+                  "hoscon"
+                ],
                 "controls": []
               }
             ]
@@ -254,33 +290,57 @@
               "items": [
                 {
                   "text": "device_fans_mode_straight",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_normal_wind",
-                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#25D7E4"
+                  ],
                   "cmd": "mode",
                   "value": 1
                 },
                 {
                   "text": "device_fans_mode_natural",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_natural_wind",
-                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#2CDD96"
+                  ],
                   "cmd": "mode",
                   "value": 2
                 },
                 {
                   "text": "device_control_mode_sleep",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_sleep_wind",
-                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#6249DF"
+                  ],
                   "cmd": "mode",
                   "value": 3
                 },
                 {
                   "text": "device_control_mode_auto",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_auto_wind",
-                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#0A80F5"
+                  ],
                   "cmd": "mode",
                   "value": 4
                 }

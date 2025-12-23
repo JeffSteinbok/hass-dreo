@@ -15,7 +15,7 @@
         "model": "DR-HAC005S",
         "productId": "REDACTED",
         "productName": "Air Conditioner",
-        "deviceName": "Electric AC",
+        "deviceName": "DEBUGTEST - Air Conditioner - DR-HAC005S",
         "shared": false,
         "series": null,
         "seriesName": "AC515S",
@@ -34,27 +34,39 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [3]
+                "frame": [
+                  3
+                ]
               },
               {
                 "value": 2,
-                "frame": [4]
+                "frame": [
+                  4
+                ]
               },
               {
                 "value": 3,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               },
               {
                 "value": 4,
-                "frame": [3]
+                "frame": [
+                  3
+                ]
               },
               {
                 "value": 5,
-                "frame": [3]
+                "frame": [
+                  3
+                ]
               }
             ]
           },
@@ -70,7 +82,9 @@
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["mode"],
+                        "cmd": [
+                          "mode"
+                        ],
                         "title": "schedule_ac_cool",
                         "value": 1,
                         "subItems": [
@@ -80,7 +94,9 @@
                             "valueType": 1,
                             "groupId": 0,
                             "isSelected": false,
-                            "cmd": ["templevel"],
+                            "cmd": [
+                              "templevel"
+                            ],
                             "startValue": 65,
                             "type": 4,
                             "title": "base_temp",
@@ -93,7 +109,9 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["mode"],
+                        "cmd": [
+                          "mode"
+                        ],
                         "title": "schedule_ac_sleep",
                         "value": 4,
                         "identity": "sleep"
@@ -101,7 +119,9 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["mode"],
+                        "cmd": [
+                          "mode"
+                        ],
                         "title": "schedule_ac_eco",
                         "value": 5,
                         "subItems": [
@@ -111,7 +131,9 @@
                             "valueType": 1,
                             "groupId": 0,
                             "isSelected": false,
-                            "cmd": ["templevel"],
+                            "cmd": [
+                              "templevel"
+                            ],
                             "startValue": 76,
                             "type": 4,
                             "title": "base_temp",
@@ -133,28 +155,36 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_1",
                         "value": 1
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_2",
                         "value": 2
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_3",
                         "value": 3
                       },
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_auto",
                         "value": 4
                       }
@@ -183,7 +213,9 @@
                     "valueType": 1,
                     "groupId": 0,
                     "isSelected": false,
-                    "cmd": ["rhlevel"],
+                    "cmd": [
+                      "rhlevel"
+                    ],
                     "startValue": 30,
                     "type": 0,
                     "title": "home_humidity",
@@ -201,28 +233,36 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_1",
                         "value": 1
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_2",
                         "value": 2
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_3",
                         "value": 3
                       },
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_auto",
                         "value": 4
                       }
@@ -254,28 +294,36 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_1",
                         "value": 1
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_2",
                         "value": 2
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_3",
                         "value": 3
                       },
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_auto",
                         "value": 4
                       }
@@ -285,7 +333,12 @@
                 "valueType": 1,
                 "icon": "ic_cool_mode",
                 "isSelected": false,
-                "attention": ["mode", "windlevel", "poweron", "oscmode"],
+                "attention": [
+                  "mode",
+                  "windlevel",
+                  "poweron",
+                  "oscmode"
+                ],
                 "cmd": "mode",
                 "title": "base_fan",
                 "value": 3
