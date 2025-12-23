@@ -49,7 +49,6 @@ def test_with_login():
     dreo.login()
     
     print(f"Token from login: {dreo.token}")
-    print(f"Cloud client authenticated: {dreo._cloud_client.is_authenticated}")
     
     dreo.load_devices()
     

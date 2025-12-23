@@ -74,19 +74,28 @@ jobs:
         zip -r ../dreo-v${{ github.event.inputs.version }}.zip dreo/
         cd ..
     
+    - name: Extract release notes from CHANGELOG
+      id: changelog
+      run: |
+        VERSION="${{ github.event.inputs.version }}"
+        # Extract the section for this version from CHANGELOG.md
+        if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+          sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' > release_notes.md
+          echo "found=true" >> $GITHUB_OUTPUT
+        else
+          echo "⚠️ No changelog entry found for version $VERSION" > release_notes.md
+          echo "Please update CHANGELOG.md before releasing." >> release_notes.md
+          echo "" >> release_notes.md
+          echo "See the [README](https://github.com/${{ github.repository }}/blob/v$VERSION/README.md) for documentation." >> release_notes.md
+          echo "found=false" >> $GITHUB_OUTPUT
+        fi
+    
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.event.inputs.version }}
         name: Release v${{ github.event.inputs.version }}
-        body: |
-          ## Release v${{ github.event.inputs.version }}
-          
-          ### Changes
-          This release includes updates to the Dreo Smart Device Integration for Home Assistant.
-          For HACS users, this release will be automatically available through HACS.
-          
-          See the [README](https://github.com/${{ github.repository }}/blob/v${{ github.event.inputs.version }}/README.md) for full documentation.
+        body_path: release_notes.md
         files: |
           dreo-v${{ github.event.inputs.version }}.zip
         draft: true
