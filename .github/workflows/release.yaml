@@ -3,10 +3,15 @@ name: Release Automation
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to release (e.g., 1.4.0)'
+      bump_type:
+        description: 'Version bump type'
         required: true
-        default: '1.4.0'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
 
 permissions:
   contents: write
@@ -42,32 +47,36 @@ jobs:
       run: |
         # Extract current version from manifest.json
         CURRENT_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
-        TARGET_VERSION="${{ github.event.inputs.version }}"
+        BUMP_TYPE="${{ github.event.inputs.bump_type }}"
         
         echo "Current version: $CURRENT_VERSION"
-        echo "Target version: $TARGET_VERSION"
+        echo "Bump type: $BUMP_TYPE"
         
-        # Only bump if versions are different
-        if [ "$CURRENT_VERSION" != "$TARGET_VERSION" ]; then
-          echo "Bumping version to $TARGET_VERSION"
-          bump2version --new-version "$TARGET_VERSION" patch
-          echo "bumped=true" >> $GITHUB_OUTPUT
-        else
-          echo "Version is already at $TARGET_VERSION, skipping bump"
-          echo "bumped=false" >> $GITHUB_OUTPUT
-        fi
+        # Bump the version using bump2version
+        bump2version --current-version "$CURRENT_VERSION" "$BUMP_TYPE"
+        
+        # Get the new version
+        NEW_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
+        echo "New version: $NEW_VERSION"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
     
     - name: Push version bump
-      if: steps.bump.outputs.bumped == 'true'
       run: |
         # Push the commit and tag created by bump2version
         git push origin HEAD:${{ github.ref_name }}
         git push origin --tags
     
+    - name: Create release artifact
+      run: |
+        # Create a zip file of the custom component
+        cd custom_components
+        zip -r ../dreo-v${{ steps.bump.outputs.version }}.zip dreo/
+        cd ..
+    
     - name: Extract release notes from CHANGELOG
       id: changelog
       run: |
-        VERSION="${{ github.event.inputs.version }}"
+        VERSION="${{ steps.bump.outputs.version }}"
         # Extract the section for this version from CHANGELOG.md
         if grep -q "## \[$VERSION\]" CHANGELOG.md; then
           sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' > release_notes.md
@@ -83,10 +92,10 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ github.event.inputs.version }}
-        name: Release v${{ github.event.inputs.version }}
+        tag_name: v${{ steps.bump.outputs.version }}
+        name: Release v${{ steps.bump.outputs.version }}
         body_path: release_notes.md
         files: |
-          dreo-v${{ github.event.inputs.version }}.zip
+          dreo-v${{ steps.bump.outputs.version }}.zip
         draft: true
         prerelease: false
