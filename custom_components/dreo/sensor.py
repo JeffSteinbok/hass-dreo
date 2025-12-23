@@ -72,7 +72,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
         value_fn=lambda device: device.temperature,
-        exists_fn=lambda device: (not device.type in { DreoDeviceType.HEATER, DreoDeviceType.AIR_CONDITIONER }) and device.is_feature_supported("temperature"),
+        exists_fn=lambda device: device.is_feature_supported("temperature"),
     ),
     DreoSensorEntityDescription(
         key="Humidity",
@@ -81,7 +81,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "%",
         value_fn=lambda device: device.humidity,
-        exists_fn=lambda device:  (not device.type in { DreoDeviceType.HEATER, DreoDeviceType.AIR_CONDITIONER }) and device.is_feature_supported("humidity"),
+        exists_fn=lambda device:  device.is_feature_supported("humidity"),
     ),
     DreoSensorEntityDescription(
         key="Target Humidity",
