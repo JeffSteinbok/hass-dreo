@@ -118,7 +118,8 @@ The integration includes a special debug mode for testing without live devices:
 - Located in `debug_test_mode.py` and `const_debug_test_mode.py`
 - **DO NOT enable in production code** (causes unit test failures)
 - Uses JSON files from `custom_components/dreo/e2e_test_data/`
-- See `contributing.md` for usage instructions
+- To enable: Uncomment `DEBUG_TEST_MODE = True` in `custom_components/dreo/const.py`
+- See `contributing.md` for detailed usage instructions and configuration
 
 ## Common Tasks
 
@@ -126,11 +127,11 @@ The integration includes a special debug mode for testing without live devices:
 
 1. Obtain device JSON from user (via diagnostics or debug logs)
 2. Identify device type and capabilities
-3. Add device model mapping in `pydreo/models.py` (or equivalent)
+3. Add device model mapping in the PyDreo library (check existing device files in `custom_components/dreo/pydreo/` for the appropriate location)
 4. Create/update device class if needed
-5. Add test JSON to `e2e_test_data/`
-6. Write integration test
-7. Update README.md
+5. Add test JSON to `custom_components/dreo/e2e_test_data/`
+6. Write integration test in `tests/dreo/integrationtests/`
+7. Update README.md with the new supported model
 
 ### Fixing a Bug
 
