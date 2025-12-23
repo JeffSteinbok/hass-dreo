@@ -260,7 +260,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH010S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         device_ranges={
-            HEAT_RANGE: (1, 3), 
+            HEAT_RANGE: (1, 3),
             ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_HOTAIR,

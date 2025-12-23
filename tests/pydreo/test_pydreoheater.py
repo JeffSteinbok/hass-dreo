@@ -48,7 +48,7 @@ class TestPyDreoHeater(TestBase):
             heater.poweron = True
             mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
 
-        with (patch(PATCH_SEND_COMMAND) as mock_send_command):
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.htalevel = 2
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 2})], True)
 
