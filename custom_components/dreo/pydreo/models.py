@@ -247,7 +247,7 @@ SUPPORTED_DEVICES = {
     "DR-HSH034S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         device_ranges={
-            HEAT_RANGE: (1, 5), 
+            HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
             HEATER_MODE_COOLAIR,
@@ -255,7 +255,12 @@ SUPPORTED_DEVICES = {
             HEATER_MODE_ECO,
             HEATER_MODE_OFF,
         ],
-        swing_modes=[SWING_OFF, SWING_ON]
+        swing_modes=[
+            HeaterOscillationAngles.OSC,
+            HeaterOscillationAngles.SIXTY,
+            HeaterOscillationAngles.NINETY,
+            HeaterOscillationAngles.ONE_TWENTY,
+        ],
     ),
     "DR-HSH010S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
@@ -270,6 +275,24 @@ SUPPORTED_DEVICES = {
         ],
     ),
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
+    "WH714S": DreoDeviceDetails(
+        device_type=DreoDeviceType.HEATER,
+        device_ranges={
+            HEAT_RANGE: (1, 3), 
+            ECOLEVEL_RANGE: (41, 95)},
+        hvac_modes=[
+            HEATER_MODE_COOLAIR,
+            HEATER_MODE_HOTAIR,
+            HEATER_MODE_ECO,
+            HEATER_MODE_OFF,
+        ],
+        swing_modes=[
+            HeaterOscillationAngles.OSC,
+            HeaterOscillationAngles.SIXTY,
+            HeaterOscillationAngles.NINETY,
+            HeaterOscillationAngles.ONE_TWENTY,
+        ],
+    ),
     "WH719S": DreoDeviceDetails(
         device_type=DreoDeviceType.HEATER,
         device_ranges={
