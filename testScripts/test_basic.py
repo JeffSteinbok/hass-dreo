@@ -16,7 +16,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from custom_components.dreo.pydreo import PyStoneboxDreo
+from custom_components.dreo.pydreo import PyDreo
 
 # Import credentials from secrets directory
 # Add secrets directory to path
@@ -44,7 +44,7 @@ def test_with_login():
     print("Testing with username/password (requires login)")
     print("="*60)
     
-    dreo = PyStoneboxDreo(username=USERNAME, password=PASSWORD)
+    dreo = PyDreo(username=USERNAME, password=PASSWORD)
     dreo.redact = False
     dreo.login()
     
