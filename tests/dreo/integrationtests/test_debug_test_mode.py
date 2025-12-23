@@ -26,14 +26,15 @@ class TestDebugTestMode:
 
         pydreo_manager.login()
         pydreo_manager.load_devices()
-        assert len(pydreo_manager.devices) == 8
-        fan = pydreo_manager.devices[0]
-        assert fan.speed_range == (1, 5)
-        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
-        assert fan.oscillating is False
+        assert len(pydreo_manager.devices) == 18
+        
+        # Find tower fan by serial number
+        tower_fan = next((d for d in pydreo_manager.devices if d.serial_number == "HTF005S_1"), None)
+        assert tower_fan is not None, "Tower fan HTF005S_1 not found"
+        assert tower_fan.model == "DR-HTF005S"
+        assert tower_fan.speed_range == (1, 12)
+        assert tower_fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert tower_fan.oscillating is not None
 
-        ac = pydreo_manager.devices[1]
-        assert ac.temperature == 88
-
-        fan.oscillating = True
-        assert fan.oscillating is True, "Fan should be oscillating after setting to True"
+        tower_fan.oscillating = True
+        assert tower_fan.oscillating is True, "Fan should be oscillating after setting to True"

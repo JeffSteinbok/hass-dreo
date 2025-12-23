@@ -1,0 +1,164 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+    "mixed": {
+        "wifi_rssi": {
+        "state": -12,
+        "timestamp": 1757079987
+        },
+        "poweron": {
+        "state": true,
+        "timestamp": 1757111411
+        },
+        "hwfpangle": {
+        "state": 0,
+        "timestamp": 1757079987
+        },
+        "scheid": {
+        "state": 0,
+        "timestamp": 1757079987
+        },
+        "cruiseconf": {
+        "state": "50,60,0,0",
+        "timestamp": 1757112278
+        },
+        "timeron": {
+        "state": {
+            "du": 0,
+            "ts": 1755913497
+        },
+        "timestamp": null
+        },
+        "fixedconf": {
+        "state": "0,0",
+        "timestamp": 1757112161
+        },
+        "hwfpon": {
+        "state": false,
+        "timestamp": 1757079987
+        },
+        "scheon": {
+        "state": false,
+        "timestamp": 1757079987
+        },
+        "mcuon": {
+        "state": true,
+        "timestamp": 1757079987
+        },
+        "mode": {
+        "state": 1,
+        "timestamp": 1757079987
+        },
+        "lightmode": {
+        "state": 2,
+        "timestamp": 1757079987
+        },
+        "network_latency": {
+        "state": 7,
+        "timestamp": 1757079987
+        },
+        "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1757079987
+        },
+        "mcu_firmware_version": {
+        "state": "1.73.30",
+        "timestamp": 1757079987
+        },
+        "batmcolor": {
+        "state": 36728,
+        "timestamp": 1757079987
+        },
+        "customconf": {
+        "state": "temp:23333334444446666668888889",
+        "timestamp": 1757079987
+        },
+        "oscmode": {
+        "state": 1,
+        "timestamp": 1757112210
+        },
+        "temperature": {
+        "state": 74,
+        "timestamp": 1757107975
+        },
+        "hbodyarea": {
+        "state": "0",
+        "timestamp": 1757112561
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "alignon": {
+        "state": true,
+        "timestamp": 1757079987
+        },
+        "muteon": {
+        "state": true,
+        "timestamp": 1757079987
+        },
+        "hbodycnt": {
+        "state": 0,
+        "timestamp": 1757112558
+        },
+        "wlbd": {
+        "state": false,
+        "timestamp": 1757079987
+        },
+        "mcu_hardware_model": {
+        "state": "SC95F8763/US",
+        "timestamp": 1757079987
+        },
+        "wifi_ssid": "**REDACTED**",
+        "windlevel": {
+        "state": 9,
+        "timestamp": 1757079987
+        },
+        "locatemeon": {
+        "state": false,
+        "timestamp": 1757079987
+        },
+        "module_firmware_version": {
+        "state": "3.7.7",
+        "timestamp": 1757079987
+        },
+        "wrong": {
+        "state": 0,
+        "timestamp": 1757079987
+        },
+        "connected": {
+        "state": true,
+        "timestamp": 1757079987
+        },
+        "timeroff": {
+        "state": {
+            "du": 0,
+            "ts": 1755913497
+        },
+        "timestamp": null
+        },
+        "_ota": {
+        "state": 0,
+        "timestamp": 1757079987
+        },
+        "fsbhbs": {
+        "state": false,
+        "timestamp": 1757079987
+        },
+        "childlockon": {
+        "state": false,
+        "timestamp": 1757079987
+        },
+        "tempoffset": {
+        "state": 0,
+        "timestamp": 1757079987
+        },
+        "fatmcolor": {
+        "state": 255,
+        "timestamp": 1757079987
+        }
+    },
+    "sn": "**REDACTED**",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+    }
+}
