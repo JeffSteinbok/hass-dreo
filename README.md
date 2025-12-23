@@ -85,6 +85,7 @@ Models that have been specifically tested can be found below.
 *Initial beta-level support*
 
 - DR-HDH001S
+- DR-HDH002S
 
 ### Space Heaters
 
