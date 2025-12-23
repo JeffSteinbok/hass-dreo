@@ -4,6 +4,8 @@ import json
 
 from .defaults import Defaults
 
+API_REPONSE_BASE_PATH = Defaults.api_response_base_path
+
 # DEFAULT_BODY = Standard body for new device calls
 # DEFAULT_HEADER = standard header for most calls
 # DEFAULT_HEADER_BYPASS = standard header for most calls api V2
@@ -47,7 +49,7 @@ LOGIN_RET_BODY = (
 
 def get_response_from_file(filename: str) -> json:
     """Get a response from a file."""
-    with open("tests/pydreo/api_responses/" + filename, 'r') as file:
+    with open(API_REPONSE_BASE_PATH + filename, 'r') as file:
         return json.load(file)
 
 def login_call_body(email, password):

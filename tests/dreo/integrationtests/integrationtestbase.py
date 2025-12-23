@@ -16,9 +16,8 @@ PATCH_BASE_PATH = 'custom_components.dreo.pydreo'
 PATCH_SEND_COMMAND = f'{PATCH_BASE_PATH}.PyDreo.send_command'
 PATCH_CALL_DREO_API = f'{PATCH_BASE_PATH}.PyDreo.call_dreo_api'
 
-API_REPONSE_BASE_PATH = "tests/dreo/integrationtests/api_responses/"
-
 Defaults = defaults.Defaults
+API_REPONSE_BASE_PATH = Defaults.api_response_base_path
 
 class IntegrationTestBase:
     """Base class for all tests.

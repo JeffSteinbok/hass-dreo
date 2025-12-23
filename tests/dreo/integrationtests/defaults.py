@@ -42,6 +42,7 @@ class Defaults:
     bool_toggle = True
     str_toggle = 'on'
     bin_toggle = 1
+    api_response_base_path = "tests/pydreo/api_responses/"
 
     @staticmethod
     def name(dev_type: str = 'NA'):
