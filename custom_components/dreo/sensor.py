@@ -90,7 +90,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "%",
         value_fn=lambda device: device.target_humidity,
-        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported("target_humidity"),
+        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER, DreoDeviceType.DEHUMIDIFIER }) and device.is_feature_supported("target_humidity"),
     ),
     DreoSensorEntityDescription(
         key="Use since cleaning",
