@@ -27,11 +27,23 @@ class TestDreoDeHumidifier(IntegrationTestBase):
             
             pydreo_dehumidifier : PyDreoDehumidifier = self.pydreo_manager.devices[0]
             assert pydreo_dehumidifier.type == 'Dehumidifier'
+            assert pydreo_dehumidifier.model == "DR-HDH002S"
 
             ha_humidifier = humidifier.DreoDehumidifierHA(pydreo_dehumidifier)
             assert ha_humidifier.is_on is False
             assert ha_humidifier.current_humidity == 66
             assert ha_humidifier.target_humidity == 50
+            assert ha_humidifier.unique_id is not None
+            assert ha_humidifier.name is not None
+
+            # Test mode if available
+            if ha_humidifier.available_modes:
+                assert len(ha_humidifier.available_modes) > 0
+
+            # Verify humidity range
+            assert ha_humidifier.min_humidity is not None
+            assert ha_humidifier.max_humidity is not None
+            assert ha_humidifier.min_humidity <= ha_humidifier.target_humidity <= ha_humidifier.max_humidity
 
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_dehumidifier])

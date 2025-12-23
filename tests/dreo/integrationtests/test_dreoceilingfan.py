@@ -30,10 +30,31 @@ class TestDreoCeilingFan(IntegrationTestBase):
             ha_fan = fan.DreoFanHA(pydreo_fan)
             assert ha_fan.is_on is False
             assert ha_fan.speed_count == 12
+            assert ha_fan.unique_id is not None
+            assert pydreo_fan.model == "DR-HCF001S"
+            assert pydreo_fan.speed_range == (1, 12)
 
+            # Test power commands
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+
+            # Test speed settings
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(25)  # Speed ~3
+                assert mock_send_command.call_count >= 1
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(50)  # Speed ~6
+                assert mock_send_command.call_count >= 1
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(100)  # Speed 12 (max)
+                assert mock_send_command.call_count >= 1
 
             # Check to see what switches are added to ceiling fans
             switches = switch.get_entries([pydreo_fan])
@@ -47,8 +68,19 @@ class TestDreoCeilingFan(IntegrationTestBase):
             self.verify_expected_entities(lights, ["Light"])
             light_switch = self.get_entity_by_key(lights, "Light")
 
+            # Test light control
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 light_switch.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})                 
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                light_switch.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: False})
+
+            # Test brightness if supported
+            if hasattr(light_switch, 'brightness') and light_switch.brightness is not None:
+                with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                    light_switch.turn_on(brightness=128)
+                    assert mock_send_command.call_count >= 1                 
 
         

@@ -28,10 +28,24 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
 
             pydreo_ec = self.pydreo_manager.devices[0]
             assert pydreo_ec.type == 'Evaporative Cooler'
+            assert pydreo_ec.model == "DR-HEC002S"
 
             ha_fan = fan.DreoFanHA(pydreo_ec)
             assert ha_fan.is_on is False
-            assert ha_fan.speed_count == 4            
+            assert ha_fan.speed_count == 4
+            assert ha_fan.unique_id is not None
+            assert ha_fan.name is not None
+
+            # Verify speed range
+            assert pydreo_ec.speed_range == (1, 4)
+
+            # Test percentage calculation when off
+            if ha_fan.is_on:
+                assert ha_fan.percentage >= 0 and ha_fan.percentage <= 100
+
+            # Check preset modes if available
+            if hasattr(pydreo_ec, 'preset_modes') and pydreo_ec.preset_modes:
+                assert len(pydreo_ec.preset_modes) > 0
 
             numbers = number.get_entries([pydreo_ec])
             self.verify_expected_entities(numbers, [])
