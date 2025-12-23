@@ -131,7 +131,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         options=[WATER_LEVEL_OK, WATER_LEVEL_EMPTY],
         value_fn=lambda device: device.wrong,
-        exists_fn=lambda device: device.is_feature_supported(WATER_LEVEL_STATUS_KEY),
+        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(WATER_LEVEL_STATUS_KEY),
     ),
     DreoSensorEntityDescription(
         key="Ambient Light Humidifier",
