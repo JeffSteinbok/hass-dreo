@@ -114,6 +114,7 @@ from homeassistant.const import (
     PRECISION_WHOLE,
     STATE_OFF,
     STATE_ON,
-    UnitOfTemperature)
+    UnitOfTemperature,
+    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER)
 
 from homeassistant.helpers import entity_platform
