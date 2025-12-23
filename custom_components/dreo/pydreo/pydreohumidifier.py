@@ -1,5 +1,6 @@
 """Dreo API for controlling Humidifiers."""
 
+# Trigger CI checks
 import logging
 from typing import TYPE_CHECKING, Dict
 
