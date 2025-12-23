@@ -38,17 +38,64 @@ class TestDreoHumidifier(TestDeviceBase):
                 serial_number="123456",
                 features= { "is_on" : True,
                             "mode" : "sleep",
-                            "modes" : ['manual', 'auto', 'sleep']})
+                            "modes" : ['manual', 'auto', 'sleep'],
+                            "humidity" : 55,
+                            "target_humidity" : 60})
             
             test_humidifier = humidifier.DreoHumidifierHA(mocked_pydreo_humidifier)
             assert test_humidifier.is_on is True
             assert test_humidifier.available_modes == [ "manual", "auto", "sleep" ]
+            assert test_humidifier.mode == "sleep"
+            assert test_humidifier.name == "Test Humidifier"
+            assert test_humidifier.unique_id == "123456-humidifier"
             
+            # Test all mode changes
             test_humidifier.set_mode("auto")
             assert mocked_pydreo_humidifier.mode == "auto"
+            
+            test_humidifier.set_mode("manual")
+            assert mocked_pydreo_humidifier.mode == "manual"
+            
+            test_humidifier.set_mode("sleep")
+            assert mocked_pydreo_humidifier.mode == "sleep"
+            
+            # Test turn on/off
+            test_humidifier.turn_off()
+            assert mocked_pydreo_humidifier.is_on is False
+            
+            test_humidifier.turn_on()
+            assert mocked_pydreo_humidifier.is_on is True
+            
+            # Test humidity levels if supported
+            if hasattr(mocked_pydreo_humidifier, 'target_humidity'):
+                test_humidifier.set_humidity(65)
+                assert mocked_pydreo_humidifier.target_humidity == 65
 
             # Check to see what switches are added to ceiling Humidifiers
             self.verify_expected_entities(switch.get_entries([mocked_pydreo_humidifier]), [])
 
             # Check to see what numbers are added to ceiling Humidifiers
             self.verify_expected_entities(number.get_entries([mocked_pydreo_humidifier]), [])
+
+    def test_dehumidifier_simple(self):
+        """Test the creation of the dehumidifier entity."""
+        with patch(PATCH_UPDATE_HA_STATE):
+
+            mocked_pydreo_dehumidifier : PyDreoDeviceMock = self.create_mock_device( 
+                name="Test Dehumidifier", 
+                serial_number="DEHUM123",
+                type="Dehumidifier",
+                features= { "is_on" : False,
+                            "mode" : "auto",
+                            "modes" : ['auto', 'manual'],
+                            "humidity" : 65,
+                            "target_humidity" : 50})
+            
+            test_dehumidifier = humidifier.DreoHumidifierHA(mocked_pydreo_dehumidifier)
+            assert test_dehumidifier.is_on is False
+            assert test_dehumidifier.available_modes == [ "auto", "manual" ]
+            assert test_dehumidifier.mode == "auto"
+            
+            # Test mode switching
+            test_dehumidifier.set_mode("manual")
+            assert mocked_pydreo_dehumidifier.mode == "manual"
