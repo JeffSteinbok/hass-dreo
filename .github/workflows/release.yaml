@@ -66,29 +66,10 @@ jobs:
         git push origin HEAD:${{ github.ref_name }}
         git push origin --tags
     
-    - name: Extract release notes from CHANGELOG
-      id: changelog
-      run: |
-        VERSION="${{ steps.bump.outputs.version }}"
-        # Extract the section for this version from CHANGELOG.md
-        if grep -q "## \[$VERSION\]" CHANGELOG.md; then
-          sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' > release_notes.md
-          echo "found=true" >> $GITHUB_OUTPUT
-        else
-          echo "⚠️ No changelog entry found for version $VERSION" > release_notes.md
-          echo "Please update CHANGELOG.md before releasing." >> release_notes.md
-          echo "" >> release_notes.md
-          echo "See the [README](https://github.com/${{ github.repository }}/blob/v$VERSION/README.md) for documentation." >> release_notes.md
-          echo "found=false" >> $GITHUB_OUTPUT
-        fi
-    
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ steps.bump.outputs.version }}
         name: Release v${{ steps.bump.outputs.version }}
-        body_path: release_notes.md
-        files: |
-          dreo-v${{ steps.bump.outputs.version }}.zip
         draft: true
         prerelease: false
