@@ -2,7 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
-[![PyTest](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/pytest.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/pytest.yaml)
+[![CI Validation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml)
 [![Release Automation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml)
 
 
