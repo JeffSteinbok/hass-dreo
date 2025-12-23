@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   test:
-    name: Test with PyTest and PyLint 3.13
+    name: PyTest and PyLint
     runs-on: ubuntu-latest
 
     steps:
