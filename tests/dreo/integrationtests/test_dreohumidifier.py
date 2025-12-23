@@ -4,6 +4,7 @@ import logging
 from unittest.mock import patch
 from custom_components.dreo import number
 from custom_components.dreo import humidifier
+from custom_components.dreo import sensor
 
 from  .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
@@ -46,5 +47,18 @@ class TestDreoHumidifier(IntegrationTestBase):
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(numbers, [])
+
+            # Check to see what sensors are added - should include Target Humidity
+            sensors = sensor.get_entries([pydreo_humidifier])
+            
+            # Find the Target Humidity sensor
+            target_humidity_sensor = None
+            for s in sensors:
+                if s.entity_description.key == "Target Humidity":
+                    target_humidity_sensor = s
+                    break
+            
+            assert target_humidity_sensor is not None, "Target Humidity sensor should exist"
+            assert target_humidity_sensor.native_value == 60, "Target Humidity sensor value should be 60"
 
         
