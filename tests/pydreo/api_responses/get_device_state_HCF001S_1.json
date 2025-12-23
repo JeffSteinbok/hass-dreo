@@ -59,7 +59,7 @@
                 "timestamp": 1724882948
             },
             "wifi_ssid": {
-                "wifi_ssid": "**REDACTED**",
+                "state": "connected_1",
                 "timestamp": 1721672047
             },
             "mcu_hardware_model": {
