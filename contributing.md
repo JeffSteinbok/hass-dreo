@@ -44,6 +44,17 @@ Make sure you have Debug logging enabled as well so you can confirm your files a
 
 Simply edit the necessary files, and copy them over to your HA server and you're good to go.
 
+### Deploying to Home Assistant Server (macOS)
+To sync Python files from your local development machine to your Home Assistant server via SMB share on macOS:
+
+```bash
+rsync -rltvz --delete --no-perms --no-owner --inplace \
+  --include='*/' --include='*.py' --exclude='*' \
+  --exclude='__pycache__' --exclude='.*' \
+  custom_components/dreo/ /Volumes/YOUR_SHARE_NAME/custom_components/dreo/
+```
+Replace `/Volumes/YOUR_SHARE_NAME/` with your mounted SMB share path (typically `/Volumes/Config/` for HA config shares).
+
 ## Status Updates
 TODO
 
