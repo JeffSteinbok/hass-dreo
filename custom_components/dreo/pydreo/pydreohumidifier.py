@@ -1,5 +1,6 @@
 """Dreo API for controlling Humidifiers."""
 
+# Trigger CI checks
 import logging
 from typing import TYPE_CHECKING, Dict
 
@@ -156,6 +157,11 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         return self._wrong
 
     @property
+    def water_level(self):
+        """Return the water level status"""
+        return self._wrong
+
+    @property
     def worktime(self):
         """Return the working time (used since cleaning)"""
         return self._worktime
@@ -230,4 +236,14 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
         val_mute_on = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_mute_on, bool):
-            self._mute_on = val_mute_on      
+            self._mute_on = val_mute_on
+
+        val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
+        if isinstance(val_humidity, int):
+            self._humidity = val_humidity
+            _LOGGER.debug("PyDreoHumidifier:handle_server_update - humidity is %s", self._humidity)
+
+        val_target_humidity = self.get_server_update_key_value(message, TARGET_AUTO_HUMIDITY_KEY)
+        if isinstance(val_target_humidity, int):
+            self._target_humidity = val_target_humidity
+            _LOGGER.debug("PyDreoHumidifier:handle_server_update - target_humidity is %s", self._target_humidity)
