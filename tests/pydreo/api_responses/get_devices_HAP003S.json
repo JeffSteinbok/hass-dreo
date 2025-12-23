@@ -14,7 +14,7 @@
         "model": "DR-HAP003S",
         "productId": "**REDACTED**",
         "productName": "Air Purifier",
-        "deviceName": "Air Purifier",
+        "deviceName": "DEBUGTEST - Air Purifier - DR-HAP003S",
         "shared": false,
         "series": null,
         "seriesName": "Macro Max S",
@@ -25,23 +25,33 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               },
               {
                 "value": 2,
-                "frame": [4]
+                "frame": [
+                  4
+                ]
               },
               {
                 "value": 3,
-                "frame": [6]
+                "frame": [
+                  6
+                ]
               },
               {
                 "value": 4,
-                "frame": [8]
+                "frame": [
+                  8
+                ]
               }
             ],
             "key": "aq"
@@ -133,25 +143,43 @@
               "items": [
                 {
                   "text": "device_control_mode_auto",
-                  "textColors": ["#D5D6D7", "#333333"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#333333"
+                  ],
                   "image": "ic_auto_wind",
-                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#0A80F5"
+                  ],
                   "cmd": "mode",
                   "value": "auto"
                 },
                 {
                   "text": "device_control_mode_turbo",
-                  "textColors": ["#D5D6D7", "#333333"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#333333"
+                  ],
                   "image": "ic_turbo_wind",
-                  "imageColors": ["#D5D6D7", "#FFAD0A"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#FFAD0A"
+                  ],
                   "cmd": "mode",
                   "value": "turbo"
                 },
                 {
                   "text": "device_control_mode_sleep",
-                  "textColors": ["#D5D6D7", "#333333"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#333333"
+                  ],
                   "image": "ic_sleep_wind",
-                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#6249DF"
+                  ],
                   "cmd": "mode",
                   "value": "sleep"
                 }

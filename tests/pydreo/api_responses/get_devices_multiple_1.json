@@ -15,7 +15,7 @@
         "model": "DR-HTF005S",
         "productId": "NOT REDACTED",
         "productName": "Tower Fan",
-        "deviceName": "Pilot Pro S",
+        "deviceName": "DEBUGTEST - Tower Fan - DR-HTF005S",
         "shared": false,
         "series": null,
         "seriesName": "Pilot Pro S",
@@ -34,11 +34,15 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               }
             ]
           },
@@ -63,7 +67,9 @@
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 7,
                     "valueType": 1,
                     "startValue": 1,
@@ -95,7 +101,9 @@
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 7,
                     "startValue": 1,
                     "endValue": 9,
@@ -125,7 +133,9 @@
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 7,
                     "valueType": 1,
                     "startValue": 1,
@@ -156,7 +166,9 @@
                     "title": "device_control_mode_manual_level",
                     "startColor": "#0051CF",
                     "endColor": "#0051CF",
-                    "cmd": ["windlevel"],
+                    "cmd": [
+                      "windlevel"
+                    ],
                     "value": 7,
                     "valueType": 1,
                     "startValue": 1,
@@ -287,33 +299,57 @@
               "items": [
                 {
                   "text": "device_fans_mode_straight",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_normal_wind",
-                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#25D7E4"
+                  ],
                   "cmd": "windtype",
                   "value": 1
                 },
                 {
                   "text": "device_fans_mode_natural",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_natural_wind",
-                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#2CDD96"
+                  ],
                   "cmd": "windtype",
                   "value": 2
                 },
                 {
                   "text": "device_control_mode_sleep",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_sleep_wind",
-                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#6249DF"
+                  ],
                   "cmd": "windtype",
                   "value": 3
                 },
                 {
                   "text": "device_control_mode_auto",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_auto_wind",
-                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#0A80F5"
+                  ],
                   "cmd": "windtype",
                   "value": 4
                 }
@@ -388,7 +424,7 @@
         "model": "DR-HAC005S",
         "productId": "REDACTED",
         "productName": "Air Conditioner",
-        "deviceName": "Electric AC",
+        "deviceName": "DEBUGTEST - Air Conditioner - DR-HAC005S",
         "shared": false,
         "series": null,
         "seriesName": "AC515S",
@@ -407,27 +443,39 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [3]
+                "frame": [
+                  3
+                ]
               },
               {
                 "value": 2,
-                "frame": [4]
+                "frame": [
+                  4
+                ]
               },
               {
                 "value": 3,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               },
               {
                 "value": 4,
-                "frame": [3]
+                "frame": [
+                  3
+                ]
               },
               {
                 "value": 5,
-                "frame": [3]
+                "frame": [
+                  3
+                ]
               }
             ]
           },
@@ -443,7 +491,9 @@
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["mode"],
+                        "cmd": [
+                          "mode"
+                        ],
                         "title": "schedule_ac_cool",
                         "value": 1,
                         "subItems": [
@@ -453,7 +503,9 @@
                             "valueType": 1,
                             "groupId": 0,
                             "isSelected": false,
-                            "cmd": ["templevel"],
+                            "cmd": [
+                              "templevel"
+                            ],
                             "startValue": 65,
                             "type": 4,
                             "title": "base_temp",
@@ -466,7 +518,9 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["mode"],
+                        "cmd": [
+                          "mode"
+                        ],
                         "title": "schedule_ac_sleep",
                         "value": 4,
                         "identity": "sleep"
@@ -474,7 +528,9 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["mode"],
+                        "cmd": [
+                          "mode"
+                        ],
                         "title": "schedule_ac_eco",
                         "value": 5,
                         "subItems": [
@@ -484,7 +540,9 @@
                             "valueType": 1,
                             "groupId": 0,
                             "isSelected": false,
-                            "cmd": ["templevel"],
+                            "cmd": [
+                              "templevel"
+                            ],
                             "startValue": 76,
                             "type": 4,
                             "title": "base_temp",
@@ -506,28 +564,36 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_1",
                         "value": 1
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_2",
                         "value": 2
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_3",
                         "value": 3
                       },
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_auto",
                         "value": 4
                       }
@@ -556,7 +622,9 @@
                     "valueType": 1,
                     "groupId": 0,
                     "isSelected": false,
-                    "cmd": ["rhlevel"],
+                    "cmd": [
+                      "rhlevel"
+                    ],
                     "startValue": 30,
                     "type": 0,
                     "title": "home_humidity",
@@ -574,28 +642,36 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_1",
                         "value": 1
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_2",
                         "value": 2
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_3",
                         "value": 3
                       },
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_auto",
                         "value": 4
                       }
@@ -627,28 +703,36 @@
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_1",
                         "value": 1
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_2",
                         "value": 2
                       },
                       {
                         "valueType": 1,
                         "isSelected": false,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_3",
                         "value": 3
                       },
                       {
                         "valueType": 1,
                         "isSelected": true,
-                        "cmd": ["windlevel"],
+                        "cmd": [
+                          "windlevel"
+                        ],
                         "title": "base_auto",
                         "value": 4
                       }
@@ -658,7 +742,12 @@
                 "valueType": 1,
                 "icon": "ic_cool_mode",
                 "isSelected": false,
-                "attention": ["mode", "windlevel", "poweron", "oscmode"],
+                "attention": [
+                  "mode",
+                  "windlevel",
+                  "poweron",
+                  "oscmode"
+                ],
                 "cmd": "mode",
                 "title": "base_fan",
                 "value": 3
@@ -842,7 +931,7 @@
             "lang": "en"
           }
         ]
-      }      
+      }
     ]
   }
 }

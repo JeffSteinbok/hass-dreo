@@ -4,162 +4,157 @@
   "data": {
     "mixed": {
       "lightsenon": {
-        "state": false,
-        "timestamp": 1701375992
+        "state": true,
+        "timestamp": 1758415884
       },
       "wifi_rssi": {
-        "state": -34,
-        "timestamp": 1701375992
+        "state": -52,
+        "timestamp": 1758415884
       },
       "poweron": {
-        "state": false,
-        "timestamp": 1701378950
+        "state": true,
+        "timestamp": 1758512621
       },
       "scheid": {
         "state": 0,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "timeron": {
         "state": {
           "du": 0,
-          "ts": 0
+          "ts": 1756499266
         },
         "timestamp": null
       },
       "scheon": {
         "state": false,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "mode": {
-        "state": "coolair",
-        "timestamp": 1701377096
+        "state": "hotair",
+        "timestamp": 1758509774
       },
       "mcuon": {
         "state": true,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "network_latency": {
-        "state": 176,
-        "timestamp": 1701375992
+        "state": 59,
+        "timestamp": 1758415884
       },
       "module_hardware_model": {
         "state": "HeFi",
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "mcu_firmware_version": {
-        "state": "1.0.72",
-        "timestamp": 1701375992
+        "state": "1.0.80",
+        "timestamp": 1758415884
       },
       "otp_in_plug": {
         "state": false,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "cooldown": {
         "state": 0,
-        "timestamp": 1701375992
+        "timestamp": 1758512651
       },
       "temperature": {
-        "state": 71,
-        "timestamp": 1701556399
+        "state": 68,
+        "timestamp": 1758756955
       },
       "winopened": {
         "state": 0,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "frostproton": {
         "state": false,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "winopenon": {
-        "state": true,
-        "timestamp": 1701375992
-      },
-      "module_hardware_mac": {
-        "state": "redacted",
-        "timestamp": 1701375992
-      },
-      "ptcon": {
         "state": false,
-        "timestamp": 1701377096
+        "timestamp": 1758415884
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "ptcon": {
+        "state": true,
+        "timestamp": 1734236105
       },
       "muteon": {
         "state": true,
-        "timestamp": 1701556303
+        "timestamp": 1758415884
       },
       "mcu_hardware_model": {
         "state": "SC95F8613B",
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
-      "wifi_ssid": {
-        "state": "redacted",
-        "timestamp": 1701375335
-      },
+      "wifi_ssid": "**REDACTED**",
       "tempunit": {
         "state": 1,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "frostprotwk": {
         "state": false,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "wrong": {
         "state": 0,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "module_firmware_version": {
-        "state": "2.0.1",
-        "timestamp": 1701375992
+        "state": "3.7.15",
+        "timestamp": 1758415884
       },
       "connected": {
         "state": true,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "timeroff": {
         "state": {
           "du": 0,
-          "ts": 0
+          "ts": 1756499266
         },
         "timestamp": null
       },
       "_ota": {
-        "state": 0,
-        "timestamp": 1701375992
+        "state": 2,
+        "timestamp": 1758415884
       },
       "ledkepton": {
-        "state": false,
-        "timestamp": 1701375992
+        "state": true,
+        "timestamp": 1758415884
       },
       "ecolevel": {
-        "state": 73,
-        "timestamp": 1701375992
+        "state": 95,
+        "timestamp": 1758415884
       },
       "frostprottemp": {
         "state": 45,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "childlockon": {
         "state": false,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       },
       "htalevel": {
-        "state": 1,
-        "timestamp": 1701375992
+        "state": 3,
+        "timestamp": 1758415884
       },
       "dispmode": {
-        "state": "temp",
-        "timestamp": 1701375992
+        "state": "level",
+        "timestamp": 1758415884
       },
       "oscangle": {
-        "state": 0,
-        "timestamp": 1701375992
+        "state": 120,
+        "timestamp": 1758415884
       },
       "tempoffset": {
         "state": 0,
-        "timestamp": 1701375992
+        "timestamp": 1758415884
       }
     },
     "sn": "HSH009S_1",
-    "productId": "1643940769442639873",
-    "region": "us-east-2"
+    "productId": "**REDACTED**",
+    "region": "us-east-2",
+    "deviceInfo": null
   }
 }

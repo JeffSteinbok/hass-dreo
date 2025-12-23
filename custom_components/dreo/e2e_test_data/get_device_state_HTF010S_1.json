@@ -1,0 +1,144 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {
+                "state": -55,
+                "timestamp": 1743285953
+            },
+            "poweron": {
+                "state": false,
+                "timestamp": 1743285953
+            },
+            "lifetime": {
+                "state": 29,
+                "timestamp": 1743285953
+            },
+            "scheid": {
+                "state": 0,
+                "timestamp": 1743285953
+            },
+            "hoscangle": {
+                "state": "0,0",
+                "timestamp": 1743285953
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 1743285952
+                },
+                "timestamp": null
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1743285953
+            },
+            "oscon": {
+                "state": true,
+                "timestamp": 1743285953
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1743285953
+            },
+            "mode": {
+                "state": 1,
+                "timestamp": 1743285953
+            },
+            "lightmode": {
+                "state": 2,
+                "timestamp": 1743285953
+            },
+            "network_latency": {
+                "state": 11,
+                "timestamp": 1743285953
+            },
+            "module_hardware_model": {
+                "state": "HeFi",
+                "timestamp": 1743285953
+            },
+            "mcu_firmware_version": {
+                "state": "0.2.6",
+                "timestamp": 1743285953
+            },
+            "temperature": {
+                "state": 79,
+                "timestamp": 1743285957
+            },
+            "module_hardware_mac": "**REDACTED**",
+            "hoscreset": {
+                "state": false,
+                "timestamp": 1743285953
+            },
+            "alignon": {
+                "state": false,
+                "timestamp": 1743285953
+            },
+            "purifylevel": {
+                "state": 0,
+                "timestamp": 1743285953
+            },
+            "muteon": {
+                "state": false,
+                "timestamp": 1743285953
+            },
+            "mcu_hardware_model": {
+                "state": "midea",
+                "timestamp": 1743285953
+            },
+            "wifi_ssid": "**REDACTED**",
+            "windlevel": {
+                "state": 6,
+                "timestamp": 1743285953
+            },
+            "tempunit": {
+                "state": 1,
+                "timestamp": 1743285953
+            },
+            "hangleadj": {
+                "state": -60,
+                "timestamp": 1743285953
+            },
+            "module_firmware_version": {
+                "state": "3.4.4",
+                "timestamp": 1743285953
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1743285953
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1743285953
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 1743285952
+                },
+                "timestamp": null
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1743285953
+            },
+            "pm25": {
+                "state": 1,
+                "timestamp": 1743285957
+            },
+            "childlockon": {
+                "state": false,
+                "timestamp": 1743285953
+            },
+            "dispmode": {
+                "state": 3,
+                "timestamp": 1743285953
+            }
+        },
+        "sn": "HTF010S_1",
+        "productId": "**REDACTED**",
+        "region": "us-east-2/emq",
+        "deviceInfo": null
+    }
+}

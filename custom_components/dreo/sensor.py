@@ -121,7 +121,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         translation_key="pm25",
         device_class=SensorDeviceClass.PM25,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement_fn=lambda device: "%",
+        native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
         value_fn=lambda device: device.pm25,
         exists_fn=lambda device: device.is_feature_supported(PM25_KEY),
     ),

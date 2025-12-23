@@ -57,7 +57,7 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
         seen_device_ids.add(device_id)
 
         # Load a file specific to the serial number
-        device_state : dict = load_test_file(base_dir, serial_number + ".json")
+        device_state : dict = load_test_file(base_dir, "get_device_state_" + serial_number + ".json")
         if device_state is None:
             _LOGGER.error("DEBUG_TEST_MODE: Failed to load device state for serial number %s", serial_number)
             continue

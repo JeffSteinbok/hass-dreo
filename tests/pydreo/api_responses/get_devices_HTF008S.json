@@ -14,7 +14,7 @@
         "model": "DR-HTF008S",
         "productId": "**REDACTED**",
         "productName": "Tower Fan",
-        "deviceName": "Main Bedroom Fan",
+        "deviceName": "DEBUGTEST - Tower Fan - DR-HTF008S",
         "shared": false,
         "series": null,
         "seriesName": "Cruiser Pro T3 S",
@@ -25,11 +25,15 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               }
             ]
           },
@@ -84,33 +88,57 @@
               "items": [
                 {
                   "text": "device_fans_mode_straight",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_normal_wind",
-                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#25D7E4"
+                  ],
                   "cmd": "windtype",
                   "value": 1
                 },
                 {
                   "text": "device_fans_mode_natural",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_natural_wind",
-                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#2CDD96"
+                  ],
                   "cmd": "windtype",
                   "value": 2
                 },
                 {
                   "text": "device_control_mode_sleep",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_sleep_wind",
-                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#6249DF"
+                  ],
                   "cmd": "windtype",
                   "value": 3
                 },
                 {
                   "text": "device_control_mode_auto",
-                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#D5D6D7"
+                  ],
                   "image": "ic_auto_wind",
-                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#0A80F5"
+                  ],
                   "cmd": "windtype",
                   "value": 4
                 }

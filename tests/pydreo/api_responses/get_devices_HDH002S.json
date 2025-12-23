@@ -8,14 +8,14 @@
     "totalPage": 1,
     "familyRooms": null,
     "list": [
-    {
+      {
         "deviceId": "1972221935910203393",
         "sn": "HDH002S_1",
         "brand": "Dreo",
         "model": "DR-HDH002S",
         "productId": "**REDACTED**",
         "productName": "Dehumidifier",
-        "deviceName": "Dehumidifier",
+        "deviceName": "DEBUGTEST - Dehumidifier - DR-HDH002S",
         "shared": false,
         "series": null,
         "seriesName": "DH512S",
@@ -33,27 +33,27 @@
         "variantIconMd5": "633ad42b09d8749e0b8818dec593e04dc",
         "controlsConf": {},
         "mainConf": {
-        "isSmart": true,
-        "isWifi": true,
-        "isBluetooth": true,
-        "isVoiceControl": true
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
         },
         "resourcesConf": {
-        "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/63be7e46e5a9741088d0ccf2c9372e765.png",
-        "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/63812e3f16fd94c308745a456ec4276fd.zip",
-        "imageSmallDarkSrc": null,
-        "imageFullDarkSrc": null
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/63be7e46e5a9741088d0ccf2c9372e765.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/63812e3f16fd94c308745a456ec4276fd.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
         },
         "servicesConf": [],
         "userManuals": [
-        {
+          {
             "url": "https://resources.dreo-tech.com/app/preSigned202506/12539e4b3529524f5c99e18200649fcdde.pdf",
             "icon": null,
             "desc": "DR-HDH002S User-Manual V1",
             "lang": "en"
-        }
+          }
         ]
-    }
+      }
     ]
-}
+  }
 }

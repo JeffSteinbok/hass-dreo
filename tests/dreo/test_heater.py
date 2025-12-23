@@ -30,7 +30,8 @@ class TestDreoHeaterHA(TestDeviceBase):
                                                                                         "temperature" : 75,
                                                                                         "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
                                                                                         "htalevel": 2,
-                                                                                        "hvac_mode": HVACMode.OFF,
+                                                                                        "ecolevel": 70,
+                                                                                        "hvac_mode": HEATER_MODE_HOTAIR,  # Use string mode instead of HVACMode enum
                                                                                         "hvac_modes" : [
                                                                                             HEATER_MODE_COOLAIR,
                                                                                             HEATER_MODE_HOTAIR,
@@ -45,3 +46,20 @@ class TestDreoHeaterHA(TestDeviceBase):
         
         test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
         assert test_heater.is_on is True
+        assert test_heater.name == "Heater"  # DreoHeaterHA sets name to "Heater" not device name
+        assert test_heater.unique_id is not None
+        assert test_heater.current_temperature == 75
+        assert test_heater.hvac_mode == HVACMode.HEAT
+        
+        # Test HVAC mode changes
+        test_heater.set_hvac_mode(HVACMode.OFF)
+        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_OFF
+        
+        test_heater.set_hvac_mode(HVACMode.HEAT)
+        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_HOTAIR
+        
+        test_heater.set_hvac_mode(HVACMode.AUTO)
+        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_ECO
+        
+        test_heater.set_hvac_mode(HVACMode.FAN_ONLY)
+        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_COOLAIR

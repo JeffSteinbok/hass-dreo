@@ -15,7 +15,7 @@
         "model": "DR-HCF001S",
         "productId": "**REDACTED**",
         "productName": "Ceiling Fan",
-        "deviceName": "Master Bedroom Ceiling Fan",
+        "deviceName": "DEBUGTEST - Ceiling Fan - DR-HCF001S",
         "shared": false,
         "series": null,
         "seriesName": "CLF521S",
@@ -34,11 +34,15 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               }
             ]
           },
@@ -122,34 +126,58 @@
               "items": [
                 {
                   "text": "base_reverse",
-                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#1D1D1D"
+                  ],
                   "image": "ic_cf_mode_reverse",
-                  "imageColors": ["#D5D6D7", "#FFBB33"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#FFBB33"
+                  ],
                   "cmd": "mode",
                   "value": 4,
                   "toast": "dev_ctrl_reverse_toast"
                 },
                 {
                   "text": "device_fans_mode_straight",
-                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#1D1D1D"
+                  ],
                   "image": "ic_normal_wind",
-                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#25D7E4"
+                  ],
                   "cmd": "mode",
                   "value": 1
                 },
                 {
                   "text": "device_fans_mode_natural",
-                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#1D1D1D"
+                  ],
                   "image": "ic_natural_wind",
-                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#2CDD96"
+                  ],
                   "cmd": "mode",
                   "value": 2
                 },
                 {
                   "text": "device_control_mode_sleep",
-                  "textColors": ["#D5D6D7", "#1D1D1D"],
+                  "textColors": [
+                    "#D5D6D7",
+                    "#1D1D1D"
+                  ],
                   "image": "ic_sleep_wind",
-                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#6249DF"
+                  ],
                   "cmd": "mode",
                   "value": 3
                 }

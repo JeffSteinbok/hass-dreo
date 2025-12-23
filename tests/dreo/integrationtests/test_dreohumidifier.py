@@ -29,11 +29,20 @@ class TestDreoHumidifier(IntegrationTestBase):
             pydreo_humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
             assert pydreo_humidifier.type == 'Humidifier'
             assert pydreo_humidifier.humidity == 47
+            assert pydreo_humidifier.model == "DR-HHM001S"
 
             ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
             assert ha_humidifier.is_on is True
             assert ha_humidifier.current_humidity == 47
             assert ha_humidifier.target_humidity == 60
+            assert ha_humidifier.unique_id is not None
+            assert ha_humidifier.name is not None
+
+            # Test mode if available
+            if ha_humidifier.available_modes:
+                assert len(ha_humidifier.available_modes) > 0
+                current_mode = ha_humidifier.mode
+                assert current_mode is not None or current_mode in ha_humidifier.available_modes
 
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])

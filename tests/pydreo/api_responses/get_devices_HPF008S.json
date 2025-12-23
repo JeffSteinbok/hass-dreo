@@ -15,7 +15,7 @@
         "model": "DR-HPF008S",
         "productId": "**REDACTED**",
         "productName": "Air Circulator",
-        "deviceName": "Living Room Fan",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HPF008S",
         "shared": false,
         "series": null,
         "seriesName": "PF508S",

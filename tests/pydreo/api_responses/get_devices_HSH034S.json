@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1972212506796044290",
+        "sn": "HSH034S_1",
+        "brand": "Dreo",
+        "model": "DR-HSH034S",
+        "productId": "**REDACTED**",
+        "productName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH034S",
+        "shared": false,
+        "series": null,
+        "seriesName": "WH714S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/20318301b260764a74aad8eb1445f4c58b.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/2044b51ce232cd44e39831738d6053b092.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/206863035815c54e87b4a53f5260f27515.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/20e37c1d43a1b1409681b8e1ba77236597.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202506/175b03bb00e1d14561beb4facbe7c2d8ef.pdf",
+            "icon": null,
+            "desc": "DR-HSH034S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}
