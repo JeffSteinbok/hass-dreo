@@ -44,7 +44,7 @@ class TestDreoHumidifier(IntegrationTestBase):
                 current_mode = ha_humidifier.mode
                 assert current_mode is not None or current_mode in ha_humidifier.available_modes
 
-            # Check to see what numbers are added to chef makers
+            # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(numbers, [])
 
@@ -60,5 +60,8 @@ class TestDreoHumidifier(IntegrationTestBase):
             
             assert target_humidity_sensor is not None, "Target Humidity sensor should exist"
             assert target_humidity_sensor.native_value == 60, "Target Humidity sensor value should be 60"
+            # Check to see what sensors are added to humidifiers
+            sensors = sensor.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
         
