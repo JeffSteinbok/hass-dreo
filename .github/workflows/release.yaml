@@ -66,13 +66,6 @@ jobs:
         git push origin HEAD:${{ github.ref_name }}
         git push origin --tags
     
-    - name: Create release artifact
-      run: |
-        # Create a zip file of the custom component
-        cd custom_components
-        zip -r ../dreo-v${{ steps.bump.outputs.version }}.zip dreo/
-        cd ..
-    
     - name: Extract release notes from CHANGELOG
       id: changelog
       run: |
