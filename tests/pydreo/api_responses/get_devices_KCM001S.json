@@ -15,7 +15,7 @@
         "model": "DR-KCM001S",
         "productId": "**REDACTED**",
         "productName": "ChefMaker",
-        "deviceName": "ChefMaker",
+        "deviceName": "DEBUGTEST - ChefMaker - DR-KCM001S",
         "shared": false,
         "series": null,
         "seriesName": "ChefMaker",
@@ -35,11 +35,15 @@
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [2]
+                "frame": [
+                  2
+                ]
               }
             ]
           },
@@ -54,13 +58,17 @@
                         "$gt": "4.5.15"
                       },
                       "mcuModel": {
-                        "$in": ["mcu.rev1"]
+                        "$in": [
+                          "mcu.rev1"
+                        ]
                       },
                       "moduleVer": {
                         "$gte": "1.3.6"
                       },
                       "moduleModel": {
-                        "$in": ["PAI-051"]
+                        "$in": [
+                          "PAI-051"
+                        ]
                       }
                     },
                     {
@@ -68,13 +76,17 @@
                         "$gt": "3.6.15"
                       },
                       "mcuModel": {
-                        "$in": ["mcu-eu"]
+                        "$in": [
+                          "mcu-eu"
+                        ]
                       },
                       "moduleVer": {
                         "$gte": "1.3.6"
                       },
                       "moduleModel": {
-                        "$in": ["PAI-051"]
+                        "$in": [
+                          "PAI-051"
+                        ]
                       }
                     },
                     {
@@ -82,13 +94,17 @@
                         "$gt": "3.5.15"
                       },
                       "mcuModel": {
-                        "$in": ["mcu"]
+                        "$in": [
+                          "mcu"
+                        ]
                       },
                       "moduleVer": {
                         "$gte": "1.3.6"
                       },
                       "moduleModel": {
-                        "$in": ["PAI-051"]
+                        "$in": [
+                          "PAI-051"
+                        ]
                       }
                     }
                   ]

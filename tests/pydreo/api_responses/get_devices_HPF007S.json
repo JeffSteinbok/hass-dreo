@@ -9,16 +9,16 @@
     "familyRooms": null,
     "list": [
       {
-        "deviceId": "1907411808942632961",
-        "sn": "HPF008S_1",
+        "deviceId": "1959069279151255554",
+        "sn": "DR-HPF007S_1",
         "brand": "Dreo",
-        "model": "DR-HPF008S",
+        "model": "DR-HPF007S",
         "productId": "**REDACTED**",
         "productName": "Air Circulator",
-        "deviceName": "Living Room Fan",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HPF007S",
         "shared": false,
         "series": null,
-        "seriesName": "PF508S",
+        "seriesName": "707S",
         "type": 0,
         "owner": true,
         "familyId": null,
@@ -27,12 +27,12 @@
         "roomName": null,
         "roomNameI18Key": "",
         "color": "s",
-        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/18b98b75a4afad403b8cea8739b904eff7.png",
-        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/1879f0f7f030174cbd8820bebe66e9d45a.png",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/4d9876e9d7e8349ac900798e084d99a85.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/41e74e889c19d4a829d99c859e61b9795.png",
         "widgetAbnormalImage": null,
         "variantIconMd5": null,
         "controlsConf": {
-          "template": "DR-HPF008S"
+          "template": "DR-HPF002S"
         },
         "mainConf": {
           "isSmart": true,
@@ -41,16 +41,16 @@
           "isVoiceControl": true
         },
         "resourcesConf": {
-          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202411/18c5af0d6a0be7407994a41ff28115ea87.png",
-          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202411/180627bfc4f18944fd8d89545855a2c991.zip",
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/4067f84773b4b49a3ac9cd321036cb070.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/46c0241b21be04f68bc33f81b9fa367ed.zip",
           "imageSmallDarkSrc": null,
           "imageFullDarkSrc": null
         },
         "userManuals": [
           {
-            "url": "https://resources.dreo-tech.com/app/preSigned202412/6b83fc97752d74c96a6b43ee2051e9e81.pdf",
+            "url": "https://resources.dreo-tech.com/app/preSigned202505/2917d7217e85b44803870a050d2a8c1fb3.pdf",
             "icon": null,
-            "desc": "DR-HPF008S_User-Manual_V1",
+            "desc": "DR-HPF007S User Manual",
             "lang": "en"
           }
         ]

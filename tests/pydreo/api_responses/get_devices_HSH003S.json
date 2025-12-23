@@ -9,16 +9,16 @@
     "familyRooms": null,
     "list": [
       {
-        "deviceId": "1861436909187821569",
-        "sn": "HSH009S_1",
+        "deviceId": "1970329093398933506",
+        "sn": "HSH003S_1",
         "brand": "Dreo",
-        "model": "DR-HSH009S",
+        "model": "DR-HSH003S",
         "productId": "**REDACTED**",
         "productName": "Heater",
-        "deviceName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH003S",
         "shared": false,
         "series": null,
-        "seriesName": "Wall-mounted Heater",
+        "seriesName": "Solaris Slim H3",
         "type": 0,
         "owner": true,
         "familyId": null,
@@ -26,13 +26,13 @@
         "roomId": null,
         "roomName": null,
         "roomNameI18Key": "",
-        "color": "w",
-        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/1315991517d5cf4139a9fee8eb54ec8e3f.png",
-        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/13207dbe0608bf4dc58f5602584ef9c269.png",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/5c1cc00320b7740959cb1ac36cfb3af53.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/506001213fd6f4d74bd431a4b9aa3b845.png",
         "widgetAbnormalImage": null,
         "variantIconMd5": null,
         "controlsConf": {
-          "template": "DR-HSH009S",
+          "template": "DR-HSH004S",
           "lottie": {
             "key": "poweron",
             "frames": [
@@ -45,49 +45,16 @@
               {
                 "value": 1,
                 "frame": [
-                  3
+                  2
                 ]
               }
             ]
           },
+          "instructions": {
+            "en": "https://fe-fat.dreo.com:18005/en/safety-protection-instructions/",
+            "zh": "https://fe-fat.dreo.com:18005/zh/safety-protection-instructions/"
+          },
           "schedule": {
-            "duration": [
-              {
-                "text": "schedule_control_turnoff_never",
-                "desc": "schedule_control_turnoff_never_desc",
-                "time": 0
-              },
-              {
-                "text": "schedule_control_turnoff_30min",
-                "desc": "schedule_control_turnoff_30min_desc",
-                "time": 1800
-              },
-              {
-                "text": "schedule_control_turnoff_1h",
-                "desc": "schedule_control_turnoff_1h_desc",
-                "time": 3600
-              },
-              {
-                "text": "schedule_control_turnoff_2h",
-                "desc": "schedule_control_turnoff_2h_desc",
-                "time": 7200
-              },
-              {
-                "text": "schedule_control_turnoff_4h",
-                "desc": "schedule_control_turnoff_4h_desc",
-                "time": 14400
-              },
-              {
-                "text": "schedule_control_turnoff_6h",
-                "desc": "schedule_control_turnoff_6h_desc",
-                "time": 21600
-              },
-              {
-                "text": "schedule_control_turnoff_8h",
-                "desc": "schedule_control_turnoff_8h_desc",
-                "time": 28800
-              }
-            ],
             "modes": [
               {
                 "icon": "ic_hsh_item_heat",
@@ -100,7 +67,7 @@
                   "mode",
                   "htalevel",
                   "poweron",
-                  "oscangle"
+                  "oscon"
                 ],
                 "controls": [
                   {
@@ -134,7 +101,7 @@
                   "mode",
                   "ecolevel",
                   "poweron",
-                  "oscangle"
+                  "oscon"
                 ],
                 "controls": [
                   {
@@ -165,19 +132,16 @@
                 "attention": [
                   "mode",
                   "poweron",
-                  "oscangle"
+                  "oscon"
                 ],
                 "controls": []
               }
             ]
           },
-          "timer": {
-            "maxHour": 23
-          },
           "cards": [
             {
               "type": 2,
-              "title": "home_temp",
+              "title": "device_control_temp",
               "icon": "",
               "image": "",
               "url": "",
@@ -192,6 +156,15 @@
               "show": true,
               "key": "",
               "minVersion": "2.2.2"
+            },
+            {
+              "type": 6,
+              "title": "device_chart_usage",
+              "icon": "ic_usage",
+              "image": "",
+              "url": "dreo://nav/device/hacstatistics?deviceSn=${sn}",
+              "show": true,
+              "key": "usage"
             },
             {
               "type": 6,
@@ -217,19 +190,20 @@
           },
           "preference": [
             {
-              "id": "270",
-              "type": "Display List",
-              "title": "dev_ctrl_heater_display",
-              "image": "ic_display",
-              "reverse": false
-            },
-            {
               "id": "200",
               "type": "Panel Sound",
               "title": "device_control_panelsound",
               "image": "ic_mute",
               "reverse": true,
               "cmd": "muteon"
+            },
+            {
+              "id": "210",
+              "type": "Display Auto Off",
+              "title": "device_fans_mode_auto_display",
+              "image": "ic_display",
+              "reverse": true,
+              "cmd": "lighton"
             },
             {
               "id": "220",
@@ -240,24 +214,9 @@
               "cmd": "childlockon"
             },
             {
-              "id": "250",
-              "type": "Open Window Detection",
-              "title": "dev_ctrl_open_win_dect",
-              "image": "ic_winopen",
-              "cmd": "winopenon"
-            },
-            {
-              "id": "280",
-              "type": "Show Temp",
-              "title": "ambient_temp_always_on",
-              "image": "ic_temp_unit_show",
-              "reverse": false,
-              "cmd": "dispmode"
-            },
-            {
               "id": "230",
               "type": "Temperature Unit",
-              "title": "dev_ctrl_dev_temp_unit",
+              "title": "device_control_temp_unit",
               "image": "ic_temp_unit"
             },
             {
@@ -269,14 +228,14 @@
           ],
           "control": [
             {
-              "swingtype": true,
-              "hideSafeMode": true
+              "swingtype": false,
+              "hideSafeMode": false
             }
           ],
           "category": "Space Heater",
           "version": {
-            "minControlVer": "2.2.2",
-            "minPairingVer": "2.0.0"
+            "minControlVer": "2.1.3",
+            "minPairingVer": "2.0.7"
           }
         },
         "mainConf": {
@@ -286,34 +245,17 @@
           "isVoiceControl": true
         },
         "resourcesConf": {
-          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202409/1102a14281ba5a4a878c4f0eaadf5cad6c.png",
-          "imageFullSrc": "https://resources.dreo-tech.com/app/202307/259dd80ef20e50432195beab4dc1939160.zip",
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/5ef4c262447104baeb951835fd4d8fb56.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/511bc7841fb384de99bc06f92cc681c64.zip",
           "imageSmallDarkSrc": null,
           "imageFullDarkSrc": null
         },
-        "servicesConf": [
-          {
-            "key": "user_manual",
-            "value": "https://resources.dreo-tech.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf"
-          }
-        ],
+        "servicesConf": [],
         "userManuals": [
           {
-            "url": "https://resources.dreo-tech.com/app/preSigned202505/29398cb24392004e87a09a45009882a817.pdf",
-            "icon": "https://resources.dreo-tech.com/app/202410/10/d168d237f41d435d9699a2165f4e992a.png",
-            "desc": "DR-HSH009S User Manual",
-            "lang": "en"
-          },
-          {
-            "url": "https://resources.dreo-tech.com/app/preSigned202410/1066808e443b72471681ef12ff39d7abcf.pdf",
-            "icon": "https://resources.dreo-tech.com/app/202410/10/1fd8481c33904d5390a2a476073d3eba.png",
-            "desc": "DR-HSH009S ALCI Plug User Manual",
-            "lang": "en"
-          },
-          {
-            "url": "https://resources.dreo-tech.com/app/preSigned202410/10160683ff923343e1a271f1f3fb142fb8.pdf",
-            "icon": "https://resources.dreo-tech.com/app/202410/10/9ba0b2340d1a46d1bfd265b346458914.png",
-            "desc": "DR-HSH009S Fort Plug User Manual",
+            "url": "https://resources.dreo-tech.com/app/preSigned202506/12a736d06b5b6549fcb181bac2018c508e.pdf",
+            "icon": null,
+            "desc": "DR-HSH003S User Manual V1",
             "lang": "en"
           }
         ]
