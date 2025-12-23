@@ -124,3 +124,6 @@ ignore
 
 # Mac-specific files
 **/.DS_Store
+
+# Debug Test Mode Files
+custom_components/dreo/e2e_test_data/
