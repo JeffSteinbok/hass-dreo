@@ -1,6 +1,6 @@
 # Test Scripts
 
-This directory contains test scripts for manual testing and development of the PyStoneboxDreo library.
+This directory contains test scripts for manual testing and development of the PyDreo library.
 
 ## Setup
 

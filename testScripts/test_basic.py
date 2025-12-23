@@ -71,7 +71,7 @@ def test_with_token():
     print("Testing with token (skips login)")
     print("="*60)
     
-    dreo = PyStoneboxDreo(token=AUTH_TOKEN)
+    dreo = PyDreo(token=AUTH_TOKEN)
     dreo.redact = False
     
     print(f"Token: {dreo.token}")
