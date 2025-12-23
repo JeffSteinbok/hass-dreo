@@ -95,6 +95,7 @@ Models that have been specifically tested can be found below.
 - DR-HSH009AS
 - DR-HSH0017S
 - DR-HSH034S
+- WH714S
 - WH719S
 - WH739S
 - WH517S
