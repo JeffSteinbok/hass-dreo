@@ -1,0 +1,99 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+      "mixed": {
+        "mcu_hardware_model": {
+          "state": "SC95F8613B/EU",
+          "timestamp": 1724748442
+        },
+        "wifi_ssid": "**REDACTED**",
+        "windlevel": {
+          "state": 4,
+          "timestamp": 1724759313
+        },
+        "wifi_rssi": {
+          "state": -30,
+          "timestamp": 1724748442
+        },
+        "poweron": {
+          "state": true,
+          "timestamp": 1724782631
+        },
+        "tempunit": {
+          "state": 1,
+          "timestamp": 1724748442
+        },
+        "timeron": {
+          "state": {
+            "du": 0,
+            "ts": 1724748442
+          },
+          "timestamp": null
+        },
+        "module_firmware_version": {
+          "state": "1.2.15",
+          "timestamp": 1724748442
+        },
+        "mode": {
+          "state": 1,
+          "timestamp": 1724748442
+        },
+        "mcuon": {
+          "state": true,
+          "timestamp": 1724748442
+        },
+        "connected": {
+          "state": true,
+          "timestamp": 1724748442
+        },
+        "timeroff": {
+          "state": {
+            "du": 0,
+            "ts": 1724748442
+          },
+          "timestamp": null
+        },
+        "network_latency": {
+          "state": 90,
+          "timestamp": 1724748442
+        },
+        "module_hardware_model": {
+          "state": "PAI-051",
+          "timestamp": 1724748442
+        },
+        "mcu_firmware_version": {
+          "state": "1.0.8",
+          "timestamp": 1724748442
+        },
+        "customconf": {
+          "state": "temp:11111222222333333444444",
+          "timestamp": 1724748442
+        },
+        "ledkepton": {
+          "state": false,
+          "timestamp": 1724748442
+        },
+        "temperature": {
+          "state": 81,
+          "timestamp": 1724778379
+        },
+        "module_hardware_mac": "**REDACTED**",
+        "childlockon": {
+          "state": false,
+          "timestamp": 1724748442
+        },
+        "muteon": {
+          "state": true,
+          "timestamp": 1724748442
+        },
+        "hoscon": {
+          "state": false,
+          "timestamp": 1724783181
+        }
+      },
+      "sn": "HAF001S_1",
+      "productId": "***REMOVED BY ME ***",
+      "region": "eu-central-1"
+    }
+  }

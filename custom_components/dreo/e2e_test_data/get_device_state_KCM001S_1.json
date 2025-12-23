@@ -1,0 +1,163 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {
+                "state": -57,
+                "timestamp": 1725530471
+            },
+            "poweron": {
+                "state": false,
+                "timestamp": 1725539971
+            },
+            "wksetwndlv": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "wkstgestdu": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "wkcountdown": {
+                "state": 300,
+                "timestamp": 1725530471
+            },
+            "wksetpwrlv": {
+                "state": 400,
+                "timestamp": 1725530471
+            },
+            "favlist": {
+                "state": {
+                    "list": [
+                        "1725600121784696834"
+                    ]
+                },
+                "timestamp": null
+            },
+            "wksethydrlv": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "mode": {
+                "state": "standby",
+                "timestamp": 1725530471
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1724691658
+            },
+            "network_latency": {
+                "state": 101,
+                "timestamp": 1725530471
+            },
+            "wkpdu": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "module_hardware_model": {
+                "state": "PAI-051",
+                "timestamp": 1725530471
+            },
+            "wkprogress": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "mcu_firmware_version": {
+                "state": "3.5.17",
+                "timestamp": 1724691658
+            },
+            "wkstgbegin": {
+                "state": 1725478969,
+                "timestamp": 1725530471
+            },
+            "wkstgpdu": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "module_hardware_mac": {
+                "state": "**REDACTED**",
+                "timestamp": 1725530471
+            },
+            "muteon": {
+                "state": true,
+                "timestamp": 1725530471
+            },
+            "ledscrnkepton": {
+                "state": false,
+                "timestamp": 1725530471
+            },
+            "mcu_hardware_model": {
+                "state": "mcu",
+                "timestamp": 1724691658
+            },
+            "wifi_ssid": {
+                "state": "**REDACTED**",
+                "timestamp": 1724691658
+            },
+            "wkestdu": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "wkbegin": {
+                "state": 1725478969,
+                "timestamp": 1725530471
+            },
+            "tempunit": {
+                "state": 1,
+                "timestamp": 1725530471
+            },
+            "wksetprbtemp": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "historyon": {
+                "state": true,
+                "timestamp": 1725530471
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "module_firmware_version": {
+                "state": "1.3.16",
+                "timestamp": 1725530471
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1725530471
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "wkcurprbtemp": {
+                "state": -999,
+                "timestamp": 1725530471
+            },
+            "wkckid": {
+                "state": "null",
+                "timestamp": 1725530471
+            },
+            "disprobeon": {
+                "state": false,
+                "timestamp": 1725530471
+            },
+            "ghydrcfm": {
+                "state": 9,
+                "timestamp": 1725530471
+            },
+            "wkstgord": {
+                "state": 0,
+                "timestamp": 1725530471
+            },
+            "ledpotkepton": {
+                "state": 0,
+                "timestamp": 1725539156
+            }
+        },
+        "sn": "KCM001S_1",
+        "productId": "**REDACTED**",
+        "region": "us-east-2"
+    }
+}

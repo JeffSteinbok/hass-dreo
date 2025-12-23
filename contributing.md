@@ -29,6 +29,17 @@ In [custom_components/dreo/e2e_test_data](custom_components/dreo/e2e_test_data),
 1. [custom_components/dreo/e2e_test_data/get_devices.json](get_devices.json) which contains a JSON blob containing a list of all devices. You can add/change anything in here, just make sure to update the device count at the top. For each device, you'll need a state file - see next point.
 1. Device state files, named as SERIALNUMBER.json. You'll need one of these for each device.
 
+### Generating Test Data
+To generate the e2e test data files from the test API responses, run:
+```bash
+python testScripts/generateE2ETestData.py
+```
+
+This script will:
+- Combine all `get_devices_H*.json` and `get_devices_K*.json` files from `tests/pydreo/api_responses/` into a single `get_devices.json`
+- Copy all device state files (`get_device_settings_*.json`) to the e2e_test_data directory
+- Update the device count automatically
+
 Make sure you have Debug logging enabled as well so you can confirm your files are loading correctly.
 
 Simply edit the necessary files, and copy them over to your HA server and you're good to go.
