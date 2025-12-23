@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Basic test script for PyStoneboxDreo functionality.
+Basic test script for PyDreo functionality.
 
 This script demonstrates:
 1. Authentication via username/password (with login)
@@ -16,7 +16,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from custom_components.dreo.pystonebox_dreo import PyStoneboxDreo
+from custom_components.dreo.pydreo import PyStoneboxDreo
 
 # Import credentials from secrets directory
 # Add secrets directory to path
