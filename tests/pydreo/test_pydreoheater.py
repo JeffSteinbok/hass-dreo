@@ -42,7 +42,7 @@ class TestPyDreoHeater(TestBase):
         heater = self.pydreo_manager.devices[0]
 
         assert heater.htalevel_range == (1, 3)
-        assert heater.hvac_modes == ['hotair', 'eco', 'off']
+        assert heater.hvac_modes == ['coolair', 'hotair', 'eco', 'off']
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True

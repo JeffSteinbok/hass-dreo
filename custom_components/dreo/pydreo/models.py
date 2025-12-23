@@ -263,6 +263,7 @@ SUPPORTED_DEVICES = {
             HEAT_RANGE: (1, 3),
             ECOLEVEL_RANGE: (41, 95)},
         hvac_modes=[
+            HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
             HEATER_MODE_OFF,

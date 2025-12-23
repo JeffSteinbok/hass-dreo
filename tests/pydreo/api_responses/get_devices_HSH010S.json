@@ -6,33 +6,53 @@
     "pageSize": 100,
     "totalNum": 1,
     "totalPage": 1,
+    "familyRooms": null,
     "list": [
       {
-        "deviceId": "redacted",
+        "deviceId": "2000518919670542337",
         "sn": "HSH010S_1",
         "brand": "Dreo",
         "model": "DR-HSH010S",
         "productId": "**REDACTED**",
         "productName": "Heater",
-        "deviceName": "OH310 Oil Radiator Heater",
+        "deviceName": "Heater",
         "shared": false,
         "series": null,
-        "seriesName": "Oil Radiator Heater",
-        "color": "w",
+        "seriesName": "OH310S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202512/16fefb8eae79df4fa1b5080dc36c48020b.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202512/1603a813448671482693f7db23fe3b7c47.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
         "controlsConf": {
-          "template": "DR-HSH010S",
+          "template": "DR-HSH004S",
           "lottie": {
             "key": "poweron",
             "frames": [
               {
                 "value": 0,
-                "frame": [0]
+                "frame": [
+                  0
+                ]
               },
               {
                 "value": 1,
-                "frame": [3]
+                "frame": [
+                  2
+                ]
               }
             ]
+          },
+          "instructions": {
+            "en": "https://fe-fat.dreo.com:18005/en/safety-protection-instructions/",
+            "zh": "https://fe-fat.dreo.com:18005/zh/safety-protection-instructions/"
           },
           "schedule": {
             "modes": [
@@ -43,12 +63,19 @@
                 "value": "hotair",
                 "valueType": 2,
                 "isSelected": true,
-                "attention": ["mode", "htalevel", "poweron"],
+                "attention": [
+                  "mode",
+                  "htalevel",
+                  "poweron",
+                  "oscon"
+                ],
                 "controls": [
                   {
                     "type": 1,
                     "title": "device_control_mode_manual_level",
-                    "cmd": ["htalevel"],
+                    "cmd": [
+                      "htalevel"
+                    ],
                     "value": 3,
                     "valueType": 1,
                     "startValue": 0,
@@ -70,7 +97,12 @@
                 "value": "eco",
                 "valueType": 2,
                 "isSelected": false,
-                "attention": ["mode", "ecolevel", "poweron"],
+                "attention": [
+                  "mode",
+                  "ecolevel",
+                  "poweron",
+                  "oscon"
+                ],
                 "controls": [
                   {
                     "type": 4,
@@ -78,7 +110,9 @@
                     "title": "device_control_temp",
                     "startColor": "#FFD666",
                     "endColor": "#FF7214",
-                    "cmd": ["ecolevel"],
+                    "cmd": [
+                      "ecolevel"
+                    ],
                     "value": 85,
                     "startValue": 41,
                     "endValue": 95,
@@ -87,19 +121,73 @@
                     "unit": "\u2109"
                   }
                 ]
+              },
+              {
+                "icon": "ic_hsh_item_fanonly",
+                "title": "device_heater_mode_fan_only",
+                "cmd": "mode",
+                "value": "coolair",
+                "valueType": 2,
+                "isSelected": false,
+                "attention": [
+                  "mode",
+                  "poweron",
+                  "oscon"
+                ],
+                "controls": []
               }
             ]
           },
           "cards": [
             {
               "type": 2,
-              "title": "home_temp",
+              "title": "device_control_temp",
               "icon": "",
               "image": "",
               "url": "",
               "show": true
+            },
+            {
+              "type": 8,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "dreo://nav/device/schedule?deviceSn={sn}",
+              "show": true,
+              "key": "",
+              "minVersion": "2.2.2"
+            },
+            {
+              "type": 6,
+              "title": "device_chart_usage",
+              "icon": "ic_usage",
+              "image": "",
+              "url": "dreo://nav/device/hacstatistics?deviceSn=${sn}",
+              "show": true,
+              "key": "usage"
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
             }
           ],
+          "feature": {
+            "schedule": {
+              "enable": true,
+              "localSupport": true,
+              "module": [
+                {
+                  "type": "HeFi",
+                  "version": "0.0.1"
+                }
+              ]
+            }
+          },
           "preference": [
             {
               "id": "200",
@@ -108,6 +196,14 @@
               "image": "ic_mute",
               "reverse": true,
               "cmd": "muteon"
+            },
+            {
+              "id": "210",
+              "type": "Display Auto Off",
+              "title": "device_fans_mode_auto_display",
+              "image": "ic_display",
+              "reverse": true,
+              "cmd": "lighton"
             },
             {
               "id": "220",
@@ -130,28 +226,37 @@
               "image": "ic_temp_cal"
             }
           ],
-          "category": "Oil Radiator Heater",
+          "control": [
+            {
+              "swingtype": false,
+              "hideSafeMode": false
+            }
+          ],
+          "category": "Space Heater",
           "version": {
-            "minControlVer": "2.2.2",
-            "minPairingVer": "2.0.0"
+            "minControlVer": "2.1.3",
+            "minPairingVer": "2.0.7"
           }
         },
         "mainConf": {
           "isSmart": true,
           "isWifi": true,
-          "isBluetooth": true,
+          "isBluetooth": null,
           "isVoiceControl": true
         },
         "resourcesConf": {
-          "imageSmallSrc": "https://resources.dreo-tech.com/app/202306/20bad19da722a44238bb81ae3a6b87b689.png",
-          "imageFullSrc": "https://resources.dreo-tech.com/app/202307/259dd80ef20e50432195beab4dc1939160.zip",
-          "imageSmallDarkSrc": "",
-          "imageFullDarkSrc": ""
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202512/164a22bece2c604c35b005bd31128f1cd3.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202512/162400997ecbf24791a1122d89f608583e.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
         },
-        "servicesConf": [
+        "servicesConf": [],
+        "userManuals": [
           {
-            "key": "user_manual",
-            "value": "https://resources.dreo-tech.com/app/202310/12e3d6cbd972e04025a44e8ff09f096552.pdf"
+            "url": "https://resources.dreo-tech.com/app/preSigned202506/24a92b6089569a44c9a4c470f9b76b220f.pdf",
+            "icon": null,
+            "desc": "DR-HSH010S User Manual V1",
+            "lang": "en"
           }
         ]
       }
