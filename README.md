@@ -79,7 +79,10 @@ Models that have been specifically tested can be found below.
 *Initial beta-level support*
 
 - DR-HHM*
+- DR-HHM001S
+- DR-HHM003S (HM713S/813S)
 - DR-HHM004S
+- DR-HHM014S
 
 ### Dehumidifiers
 *Initial beta-level support*
