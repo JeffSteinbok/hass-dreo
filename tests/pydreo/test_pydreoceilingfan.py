@@ -61,3 +61,44 @@ class TestPyDreoCeilingFan(TestBase):
 
         with pytest.raises(ValueError):
             fan.fan_speed = 13
+
+    def test_HCF002S(self):  # pylint: disable=invalid-name
+        """Test DR-HCF002S ceiling fan with RGB atmosphere lights."""
+        
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan : PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        
+        # Test basic fan properties
+        assert fan.model == "DR-HCF002S"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        
+        # Test main light support
+        assert fan.is_feature_supported('light_on') is True
+        assert fan.is_feature_supported('brightness') is True
+        assert fan.is_feature_supported('color_temperature') is True
+        assert fan.brightness == 24
+        assert fan.color_temperature == 60
+        
+        # Test atmosphere light support
+        assert fan.is_feature_supported('atm_light') is True
+        assert fan.atm_light_on is False
+        assert fan.atm_brightness == 3
+        assert fan.atm_color_rgb == (0, 255, 0)  # 65280 = 0x00FF00 = green
+        assert fan.atm_mode == 1
+        
+        # Test atmosphere light commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_light_on = True
+            mock_send_command.assert_called_once_with(fan, {ATMON_KEY: True})
+        
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_brightness = 5
+            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 5})
+        
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (255, 0, 0)  # Red
+            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
+

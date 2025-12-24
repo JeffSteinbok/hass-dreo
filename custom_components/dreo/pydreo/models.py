@@ -139,6 +139,12 @@ SUPPORTED_DEVICES = {
 
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),
+    
+    "DR-HCF002S": DreoDeviceDetails(
+        device_type=DreoDeviceType.CEILING_FAN,
+        device_ranges={
+            SPEED_RANGE: (1, 12)
+        }),
 
     # Air Purifiers
     "DR-HAP": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
