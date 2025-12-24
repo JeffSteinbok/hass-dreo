@@ -27,10 +27,10 @@ class TestDreoAirConditioner(IntegrationTestBase):
             assert pydreo_ac.type == 'Air Conditioner'
 
             numbers = number.get_entries([pydreo_ac])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
 
             sensors = sensor.get_entries([pydreo_ac])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ['Humidity', 'Target temp reached', 'Use since cleaning'])
 
     def test_HAC006S(self):  # pylint: disable=invalid-name
         """Load air conditioner and test sending commands."""
@@ -44,7 +44,7 @@ class TestDreoAirConditioner(IntegrationTestBase):
             assert pydreo_ac.type == 'Air Conditioner'
 
             numbers = number.get_entries([pydreo_ac])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
 
             sensors = sensor.get_entries([pydreo_ac])
             self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning", "Target temp reached"])

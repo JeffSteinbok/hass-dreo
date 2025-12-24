@@ -71,7 +71,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
         self._attr_target_temperature = self.device.ecolevel
         self._attr_current_temperature = self.device.temperature
-        self._attr_swing_mode = self.device.device_definition.swing_modes[0]
+        self._attr_swing_mode = self.device.device_definition.swing_modes[0] if self.device.device_definition.swing_modes else None
         self._attr_swing_modes = self.device.device_definition.swing_modes
         self._attr_hvac_mode = (
             HEATER_MODE_MAP[self.device.hvac_mode] if self.device.poweron else HVACMode.OFF

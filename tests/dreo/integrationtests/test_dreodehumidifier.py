@@ -48,20 +48,20 @@ class TestDreoDeHumidifier(IntegrationTestBase):
 
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
 
             # Check to see what sensors are added - should include Target Humidity
-            sensors = sensor.get_entries([pydreo_dehumidifier])
+            numbers = number.get_entries([pydreo_dehumidifier])
             
-            # Find the Target Humidity sensor
-            target_humidity_sensor = None
-            for s in sensors:
-                if s.entity_description.key == "Target Humidity":
-                    target_humidity_sensor = s
+            # Find the Target Humidity number
+            target_humidity_number = None
+            for n in numbers:
+                if n.entity_description.key == "Target Humidity":
+                    target_humidity_number = n
                     break
             
-            assert target_humidity_sensor is not None, "Target Humidity sensor should exist"
-            assert target_humidity_sensor.native_value == 50, "Target Humidity sensor value should be 50"
+            assert target_humidity_number is not None, "Target Humidity number should exist"
+            assert target_humidity_number.native_value == 50, "Target Humidity number value should be 50"
 
 
         

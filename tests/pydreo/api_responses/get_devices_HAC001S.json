@@ -10,12 +10,12 @@
     "list": [
       {
         "deviceId": "**REDACTED**",
-        "sn": "HAC005S_1",
+        "sn": "HAC001S_1",
         "brand": "Dreo",
         "model": "DR-HAC005S",
         "productId": "REDACTED",
         "productName": "Air Conditioner",
-        "deviceName": "DEBUGTEST - Air Conditioner - DR-HAC005S",
+        "deviceName": "DEBUGTEST - Air Conditioner - DR-HAC001S",
         "shared": false,
         "series": null,
         "seriesName": "AC515S",

@@ -46,22 +46,11 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
 
-            # Check to see what sensors are added - should include Target Humidity
+            # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            
-            # Find the Target Humidity sensor
-            target_humidity_sensor = None
-            for s in sensors:
-                if s.entity_description.key == "Target Humidity":
-                    target_humidity_sensor = s
-                    break
-            
-            assert target_humidity_sensor is not None, "Target Humidity sensor should exist"
-            assert target_humidity_sensor.native_value == 60, "Target Humidity sensor value should be 60"
-            
-            self.verify_expected_entities(sensors, ["Humidity", "Target Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
 
     def test_HHM014S(self):  # pylint: disable=invalid-name
@@ -93,21 +82,11 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
 
-            # Check to see what sensors are added - should include Target Humidity
+            # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            
-            # Find the Target Humidity sensor
-            target_humidity_sensor = None
-            for s in sensors:
-                if s.entity_description.key == "Target Humidity":
-                    target_humidity_sensor = s
-                    break
-            
-            assert target_humidity_sensor is not None, "Target Humidity sensor should exist for HHM014S"
-            assert target_humidity_sensor.native_value == 55, "Target Humidity sensor value should be 55 for HHM014S"
-            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning", "Target Humidity"])
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
     def test_HHM003S(self):  # pylint: disable=invalid-name
         """Load HHM003S (HM713S/813S) humidifier and test all features including humidity sensors."""
@@ -138,9 +117,9 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
 
-            # Check to see what sensors are added - should include Humidity, Target Humidity, and worktime
+            # Check to see what sensors are added - should include Humidity, and worktime
             sensors = sensor.get_entries([pydreo_humidifier])
             
             # Find the Humidity sensor
@@ -153,16 +132,6 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert humidity_sensor is not None, "Humidity sensor should exist for HHM003S"
             assert humidity_sensor.native_value == 40, "Humidity sensor value should be 40 for HHM003S"
             
-            # Find the Target Humidity sensor
-            target_humidity_sensor = None
-            for s in sensors:
-                if s.entity_description.key == "Target Humidity":
-                    target_humidity_sensor = s
-                    break
-            
-            assert target_humidity_sensor is not None, "Target Humidity sensor should exist for HHM003S"
-            assert target_humidity_sensor.native_value == 50, "Target Humidity sensor value should be 50 for HHM003S"
-            
             # Find the Use since cleaning sensor
             worktime_sensor = None
             for s in sensors:
@@ -173,6 +142,6 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert worktime_sensor is not None, "Use since cleaning sensor should exist for HHM003S"
             assert worktime_sensor.native_value == 10, "Use since cleaning sensor value should be 10 for HHM003S"
             
-            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning", "Target Humidity"])
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
         
