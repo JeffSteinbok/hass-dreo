@@ -1,0 +1,3 @@
+"""
+UI tests package initialization.
+"""

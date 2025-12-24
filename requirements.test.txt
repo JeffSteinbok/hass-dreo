@@ -3,3 +3,9 @@ pytest
 pytest-cov
 pytest-mock
 pyyaml
+
+# UI Testing (Playwright)
+# Note: Also requires Node.js and npm to be installed
+# Run 'npm install' in tests/dreo/ui/ to install Playwright
+playwright>=1.40.0
+pytest-playwright>=0.4.0

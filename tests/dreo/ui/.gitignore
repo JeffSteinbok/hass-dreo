@@ -1,0 +1,8 @@
+# UI test artifacts
+playwright-report/
+test-results/
+node_modules/
+package-lock.json
+
+# Test configuration (contains credentials)
+config/test_config.py

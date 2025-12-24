@@ -1,0 +1,27 @@
+{
+  "name": "hass-dreo-ui-tests",
+  "version": "1.0.0",
+  "description": "UI tests for Dreo Home Assistant integration using Playwright",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:ui": "playwright test --ui"
+  },
+  "keywords": [
+    "playwright",
+    "testing",
+    "home-assistant",
+    "dreo"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}
