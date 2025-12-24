@@ -71,6 +71,7 @@ Models that have been specifically tested can be found below.
 - DR-HPF004S
 - DR-HPF005S
 - DR-HPF007S
+- DR-HPF008S
 
 #### Ceiling Fans
 -   DR-HCF001S
