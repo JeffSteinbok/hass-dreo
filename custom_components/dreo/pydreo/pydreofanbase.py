@@ -187,7 +187,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def temperature(self):
         """Get the temperature"""
         temp = self._temperature
-        if (self.temperature_offset is not None):
+        if (temp is not None and self.temperature_offset is not None):
             temp += self.temperature_offset
         return temp
 

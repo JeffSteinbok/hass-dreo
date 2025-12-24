@@ -1,0 +1,47 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "poweron": {
+                "state": true,
+                "timestamp": 1735000000
+            },
+            "mode": {
+                "state": 1,
+                "timestamp": 1735000000
+            },
+            "rh": {
+                "state": 52,
+                "timestamp": 1735000000
+            },
+            "rhautolevel": {
+                "state": 55,
+                "timestamp": 1735000000
+            },
+            "worktime": {
+                "state": 1220,
+                "timestamp": 1735000000
+            },
+            "muteon": {
+                "state": true,
+                "timestamp": 1735000000
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1735000000
+            },
+            "rgblevel": {
+                "state": 2,
+                "timestamp": 1735000000
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1735000000
+            }
+        },
+        "sn": "HHM014S_1",
+        "productId": "1903038208387133441",
+        "region": "us-east-1/emq"
+    }
+}
