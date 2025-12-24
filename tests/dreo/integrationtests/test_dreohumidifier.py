@@ -48,8 +48,65 @@ class TestDreoHumidifier(IntegrationTestBase):
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(numbers, [])
 
-            # Check to see what sensors are added to humidifiers
+            # Check to see what sensors are added - should include Target Humidity
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
+            
+            # Find the Target Humidity sensor
+            target_humidity_sensor = None
+            for s in sensors:
+                if s.entity_description.key == "Target Humidity":
+                    target_humidity_sensor = s
+                    break
+            
+            assert target_humidity_sensor is not None, "Target Humidity sensor should exist"
+            assert target_humidity_sensor.native_value == 60, "Target Humidity sensor value should be 60"
+            
+            self.verify_expected_entities(sensors, ["Humidity", "Target Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
+
+
+    def test_HHM014S(self):  # pylint: disable=invalid-name
+        """Load HHM014S humidifier and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+
+            self.get_devices_file_name = "get_devices_HHM014S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+            
+            pydreo_humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+            assert pydreo_humidifier.type == 'Humidifier'
+            assert pydreo_humidifier.humidity == 52
+            assert pydreo_humidifier.model == "DR-HHM014S"
+            assert pydreo_humidifier.series_name == "HM774S"
+
+            ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
+            assert ha_humidifier.is_on is True
+            assert ha_humidifier.current_humidity == 52
+            assert ha_humidifier.target_humidity == 55
+            assert ha_humidifier.unique_id is not None
+            assert ha_humidifier.name is not None
+
+            # Test mode if available
+            if ha_humidifier.available_modes:
+                assert len(ha_humidifier.available_modes) > 0
+                current_mode = ha_humidifier.mode
+                assert current_mode is not None or current_mode in ha_humidifier.available_modes
+
+            # Check to see what numbers are added to humidifiers
+            numbers = number.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(numbers, [])
+
+            # Check to see what sensors are added - should include Target Humidity
+            sensors = sensor.get_entries([pydreo_humidifier])
+            
+            # Find the Target Humidity sensor
+            target_humidity_sensor = None
+            for s in sensors:
+                if s.entity_description.key == "Target Humidity":
+                    target_humidity_sensor = s
+                    break
+            
+            assert target_humidity_sensor is not None, "Target Humidity sensor should exist for HHM014S"
+            assert target_humidity_sensor.native_value == 55, "Target Humidity sensor value should be 55 for HHM014S"
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning", "Target Humidity"])
 
         
