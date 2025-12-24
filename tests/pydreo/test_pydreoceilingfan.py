@@ -64,11 +64,10 @@ class TestPyDreoCeilingFan(TestBase):
 
     def test_HCF002S(self):  # pylint: disable=invalid-name
         """Test DR-HCF002S ceiling fan with RGB atmosphere lights."""
-        
         self.get_devices_file_name = "get_devices_HCF002S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
-        fan : PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
         
         # Test basic fan properties
         assert fan.model == "DR-HCF002S"
