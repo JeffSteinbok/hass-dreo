@@ -40,6 +40,8 @@ This script will:
 - Copy all device state files (`get_device_settings_*.json`) to the e2e_test_data directory
 - Update the device count automatically
 
+**Note**: When you push changes to files in `tests/pydreo/api_responses/` on a non-primary branch (not main or beta), a GitHub Action will automatically run this script and commit the generated e2e test data back to your branch.
+
 Make sure you have Debug logging enabled as well so you can confirm your files are loading correctly.
 
 Simply edit the necessary files, and copy them over to your HA server and you're good to go.
