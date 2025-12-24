@@ -1,0 +1,107 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "**REDACTED**",
+        "sn": "HAP002S_1",
+        "brand": "Dreo",
+        "model": "DR-HAP002S",
+        "productId": "**REDACTED**",
+        "productName": "Air Purifier",
+        "deviceName": "DEBUGTEST - Air Purifier - DR-HAP002S",
+        "shared": false,
+        "series": null,
+        "seriesName": "Macro Pro S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "controlsConf": {
+          "template": "DR-HAP002S",
+          "lottie": {
+            "key": "aq",
+            "frames": [
+              {
+                "value": 4
+              }
+            ]
+          },
+          "schedule": {
+            "modes": [
+              {
+                "icon": "ic_manul_wind_color",
+                "title": "device_control_mode_manual",
+                "cmd": "mode",
+                "value": "manual",
+                "valueType": 2,
+                "isSelected": false,
+                "controls": [
+                  {
+                    "type": 0,
+                    "title": "device_control_mode_manual_level",
+                    "startColor": "#1FD3E0",
+                    "endColor": "#4663F7",
+                    "value": 2,
+                    "valueType": 1,
+                    "startValue": 1,
+                    "endValue": 18,
+                    "groupId": 0,
+                    "isSelected": false,
+                    "icon": ""
+                  }
+                ]
+              }
+            ]
+          },
+          "preference": [
+            {
+              "id": "230",
+              "type": "Auto Mode Settings",
+              "title": "device_control_mode_auto_settings",
+              "image": "ic_mode_settings"
+            }
+          ],
+          "control": [
+            {
+              "id": "110",
+              "type": "Manual",
+              "title": "device_control_mode_manual",
+              "cmd": "mode",
+              "value": "manual",
+              "items": [
+                {
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
+                },
+                {
+                  "text": "18",
+                  "cmd": "windlevel",
+                  "value": 18
+                }
+              ]
+            }
+          ],
+          "category": "Air Purifier"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        }
+      }
+    ]
+  }
+}
