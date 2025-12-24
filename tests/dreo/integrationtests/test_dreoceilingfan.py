@@ -105,10 +105,13 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
             
-            # Test preset modes
+            # Test preset modes (it will also turn on the fan if off)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode('auto')
-                mock_send_command.assert_called_once_with(pydreo_fan, {MODE_KEY: 5})
+                # Should call both fanon and mode since fan is currently off
+                assert mock_send_command.call_count == 2
+                # Check the last call was setting mode to 5 (auto)
+                mock_send_command.assert_any_call(pydreo_fan, {MODE_KEY: 5})
             
             # Check switches
             switches = switch.get_entries([pydreo_fan])
