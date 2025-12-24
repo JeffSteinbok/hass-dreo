@@ -60,8 +60,7 @@ class TestDreoHumidifier(IntegrationTestBase):
             
             assert target_humidity_sensor is not None, "Target Humidity sensor should exist"
             assert target_humidity_sensor.native_value == 60, "Target Humidity sensor value should be 60"
-            # Check to see what sensors are added to humidifiers
-            sensors = sensor.get_entries([pydreo_humidifier])
+            
             self.verify_expected_entities(sensors, ["Humidity", "Target Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
 
@@ -108,5 +107,6 @@ class TestDreoHumidifier(IntegrationTestBase):
             
             assert target_humidity_sensor is not None, "Target Humidity sensor should exist for HHM014S"
             assert target_humidity_sensor.native_value == 55, "Target Humidity sensor value should be 55 for HHM014S"
+            self.verify_expected_entities(sensors, ["Humidity", "Status", "Water Level", "Ambient Light Humidifier", "Use since cleaning", "Target Humidity"])
 
         
