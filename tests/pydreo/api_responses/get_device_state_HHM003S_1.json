@@ -1,0 +1,136 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -43,
+        "timestamp": 1763309911
+      },
+      "ledlevel": {
+        "state": 0,
+        "timestamp": 1763309911
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1763309911
+      },
+      "scheid": {
+        "state": 469065767,
+        "timestamp": 1763309911
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1763309910
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": true,
+        "timestamp": 1763309911
+      },
+      "rhsleeplevel": {
+        "state": 70,
+        "timestamp": 1763309911
+      },
+      "mode": {
+        "state": 1,
+        "timestamp": 1763309911
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1763309911
+      },
+      "network_latency": {
+        "state": 21,
+        "timestamp": 1763309911
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1763309911
+      },
+      "rgblevel": {
+        "state": 0,
+        "timestamp": 1763309911
+      },
+      "mcu_firmware_version": {
+        "state": "3.0.6",
+        "timestamp": 1763309911
+      },
+      "filteron": {
+        "state": false,
+        "timestamp": 1763309911
+      },
+      "module_hardware_mac": "HHM003S_1",
+      "rhautolevel": {
+        "state": 50,
+        "timestamp": 1763309911
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1763309911
+      },
+      "suspend": {
+        "state": false,
+        "timestamp": 1763309911
+      },
+      "wifi_ssid": "HHM003S_1",
+      "mcu_hardware_model": {
+        "state": "SC95F8615B-2/US",
+        "timestamp": 1763309911
+      },
+      "hotfogon": {
+        "state": false,
+        "timestamp": 1763309911
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1763309911
+      },
+      "module_firmware_version": {
+        "state": "3.7.6",
+        "timestamp": 1763309911
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1763309911
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1763309910
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 2,
+        "timestamp": 1763309911
+      },
+      "rh": {
+        "state": 40,
+        "timestamp": 1763322220
+      },
+      "foglevel": {
+        "state": 6,
+        "timestamp": 1763309911
+      },
+      "rgbth": {
+        "state": "30,60",
+        "timestamp": 1763309911
+      },
+      "filtertime": {
+        "state": 100,
+        "timestamp": 1763309911
+      },
+      "worktime": {
+        "state": 10,
+        "timestamp": 1763309911
+      }
+    },
+    "sn": "HHM003S_1",
+    "productId": "HHM003S_1",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}

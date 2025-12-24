@@ -1,0 +1,493 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1871686439518924802",
+        "sn": "HHM003S_1",
+        "brand": "Dreo",
+        "model": "DR-HHM003S",
+        "productId": "HHM003S_1",
+        "productName": "Humidifier",
+        "deviceName": "Humidifier2",
+        "shared": false,
+        "series": null,
+        "seriesName": "HM713S/813S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "s",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/13d30bef0533c2473ca7d9504df6d457b1.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/13c05e031622ab4415b63b7a1fc788d78c.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HHM003S",
+          "lottie": {
+            "key": "rh",
+            "depend": {
+              "key": "rgblevel",
+              "invalid": "0"
+            },
+            "frames": [
+              {
+                "value": 0,
+                "frame": [
+                  0
+                ]
+              },
+              {
+                "value": 1,
+                "frame": [
+                  9
+                ]
+              },
+              {
+                "value": 31,
+                "frame": [
+                  7
+                ]
+              },
+              {
+                "value": 61,
+                "frame": [
+                  5
+                ]
+              }
+            ]
+          },
+          "schedule": {
+            "duration": [
+              {
+                "text": "schedule_control_turnoff_never",
+                "desc": "schedule_control_turnoff_never_desc",
+                "time": 0
+              },
+              {
+                "text": "schedule_control_turnoff_30min",
+                "desc": "schedule_control_turnoff_30min_desc",
+                "time": 1800
+              },
+              {
+                "text": "schedule_control_turnoff_1h",
+                "desc": "schedule_control_turnoff_1h_desc",
+                "time": 3600
+              },
+              {
+                "text": "schedule_control_turnoff_2h",
+                "desc": "schedule_control_turnoff_2h_desc",
+                "time": 7200
+              },
+              {
+                "text": "schedule_control_turnoff_4h",
+                "desc": "schedule_control_turnoff_4h_desc",
+                "time": 14400
+              },
+              {
+                "text": "schedule_control_turnoff_6h",
+                "desc": "schedule_control_turnoff_6h_desc",
+                "time": 21600
+              },
+              {
+                "text": "schedule_control_turnoff_8h",
+                "desc": "schedule_control_turnoff_8h_desc",
+                "time": 28800
+              }
+            ],
+            "modes": [
+              {
+                "icon": "ic_sch_item_auto",
+                "title": "device_control_mode_auto",
+                "cmd": "mode",
+                "value": 1,
+                "valueType": 1,
+                "isSelected": true,
+                "attention": [
+                  "mode",
+                  "rhautolevel",
+                  "rgblevel",
+                  "hotfogon",
+                  "poweron"
+                ],
+                "controls": [
+                  {
+                    "type": 0,
+                    "title": "home_humidity",
+                    "startColor": "#1FD3E0",
+                    "endColor": "#4663F7",
+                    "cmd": [
+                      "rhautolevel"
+                    ],
+                    "value": 60,
+                    "valueType": 1,
+                    "startValue": 30,
+                    "endValue": 80,
+                    "groupId": 0,
+                    "isSelected": false,
+                    "unit": "%"
+                  }
+                ]
+              },
+              {
+                "icon": "ic_sch_item_manual",
+                "title": "device_control_mode_manual",
+                "cmd": "mode",
+                "value": 0,
+                "valueType": 1,
+                "isSelected": false,
+                "attention": [
+                  "mode",
+                  "foglevel",
+                  "rgblevel",
+                  "hotfogon",
+                  "poweron"
+                ],
+                "controls": [
+                  {
+                    "type": 1,
+                    "valueType": 1,
+                    "title": "device_control_mode_manual_level",
+                    "startColor": "#1FD3E0",
+                    "endColor": "#4663F7",
+                    "periodColor": "#0051CF",
+                    "cmd": [
+                      "foglevel"
+                    ],
+                    "value": 6,
+                    "startValue": 0,
+                    "validValue": 1,
+                    "endValue": 6,
+                    "groupId": 0,
+                    "icon": "ic_sch_hum",
+                    "isSelected": false,
+                    "showValue": [
+                      "1-",
+                      "1",
+                      "2-",
+                      "2",
+                      "3-",
+                      "3"
+                    ]
+                  }
+                ]
+              },
+              {
+                "icon": "ic_sch_item_sleep",
+                "title": "device_control_mode_sleep",
+                "cmd": "mode",
+                "value": 2,
+                "valueType": 1,
+                "isSelected": false,
+                "attention": [
+                  "mode",
+                  "rhsleeplevel",
+                  "rgblevel",
+                  "hotfogon",
+                  "poweron"
+                ],
+                "controls": []
+              }
+            ]
+          },
+          "cards": [
+            {
+              "type": 10,
+              "title": "home_humidity",
+              "icon": "ic_mode_humidity",
+              "image": "",
+              "url": "dreo://nav/device/humireport?deviceSn=${sn}",
+              "show": true,
+              "key": "humi"
+            },
+            {
+              "type": 8,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "dreo://nav/device/schedule?deviceSn={sn}",
+              "show": true,
+              "key": ""
+            },
+            {
+              "type": -1,
+              "title": "home_humidity",
+              "icon": "ic_mode_humidity",
+              "image": "",
+              "url": "dreo://nav/device/humireport?deviceSn=${sn}",
+              "show": true,
+              "key": "humi"
+            },
+            {
+              "type": 3,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "",
+              "show": true,
+              "key": ""
+            },
+            {
+              "type": 3,
+              "title": "home_humidifier_cleaning",
+              "icon": "ic_hum_cleanning",
+              "image": "",
+              "url": "dreo://nav/device/humiclean?deviceSn=${sn}&start=30&end=300&step=10",
+              "show": true,
+              "key": "worktime"
+            },
+            {
+              "image": "",
+              "icon": "https://resources.dreo-tech.com/app/202312/4/c06d58240e114f019c92abf5d3bd6f8c.png",
+              "show": true,
+              "type": 6,
+              "title": "base_maintenance",
+              "url": "https://fe.dreo.com/en/guides/humidifier-troubleshooting-maintenance"
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
+            }
+          ],
+          "urlConfig": [
+            {
+              "key": "clean",
+              "url": "https://fe.dreo.com/zh/guides/videos/youtube/PEAqqb0RnjU"
+            },
+            {
+              "key": "filter",
+              "url": "https://us.dreo.com/products/demineralization-cartridge-for-humidifier-hm512s-hm713-hm713s?utm_source=app&utm_medium=hm713s-filter-page&utm_campaign=hm713s-filter-page"
+            },
+            {
+              "key": "maintenance",
+              "url": "https://fe.dreo.com/en/guides/humidifier-troubleshooting-maintenance"
+            }
+          ],
+          "extraPreference": [
+            {
+              "id": "220",
+              "type": "Ambient Light Settings",
+              "title": "humidifier_light_setting",
+              "image": "ic_hum_light",
+              "version": {
+                "minMcuVer": "1.7.0",
+                "minModuleVer": "2.0.0"
+              }
+            }
+          ],
+          "feature": {
+            "schedule": {
+              "enable": "",
+              "localSupport": true,
+              "module": [
+                {
+                  "type": "HeFi",
+                  "version": "0.0.1"
+                }
+              ]
+            }
+          },
+          "extraConfigs": [
+            {
+              "key": "schedule",
+              "value": {
+                "modes": [
+                  {
+                    "icon": "ic_sch_item_auto",
+                    "title": "device_control_mode_auto",
+                    "cmd": "mode",
+                    "value": 1,
+                    "valueType": 1,
+                    "isSelected": true,
+                    "attention": [
+                      "mode",
+                      "rhautolevel",
+                      "rgblevel",
+                      "hotfogon",
+                      "poweron"
+                    ],
+                    "controls": [
+                      {
+                        "type": 0,
+                        "title": "home_humidity",
+                        "startColor": "#1FD3E0",
+                        "endColor": "#4663F7",
+                        "cmd": [
+                          "rhautolevel"
+                        ],
+                        "value": 60,
+                        "valueType": 1,
+                        "startValue": 30,
+                        "endValue": 90,
+                        "groupId": 0,
+                        "isSelected": false,
+                        "unit": "%"
+                      }
+                    ]
+                  },
+                  {
+                    "icon": "ic_sch_item_manual",
+                    "title": "device_control_mode_manual",
+                    "cmd": "mode",
+                    "value": 0,
+                    "valueType": 1,
+                    "isSelected": false,
+                    "attention": [
+                      "mode",
+                      "foglevel",
+                      "rgblevel",
+                      "hotfogon",
+                      "poweron"
+                    ],
+                    "controls": [
+                      {
+                        "type": 1,
+                        "valueType": 1,
+                        "title": "device_control_mode_manual_level",
+                        "startColor": "#1FD3E0",
+                        "endColor": "#4663F7",
+                        "periodColor": "#0051CF",
+                        "cmd": [
+                          "foglevel"
+                        ],
+                        "value": 6,
+                        "startValue": 0,
+                        "validValue": 1,
+                        "endValue": 6,
+                        "groupId": 0,
+                        "icon": "ic_sch_hum",
+                        "isSelected": false,
+                        "showValue": [
+                          "1-",
+                          "1",
+                          "2-",
+                          "2",
+                          "3-",
+                          "3"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "icon": "ic_sch_item_sleep",
+                    "title": "device_control_mode_sleep",
+                    "cmd": "mode",
+                    "value": 2,
+                    "valueType": 1,
+                    "isSelected": false,
+                    "attention": [
+                      "mode",
+                      "rhsleeplevel",
+                      "rgblevel",
+                      "hotfogon",
+                      "poweron"
+                    ],
+                    "controls": [
+                      {
+                        "type": 0,
+                        "title": "home_humidity",
+                        "startColor": "#1FD3E0",
+                        "endColor": "#4663F7",
+                        "cmd": [
+                          "rhsleeplevel"
+                        ],
+                        "value": 60,
+                        "valueType": 1,
+                        "startValue": 30,
+                        "endValue": 90,
+                        "groupId": 0,
+                        "isSelected": false,
+                        "unit": "%"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "firmware": {
+                "minMcuVer": "1.7.9",
+                "minModuleVer": "",
+                "mcuModel": "",
+                "moduleModel": ""
+              }
+            }
+          ],
+          "preference": [
+            {
+              "id": "210",
+              "type": "Display",
+              "title": "device_control_humidifier_display",
+              "image": "ic_display",
+              "reverse": false,
+              "cmd": "ledlevel"
+            },
+            {
+              "id": "200",
+              "type": "Panel Sound",
+              "title": "device_control_panelsound",
+              "image": "ic_mute",
+              "reverse": true,
+              "cmd": "muteon"
+            }
+          ],
+          "humRange": {
+            "controlMin": 30,
+            "controlMax": 90,
+            "displayMin": 10,
+            "displayMax": 100,
+            "validMCUVersion": "0.0.1",
+            "validModuleVersion": "0.0.1"
+          },
+          "category": "Humidifier",
+          "version": {
+            "minControlVer": "2.2.2",
+            "minPairingVer": "2.0.0"
+          }
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202409/1109ff667571e24eecbbf439608b9cdf43.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202406/2817c555c47fd149af9520fcfa22be93cf.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [
+          {
+            "key": "user_manual",
+            "value": "https://resources.dreo-tech.com/app/202310/123e7c4efff1b641b5b5ddcbdb6e0ad50b.pdf"
+          },
+          {
+            "key": "airpurifier_filter_url",
+            "value": "https://fe-fat.dreo.com:18005/en/support/filter-available-soon"
+          }
+        ],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/202310/123e7c4efff1b641b5b5ddcbdb6e0ad50b.pdf",
+            "icon": null,
+            "desc": "DR-HHM003S User Manual",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}
