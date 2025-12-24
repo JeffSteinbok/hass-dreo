@@ -146,12 +146,15 @@ class TestDreoAirCirculator(IntegrationTestBase):
             ha_fan = fan.DreoFanHA(pydreo_fan)
             assert ha_fan.is_on is True
             assert ha_fan.speed_count == 9
-            assert not(ha_fan.supported_features & FanEntityFeature.PRESET_MODE)
+            assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
             assert pydreo_fan.model == "DR-HPF008S"
             assert pydreo_fan.speed_range == (1, 9)
 
-            """This shouldn't be needed, but for some reason HA calls this even if preset_mode is not supported."""
-            assert ha_fan.preset_mode is None
+            # Verify preset modes
+            assert pydreo_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo"]
+            assert pydreo_fan.preset_mode == "normal"  # Initial mode is 1 which is "normal"
+            assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo"]
+            assert ha_fan.preset_mode == "normal"
 
             # Verify temperature sensor (HPF008S has temperature monitoring)
             assert pydreo_fan.temperature is not None
@@ -174,3 +177,20 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Maximum
                 assert mock_send_command.call_count >= 1
+
+            # Test preset mode commands
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 3})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})

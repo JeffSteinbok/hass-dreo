@@ -208,7 +208,8 @@ class TestPyDreoAirCirculator(TestBase):
         # Test initial state values
         assert fan.is_on is True
         assert fan.speed_range == (1, 9)
-        assert fan.preset_modes == None
+        assert fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo"]
+        assert fan.preset_mode == "normal"  # Initial mode is 1 which is "normal"
         assert fan.horizontally_oscillating is False
         assert fan.oscillating is False
         assert fan.vertical_angle_range == (-30, 90)
@@ -266,6 +267,27 @@ class TestPyDreoAirCirculator(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.horizontally_oscillating = False
             mock_send_command.assert_called_once()
+
+        # Test preset mode commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 2})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "sleep"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 3})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "natural"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "turbo"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 5})
+
+        # Test invalid preset mode
+        with pytest.raises(ValueError):
+            fan.preset_mode = "invalid_mode"
 
         # Verify temperature sensor is working
         assert fan.temperature is not None
