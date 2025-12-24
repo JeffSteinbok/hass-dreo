@@ -1,0 +1,140 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {
+                "state": -41,
+                "timestamp": 1756235565
+            },
+            "atmspeed": {
+                "state": 2,
+                "timestamp": 1756235565
+            },
+            "poweron": {
+                "state": false,
+                "timestamp": 1756590782
+            },
+            "atmcolor": {
+                "state": 65280,
+                "timestamp": 1756552955
+            },
+            "scheid": {
+                "state": 0,
+                "timestamp": 1756235565
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 1755684727
+                },
+                "timestamp": null
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1756235565
+            },
+            "mode": {
+                "state": 1,
+                "timestamp": 1756590718
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1756235565
+            },
+            "network_latency": {
+                "state": 9,
+                "timestamp": 1756235565
+            },
+            "module_hardware_model": {
+                "state": "HeFi",
+                "timestamp": 1756235565
+            },
+            "mcu_firmware_version": {
+                "state": "2.5.7",
+                "timestamp": 1756235565
+            },
+            "colortemp": {
+                "state": 60,
+                "timestamp": 1756552944
+            },
+            "temperature": {
+                "state": 82,
+                "timestamp": 1756590756
+            },
+            "module_hardware_mac": "**REDACTED**",
+            "atmmode": {
+                "state": 1,
+                "timestamp": 1756235565
+            },
+            "muteon": {
+                "state": false,
+                "timestamp": 1756235565
+            },
+            "lighton": {
+                "state": false,
+                "timestamp": 1756590654
+            },
+            "wifi_ssid": "**REDACTED**",
+            "mcu_hardware_model": {
+                "state": "FP6063U/US",
+                "timestamp": 1756235565
+            },
+            "windlevel": {
+                "state": 4,
+                "timestamp": 1756433744
+            },
+            "atmbri": {
+                "state": 3,
+                "timestamp": 1756235565
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1756235565
+            },
+            "module_firmware_version": {
+                "state": "3.7.4",
+                "timestamp": 1756235565
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1756235565
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 1756553156
+                },
+                "timestamp": null
+            },
+            "predefine": {
+                "state": "0",
+                "timestamp": 1756235565
+            },
+            "_ota": {
+                "state": 2,
+                "timestamp": 1756235565
+            },
+            "brightness": {
+                "state": 24,
+                "timestamp": 1756552962
+            },
+            "atmon": {
+                "state": false,
+                "timestamp": 1756590716
+            },
+            "scenes": {
+                "state": "{\"mode\":0,\"du\":600,\"minbri\":0,\"maxbri\":0}",
+                "timestamp": 1756235565
+            },
+            "fanon": {
+                "state": false,
+                "timestamp": 1756590782
+            }
+        },
+        "sn": "HCF002S_1",
+        "productId": "**REDACTED**",
+        "region": "us-east-2/emq",
+        "deviceInfo": null
+    }
+}

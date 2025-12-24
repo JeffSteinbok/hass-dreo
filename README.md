@@ -74,6 +74,7 @@ Models that have been specifically tested can be found below.
 
 #### Ceiling Fans
 -   DR-HCF001S
+-   DR-HCF002S
 
 ### Humidifiers
 *Initial beta-level support*

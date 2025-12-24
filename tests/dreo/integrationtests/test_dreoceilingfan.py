@@ -83,4 +83,63 @@ class TestDreoCeilingFan(IntegrationTestBase):
                     light_switch.turn_on(brightness=128)
                     assert mock_send_command.call_count >= 1                 
 
-        
+    def test_HCF002S(self):  # pylint: disable=invalid-name
+        """Test DR-HCF002S ceiling fan with RGB atmosphere lights."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            
+            self.get_devices_file_name = "get_devices_HCF002S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+            
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            
+            # Test basic fan properties
+            assert pydreo_fan.model == "DR-HCF002S"
+            assert pydreo_fan.speed_range == (1, 12)
+            assert ha_fan.speed_count == 12
+            assert pydreo_fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+            
+            # Test fan commands
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            
+            # Test preset modes (it will also turn on the fan if off)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode('auto')
+                # Should call both fanon and mode since fan is currently off
+                assert mock_send_command.call_count == 2
+                # Check the last call was setting mode to 5 (auto)
+                mock_send_command.assert_any_call(pydreo_fan, {MODE_KEY: 5})
+            
+            # Check switches
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(switches, ["Panel Sound"])
+            
+            # Check lights - should have both main light and RGB light
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["Light", "RGB Light"])
+            
+            # Test main light
+            main_light = self.get_entity_by_key(lights, "Light")
+            assert main_light is not None
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                main_light.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+            
+            # Test RGB light
+            rgb_light = self.get_entity_by_key(lights, "RGB Light")
+            assert rgb_light is not None
+            assert rgb_light.is_on is False
+            assert rgb_light.rgb_color == (0, 255, 0)  # Green from state
+            
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                rgb_light.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: True})
+            
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
+                # Should send both atmon and atmcolor commands
+                assert mock_send_command.call_count >= 1
+
