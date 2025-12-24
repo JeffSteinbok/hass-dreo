@@ -75,7 +75,7 @@ class TestDreoHumidifier(TestDeviceBase):
             self.verify_expected_entities(switch.get_entries([mocked_pydreo_humidifier]), [])
 
             # Check to see what numbers are added to ceiling Humidifiers
-            self.verify_expected_entities(number.get_entries([mocked_pydreo_humidifier]), [])
+            self.verify_expected_entities(number.get_entries([mocked_pydreo_humidifier]), ["Target Humidity"])
 
     def test_dehumidifier_simple(self):
         """Test the creation of the dehumidifier entity."""

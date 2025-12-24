@@ -48,7 +48,7 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
                 assert len(pydreo_ec.preset_modes) > 0
 
             numbers = number.get_entries([pydreo_ec])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
 
             sensors = sensor.get_entries([pydreo_ec])
             self.verify_expected_entities(sensors, ["Temperature", "Humidity","Use since cleaning"])
