@@ -95,9 +95,16 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         translation_key="htalevel",
         attr_name="htalevel",
         icon="mdi:heat-wave"
-    )    
+    ),
+    DreoNumberEntityDescription(
+        key="Target Humidity",
+        translation_key="target_humidity",
+        attr_name="target_humidity",
+        icon="mdi:water-percent",
+        min_value=40,
+        max_value=90,
+    )
 )
-
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
     """Add Number entries for Dreo devices."""
