@@ -203,6 +203,21 @@ This plugin supports configuration from the HomeAssistant UX. The following opti
 
 Note that at present you need to restart HA when you change an option for it to take effect.
 
+## Device Management
+
+### Removing Devices
+
+You can remove individual Dreo devices from Home Assistant through the UI:
+
+1. Navigate to **Settings** → **Devices & Services**
+2. Click on the **Dreo** integration
+3. Click on the device you want to remove
+4. Click the three-dot menu (⋮) in the top right
+5. Select **Delete**
+6. Confirm the deletion
+
+The device will be removed from Home Assistant but will remain in your Dreo account. If you reload the integration or restart Home Assistant, the device will be re-discovered and added back automatically.
+
 ## Debugging
 
 Use the **Diagnostics** feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
