@@ -20,7 +20,7 @@ The maintainers and I only have a small subset of the devices that this integrat
 
 ## Interested in Contributing?
 
-I'm always happy to have people add features via Pull Request. More info on how to capture network traces and what not can be found on: [Contributing](contributing.md).
+I'm always happy to have people add features via Pull Request. More info on how to capture network traces and what not can be found on: [Contributing](CONTRIBUTING.md).
 
 ## Table of Contents
 
@@ -28,141 +28,29 @@ I'm always happy to have people add features via Pull Request. More info on how 
 - [Installation](#installation)
 - [Options](#options)
 - [Debugging](#debugging)
-- [Adding new Fans](#adding-new-fans)
+- [Adding New Devices](#adding-new-devices)
 - [To Do](#to-do)
 
 ## Compatibility
 
-Currently supported models are listed below.
+This integration supports the following device types:
 
-### Fans
+| Device Type | Model Prefix(es) |
+| ----------- | ---------------- |
+| Tower Fans | DR-HTF |
+| Air Circulators | DR-HAF, DR-HPF |
+| Ceiling Fans | DR-HCF |
+| Air Purifiers | DR-HAP |
+| Space Heaters | DR-HSH, WH* |
+| Air Conditioners | DR-HAC |
+| Humidifiers | DR-HHM |
+| Dehumidifiers | DR-HDH |
+| Cookers (ChefMaker) | DR-KCM |
+| Evaporative Coolers | DR-HEC |
 
-The following fans types are supported. Not all variants have been tested.
+**[View complete list of tested models →](SUPPORTED_MODELS.md)**
 
-| Fan Type | Model Prefix(es) | Notes |
-| -------- | ------------ | ------ |
-| Tower Fans | DR-HTF | |
-| Air Circulators | DR-HAF, DR-HPF | |
-| Ceiling Fans | DR-HCF | |
-| Air Purifiers | DR-HAP | |
-| Air Conditioners | DR-HAC | |
-| Evaporative Coolers | DR-HEC | |
-
-Models that have been specifically tested can be found below.
-
-#### Tower Fans
-
-- DR-HTF001S
-- DR-HTF002S
-- DR-HTF004S
-- DR-HTF005S
-- DR-HTF007S
-- DR-HTF008S
-- DR-HTF009S
-- DR-HTF010S
-
-#### Air Circulators
-
-- DR-HAF001S
-- DR-HAF003S
-- DR-HAF004S
-- DR-HPF001S
-- DR-HPF002S
-- DR-HPF004S
-- DR-HPF005S
-- DR-HPF007S
-- DR-HPF008S
-
-#### Ceiling Fans
--   DR-HCF001S
--   DR-HCF002S
-
-### Humidifiers
-*Initial beta-level support*
-
-- DR-HHM*
-- DR-HHM001S
-- DR-HHM003S (HM713S/813S)
-- DR-HHM004S
-- DR-HHM014S
-
-### Dehumidifiers
-*Initial beta-level support*
-
-- DR-HDH001S
-- DR-HDH002S
-
-### Space Heaters
-
-- DR-HSH004S
-- DR-HSH006S
-- DR-HSH009S
-- DR-HSH009AS
-- DR-HSH0017S
-- DR-HSH034S
-- WH714S
-- WH719S
-- WH739S
-- WH517S
-
-### Air Conditioners
-
-- DR-HAC005S
-- DR-HAC006S
-
-### Cookers
-
-- DR-KCM001S
-
-### Evaporative Coolers
-*Initial beta-level support*
-
-- DR-HEC002S (Beta)
-
-Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
-
-Oscillation is now supported, but shown under "swing mode" since this is how the climate device models that. Note that for all heaters, to satisfy UL listings the
-remote control is disabled if it has not been used for 24 hours, which will then necessitate a quick tap on the WiFi button on the physical heater to resume the ability
-to control the device remotely via either the Dreo app or this HA integration.
-
-<table>
-    <tr>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/heat-mode-thermostat.png" width="300" alt="heat mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/fan-mode-thermostat.png" width="300" alt="fan mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/off-mode-thermostat.png" width="300" alt="off mode thermostat"></td>
-    </tr>
-    <tr>
-        <td>Auto/Eco Mode</td>
-        <td>Heat Mode</td>
-        <td>Fan Mode</td>
-        <td>Off</td>
-    </tr>
-    <tr>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/mode-list.png" width="200" alt="HVAC mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/fan-mode-list.png" width="200" alt="fan mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/preset-mode-list.png" width="200" alt="preset mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/swing-mode-list.png" width="200" alt="swing mode list"></td>
-    </tr>
-    <tr>
-        <td>HVAC Modes</td>
-        <td>Fan Modes</td>
-        <td>Preset Modes</td>
-        <td>Swing Modes</td>
-    </tr>
-    <tr>
-        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/heater-entities.png" width="200" alt="heater entities"></td>
-        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/compact-thermostat.png" width="200" alt="compact-thermostat"></td> 
-    </tr>
-    <tr>
-        <td colspan="2" align="center">Heater Entities</td>
-        <td colspan="2" align="center">Compact Thermostat View</td>
-    </tr>
-</table>
-
-#### Different models
-
-If you have a different model that you can try, please see instructions [below](#addingfans).
+**[Space Heater Documentation →](HEATERS.md)** - Learn about heater-specific features, thermostat controls, and the 24-hour remote control timeout.
 
 ## Installation
 
@@ -259,21 +147,22 @@ logger:
         homeassistant.components.websocket_api: debug
 ```
 
-## Adding New Fans
+## Adding New Devices
 
 Don't see your model listed above? Create an [issue](https://github.com/JeffSteinbok/hass-dreo/issues) and I'll add it.
 
 **Please make sure to include:**
 
-- Model - in the format above
-- Number of speeds the fan supports (not including "off")
-- Does the fan support oscillating?
+- Model number (in the format shown in [Supported Models](SUPPORTED_MODELS.md))
+- Device type (fan, heater, humidifier, etc.)
+- For fans: Number of speeds supported (not including "off")
+- Does the device support oscillating?
 - What preset modes are supported?
-- Is temperature supported?
+- Any special features (temperature display, timer, etc.)
 
 Depending on answers, I may reach out and need you to pull some debug logs.
 
-### Debug Logs for New Fans
+### Debug Logs for New Devices
 
 1. Enable [debugging](#debugging)
 2. Go to the Dreo app on your mobile device and perform the various commands you want to be able to use in HA. Dreo servers will send updates to the WebSocket that the integration is listening on.
