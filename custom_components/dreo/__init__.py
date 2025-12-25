@@ -142,3 +142,24 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
 
     pydreo_manager.stop_transport()
     return unload_ok
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
+) -> bool:
+    """Remove a config entry from a device.
+    
+    This allows users to delete Dreo devices from the UI.
+    Since Dreo devices are cloud-based and managed by the Dreo service,
+    we can safely remove them from Home Assistant's device registry.
+    """
+    _LOGGER.debug(
+        "Removing device %s (identifiers: %s) from config entry %s",
+        device_entry.name,
+        device_entry.identifiers,
+        config_entry.entry_id,
+    )
+    
+    # For cloud-based devices, we don't need to do any cleanup on the device itself.
+    # The device will still exist in the Dreo cloud and can be re-added by reloading
+    # the integration or if the device is discovered again.
+    return True
