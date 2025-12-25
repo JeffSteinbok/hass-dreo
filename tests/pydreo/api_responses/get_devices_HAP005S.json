@@ -1,0 +1,113 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1834678463454253062",
+        "sn": "HAP005S_1",
+        "brand": "Dreo",
+        "model": "DR-HAP005S",
+        "productId": "**REDACTED**",
+        "productName": "Air Purifier",
+        "deviceName": "DEBUGTEST - Air Purifier - DR-HAP005S",
+        "shared": false,
+        "series": null,
+        "seriesName": "Macro AP505S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "controlsConf": {
+          "template": "DR-HAP005S",
+          "lottie": {
+            "frames": [
+              {
+                "value": 4
+              }
+            ],
+            "key": "aq"
+          },
+          "schedule": {
+            "modes": [
+              {
+                "icon": "ic_manul_wind_color",
+                "title": "device_control_mode_manual",
+                "cmd": "mode",
+                "value": "manual",
+                "valueType": 2,
+                "isSelected": false,
+                "controls": [
+                  {
+                    "type": 0,
+                    "title": "device_control_mode_manual_level",
+                    "startColor": "#1FD3E0",
+                    "endColor": "#4663F7",
+                    "value": 2,
+                    "valueType": 1,
+                    "startValue": 1,
+                    "endValue": 4,
+                    "groupId": 0,
+                    "isSelected": false,
+                    "icon": ""
+                  }
+                ]
+              }
+            ]
+          },
+          "timer": {
+            "minHour": 0,
+            "maxHour": 23
+          },
+          "preference": [
+            {
+              "id": "220",
+              "type": "Child Lock",
+              "title": "device_control_childlock",
+              "image": "ic_child_lock",
+              "reverse": false,
+              "cmd": "childlockon"
+            }
+          ],
+          "control": [
+            {
+              "id": "110",
+              "type": "Manual",
+              "title": "device_control_mode_manual",
+              "cmd": "mode",
+              "value": "manual",
+              "items": [
+                {
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
+                },
+                {
+                  "text": "4",
+                  "cmd": "windlevel",
+                  "value": 4
+                }
+              ]
+            }
+          ],
+          "category": "Air Purifier"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        }
+      }
+    ]
+  }
+}

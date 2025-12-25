@@ -59,6 +59,14 @@ def main():
     
     print(f"\n✓ Created {output_file} with {len(combined_devices)} devices")
     
+    # Clean existing state files in destination
+    existing_state_files = list(E2E_TEST_DATA_DIR.glob("get_device_state_*.json"))
+    if existing_state_files:
+        print(f"\nCleaning {len(existing_state_files)} existing state files:")
+        for file_path in existing_state_files:
+            file_path.unlink()
+            print(f"  ✓ Deleted {file_path.name}")
+    
     # Copy all get_device_state files
     state_files = list(API_RESPONSES_DIR.glob("get_device_state_*.json"))
     state_files.sort()

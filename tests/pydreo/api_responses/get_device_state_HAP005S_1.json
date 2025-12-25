@@ -1,0 +1,122 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -38,
+        "timestamp": 1745360313
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1745360313
+      },
+      "lifetime": {
+        "state": 100,
+        "timestamp": 1745360313
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1745360313
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1745360311
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1745360313
+      },
+      "mode": {
+        "state": "auto-regular",
+        "timestamp": 1745360313
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1745360313
+      },
+      "network_latency": {
+        "state": 169,
+        "timestamp": 1745360313
+      },
+      "rgbalwayson": {
+        "state": false,
+        "timestamp": 1745360313
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1745360313
+      },
+      "mcu_firmware_version": {
+        "state": "0.5.6",
+        "timestamp": 1745360313
+      },
+      "module_hardware_mac": {
+        "state": "**REDACTED**",
+        "timestamp": 1745360313
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1745360313
+      },
+      "wifi_ssid": {
+        "state": "**REDACTED**",
+        "timestamp": 1745360313
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8573/US",
+        "timestamp": 1745360313
+      },
+      "windlevel": {
+        "state": 1,
+        "timestamp": 1745360313
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1745360313
+      },
+      "module_firmware_version": {
+        "state": "3.6.4",
+        "timestamp": 1745360313
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1745360313
+      },
+      "aq": {
+        "state": 1,
+        "timestamp": 1745360313
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1745360311
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 2,
+        "timestamp": 1745360313
+      },
+      "pm25": {
+        "state": 1,
+        "timestamp": 1745361042
+      },
+      "ledalwayson": {
+        "state": true,
+        "timestamp": 1745360313
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1745360313
+      }
+    },
+    "sn": "HAP005S_1",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}

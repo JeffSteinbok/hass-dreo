@@ -15,7 +15,7 @@
         "model": "DR-HSH010S",
         "productId": "**REDACTED**",
         "productName": "Heater",
-        "deviceName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH010S",
         "shared": false,
         "series": null,
         "seriesName": "OH310S",

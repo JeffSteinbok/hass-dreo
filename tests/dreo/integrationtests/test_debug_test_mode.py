@@ -26,7 +26,7 @@ class TestDebugTestMode:
 
         pydreo_manager.login()
         pydreo_manager.load_devices()
-        assert len(pydreo_manager.devices) == 22
+        assert len(pydreo_manager.devices) == 24
         
         # Find tower fan by serial number
         tower_fan = next((d for d in pydreo_manager.devices if d.serial_number == "HTF005S_1"), None)

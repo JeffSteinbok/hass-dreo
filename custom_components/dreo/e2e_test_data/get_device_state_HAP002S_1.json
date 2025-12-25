@@ -1,0 +1,102 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "mcu_hardware_model": {
+        "state": "meidi",
+        "timestamp": 1739610906
+      },
+      "wifi_ssid": {
+        "state": "**REDACTED**",
+        "timestamp": 1739610906
+      },
+      "epmon": {
+        "state": false,
+        "timestamp": 1739610906
+      },
+      "wifi_rssi": {
+        "state": -31,
+        "timestamp": 1739610906
+      },
+      "windlevel": {
+        "state": 17,
+        "timestamp": 1739611719
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1739612687
+      },
+      "lifetime": {
+        "state": 2074,
+        "timestamp": 1739610906
+      },
+      "timeron": {
+        "state": {
+          "ts": 1739610905,
+          "du": 0
+        },
+        "timestamp": null
+      },
+      "module_firmware_version": {
+        "state": "1.2.37",
+        "timestamp": 1739610906
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1739610905
+      },
+      "mode": {
+        "state": "manual",
+        "timestamp": 1739611715
+      },
+      "aq": {
+        "state": 1,
+        "timestamp": 1739611823
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1739610906
+      },
+      "timeroff": {
+        "state": {
+          "ts": 1739610905,
+          "du": 0
+        },
+        "timestamp": null
+      },
+      "network_latency": {
+        "state": 75,
+        "timestamp": 1739610906
+      },
+      "module_hardware_model": {
+        "state": "PAI-051",
+        "timestamp": 1739610906
+      },
+      "mcu_firmware_version": {
+        "state": "0.1.8",
+        "timestamp": 1739610906
+      },
+      "module_hardware_mac": {
+        "state": "**REDACTED**",
+        "timestamp": 1739610906
+      },
+      "ledalwayson": {
+        "state": true,
+        "timestamp": 1739610906
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1739610906
+      },
+      "muteon": {
+        "state": false,
+        "timestamp": 1739610906
+      }
+    },
+    "sn": "HAP002S_1",
+    "productId": "**REDACTED**",
+    "region": "us-east-2",
+    "deviceInfo": null
+  }
+}
