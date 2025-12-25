@@ -150,7 +150,7 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         device_ranges={
             SPEED_RANGE: (1, 10),
-            HORIZONTAL_ANGLE_RANGE: (-90, 90)
+            HORIZONTAL_ANGLE_RANGE: (-60, 60)
         }),
 
     # Ceiling Fans
