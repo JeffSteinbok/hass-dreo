@@ -65,6 +65,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
         # Horizontal angle adjustment (simpler angle control, similar to Tower Fan)
         self._horizontal_angle_adj = None
 
+    def _uses_hangleadj_for_horizontal(self) -> bool:
+        """Check if device uses hangleadj (simpler angle control) instead of hoscangle."""
+        return self._horizontal_angle_adj is not None
+
+    def _has_vertical_osc_angle_disabled(self) -> bool:
+        """Check if vertical oscillation angle should be disabled (voscangle is 0 and device uses hangleadj)."""
+        return self._horizontal_angle_adj is not None and self._vertical_oscillation_angle == 0
+
     @staticmethod
     def parse_swing_angle_range(details: Dict[str, list], direction: str) -> tuple[int, int] | None:
         """Parse the swing angle range from the details."""
@@ -248,7 +256,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def vertical_osc_angle_top(self) -> int:
         """Get the current top vertical oscillation angle."""
         if self._cruise_conf is not None:
-            return self._cruise_conf.split(",")[0]
+            return int(self._cruise_conf.split(",")[0])
+        return None
 
     @vertical_osc_angle_top.setter
     def vertical_osc_angle_top(self, value: int) -> None:
@@ -268,7 +277,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def vertical_osc_angle_bottom(self) -> int:
         """Get the current bottom vertical oscillation angle."""
         if self._cruise_conf is not None:
-            return self._cruise_conf.split(",")[2]
+            return int(self._cruise_conf.split(",")[2])
+        return None
 
     @vertical_osc_angle_bottom.setter
     def vertical_osc_angle_bottom(self, value: int) -> None:
@@ -288,7 +298,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def horizontal_osc_angle_right(self) -> int:
         """Get the current right horizontal oscillation angle."""
         if self._cruise_conf is not None:
-            return self._cruise_conf.split(",")[1]
+            return int(self._cruise_conf.split(",")[1])
+        return None
 
     @horizontal_osc_angle_right.setter
     def horizontal_osc_angle_right(self, value: int) -> None:
@@ -308,7 +319,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def horizontal_osc_angle_left(self) -> int:
         """Get the current left horizontal oscillation angle."""
         if self._cruise_conf is not None:
-            return self._cruise_conf.split(",")[3]
+            return int(self._cruise_conf.split(",")[3])
+        return None
 
     @horizontal_osc_angle_left.setter
     def horizontal_osc_angle_left(self, value: int) -> None:
@@ -332,7 +344,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
             return self._horizontal_angle_adj
         # Otherwise use fixedconf (more complex angle control)
         if (self._fixed_conf is not None):
-            return self._fixed_conf.split(",")[1]
+            return int(self._fixed_conf.split(",")[1])
+        return None
 
     @horizontal_angle.setter
     def horizontal_angle(self, value: int) -> None:
@@ -351,7 +364,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def vertical_angle(self) -> int:
         """Get the current fixed vertical angle."""
         if self._fixed_conf is not None:
-            return self._fixed_conf.split(",")[0]
+            return int(self._fixed_conf.split(",")[0])
+        return None
 
     @vertical_angle.setter
     def vertical_angle(self, value: int) -> None:
@@ -369,7 +383,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         and do NOT have hangleadj (newer simpler angle control).
         """
         # If hangleadj is available, this device doesn't use horizontal_oscillation_angle
-        if self._horizontal_angle_adj is not None:
+        if self._uses_hangleadj_for_horizontal():
             return None
         
         if self._horizontal_oscillation_angle is not None:
@@ -381,7 +395,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Set the horizontal oscillation angle (for older firmware)."""
         _LOGGER.debug("PyDreoAirCirculator:horizontal_oscillation_angle.setter")
         # If hangleadj is available, this device doesn't use horizontal_oscillation_angle
-        if self._horizontal_angle_adj is not None:
+        if self._uses_hangleadj_for_horizontal():
             raise NotImplementedError("This device uses horizontal_angle instead")
         
         if self._horizontal_oscillation_angle is not None:
@@ -392,7 +406,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def horizontal_oscillation_angle_range(self):
         """Get the horizontal oscillation angle range (for older firmware)."""
         # If hangleadj is available, this device doesn't use horizontal_oscillation_angle
-        if self._horizontal_angle_adj is not None:
+        if self._uses_hangleadj_for_horizontal():
             return None
         return self.horizontal_angle_range
 
@@ -404,7 +418,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         If the device has hangleadj and voscangle is 0, it likely doesn't support vertical angle.
         """
         # If voscangle is 0 and hangleadj is present, the device likely doesn't support vertical angle
-        if self._horizontal_angle_adj is not None and self._vertical_oscillation_angle == 0:
+        if self._has_vertical_osc_angle_disabled():
             return None
         
         if self._vertical_oscillation_angle is not None:
@@ -416,7 +430,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Set the vertical oscillation angle (for older firmware)."""
         _LOGGER.debug("PyDreoAirCirculator:vertical_oscillation_angle.setter")
         # If voscangle is 0 and hangleadj is present, the device likely doesn't support vertical angle
-        if self._horizontal_angle_adj is not None and self._vertical_oscillation_angle == 0:
+        if self._has_vertical_osc_angle_disabled():
             raise NotImplementedError("This device does not support vertical oscillation angle")
         
         if self._vertical_oscillation_angle is not None:
@@ -427,7 +441,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def vertical_oscillation_angle_range(self):
         """Get the vertical oscillation angle range (for older firmware)."""
         # If voscangle is 0 and hangleadj is present, the device likely doesn't support vertical angle
-        if self._horizontal_angle_adj is not None and self._vertical_oscillation_angle == 0:
+        if self._has_vertical_osc_angle_disabled():
             return None
         return self.vertical_angle_range
 

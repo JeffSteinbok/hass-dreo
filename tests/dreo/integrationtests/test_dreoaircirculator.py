@@ -288,7 +288,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             self.get_devices_file_name = "get_devices_HPF005S.json"
             self.pydreo_manager.load_devices()
             assert len(self.pydreo_manager.devices) == 1
-            
+
             pydreo_fan = self.pydreo_manager.devices[0]
             ha_fan = fan.DreoFanHA(pydreo_fan)
             assert ha_fan.is_on is True
