@@ -8,7 +8,9 @@ assignees: ''
 ---
 
 Include all of the following:
-- Model - in the format used in the README.MD
-- Link to a product page so I can see what this device is
+- [ ] Model - in the format used in the README.MD
+- [ ] Link to a product page so I can see what this device is
+- [ ] Diagnostics - see below
 
+## Diagnostics
 Make sure you've installed this integration, then from the integration settings page, select **Download Diagnostics** and attach that file.
