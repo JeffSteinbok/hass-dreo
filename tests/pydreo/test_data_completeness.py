@@ -40,6 +40,17 @@ def get_sn_from_devices_file(file_path: Path) -> str:
     return None
 
 
+def get_device_id_from_devices_file(file_path: Path) -> str:
+    """Extract the deviceId from a get_devices file."""
+    with open(file_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        if data.get("code") == 0 and "data" in data:
+            devices_list = data["data"].get("list", [])
+            if devices_list:
+                return devices_list[0].get("deviceId", "")
+    return None
+
+
 class TestDeviceDataCompleteness:
     """Test class to validate completeness of test data files."""
 
@@ -155,5 +166,109 @@ class TestDeviceDataCompleteness:
             for invalid in invalid_sns:
                 error_message += f"  - {invalid['file']}: SN '{invalid['sn']}' "
                 error_message += f"should match pattern '{invalid['expected_pattern']}'\n"
+            
+            pytest.fail(error_message)
+
+    def test_no_duplicate_serial_numbers(self):
+        """Test that all serial numbers are unique across all device files."""
+        device_files = list(API_RESPONSES_DIR.glob("get_devices_*.json"))
+        
+        # Files to skip (special test cases)
+        skip_files = {"get_devices_multiple_1.json"}
+        
+        # Dictionary to track serial numbers and which files they appear in
+        sn_to_files = {}
+        
+        for device_file in device_files:
+            # Skip special test files
+            if device_file.name in skip_files:
+                continue
+                
+            sn = get_sn_from_devices_file(device_file)
+            
+            if sn:
+                if sn not in sn_to_files:
+                    sn_to_files[sn] = []
+                sn_to_files[sn].append(device_file.name)
+        
+        # Find duplicates
+        duplicates = {sn: files for sn, files in sn_to_files.items() if len(files) > 1}
+        
+        if duplicates:
+            error_message = "Duplicate serial numbers found:\n"
+            for sn, files in duplicates.items():
+                error_message += f"  - Serial number '{sn}' appears in:\n"
+                for file in files:
+                    error_message += f"    • {file}\n"
+            
+            pytest.fail(error_message)
+
+    def test_no_duplicate_device_ids(self):
+        """Test that all deviceIds are unique across all device files."""
+        device_files = list(API_RESPONSES_DIR.glob("get_devices_*.json"))
+        
+        # Files to skip (special test cases)
+        skip_files = {"get_devices_multiple_1.json"}
+        
+        # Dictionary to track deviceIds and which files they appear in
+        device_id_to_files = {}
+        
+        for device_file in device_files:
+            # Skip special test files
+            if device_file.name in skip_files:
+                continue
+                
+            device_id = get_device_id_from_devices_file(device_file)
+            
+            if device_id:
+                # Skip redacted device IDs (used in test files for privacy)
+                if device_id == "**REDACTED**":
+                    continue
+                    
+                if device_id not in device_id_to_files:
+                    device_id_to_files[device_id] = []
+                device_id_to_files[device_id].append(device_file.name)
+        
+        # Find duplicates
+        duplicates = {did: files for did, files in device_id_to_files.items() if len(files) > 1}
+        
+        if duplicates:
+            error_message = "Duplicate deviceIds found:\n"
+            for device_id, files in duplicates.items():
+                error_message += f"  - deviceId '{device_id}' appears in:\n"
+                for file in files:
+                    error_message += f"    • {file}\n"
+            
+            pytest.fail(error_message)
+
+    def test_device_ids_are_numeric_strings(self):
+        """Test that all deviceIds are strings containing only digits."""
+        device_files = list(API_RESPONSES_DIR.glob("get_devices_*.json"))
+        
+        # Files to skip (special test cases or files with legitimately redacted deviceIds)
+        skip_files = {}
+        invalid_device_ids = []
+        
+        for device_file in device_files:
+            # Skip special test files
+            if device_file.name in skip_files:
+                continue
+                
+            device_id = get_device_id_from_devices_file(device_file)
+            
+            if device_id:
+                # Check if deviceId is a string of digits
+                if not device_id.isdigit():
+                    invalid_device_ids.append({
+                        "file": device_file.name,
+                        "device_id": device_id,
+                        "reason": "deviceId must be a string containing only digits"
+                    })
+        
+        if invalid_device_ids:
+            error_message = "Invalid deviceIds found (must be numeric strings):\n"
+            for invalid in invalid_device_ids:
+                error_message += f"  - {invalid['file']}: deviceId '{invalid['device_id']}' "
+                error_message += f"({invalid['reason']})\n"
             
             pytest.fail(error_message)

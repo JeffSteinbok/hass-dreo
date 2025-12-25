@@ -15,11 +15,11 @@ logger.setLevel(logging.DEBUG)
 class TestDreoAirConditioner(IntegrationTestBase):
     """Test Dreo Ceiling Fan class and PyDreo together."""
 
-    def test_HAC001S(self):  # pylint: disable=invalid-name
+    def test_HAC005S(self):  # pylint: disable=invalid-name
         """Load air conditioner and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
 
-            self.get_devices_file_name = "get_devices_HAC001S.json"
+            self.get_devices_file_name = "get_devices_HAC005S.json"
             self.pydreo_manager.load_devices()
             assert len(self.pydreo_manager.devices) == 1
 

@@ -9,13 +9,13 @@
     "familyRooms": null,
     "list": [
       {
-        "deviceId": "**REDACTED**",
-        "sn": "HAC001S_1",
+        "deviceId": "89327590437543753405",
+        "sn": "HAC005S_1",
         "brand": "Dreo",
         "model": "DR-HAC005S",
         "productId": "REDACTED",
         "productName": "Air Conditioner",
-        "deviceName": "DEBUGTEST - Air Conditioner - DR-HAC001S",
+        "deviceName": "DEBUGTEST - Air Conditioner - DR-HAC005S",
         "shared": false,
         "series": null,
         "seriesName": "AC515S",
@@ -524,7 +524,7 @@
         ]
       },
       {
-        "deviceId": "1834678463454253057",
+        "deviceId": "1834678463454253058",
         "sn": "HAC006S_1",
         "brand": "Dreo",
         "model": "DR-HAC006S",
@@ -1039,7 +1039,7 @@
         ]
       },
       {
-        "deviceId": "***REMOVED BY ME ***",
+        "deviceId": "59843908765349674",
         "sn": "HAF001S_1",
         "brand": "Dreo",
         "model": "DR-HAF001S",
@@ -2078,7 +2078,7 @@
         ]
       },
       {
-        "deviceId": "**REDACTED**",
+        "deviceId": "1834678463454253061",
         "sn": "HAP002S_1",
         "brand": "Dreo",
         "model": "DR-HAP002S",
@@ -2411,7 +2411,7 @@
         ]
       },
       {
-        "deviceId": "**REDACTED**",
+        "deviceId": "1834678463454253062",
         "sn": "HAP005S_1",
         "brand": "Dreo",
         "model": "DR-HAP005S",
@@ -2752,7 +2752,7 @@
         ]
       },
       {
-        "deviceId": "1769274833431957506",
+        "deviceId": "1769274833431957507",
         "sn": "HCF002S_1",
         "brand": "Dreo",
         "model": "DR-HCF002S",
@@ -3412,7 +3412,7 @@
         "model": "DR-HHM003S",
         "productId": "HHM003S_1",
         "productName": "Humidifier",
-        "deviceName": "Humidifier2",
+        "deviceName": "DEBUGTEST - Heater - DR-HHM003S",
         "shared": false,
         "series": null,
         "seriesName": "HM713S/813S",
@@ -4626,7 +4626,7 @@
         "model": "DR-HSH010S",
         "productId": "**REDACTED**",
         "productName": "Heater",
-        "deviceName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH010S",
         "shared": false,
         "series": null,
         "seriesName": "OH310S",
