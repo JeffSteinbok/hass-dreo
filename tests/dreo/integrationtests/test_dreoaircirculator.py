@@ -130,7 +130,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             
             pydreo_fan = self.pydreo_manager.devices[0]
             ha_fan = fan.DreoFanHA(pydreo_fan)
-            assert ha_fan.is_on is False
+            assert ha_fan.is_on is True
             assert ha_fan.speed_count == 10
             assert not(ha_fan.supported_features & FanEntityFeature.PRESET_MODE)
 

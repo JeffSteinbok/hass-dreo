@@ -4,7 +4,7 @@
   "data": {
     "currentPage": 1,
     "pageSize": 100,
-    "totalNum": 24,
+    "totalNum": 26,
     "totalPage": 1,
     "familyRooms": null,
     "list": [
@@ -4887,7 +4887,7 @@
       },
       {
         "deviceId": "1959069279151255554",
-        "sn": "DR-HPF007S_1",
+        "sn": "HPF007S_1",
         "brand": "Dreo",
         "model": "DR-HPF007S",
         "productId": "**REDACTED**",

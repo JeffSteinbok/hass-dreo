@@ -80,7 +80,7 @@ class TestDeviceDataCompleteness:
             sn_from_content = get_sn_from_devices_file(device_file)
             
             # Construct expected state file name
-            expected_state_file = API_RESPONSES_DIR / f"get_device_state_{model_from_filename}_1.json"
+            expected_state_file = API_RESPONSES_DIR / f"get_device_state_{sn_from_content}.json"
             
             if not expected_state_file.exists():
                 missing_state_files.append({
@@ -94,7 +94,7 @@ class TestDeviceDataCompleteness:
         if missing_state_files:
             error_message = "Missing get_device_state files:\n"
             for missing in missing_state_files:
-                error_message += f"  - {missing['devices_file']} (model: {missing['model_from_content']}) "
+                error_message += f"  - {missing['devices_file']} (model: {missing['sn_from_content']}) "
                 error_message += f"needs {missing['expected_state_file']}\n"
             
             pytest.fail(error_message)
