@@ -7,6 +7,7 @@ from .constant import (
     LOGGER_NAME,
     HORIZONTAL_OSCILLATION_KEY,
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
+    HORIZONTAL_ANGLE_ADJ_KEY,
     VERTICAL_OSCILLATION_KEY,
     VERTICAL_OSCILLATION_ANGLE_KEY,
     CRUISECONF_KEY,
@@ -60,6 +61,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
         # Oscillation angle for older firmware (single angle value, not min/max range)
         self._horizontal_oscillation_angle = None
         self._vertical_oscillation_angle = None
+        
+        # Horizontal angle adjustment (simpler angle control, similar to Tower Fan)
+        self._horizontal_angle_adj = None
 
     @staticmethod
     def parse_swing_angle_range(details: Dict[str, list], direction: str) -> tuple[int, int] | None:
@@ -323,6 +327,10 @@ class PyDreoAirCirculator(PyDreoFanBase):
     @property
     def horizontal_angle(self) -> int:
         """Get the current fixed horizontal angle."""
+        # First check if hangleadj is available (simpler angle control)
+        if self._horizontal_angle_adj is not None:
+            return self._horizontal_angle_adj
+        # Otherwise use fixedconf (more complex angle control)
         if (self._fixed_conf is not None):
             return self._fixed_conf.split(",")[1]
 
@@ -330,7 +338,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def horizontal_angle(self, value: int) -> None:
         """Set the horizontal angle."""
         _LOGGER.debug("PyDreoAirCirculator:horizontal_angle.setter")
-        if (self._fixed_conf is not None):
+        # First check if hangleadj is available (simpler angle control)
+        if self._horizontal_angle_adj is not None:
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
+            self._send_command(HORIZONTAL_ANGLE_ADJ_KEY, int(value))
+        # Otherwise use fixedconf (more complex angle control)
+        elif (self._fixed_conf is not None):
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
             self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{int(value)}")
 
@@ -400,6 +413,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
         self._horizontal_oscillation_angle = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
         self._vertical_oscillation_angle = self.get_state_update_value(state, VERTICAL_OSCILLATION_ANGLE_KEY)
+        self._horizontal_angle_adj = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -433,3 +447,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         val_vert_osc_angle = self.get_server_update_key_value(message, VERTICAL_OSCILLATION_ANGLE_KEY)
         if isinstance(val_vert_osc_angle, int):
             self._vertical_oscillation_angle = val_vert_osc_angle
+
+        val_horiz_angle_adj = self.get_server_update_key_value(message, HORIZONTAL_ANGLE_ADJ_KEY)
+        if isinstance(val_horiz_angle_adj, int):
+            self._horizontal_angle_adj = val_horiz_angle_adj
