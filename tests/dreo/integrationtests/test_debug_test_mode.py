@@ -39,5 +39,7 @@ class TestDebugTestMode:
         assert tower_fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
         assert tower_fan.oscillating is not None
 
+        assert tower_fan.temperature_offset == -2
+
         tower_fan.oscillating = True
         assert tower_fan.oscillating is True, "Fan should be oscillating after setting to True"

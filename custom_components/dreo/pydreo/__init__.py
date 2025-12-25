@@ -326,12 +326,20 @@ class PyDreo:  # pylint: disable=function-redefined
 
         self.in_process = True
         setting_value = None
-        response, _ = self.call_dreo_api(
-            DREO_API_SETTING_GET, 
-            {   DEVICESN_KEY: device.serial_number,
-                DREO_API_SETTING_DATA_KEY: setting
-            }
-        )
+        response = None
+
+        if self.debug_test_mode:
+            _LOGGER.debug("Debug Test Mode is enabled.  Using test payload.")
+            # Look for key format: {serial_number}_{setting_value}
+            lookup_key = f"{device.serial_number}_{setting.value}"
+            response = self.debug_test_mode_payload.get(lookup_key, None)
+        else:
+            response, _ = self.call_dreo_api(
+                DREO_API_SETTING_GET, 
+                {   DEVICESN_KEY: device.serial_number,
+                    DREO_API_SETTING_DATA_KEY: setting
+                }
+            )
 
         if response and Helpers.code_check(response):
             if DATA_KEY in response:
