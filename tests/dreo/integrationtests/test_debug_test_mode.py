@@ -18,15 +18,18 @@ class TestDebugTestMode:
 
     def test_pydreo(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
+        payload = get_debug_test_mode_payload("custom_components/dreo")
+        expected_device_count = len(payload["get_devices"]["data"]["list"])
+        
         pydreo_manager = PyDreo('EMAIL', 
                                 'PASSWORD', 
                                 redact=True, 
                                 debug_test_mode=True, 
-                                debug_test_mode_payload=get_debug_test_mode_payload("custom_components/dreo")) # pylint: disable=E0601
+                                debug_test_mode_payload=payload) # pylint: disable=E0601
 
         pydreo_manager.login()
         pydreo_manager.load_devices()
-        assert len(pydreo_manager.devices) == 24
+        assert len(pydreo_manager.devices) == expected_device_count
         
         # Find tower fan by serial number
         tower_fan = next((d for d in pydreo_manager.devices if d.serial_number == "HTF005S_1"), None)
