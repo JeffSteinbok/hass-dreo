@@ -1,0 +1,128 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -51,
+        "timestamp": 1765466891
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1765466891
+      },
+      "voscon": {
+        "state": false,
+        "timestamp": 1765466891
+      },
+      "hoscangle": {
+        "state": 0,
+        "timestamp": 1765466891
+      },
+      "timeron": {
+        "state": {
+          "ts": 1765327378,
+          "du": 0
+        },
+        "timestamp": null
+      },
+      "mode": {
+        "state": 1,
+        "timestamp": 1765466891
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1765327378
+      },
+      "network_latency": {
+        "state": 94,
+        "timestamp": 1765466891
+      },
+      "module_hardware_model": {
+        "state": "PAI-051",
+        "timestamp": 1765466891
+      },
+      "mcu_firmware_version": {
+        "state": "0.1.1",
+        "timestamp": 1765327378
+      },
+      "customconf": {
+        "state": "",
+        "timestamp": 1765466891
+      },
+      "temperature": {
+        "state": 66,
+        "timestamp": 1765567465
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "hoscreset": {
+        "state": false,
+        "timestamp": 1765466891
+      },
+      "alignon": {
+        "state": true,
+        "timestamp": 1765466891
+      },
+      "muteon": {
+        "state": false,
+        "timestamp": 1765466891
+      },
+      "lighton": {
+        "state": false,
+        "timestamp": 1765466891
+      },
+      "mcu_hardware_model": {
+        "state": "HAF003S",
+        "timestamp": 1765327378
+      },
+      "wifi_ssid": "**REDACTED**",
+      "windlevel": {
+        "state": 4,
+        "timestamp": 1765466891
+      },
+      "voscreset": {
+        "state": false,
+        "timestamp": 1765466891
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1765466891
+      },
+      "module_firmware_version": {
+        "state": "1.2.32",
+        "timestamp": 1765466891
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1765466891
+      },
+      "timeroff": {
+        "state": {
+          "ts": 1765327378,
+          "du": 0
+        },
+        "timestamp": null
+      },
+      "voscadj": {
+        "state": 5,
+        "timestamp": 1752117750
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1765466891
+      },
+      "voscangle": {
+        "state": 0,
+        "timestamp": 1765466891
+      },
+      "hoscon": {
+        "state": false,
+        "timestamp": 1765466891
+      }
+    },
+    "sn": "HAF003S_DEVICE2_OLDER_FW",
+    "productId": "**REDACTED**",
+    "region": "us-east-2",
+    "deviceInfo": null
+  }
+}

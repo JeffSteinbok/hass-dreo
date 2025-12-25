@@ -1,0 +1,136 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -68,
+        "timestamp": 1765507391
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1765509939
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1765507391
+      },
+      "cruiseconf": {
+        "state": "63,10,11,-31",
+        "timestamp": 1765554897
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1765507389
+        },
+        "timestamp": null
+      },
+      "fixedconf": {
+        "state": "0,0",
+        "timestamp": 1765509944
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1765507391
+      },
+      "mode": {
+        "state": 1,
+        "timestamp": 1765507391
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1765507391
+      },
+      "network_latency": {
+        "state": 74,
+        "timestamp": 1765507391
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1765507391
+      },
+      "mcu_firmware_version": {
+        "state": "1.0.0",
+        "timestamp": 1765507391
+      },
+      "oscmode": {
+        "state": 0,
+        "timestamp": 1765554909
+      },
+      "customconf": {
+        "state": "12222223333334444447777778",
+        "timestamp": 1765507391
+      },
+      "temperature": {
+        "state": 66,
+        "timestamp": 1765509858
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "hoscreset": {
+        "state": false,
+        "timestamp": 1765507391
+      },
+      "alignon": {
+        "state": true,
+        "timestamp": 1765507391
+      },
+      "muteon": {
+        "state": false,
+        "timestamp": 1765509875
+      },
+      "lighton": {
+        "state": false,
+        "timestamp": 1765507391
+      },
+      "wifi_ssid": "**REDACTED**",
+      "mcu_hardware_model": {
+        "state": "SH79F326-2/US",
+        "timestamp": 1765507391
+      },
+      "windlevel": {
+        "state": 1,
+        "timestamp": 1765509804
+      },
+      "voscreset": {
+        "state": false,
+        "timestamp": 1765507391
+      },
+      "tempunit": {
+        "state": 1,
+        "timestamp": 1765507391
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1765507391
+      },
+      "module_firmware_version": {
+        "state": "3.7.9",
+        "timestamp": 1765507391
+      },
+      "connected": {
+        "state": false,
+        "timestamp": 1765510043
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1765507389
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 2,
+        "timestamp": 1765507391
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1765507391
+      }
+    },
+    "sn": "HAF003S_DEVICE1_NEWER_FW",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}

@@ -56,6 +56,10 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
+        
+        # Oscillation angle for older firmware (single angle value, not min/max range)
+        self._horizontal_oscillation_angle = None
+        self._vertical_oscillation_angle = None
 
     @staticmethod
     def parse_swing_angle_range(details: Dict[str, list], direction: str) -> tuple[int, int] | None:
@@ -344,6 +348,46 @@ class PyDreoAirCirculator(PyDreoFanBase):
             # Note that HA seems to send this in as a float, we need to convert to int just in case
             self._send_command(FIXEDCONF_KEY, f"{int(value)},{self._fixed_conf.split(',')[1]}")
 
+    @property
+    def horizontal_oscillation_angle(self) -> int:
+        """Get the current horizontal oscillation angle (for older firmware)."""
+        if self._horizontal_oscillation_angle is not None:
+            return self._horizontal_oscillation_angle
+        return None
+
+    @horizontal_oscillation_angle.setter
+    def horizontal_oscillation_angle(self, value: int) -> None:
+        """Set the horizontal oscillation angle (for older firmware)."""
+        _LOGGER.debug("PyDreoAirCirculator:horizontal_oscillation_angle.setter")
+        if self._horizontal_oscillation_angle is not None:
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
+            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, int(value))
+
+    @property
+    def horizontal_oscillation_angle_range(self):
+        """Get the horizontal oscillation angle range (for older firmware)."""
+        return self.horizontal_angle_range
+
+    @property
+    def vertical_oscillation_angle(self) -> int:
+        """Get the current vertical oscillation angle (for older firmware)."""
+        if self._vertical_oscillation_angle is not None:
+            return self._vertical_oscillation_angle
+        return None
+
+    @vertical_oscillation_angle.setter
+    def vertical_oscillation_angle(self, value: int) -> None:
+        """Set the vertical oscillation angle (for older firmware)."""
+        _LOGGER.debug("PyDreoAirCirculator:vertical_oscillation_angle.setter")
+        if self._vertical_oscillation_angle is not None:
+            # Note that HA seems to send this in as a float, so we need to convert to int just in case
+            self._send_command(VERTICAL_OSCILLATION_ANGLE_KEY, int(value))
+
+    @property
+    def vertical_oscillation_angle_range(self):
+        """Get the vertical oscillation angle range (for older firmware)."""
+        return self.vertical_angle_range
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("PyDreoAirCirculator:update_state")
@@ -354,6 +398,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._cruise_conf = self.get_state_update_value(state, CRUISECONF_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
+        self._horizontal_oscillation_angle = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
+        self._vertical_oscillation_angle = self.get_state_update_value(state, VERTICAL_OSCILLATION_ANGLE_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -379,3 +425,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
+
+        val_horiz_osc_angle = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
+        if isinstance(val_horiz_osc_angle, int):
+            self._horizontal_oscillation_angle = val_horiz_osc_angle
+
+        val_vert_osc_angle = self.get_server_update_key_value(message, VERTICAL_OSCILLATION_ANGLE_KEY)
+        if isinstance(val_vert_osc_angle, int):
+            self._vertical_oscillation_angle = val_vert_osc_angle

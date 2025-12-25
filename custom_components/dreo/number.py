@@ -91,6 +91,22 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         step = 30
     ),
     DreoNumberEntityDescription(
+        key="Horizontal Oscillation Angle",
+        translation_key="horizontal_oscillation_angle",
+        attr_name="horizontal_oscillation_angle",
+        icon="mdi:angle-acute",
+        min_value=-60,
+        max_value=60,
+    ),
+    DreoNumberEntityDescription(
+        key="Vertical Oscillation Angle",
+        translation_key="vertical_oscillation_angle",
+        attr_name="vertical_oscillation_angle",
+        icon="mdi:angle-acute",
+        min_value=0,
+        max_value=90,
+    ),
+    DreoNumberEntityDescription(
         key="Heat Level",
         translation_key="htalevel",
         attr_name="htalevel",
