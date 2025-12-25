@@ -50,48 +50,7 @@ This integration supports the following device types:
 
 **[View complete list of tested models →](SUPPORTED_MODELS.md)**
 
-### Space Heaters
-
-Heaters are modeled as climate devices, which enables the ability to put a thermostat control for the heater into your HA dashboards. Some examples are shown below.
-
-Oscillation is now supported, but shown under "swing mode" since this is how the climate device models that. Note that for all heaters, to satisfy UL listings the
-remote control is disabled if it has not been used for 24 hours, which will then necessitate a quick tap on the WiFi button on the physical heater to resume the ability
-to control the device remotely via either the Dreo app or this HA integration.
-
-<table>
-    <tr>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/auto-mode-thermostat.png" width="300" alt="eco/auto mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/heat-mode-thermostat.png" width="300" alt="heat mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/fan-mode-thermostat.png" width="300" alt="fan mode thermostat"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/off-mode-thermostat.png" width="300" alt="off mode thermostat"></td>
-    </tr>
-    <tr>
-        <td>Auto/Eco Mode</td>
-        <td>Heat Mode</td>
-        <td>Fan Mode</td>
-        <td>Off</td>
-    </tr>
-    <tr>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/mode-list.png" width="200" alt="HVAC mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/fan-mode-list.png" width="200" alt="fan mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/preset-mode-list.png" width="200" alt="preset mode list"></td>
-        <td><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/swing-mode-list.png" width="200" alt="swing mode list"></td>
-    </tr>
-    <tr>
-        <td>HVAC Modes</td>
-        <td>Fan Modes</td>
-        <td>Preset Modes</td>
-        <td>Swing Modes</td>
-    </tr>
-    <tr>
-        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/heater-entities.png" width="200" alt="heater entities"></td>
-        <td colspan="2" align="center"><img src="https://raw.githubusercontent.com/jeffsteinbok/hass-dreo/main/images/compact-thermostat.png" width="200" alt="compact-thermostat"></td> 
-    </tr>
-    <tr>
-        <td colspan="2" align="center">Heater Entities</td>
-        <td colspan="2" align="center">Compact Thermostat View</td>
-    </tr>
-</table>
+**[Space Heater Documentation →](HEATERS.md)** - Learn about heater-specific features, thermostat controls, and the 24-hour remote control timeout.
 
 ## Installation
 
