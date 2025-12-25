@@ -271,9 +271,9 @@ class PyDreo:  # pylint: disable=function-redefined
                 device.update_state(device_state)
                 proc_return = True
             else:
-                _LOGGER.error("Mixed state in response not found")
+                _LOGGER.error("Mixed state in response not found: %s", device.name)
         else:
-            _LOGGER.error("Error retrieving device state")
+            _LOGGER.error("Error retrieving device state: %s", device.name)
 
         self.in_process = False
 
@@ -326,12 +326,20 @@ class PyDreo:  # pylint: disable=function-redefined
 
         self.in_process = True
         setting_value = None
-        response, _ = self.call_dreo_api(
-            DREO_API_SETTING_GET, 
-            {   DEVICESN_KEY: device.serial_number,
-                DREO_API_SETTING_DATA_KEY: setting
-            }
-        )
+        response = None
+
+        if self.debug_test_mode:
+            _LOGGER.debug("Debug Test Mode is enabled.  Using test payload.")
+            # Look for key format: {serial_number}_{setting_value}
+            lookup_key = f"{device.serial_number}_{setting.value}"
+            response = self.debug_test_mode_payload.get(lookup_key, None)
+        else:
+            response, _ = self.call_dreo_api(
+                DREO_API_SETTING_GET, 
+                {   DEVICESN_KEY: device.serial_number,
+                    DREO_API_SETTING_DATA_KEY: setting
+                }
+            )
 
         if response and Helpers.code_check(response):
             if DATA_KEY in response:
@@ -343,14 +351,14 @@ class PyDreo:  # pylint: disable=function-redefined
                                 DREO_API_SETTING_DATA_VALUE,
                                 data_node)
         else:
-            _LOGGER.error("Error retrieving device setting.")
+            _LOGGER.error("Error retrieving device setting: %s:%s", device.name, setting.name)
 
         self.in_process = False
 
         return setting_value
     
     def set_device_setting(self, device: PyDreoBaseDevice, setting : DreoDeviceSetting, value : bool | int) -> None:
-        """Get a device setting from the API."""
+        """Set a device setting from the API."""
         _LOGGER.debug("set_device_setting: %s(%s=%s), enabled: %s", 
                     device.name, 
                     setting,
@@ -378,9 +386,17 @@ class PyDreo:  # pylint: disable=function-redefined
                 device.update_state(device_state)
                 proc_return = True
             else:
-                _LOGGER.error("Mixed state in response not found")
+                _LOGGER.error("Mixed state in response not found- %s(%s=%s), enabled: %s", 
+                    device.name, 
+                    setting,
+                    value,
+                    self.enabled)
         else:
-            _LOGGER.error("Error retrieving device state")
+            _LOGGER.error("Error setting device setting - %s(%s=%s), enabled: %s", 
+                    device.name, 
+                    setting,
+                    value,
+                    self.enabled)
 
         self.in_process = False
 

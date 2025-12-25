@@ -1,6 +1,8 @@
 """Support for Dreo Debug Test Mode."""
 import json
 import logging
+import os
+import glob
 
 from .const import (
     LOGGER,
@@ -61,8 +63,33 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
         if device_state is None:
             _LOGGER.error("DEBUG_TEST_MODE: Failed to load device state for serial number %s", serial_number)
             continue
+
+
         _LOGGER.debug("Loaded data for serial number %s: %s", serial_number, device_state)
         debug_test_mode_payload[serial_number] = device_state
+
+        # Load all device setting files for this serial number
+        # Pattern: get_device_setting_{serial_number}_*.json
+        setting_pattern = f"{base_dir}/{DEBUG_TEST_MODE_DIRECTORY_NAME}/get_device_setting_{serial_number}_*.json"
+        setting_files = glob.glob(setting_pattern)
+        
+        for setting_file in setting_files:
+            # Extract the setting name from the filename
+            # Format: get_device_setting_{serial_number}_{settingName}.json
+            filename = os.path.basename(setting_file)
+            # Remove the prefix and suffix to get the setting name
+            prefix = f"get_device_setting_{serial_number}_"
+            if filename.startswith(prefix) and filename.endswith(".json"):
+                setting_name = filename[len(prefix):-5]  # Remove prefix and ".json"
+                
+                setting_data = load_test_file(base_dir, filename)
+                if setting_data is not None:
+                    # Store with key format: {serial_number}_{settingName}
+                    setting_key = f"{serial_number}_{setting_name}"
+                    debug_test_mode_payload[setting_key] = setting_data
+                    _LOGGER.debug("DEBUG_TEST_MODE: Loaded device setting %s for %s", setting_name, serial_number)
+                else:
+                    _LOGGER.error("DEBUG_TEST_MODE: Failed to load device setting file: %s", filename)
 
     return debug_test_mode_payload
 

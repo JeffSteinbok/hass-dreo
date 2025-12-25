@@ -109,14 +109,6 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: (device.type in { DreoDeviceType.CHEF_MAKER }) and device.is_feature_supported(MODE_KEY),
     ),
     DreoSensorEntityDescription(
-        key="Status",
-        translation_key="status_humidifier",
-        device_class=SensorDeviceClass.ENUM,
-        options=[MODE_MANUAL, MODE_AUTO, MODE_SLEEP],
-        value_fn=lambda device: device.mode,
-        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(MODE_KEY),
-    ),
-    DreoSensorEntityDescription(
         key="pm25",
         translation_key="pm25",
         device_class=SensorDeviceClass.PM25,

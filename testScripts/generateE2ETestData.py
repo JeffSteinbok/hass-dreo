@@ -76,10 +76,21 @@ def main():
         dest_path = E2E_TEST_DATA_DIR / file_path.name
         shutil.copy2(file_path, dest_path)
         print(f"  ✓ Copied {file_path.name}")
+
+    # Copy all get_device_settings files
+    setting_files = list(API_RESPONSES_DIR.glob("get_device_setting_*.json"))
+    setting_files.sort()
+    
+    print(f"\nCopying {len(setting_files)} settings files:")
+    for file_path in setting_files:
+        dest_path = E2E_TEST_DATA_DIR / file_path.name
+        shutil.copy2(file_path, dest_path)
+        print(f"  ✓ Copied {file_path.name}")
     
     print(f"\n✓ Done! Generated E2E test data in {E2E_TEST_DATA_DIR}")
     print(f"  - 1 combined get_devices.json file")
-    print(f"  - {len(state_files)} get_device_settings files")
+    print(f"  - {len(state_files)} get_device_state files")
+    print(f"  - {len(setting_files)} get_device_setting files")
 
 if __name__ == "__main__":
     main()
