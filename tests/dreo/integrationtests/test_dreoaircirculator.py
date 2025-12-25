@@ -295,7 +295,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.speed_count == 10
             assert pydreo_fan.model == "DR-HPF005S"
             assert pydreo_fan.speed_range == (1, 10)
-            assert pydreo_fan.horizontal_angle_range == (-90, 90)
+            assert pydreo_fan.horizontal_angle_range == (-60, 60)
             
             # Verify it has hangleadj
             assert pydreo_fan._horizontal_angle_adj is not None
@@ -315,8 +315,8 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert horizontal_angle_number is not None
             
             # Verify the range matches the device definition
-            assert horizontal_angle_number._attr_native_min_value == -90
-            assert horizontal_angle_number._attr_native_max_value == 90
+            assert horizontal_angle_number._attr_native_min_value == -60
+            assert horizontal_angle_number._attr_native_max_value == 60
             
             # Verify the current value
             assert horizontal_angle_number.native_value == -36
