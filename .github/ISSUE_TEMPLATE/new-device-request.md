@@ -8,10 +8,7 @@ assignees: ''
 ---
 
 Include all of the following:
- - Model - in the format used in the README.MD
-- Number of speeds the fan supports (not including "off")
-- Does the fan support oscillating?
-- What preset modes are supported?
-- Is temperature supported?
+- Model - in the format used in the README.MD
+- Link to a product page so I can see what this device is
 
 Make sure you've installed this integration, then from the integration settings page, select **Download Diagnostics** and attach that file.
