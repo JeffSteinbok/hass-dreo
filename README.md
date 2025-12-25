@@ -35,18 +35,18 @@ I'm always happy to have people add features via Pull Request. More info on how 
 
 This integration supports the following device types:
 
-| Device Type | Model Prefix(es) | Status |
-| ----------- | ---------------- | ------ |
-| Tower Fans | DR-HTF | Fully Supported |
-| Air Circulators | DR-HAF, DR-HPF | Fully Supported |
-| Ceiling Fans | DR-HCF | Fully Supported |
-| Air Purifiers | DR-HAP | Fully Supported |
-| Space Heaters | DR-HSH, WH* | Fully Supported |
-| Air Conditioners | DR-HAC | Fully Supported |
-| Humidifiers | DR-HHM | Beta Support |
-| Dehumidifiers | DR-HDH | Beta Support |
-| Cookers (ChefMaker) | DR-KCM | Fully Supported |
-| Evaporative Coolers | DR-HEC | Beta Support |
+| Device Type | Model Prefix(es) |
+| ----------- | ---------------- |
+| Tower Fans | DR-HTF |
+| Air Circulators | DR-HAF, DR-HPF |
+| Ceiling Fans | DR-HCF |
+| Air Purifiers | DR-HAP |
+| Space Heaters | DR-HSH, WH* |
+| Air Conditioners | DR-HAC |
+| Humidifiers | DR-HHM |
+| Dehumidifiers | DR-HDH |
+| Cookers (ChefMaker) | DR-KCM |
+| Evaporative Coolers | DR-HEC |
 
 **[View complete list of tested models →](SUPPORTED_MODELS.md)**
 
