@@ -13,7 +13,8 @@ from .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 from custom_components.dreo.pydreo.constant import (
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
-    VERTICAL_OSCILLATION_ANGLE_KEY
+    VERTICAL_OSCILLATION_ANGLE_KEY,
+    HORIZONTAL_ANGLE_ADJ_KEY
 )
 
 PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
@@ -279,3 +280,58 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 pydreo_fan.vertical_oscillation_angle = 45
                 mock_send_command.assert_called_once_with(pydreo_fan, {VERTICAL_OSCILLATION_ANGLE_KEY: 45})
+
+    def test_HPF005S(self):  # pylint: disable=invalid-name
+        """Test HPF005S fan with hangleadj support."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+
+            self.get_devices_file_name = "get_devices_HPF005S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.is_on is True
+            assert ha_fan.speed_count == 10
+            assert pydreo_fan.model == "DR-HPF005S"
+            assert pydreo_fan.speed_range == (1, 10)
+            assert pydreo_fan.horizontal_angle_range == (-60, 60)
+            
+            # Verify it has hangleadj
+            assert pydreo_fan._horizontal_angle_adj is not None
+            assert pydreo_fan._horizontal_angle_adj == -36
+            
+            # Verify it does NOT have cruise_conf or fixed_conf (uses hangleadj instead)
+            assert pydreo_fan._cruise_conf is None
+            assert pydreo_fan._fixed_conf is None
+            
+            # Check that the horizontal angle entity is available
+            numbers = number.get_entries([pydreo_fan])
+            number_names = [n.entity_description.key for n in numbers]
+            assert 'Horizontal Angle' in number_names
+            
+            # Get the horizontal angle number entity
+            horizontal_angle_number = next((n for n in numbers if n.entity_description.key == 'Horizontal Angle'), None)
+            assert horizontal_angle_number is not None
+            
+            # Verify the range matches the device definition
+            assert horizontal_angle_number._attr_native_min_value == -60
+            assert horizontal_angle_number._attr_native_max_value == 60
+            
+            # Verify the current value
+            assert horizontal_angle_number.native_value == -36
+            
+            # Test setting the horizontal angle
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                pydreo_fan.horizontal_angle = 45
+                mock_send_command.assert_called_once_with(pydreo_fan, {HORIZONTAL_ANGLE_ADJ_KEY: 45})
+            
+            # Should NOT have cruise mode entities (those require cruise_conf)
+            assert 'Horizontal Oscillation Angle Left' not in number_names
+            assert 'Horizontal Oscillation Angle Right' not in number_names
+            assert 'Vertical Oscillation Angle Top' not in number_names
+            assert 'Vertical Oscillation Angle Bottom' not in number_names
+            
+            # Should NOT have old firmware entities (those require hoscangle/voscangle values)
+            assert 'Horizontal Oscillation Angle' not in number_names
+            assert 'Vertical Oscillation Angle' not in number_names

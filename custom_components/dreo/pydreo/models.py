@@ -145,6 +145,13 @@ SUPPORTED_DEVICES = {
             HORIZONTAL_ANGLE_RANGE: (-75,75),
             VERTICAL_ANGLE_RANGE: (-30,90)
         }),
+    
+    "DR-HPF005S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        device_ranges={
+            SPEED_RANGE: (1, 10),
+            HORIZONTAL_ANGLE_RANGE: (-60, 60)
+        }),
 
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),

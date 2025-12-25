@@ -1,0 +1,124 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1681268654159245313",
+        "sn": "HPF005S_1",
+        "brand": "Dreo",
+        "model": "DR-HPF005S",
+        "productId": "1681268654159245313",
+        "productName": "Air Circulator",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HPF005S",
+        "shared": false,
+        "series": null,
+        "seriesName": "715S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "s",
+        "widgetOnImage": "https://resources.dreo-cloud.com/app/preSigned202411/135b289bcc0a2a4b3bbe78955d57061a5d.png",
+        "widgetOffImage": "https://resources.dreo-cloud.com/app/preSigned202411/13f1f697256db143a5a757316bb3f8f117.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HPF005S",
+          "control": [
+            {
+              "id": "100",
+              "type": "Mode",
+              "title": "device_mode",
+              "items": [
+                {
+                  "text": "device_fans_mode_straight",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_normal_wind",
+                  "imageColors": ["#D5D6D7", "#25D7E4"],
+                  "cmd": "mode",
+                  "value": 1
+                },
+                {
+                  "text": "device_control_mode_auto",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_auto_wind",
+                  "imageColors": ["#D5D6D7", "#0A80F5"],
+                  "cmd": "mode",
+                  "value": 4
+                },
+                {
+                  "text": "device_control_mode_sleep",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_sleep_wind",
+                  "imageColors": ["#D5D6D7", "#6249DF"],
+                  "cmd": "mode",
+                  "value": 3
+                },
+                {
+                  "text": "device_fans_mode_natural",
+                  "textColors": ["#D5D6D7", "#D5D6D7"],
+                  "image": "ic_natural_wind",
+                  "imageColors": ["#D5D6D7", "#2CDD96"],
+                  "cmd": "mode",
+                  "value": 2
+                }
+              ]
+            },
+            {
+              "id": "110",
+              "type": "Speed",
+              "title": "device_control_speed",
+              "items": [
+                {
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
+                },
+                {
+                  "text": "10",
+                  "cmd": "windlevel",
+                  "value": 10
+                }
+              ]
+            },
+            {
+              "id": "130",
+              "type": "DPad",
+              "step": 5
+            }
+          ],
+          "category": "Air Circulators"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-cloud.com/app/preSigned202409/1130900b3fe9064163af7d46b73cc9fa86.png",
+          "imageFullSrc": "https://resources.dreo-cloud.com/app/202310/24c70cbaa7f2824bc69ff93fefcff80185.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-cloud.com/app/preSigned202409/9553f5c5ecd7a463abe2a47ea9c7b5488.pdf",
+            "icon": null,
+            "desc": "DR-HPF005S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

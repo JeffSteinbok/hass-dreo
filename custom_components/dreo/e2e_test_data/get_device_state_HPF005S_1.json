@@ -1,0 +1,142 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -63,
+        "timestamp": 1755175713
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1755175726
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1755175713
+      },
+      "hoscangle": {
+        "state": "0,0",
+        "timestamp": 1755175713
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1755175712
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1755175713
+      },
+      "mode": {
+        "state": 1,
+        "timestamp": 1755175713
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1755175713
+      },
+      "network_latency": {
+        "state": 32,
+        "timestamp": 1755175713
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1755175713
+      },
+      "mcu_firmware_version": {
+        "state": "0.5.2",
+        "timestamp": 1755175713
+      },
+      "oscmode": {
+        "state": 0,
+        "timestamp": 1755175713
+      },
+      "customconf": {
+        "state": "temp:2444444555555666666888888A",
+        "timestamp": 1755175713
+      },
+      "temperature": {
+        "state": 87,
+        "timestamp": 1755177306
+      },
+      "module_hardware_mac": {
+        "state": "001cc29b0fd7",
+        "timestamp": 1755175713
+      },
+      "hoscreset": {
+        "state": false,
+        "timestamp": 1755175713
+      },
+      "alignon": {
+        "state": true,
+        "timestamp": 1755175713
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1755175713
+      },
+      "lighton": {
+        "state": false,
+        "timestamp": 1755175713
+      },
+      "wifi_ssid": {
+        "state": "REDACTED",
+        "timestamp": 1755175713
+      },
+      "mcu_hardware_model": {
+        "state": "midea/EU",
+        "timestamp": 1755175713
+      },
+      "windlevel": {
+        "state": 5,
+        "timestamp": 1755175713
+      },
+      "voscreset": {
+        "state": false,
+        "timestamp": 1755175713
+      },
+      "hangleadj": {
+        "state": -36,
+        "timestamp": 1755177359
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1755175713
+      },
+      "module_firmware_version": {
+        "state": "3.4.7",
+        "timestamp": 1755175713
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1755175713
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1755175712
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1755175713
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1755175713
+      },
+      "voscangle": {
+        "state": 0,
+        "timestamp": 1755175713
+      }
+    },
+    "sn": "HPF005S_1",
+    "productId": "1681268654159245313",
+    "region": "eu-central-1/emq",
+    "deviceInfo": null
+  }
+}
