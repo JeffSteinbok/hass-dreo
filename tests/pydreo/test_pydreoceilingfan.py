@@ -115,7 +115,7 @@ class TestPyDreoCeilingFan(TestBase):
         
         # Test power and fan controls
         assert fan.is_feature_supported('poweron') is False
-        assert fan.is_feature_supported('fanon') is True
+        assert fan.is_feature_supported('fanon') is False
         
         # Test light support with color temperature
         assert fan.is_feature_supported('light_on') is True

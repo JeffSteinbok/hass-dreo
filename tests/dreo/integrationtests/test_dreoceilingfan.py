@@ -203,8 +203,8 @@ class TestDreoCeilingFan(IntegrationTestBase):
             assert main_light.is_on is False
             
             # Verify light supports color temperature
-            assert hasattr(main_light, 'color_temp')
-            assert main_light.color_temp is not None
+            assert hasattr(main_light, 'color_temp_kelvin')
+            assert main_light.color_temp_kelvin is not None
             
             # Test light on/off
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
