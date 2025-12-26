@@ -142,9 +142,9 @@ class PyDreoAC(PyDreoBaseDevice):
         return self._device_definition.preset_modes
 
     @property
-    def hvac_modes(self):
-        """Get the list of supported HVAC modes"""
-        return self._device_definition.hvac_modes
+    def mode_names(self):
+        """Get the list of supported mode values"""
+        return self._device_definition.mode_names
 
     @property
     def devon(self):

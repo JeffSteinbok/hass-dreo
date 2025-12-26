@@ -20,7 +20,7 @@ class TestPyDreoHeater(TestBase):
         heater = self.pydreo_manager.devices[0]
 
         assert heater.htalevel_range == (1, 3)
-        assert heater.hvac_modes == ['coolair', 'hotair', 'eco', 'off']
+        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
@@ -31,7 +31,7 @@ class TestPyDreoHeater(TestBase):
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
 
         with pytest.raises(ValueError):
-            heater.hvac_mode = 'not_a_mode'
+            heater.mode = 'not_a_mode'
 
     def test_HSH010S(self): # pylint: disable=invalid-name
         """Load oil radiator heater and test sending commands."""
@@ -42,7 +42,7 @@ class TestPyDreoHeater(TestBase):
         heater = self.pydreo_manager.devices[0]
 
         assert heater.htalevel_range == (1, 3)
-        assert heater.hvac_modes == ['coolair', 'hotair', 'eco', 'off']
+        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
@@ -53,7 +53,7 @@ class TestPyDreoHeater(TestBase):
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 2})], True)
 
         with pytest.raises(ValueError):
-            heater.hvac_mode = 'not_a_mode'
+            heater.mode = 'not_a_mode'
 
     def test_WH714S(self): # pylint: disable=invalid-name
         """Load WH714S heater and test sending commands."""
@@ -66,7 +66,7 @@ class TestPyDreoHeater(TestBase):
         assert heater.model == "DR-HSH034S"
         assert heater.series_name == "WH714S"
         assert heater.htalevel_range == (1, 3)
-        assert heater.hvac_modes == ['coolair', 'hotair', 'eco', 'off']
+        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
@@ -77,7 +77,7 @@ class TestPyDreoHeater(TestBase):
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 3})], True)
 
         with pytest.raises(ValueError):
-            heater.hvac_mode = 'not_a_mode'
+            heater.mode = 'not_a_mode'
 
     def test_HSH004S(self): # pylint: disable=invalid-name
         """Load HSH004S (Atom One S) heater and test sending commands."""
@@ -90,7 +90,7 @@ class TestPyDreoHeater(TestBase):
         assert heater.model == "DR-HSH004S"
         assert heater.series_name == "Atom One S"
         assert heater.htalevel_range == (1, 3)
-        assert heater.hvac_modes == ['coolair', 'hotair', 'eco', 'off']
+        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
@@ -101,4 +101,4 @@ class TestPyDreoHeater(TestBase):
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 2})], True)
 
         with pytest.raises(ValueError):
-            heater.hvac_mode = 'not_a_mode'
+            heater.mode = 'not_a_mode'

@@ -74,10 +74,10 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_swing_mode = self.device.device_definition.swing_modes[0] if self.device.device_definition.swing_modes else None
         self._attr_swing_modes = self.device.device_definition.swing_modes
         self._attr_hvac_mode = (
-            HEATER_MODE_MAP[self.device.hvac_mode] if self.device.poweron else HVACMode.OFF
+            HEATER_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
         )
         self._attr_hvac_modes = [
-            HEATER_MODE_MAP[h] for h in self.device.device_definition.hvac_modes
+            HEATER_MODE_MAP[h] for h in self.device.device_definition.mode_names
         ]
 
         _LOGGER.info(
@@ -151,7 +151,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         """Turn the device on."""
         _LOGGER.debug("DreoHeaterHA:turn_on(%s)", self.device.name)
         self.device.poweron = True
-        self.device.hvac_mode = HVAC_MODE_MAP[self._last_hvac_mode]
+        self.device.mode = HVAC_MODE_MAP[self._last_hvac_mode]
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
@@ -218,9 +218,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def hvac_mode(self) -> HVACMode:
-        # ensure hvac_mode is actually in sync with the device's moade
+        # ensure hvac_mode is actually in sync with the device's mode
         self._attr_hvac_mode = (
-            HEATER_MODE_MAP[self.device.hvac_mode] if self.device.poweron else HVACMode.OFF
+            HEATER_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
         )
         return self._attr_hvac_mode
 
@@ -244,7 +244,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         else:
             self.device.poweron = False
 
-        self.device.hvac_mode = HVAC_MODE_MAP[hvac_mode]
+        self.device.mode = HVAC_MODE_MAP[hvac_mode]
 
     @property
     def swing_modes(self) -> list[str] | None:

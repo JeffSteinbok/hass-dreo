@@ -25,7 +25,6 @@ from .constant import (
     PRESET_NONE,
     PRESET_ECO,
     PRESET_SLEEP,
-    HVACMode,
     DreoDeviceType,
     VERTICAL_ANGLE_RANGE
 )
@@ -83,7 +82,7 @@ class DreoDeviceDetails:
         device_type: DreoDeviceType = None,
         preset_modes: list[str] = None,
         device_ranges: dict = None,
-        hvac_modes: list[str] = None,
+        mode_names: list[str] = None,
         swing_modes: list[str] = None,
         fan_modes: list[str] = None,
         cooking_modes: list[str] = None,
@@ -95,7 +94,7 @@ class DreoDeviceDetails:
         self.device_type = device_type
         self.preset_modes = preset_modes
         self.device_ranges = device_ranges
-        self.hvac_modes = hvac_modes
+        self.mode_names = mode_names
         self.swing_modes = swing_modes
         self.fan_modes = fan_modes
         self.cooking_modes = cooking_modes
@@ -172,7 +171,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 85)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -184,7 +183,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 85)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -197,7 +196,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 85)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -210,7 +209,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -223,7 +222,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -241,7 +240,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -259,7 +258,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -272,7 +271,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -290,7 +289,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3),
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -303,7 +302,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -321,7 +320,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -339,7 +338,7 @@ SUPPORTED_DEVICES = {
         device_ranges={
             HEAT_RANGE: (1, 3), 
             ECOLEVEL_RANGE: (41, 95)},
-        hvac_modes=[
+        mode_names=[
             HEATER_MODE_COOLAIR,
             HEATER_MODE_HOTAIR,
             HEATER_MODE_ECO,
@@ -363,13 +362,8 @@ SUPPORTED_DEVICES = {
             TARGET_TEMP_RANGE_ECO: (75, 86),
             HUMIDITY_RANGE: (30, 80),
         },
-        # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)
-        hvac_modes=[
-            HVACMode.OFF,
-            HVACMode.COOL, 
-            HVACMode.FAN_ONLY, 
-            HVACMode.DRY
-        ],
+        # AC modes: 1=COOL, 2=DRY, 3=FAN_ONLY, 5=ECO (handled as preset in HA)
+        mode_names=[1, 2, 3],
         swing_modes=[SWING_OFF, SWING_ON],
         preset_modes=[PRESET_NONE, PRESET_ECO, PRESET_SLEEP],
         # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)

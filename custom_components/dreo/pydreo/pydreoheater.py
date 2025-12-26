@@ -45,7 +45,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         """Initialize heater devices."""
         super().__init__(device_definition, details, dreo)
 
-        self._hvac_mode = None
+        self._mode = None
         self._htalevel = None
         self._oscon = None
         self._oscangle = None
@@ -99,9 +99,9 @@ class PyDreoHeater(PyDreoBaseDevice):
         return self._htalevel_range
 
     @property
-    def hvac_modes(self) -> list[str]:
+    def mode_names(self) -> list[str]:
         """Get the list of supported modes"""
-        return self._device_definition.hvac_modes
+        return self._device_definition.mode_names
 
     @property
     def devon(self):
@@ -152,16 +152,16 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._send_command(ECOLEVEL_KEY, ecolevel)
 
     @property
-    def hvac_mode(self):
-        """Return the current hvac mode."""
-        return self._hvac_mode 
+    def mode(self):
+        """Return the current mode."""
+        return self._mode 
 
-    @hvac_mode.setter
-    def hvac_mode(self, value: str) -> None:
-        if value in self.hvac_modes:
+    @mode.setter
+    def mode(self, value: str) -> None:
+        if value in self.mode_names:
             self._send_command(MODE_KEY, value)
         else:
-            raise ValueError(f"HVAC mode {value} is not in the acceptable list: {self.hvac_modes}")
+            raise ValueError(f"Mode {value} is not in the acceptable list: {self.mode_names}")
 
     @property
     def temperature(self):
@@ -307,7 +307,7 @@ class PyDreoHeater(PyDreoBaseDevice):
             _LOGGER.error("Unable to get heat level from state. Check debug logs for more information.")
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
-        self._hvac_mode = self.get_state_update_value(state, MODE_KEY)
+        self._mode = self.get_state_update_value(state, MODE_KEY)
         self._oscon = self.get_state_update_value(state, OSCON_KEY)
         self._oscangle = self.get_state_update_value(state, OSCANGLE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
@@ -339,7 +339,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         if isinstance(val_power_on, bool):
             self._is_on = val_power_on
             if not self._is_on:
-                self._hvac_mode = HEATER_MODE_OFF
+                self._mode = HEATER_MODE_OFF
 
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):
@@ -349,7 +349,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         # explicitly setting that to off.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, str):
-            self._hvac_mode = val_mode if val_mode in HEATER_MODES else HEATER_MODE_OFF
+            self._mode = val_mode if val_mode in HEATER_MODES else HEATER_MODE_OFF
 
         val_oscon = self.get_server_update_key_value(message, OSCON_KEY)
         if isinstance(val_oscon, bool):

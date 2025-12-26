@@ -98,7 +98,8 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_swing_mode = self.device.device_definition.swing_modes[0] if self.device.device_definition.swing_modes else None
         self._attr_swing_modes = self.device.device_definition.swing_modes
         self._attr_hvac_mode = AC_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
-        self._attr_hvac_modes = self.device.device_definition.hvac_modes
+        # Map numeric mode values to HVACMode enums for HA
+        self._attr_hvac_modes = [AC_MODE_MAP.get(m, HVACMode.OFF) for m in self.device.device_definition.mode_names] + [HVACMode.OFF]
         self._attr_preset_modes = self.device.device_definition.preset_modes
         self._attr_fan_modes = self.device.device_definition.fan_modes
         self._attr_fan_mode = self.device.fan_mode
