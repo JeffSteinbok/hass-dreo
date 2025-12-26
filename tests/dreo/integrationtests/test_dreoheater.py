@@ -35,7 +35,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.model == "DR-HSH009S"
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.hvac_mode is HVACMode.HEAT
+            assert heater_ha.hvac_mode == HVACMode.HEAT
             assert heater_ha.unique_id is not None
             assert heater_ha.name is not None
 
@@ -79,7 +79,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.model == "DR-HSH003S"
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.hvac_mode is HVACMode.AUTO
+            assert heater_ha.hvac_mode == HVACMode.AUTO
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
@@ -116,7 +116,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.model == "DR-HSH034S"
             
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.hvac_mode is HVACMode.OFF
+            assert heater_ha.hvac_mode == HVACMode.OFF
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
@@ -154,7 +154,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.series_name == "WH714S"
             
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.hvac_mode is HVACMode.AUTO
+            assert heater_ha.hvac_mode == HVACMode.AUTO
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
@@ -197,7 +197,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.series_name == "Atom One S"
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.hvac_mode is HVACMode.HEAT
+            assert heater_ha.hvac_mode == HVACMode.HEAT
             assert heater_ha.unique_id is not None
             assert heater_ha.name is not None
 
