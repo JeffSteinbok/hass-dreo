@@ -1,0 +1,104 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_ssid": "**REDACTED**",
+      "mcu_hardware_model": {
+        "state": "SC95F8613B/EU",
+        "timestamp": 1766332522
+      },
+      "windlevel": {
+        "state": 1,
+        "timestamp": 1766332522
+      },
+      "wifi_rssi": {
+        "state": -43,
+        "timestamp": 1766332522
+      },
+      "windtype": {
+        "state": 1,
+        "timestamp": 1766332522
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1766332522
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1766332522
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1764501163
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1766332522
+      },
+      "voiceon": {
+        "state": false,
+        "timestamp": 1766332522
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1766332522
+      },
+      "module_firmware_version": {
+        "state": "3.7.6",
+        "timestamp": 1766332522
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1766332522
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1766332522
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1764501163
+        },
+        "timestamp": null
+      },
+      "shakehorizon": {
+        "state": true,
+        "timestamp": 1766332522
+      },
+      "network_latency": {
+        "state": 41,
+        "timestamp": 1766332522
+      },
+      "_ota": {
+        "state": 2,
+        "timestamp": 1766332522
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1766332522
+      },
+      "mcu_firmware_version": {
+        "state": "0.1.5",
+        "timestamp": 1766332522
+      },
+      "temperature": {
+        "state": 66,
+        "timestamp": 1766704871
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "ledalwayson": {
+        "state": false,
+        "timestamp": 1766332522
+      }
+    },
+    "sn": "**REDACTED**",
+    "productId": "**REDACTED**",
+    "region": "eu-central-1/emq",
+    "deviceInfo": null
+  }
+}

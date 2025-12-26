@@ -127,7 +127,6 @@ class PyDreoHeater(PyDreoBaseDevice):
                             htalevel,
                             self._device_definition.device_ranges[HEAT_RANGE])
             return
-        self.hvac_mode = HEATER_MODE_HOTAIR
         self._send_command(HTALEVEL_KEY, htalevel)
 
     @property 

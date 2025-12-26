@@ -176,3 +176,131 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
             assert mock_send_command.call_count >= 1  # Device uses oscon key
+
+    def test_HTF007S(self):  # pylint: disable=invalid-name
+        """Load HTF007S tower fan and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HTF007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+        
+        # Test initial state values
+        assert fan.speed_range == (1, 4)
+        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert fan.model == "DR-HTF007S"
+        assert fan.device_name is not None
+        assert fan.serial_number is not None
+
+        # Test power commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+
+        # Test preset mode commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'normal'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'natural'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'sleep'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'auto'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+
+        with pytest.raises(ValueError):
+            fan.preset_mode = 'not_a_mode'
+
+        # Test fan speed commands (1-4 speed range)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 1
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 2
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 2})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 4
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 4})
+
+        # Test speed boundaries
+        with pytest.raises(ValueError):
+            fan.fan_speed = 0
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 5
+
+    def test_HTF009S(self):  # pylint: disable=invalid-name
+        """Load HTF009S tower fan and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HTF009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+        
+        # Test initial state values
+        assert fan.speed_range == (1, 9)
+        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert fan.model == "DR-HTF009S"
+        assert fan.device_name is not None
+        assert fan.serial_number is not None
+
+        # Test power commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+
+        # Test preset mode commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'normal'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'natural'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'sleep'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'auto'
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+
+        with pytest.raises(ValueError):
+            fan.preset_mode = 'not_a_mode'
+
+        # Test fan speed commands (1-9 speed range)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 1
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 5
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 5})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 9
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 9})
+
+        # Test speed boundaries
+        with pytest.raises(ValueError):
+            fan.fan_speed = 0
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 10
