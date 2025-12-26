@@ -101,3 +101,54 @@ class TestPyDreoCeilingFan(TestBase):
             fan.atm_color_rgb = (255, 0, 0)  # Red
             mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
 
+    def test_HCF003S(self):  # pylint: disable=invalid-name
+        """Test DR-HCF003S ceiling fan - newer firmware with updated features."""
+        self.get_devices_file_name = "get_devices_HCF003S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        
+        # Test basic fan properties
+        assert fan.model == "DR-HCF003S"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'reverse']
+        
+        # Test power and fan controls
+        assert fan.is_feature_supported('poweron') is False
+        assert fan.is_feature_supported('fanon') is True
+        
+        # Test light support with color temperature
+        assert fan.is_feature_supported('light_on') is True
+        assert fan.is_feature_supported('brightness') is True
+        assert fan.is_feature_supported('color_temperature') is True
+        assert fan.brightness == 8
+        assert fan.color_temperature == 32
+        
+        # Test fan commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {FANON_KEY: True})
+        
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 6
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 6})
+        
+        # Test light commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.light_on = True
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True})
+        
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.brightness = 75
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True, BRIGHTNESS_KEY: 75})
+        
+        # Test color temperature control (key finding from logs)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.color_temperature = 50
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True, COLORTEMP_KEY: 50})
+        
+        # Test preset modes
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = 'natural'
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 2})
+

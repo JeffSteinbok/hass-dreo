@@ -143,3 +143,86 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 # Should send both atmon and atmcolor commands
                 assert mock_send_command.call_count >= 1
 
+    def test_HCF003S(self):  # pylint: disable=invalid-name
+        """Test DR-HCF003S ceiling fan - newer firmware with updated features."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            
+            self.get_devices_file_name = "get_devices_HCF003S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+            
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            
+            # Test basic fan properties
+            assert pydreo_fan.model == "DR-HCF003S"
+            assert pydreo_fan.speed_range == (1, 12)
+            assert ha_fan.speed_count == 12
+            assert pydreo_fan.preset_modes == ['normal', 'natural', 'sleep', 'reverse']
+            
+            # Test fan is on (from state data)
+            assert ha_fan.is_on is True
+            
+            # Test fan commands
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            
+            # Test speed settings
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(50)  # Speed ~6
+                assert mock_send_command.call_count >= 1
+            
+            # Test preset modes
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode('natural')
+                # Should call mode command
+                mock_send_command.assert_any_call(pydreo_fan, {MODE_KEY: 2})
+            
+            # Check switches
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(switches, ["Panel Sound"])
+            
+            # Check numbers - should be empty for this model
+            numbers = number.get_entries([pydreo_fan])
+            self.verify_expected_entities(numbers, [])
+            
+            # Check lights - should have main light only
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["Light"])
+            
+            # Test main light with color temperature support
+            main_light = self.get_entity_by_key(lights, "Light")
+            assert main_light is not None
+            
+            # Light should be off from state data
+            assert main_light.is_on is False
+            
+            # Verify light supports color temperature
+            assert hasattr(main_light, 'color_temp')
+            assert main_light.color_temp is not None
+            
+            # Test light on/off
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                main_light.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+            
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
+                main_light.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: False})
+            
+            # Test brightness control
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                main_light.turn_on(brightness=128)
+                assert mock_send_command.call_count >= 1
+            
+            # Test color temperature control (0-100 range)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                main_light.turn_on(color_temp=350)  # HA uses mireds
+                # Should send lighton and colortemp commands
+                assert mock_send_command.call_count >= 1
+

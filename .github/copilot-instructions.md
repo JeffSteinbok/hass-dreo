@@ -129,7 +129,7 @@ The integration includes a special debug mode for testing without live devices:
 2. Identify device type and capabilities
 3. Add device model mapping in the PyDreo library (check existing device files in `custom_components/dreo/pydreo/` for the appropriate location)
 4. Create/update device class if needed
-5. Add test JSON to `custom_components/dreo/e2e_test_data/`
+5. Run the `testScripts/generateE2ETestData.py` script to add JSON to `e2e_test_data/`
 6. Write integration test in `tests/dreo/integrationtests/`
 7. Update README.md with the new supported model
 
