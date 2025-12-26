@@ -2,6 +2,18 @@
 
 from dataclasses import dataclass
 
+# Import HVACMode for air conditioner device definitions
+try:
+    from homeassistant.components.climate import HVACMode
+except ImportError:
+    # Fallback for testing environments without Home Assistant
+    class HVACMode:  # type: ignore
+        """Mock HVACMode for testing."""
+        OFF = "off"
+        COOL = "cool"
+        DRY = "dry"
+        FAN_ONLY = "fan_only"
+
 from .constant import (
     HORIZONTAL_ANGLE_RANGE,
     SPEED_RANGE,
@@ -362,16 +374,16 @@ SUPPORTED_DEVICES = {
             TARGET_TEMP_RANGE_ECO: (75, 86),
             HUMIDITY_RANGE: (30, 80),
         },
-        # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)
+        # Air conditioner supports COOL, DRY, and FAN_ONLY modes
+        # Note: Eco and Sleep are handled as preset_modes, not hvac_modes
         hvac_modes=[
-            HEATER_MODE_COOLAIR,
-            HEATER_MODE_HOTAIR,
-            HEATER_MODE_ECO,
-            HEATER_MODE_OFF,
+            HVACMode.COOL,
+            HVACMode.DRY,
+            HVACMode.FAN_ONLY,
+            HVACMode.OFF,
         ],
         swing_modes=[SWING_OFF, SWING_ON],
         preset_modes=[PRESET_NONE, PRESET_ECO, PRESET_SLEEP],
-        # TODO Add fan modes, windlevel: 1,2,3,4 (Auto)
         fan_modes=[FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO],
     ),
 
