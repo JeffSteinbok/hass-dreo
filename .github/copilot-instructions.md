@@ -83,18 +83,65 @@ pylint --recursive=yes custom_components/dreo
 - New device support requires corresponding test coverage
 - Follow existing test patterns in the repository
 
+### Test File Structure
+
+Test files are organized to support both unit tests and integration tests:
+
+#### Device Files
+
+Two or more JSON files are required for each device model:
+
+1. **`get_devices_[MODEL].json`** - Device list response
+   - Located in `tests/pydreo/api_responses/` for unit tests
+   - All these are merged into a single file in `custom_components/dreo/e2e_test_data/` for integration tests
+   - Contains the device definition from Dreo's API `/api/v2/user-device/device/list`
+   - Example: `get_devices_HCF003S.json`
+
+2. **`get_device_state_[SN].json`** - Device state response
+   - Located in `tests/pydreo/api_responses/` for unit tests
+   - Also copied to `custom_components/dreo/e2e_test_data/` for integration tests
+   - Contains the actual device state from Dreo's API
+   - Example: `get_device_state_HCF003S_1.json`
+
+3. **`get_device_setting_[MODEL]_[NUMBER]_[SETTING_KEY].json`** - Device-specific setting (optional)
+   - Located in both `tests/pydreo/api_responses/` and `custom_components/dreo/e2e_test_data/`
+   - Contains user-configurable device settings that are stored separately from device state
+   - Only needed for devices that have persistent settings (e.g., temperature offset calibration)
+   - The `SETTING_KEY` corresponds to the specific setting being tested (e.g., `kHafFanTempOffsetKey`)
+   - Example: `get_device_setting_HTF001S_1_kHafFanTempOffsetKey.json`
+
+#### Creating Test Files from Diagnostics
+
+When a user provides Home Assistant diagnostics:
+
+1. **Extract raw_state**: The device state data comes from the `raw_state` element in the diagnostics JSON at path: `data.devices[N].raw_state`
+
+2. **Set proper identifiers**:
+   - Set `sn` (serial number) to format: `[MODEL]_[NUMBER]` (e.g., `HCF003S_1`)
+   - Set `deviceName` to format: `DEBUGTEST - [ProductName] - DR-[MODEL]` (e.g., `DEBUGTEST - Ceiling Fan - DR-HCF003S`)
+   - This naming convention ensures test data is properly identified and won't interfere with production devices
+
+3. **Run the generation script**:
+   ```bash
+   python testScripts/generateE2ETestData.py
+   ```
+   This script copies the necessary JSON files from the diagnostics to both:
+   - `custom_components/dreo/e2e_test_data/`
+   - `tests/pydreo/api_responses/`
+
+4. **Create test cases**: Add corresponding test methods in:
+   - `tests/pydreo/test_pydreo[devicetype].py` - PyDreo unit tests
+   - `tests/dreo/integrationtests/test_dreo[devicetype].py` - HA integration tests
+
+#### Test File Naming Convention
+
+- Device list: `get_devices_[MODEL].json` (e.g., `get_devices_HCF003S.json`)
+- Device state: `get_device_state_[MODEL]_[NUMBER].json` (e.g., `get_device_state_HCF003S_1.json`)
+- Device setting: `get_device_setting_[MODEL]_[NUMBER]_[SETTING_KEY].json` (e.g., `get_device_setting_HTF001S_1_kHafFanTempOffsetKey.json`)
+- Multiple devices of same model: increment the number (e.g., `_1`, `_2`, `_3`)
+- Model names should match Dreo's model identifier without the `DR-` prefix
+
 ## Home Assistant Integration Patterns
-
-### Device Types
-
-The integration supports multiple device types, each mapped to Home Assistant platforms:
-- **Fans** → `fan` platform
-- **Heaters** → `climate` platform
-- **Humidifiers/Dehumidifiers** → `humidifier` platform
-- **Lights** (device displays) → `light` platform
-- **Switches** (device features) → `switch` platform
-- **Sensors** (temperature, humidity) → `sensor` platform
-- **Numbers** (adjustable values) → `number` platform
 
 ### Adding New Device Support
 
@@ -127,11 +174,7 @@ The integration includes a special debug mode for testing without live devices:
 
 1. Obtain device JSON from user (via diagnostics or debug logs)
 2. Identify device type and capabilities
-3. Add device model mapping in the PyDreo library (check existing device files in `custom_components/dreo/pydreo/` for the appropriate location)
-4. Create/update device class if needed
-5. Run the `testScripts/generateE2ETestData.py` script to add JSON to `e2e_test_data/`
-6. Write integration test in `tests/dreo/integrationtests/`
-7. Update README.md with the new supported model
+3. See the section on Creating Test Files from Diagnostics
 
 ### Fixing a Bug
 
