@@ -25,6 +25,7 @@ from .constant import (
     PRESET_NONE,
     PRESET_ECO,
     PRESET_SLEEP,
+    HVACMode,
     DreoDeviceType,
     VERTICAL_ANGLE_RANGE
 )
@@ -364,10 +365,10 @@ SUPPORTED_DEVICES = {
         },
         # TODO Eco is a Present, not HVAC mode (HVACMode.AUTO)
         hvac_modes=[
-            HEATER_MODE_COOLAIR,
-            HEATER_MODE_HOTAIR,
-            HEATER_MODE_ECO,
-            HEATER_MODE_OFF,
+            HVACMode.OFF,
+            HVACMode.COOL, 
+            HVACMode.FAN_ONLY, 
+            HVACMode.DRY
         ],
         swing_modes=[SWING_OFF, SWING_ON],
         preset_modes=[PRESET_NONE, PRESET_ECO, PRESET_SLEEP],

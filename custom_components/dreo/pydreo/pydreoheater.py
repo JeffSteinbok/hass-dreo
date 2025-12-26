@@ -121,13 +121,13 @@ class PyDreoHeater(PyDreoBaseDevice):
     @htalevel.setter
     def htalevel(self, htalevel : int) :
         """Set the heat level."""
+        htalevel = int(htalevel) # ensure it's an int
         _LOGGER.debug("PyDreoHeater:htalevel.setter(%s, %s)", self.name, htalevel)
         if (self._device_definition.device_ranges[HEAT_RANGE][0] > htalevel > self._device_definition.device_ranges[HEAT_RANGE][1]):
             _LOGGER.error("Heat level %s is not in the acceptable range: %s",
                             htalevel,
                             self._device_definition.device_ranges[HEAT_RANGE])
             return
-        self.hvac_mode = HEATER_MODE_HOTAIR
         self._send_command(HTALEVEL_KEY, htalevel)
 
     @property 

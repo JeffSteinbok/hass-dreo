@@ -64,10 +64,12 @@ All DR-HHM* models should have basic support.
 ## Space Heaters
 
 ### DR-HSH Series
+- DR-HSH003S
 - DR-HSH004S
 - DR-HSH006S
 - DR-HSH009S
 - DR-HSH009AS
+- DR-HSH010S
 - DR-HSH0017S
 - DR-HSH034S
 
