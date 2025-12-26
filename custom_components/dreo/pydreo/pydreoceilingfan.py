@@ -140,7 +140,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
             return
         # Send lighton along with brightness to ensure the light is on
         params = {LIGHTON_KEY: True, BRIGHTNESS_KEY: value}
-        self._dreo.send_command(self, params)
+        self._send_commands(params)
 
     @property
     def color_temperature(self) -> int | None:
@@ -156,7 +156,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
             return
         # Send lighton along with colortemp to ensure the light is on
         params = {LIGHTON_KEY: True, COLORTEMP_KEY: value}
-        self._dreo.send_command(self, params)
+        self._send_commands(params)
 
     @property
     def atm_light_on(self) -> bool | None:

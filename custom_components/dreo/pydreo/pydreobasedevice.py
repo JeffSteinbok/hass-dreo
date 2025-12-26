@@ -132,6 +132,13 @@ class PyDreoBaseDevice(object):
         params: dict = {command_key: value}
         self._dreo.send_command(self, params)
 
+    def _send_commands(self, params: dict):
+        """Send multiple commands to the Dreo servers via WebSocket."""
+        _LOGGER.debug(
+            "pyDreoBaseDevice(%s):send_commands: %s", self, params
+        )
+        self._dreo.send_command(self, params)
+
     def _set_setting(self, setting_key: str, value):
         """Set a setting on the device."""
         _LOGGER.debug(
