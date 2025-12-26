@@ -42,11 +42,11 @@ class TestPyDreoCeilingFan(TestBase):
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.brightness = 50
-            mock_send_command.assert_called_once_with(fan, {BRIGHTNESS_KEY: 50})
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True, BRIGHTNESS_KEY: 50})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.color_temperature = 50
-            mock_send_command.assert_called_once_with(fan, {COLORTEMP_KEY: 50})
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True, COLORTEMP_KEY: 50})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'normal'

@@ -138,7 +138,9 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if (self._brightness is None):
             _LOGGER.error("Brightness not supported by this fan model.")
             return
-        self._send_command(BRIGHTNESS_KEY, value)
+        # Send lighton along with brightness to ensure the light is on
+        params = {LIGHTON_KEY: True, BRIGHTNESS_KEY: value}
+        self._dreo.send_command(self, params)
 
     @property
     def color_temperature(self) -> int | None:
@@ -152,7 +154,9 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if (self._color_temp is None):
             _LOGGER.error("Color temperature not supported by this fan model.")
             return
-        self._send_command(COLORTEMP_KEY, value)        
+        # Send lighton along with colortemp to ensure the light is on
+        params = {LIGHTON_KEY: True, COLORTEMP_KEY: value}
+        self._dreo.send_command(self, params)
 
     @property
     def atm_light_on(self) -> bool | None:
