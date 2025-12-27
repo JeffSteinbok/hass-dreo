@@ -23,15 +23,13 @@ from .constant import (
     CHILDLOCKON_KEY,
     TEMPOFFSET_KEY,
     FIXEDCONF_KEY,
-    HEATER_MODE_HOTAIR,
-    HEATER_MODE_OFF,
-    HEATER_MODES,
+    DreoHeaterMode,
     TemperatureUnit,
     HeaterOscillationAngles
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE
+from .models import DreoHeaterDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE
 
 _LOGGER = logging.getLogger(LOGGER_NAME)
 
@@ -41,10 +39,11 @@ if TYPE_CHECKING:
 class PyDreoHeater(PyDreoBaseDevice):
     """Base class for Dreo heater API Calls."""
 
-    def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
+    def __init__(self, device_definition: DreoHeaterDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize heater devices."""
         super().__init__(device_definition, details, dreo)
 
+        self._heaterDeviceDefinition: DreoHeaterDeviceDetails = device_definition
         self._mode = None
         self._htalevel = None
         self._oscon = None
@@ -99,9 +98,9 @@ class PyDreoHeater(PyDreoBaseDevice):
         return self._htalevel_range
 
     @property
-    def mode_names(self) -> list[str]:
+    def modes(self) -> list[DreoHeaterMode]:
         """Get the list of supported modes"""
-        return self._device_definition.mode_names
+        return self._heaterDeviceDefinition.modes
 
     @property
     def devon(self):
@@ -157,12 +156,11 @@ class PyDreoHeater(PyDreoBaseDevice):
         return self._mode 
 
     @mode.setter
-    def mode(self, value: str) -> None:
-        if value in self.mode_names:
+    def mode(self, value: DreoHeaterMode) -> None:
+        if value in self.modes:
             self._send_command(MODE_KEY, value)
         else:
-            raise ValueError(f"Mode {value} is not in the acceptable list: {self.mode_names}")
-
+            raise ValueError(f"Mode {value} is not in the acceptable list: {self.modes}")
     @property
     def temperature(self):
         """Get the temperature"""
@@ -339,7 +337,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         if isinstance(val_power_on, bool):
             self._is_on = val_power_on
             if not self._is_on:
-                self._mode = HEATER_MODE_OFF
+                self._mode = DreoHeaterMode.OFF
 
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):
@@ -349,7 +347,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         # explicitly setting that to off.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, str):
-            self._mode = val_mode if val_mode in HEATER_MODES else HEATER_MODE_OFF
+            self._mode = val_mode if val_mode in self.device_definition.modes else DreoHeaterMode.OFF
 
         val_oscon = self.get_server_update_key_value(message, OSCON_KEY)
         if isinstance(val_oscon, bool):

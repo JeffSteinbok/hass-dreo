@@ -20,8 +20,10 @@ class TestPyDreoHeater(TestBase):
         heater = self.pydreo_manager.devices[0]
 
         assert heater.htalevel_range == (1, 3)
-        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
-
+        assert sorted(heater.modes) == sorted([DreoHeaterMode.COOLAIR, 
+                                               DreoHeaterMode.HOTAIR, 
+                                               DreoHeaterMode.ECO, 
+                                               DreoHeaterMode.OFF])
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
             mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
@@ -42,7 +44,10 @@ class TestPyDreoHeater(TestBase):
         heater = self.pydreo_manager.devices[0]
 
         assert heater.htalevel_range == (1, 3)
-        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
+        assert sorted(heater.modes) == sorted([DreoHeaterMode.COOLAIR, 
+                                               DreoHeaterMode.HOTAIR, 
+                                               DreoHeaterMode.ECO, 
+                                               DreoHeaterMode.OFF])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
@@ -66,7 +71,10 @@ class TestPyDreoHeater(TestBase):
         assert heater.model == "DR-HSH034S"
         assert heater.series_name == "WH714S"
         assert heater.htalevel_range == (1, 3)
-        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
+        assert sorted(heater.modes) == sorted([DreoHeaterMode.COOLAIR, 
+                                               DreoHeaterMode.HOTAIR, 
+                                               DreoHeaterMode.ECO, 
+                                               DreoHeaterMode.OFF])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True
@@ -90,7 +98,10 @@ class TestPyDreoHeater(TestBase):
         assert heater.model == "DR-HSH004S"
         assert heater.series_name == "Atom One S"
         assert heater.htalevel_range == (1, 3)
-        assert heater.mode_names == ['coolair', 'hotair', 'eco', 'off']
+        assert sorted(heater.modes) == sorted([DreoHeaterMode.COOLAIR, 
+                                               DreoHeaterMode.HOTAIR, 
+                                               DreoHeaterMode.ECO, 
+                                               DreoHeaterMode.OFF])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = True

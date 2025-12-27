@@ -9,13 +9,11 @@ from homeassistant.components.climate import (
 )
 
 from custom_components.dreo.pydreo.constant import (
-    HEATER_MODE_COOLAIR,
-    HEATER_MODE_HOTAIR,
-    HEATER_MODE_ECO,
-    HEATER_MODE_OFF,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
-    HeaterOscillationAngles
+    PRESET_ECO,
+    HeaterOscillationAngles,
+    DreoHeaterMode
 )
 
 class TestDreoHeaterHA(TestDeviceBase):
@@ -31,18 +29,19 @@ class TestDreoHeaterHA(TestDeviceBase):
                                                                                         "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
                                                                                         "htalevel": 2,
                                                                                         "ecolevel": 70,
-                                                                                        "hvac_mode": HEATER_MODE_HOTAIR,  # Use string mode instead of HVACMode enum
-                                                                                        "hvac_modes" : [
-                                                                                            HEATER_MODE_COOLAIR,
-                                                                                            HEATER_MODE_HOTAIR,
-                                                                                            HEATER_MODE_ECO,
-                                                                                            HEATER_MODE_OFF,
-                                                                                        ],
-                                                                                        "swing_modes" : [
-                                                                                            HeaterOscillationAngles.OSC,
-                                                                                            HeaterOscillationAngles.SIXTY,
-                                                                                            HeaterOscillationAngles.NINETY,
-                                                                                            HeaterOscillationAngles.ONE_TWENTY]})
+                                                                                        "mode": DreoHeaterMode.HOTAIR,  # Use string mode instead of HVACMode enum
+                                                                            },
+                                                                            modes = [
+                                                                                DreoHeaterMode.COOLAIR,
+                                                                                DreoHeaterMode.HOTAIR,
+                                                                                DreoHeaterMode.ECO,
+                                                                                DreoHeaterMode.OFF,
+                                                                            ],
+                                                                            swing_modes = [
+                                                                                HeaterOscillationAngles.OSC,
+                                                                                HeaterOscillationAngles.SIXTY,
+                                                                                HeaterOscillationAngles.NINETY,
+                                                                                HeaterOscillationAngles.ONE_TWENTY])
         
         test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
         assert test_heater.is_on is True
@@ -53,13 +52,13 @@ class TestDreoHeaterHA(TestDeviceBase):
         
         # Test HVAC mode changes
         test_heater.set_hvac_mode(HVACMode.OFF)
-        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_OFF
+        assert mocked_pydreo_heater.mode == DreoHeaterMode.OFF
         
         test_heater.set_hvac_mode(HVACMode.HEAT)
-        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_HOTAIR
+        assert mocked_pydreo_heater.mode == DreoHeaterMode.HOTAIR
         
-        test_heater.set_hvac_mode(HVACMode.AUTO)
-        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_ECO
+        test_heater.set_preset_mode(PRESET_ECO)
+        assert mocked_pydreo_heater.mode == DreoHeaterMode.ECO
         
         test_heater.set_hvac_mode(HVACMode.FAN_ONLY)
-        assert mocked_pydreo_heater.hvac_mode == HEATER_MODE_COOLAIR
+        assert mocked_pydreo_heater.mode == DreoHeaterMode.COOLAIR

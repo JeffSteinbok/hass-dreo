@@ -54,7 +54,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         super().__init__(device_definition, details, dreo)
         
         self._speed_range = None
-        if (device_definition.device_ranges is not None):
+        if (device_definition.device_ranges is not None and SPEED_RANGE in device_definition.device_ranges):
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)

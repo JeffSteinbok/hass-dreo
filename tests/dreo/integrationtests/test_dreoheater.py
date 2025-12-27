@@ -51,9 +51,8 @@ class TestDreoHeater(IntegrationTestBase):
 
             # Test HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
-                heater_ha.set_hvac_mode(HVACMode.AUTO)
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "eco"})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
@@ -90,9 +89,9 @@ class TestDreoHeater(IntegrationTestBase):
 
             # Test multiple HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
-                heater_ha.set_hvac_mode(HVACMode.AUTO)
+                heater_ha.set_hvac_mode(HVACMode.FAN_ONLY)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "eco"})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "coolair"})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
@@ -127,9 +126,9 @@ class TestDreoHeater(IntegrationTestBase):
 
             # Test turning heater on and setting mode
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
-                heater_ha.set_hvac_mode(HVACMode.AUTO)
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "eco"})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
@@ -165,9 +164,9 @@ class TestDreoHeater(IntegrationTestBase):
 
             # Test turning heater on and setting mode
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
-                heater_ha.set_hvac_mode(HVACMode.AUTO)
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "eco"})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
@@ -227,9 +226,9 @@ class TestDreoHeater(IntegrationTestBase):
 
             # Test HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
-                heater_ha.set_hvac_mode(HVACMode.AUTO)
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "eco"})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)

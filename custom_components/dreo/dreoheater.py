@@ -12,35 +12,42 @@ from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import (
     PyDreoHeater,
-    HEATER_MODE_OFF,
-    HEATER_MODE_COOLAIR,
-    HEATER_MODE_HOTAIR,
-    HEATER_MODE_ECO,
     ECOLEVEL_RANGE,
     ANGLE_OSCANGLE_MAP,
     OSCANGLE_ANGLE_MAP,
 )
 
+from .pydreo.constant import DreoHeaterMode
+
 from .const import (
     LOGGER,
-    DOMAIN
+    DOMAIN,
 )
 
-HVAC_MODE_MAP = {
-    HVACMode.OFF: HEATER_MODE_OFF,
-    HVACMode.FAN_ONLY: HEATER_MODE_COOLAIR,
-    HVACMode.AUTO: HEATER_MODE_ECO,
-    HVACMode.HEAT: HEATER_MODE_HOTAIR,
-}
-
-HEATER_MODE_MAP = {
-    HEATER_MODE_OFF: HVACMode.OFF,
-    HEATER_MODE_COOLAIR: HVACMode.FAN_ONLY,
-    HEATER_MODE_HOTAIR: HVACMode.HEAT,
-    HEATER_MODE_ECO: HVACMode.AUTO,
-}
+from homeassistant.components.climate import (
+    PRESET_ECO,
+    PRESET_NONE,
+)
 
 _LOGGER = logging.getLogger(LOGGER)
+
+# Map Dreo Heater modes to Home Assistant HVAC modes
+DREO_HEATER_MODE_TO_HVAC_MODE = {
+    DreoHeaterMode.COOLAIR: HVACMode.FAN_ONLY,
+    DreoHeaterMode.HOTAIR: HVACMode.HEAT,
+    DreoHeaterMode.ECO: HVACMode.AUTO,  # ECO is AUTO mode
+    DreoHeaterMode.OFF: HVACMode.OFF,
+}
+
+# Map Dreo Heater modes to Home Assistant preset modes
+DREO_HEATER_MODE_TO_PRESET = {
+    DreoHeaterMode.ECO: PRESET_ECO,
+}
+
+# Reverse mapping: preset to Dreo mode
+HVAC_PRESET_TO_DREO_HEATER_MODE = {
+    PRESET_ECO: DreoHeaterMode.ECO,
+}
 
 # Implementation of the heater
 class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
@@ -73,12 +80,21 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_current_temperature = self.device.temperature
         self._attr_swing_mode = self.device.device_definition.swing_modes[0] if self.device.device_definition.swing_modes else None
         self._attr_swing_modes = self.device.device_definition.swing_modes
-        self._attr_hvac_mode = (
-            HEATER_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
-        )
-        self._attr_hvac_modes = [
-            HEATER_MODE_MAP[h] for h in self.device.device_definition.mode_names
-        ]
+        
+        # Map device mode to HVAC mode using new mappings
+        self._attr_hvac_mode = DREO_HEATER_MODE_TO_HVAC_MODE.get(DreoHeaterMode(self.device.mode), HVACMode.OFF) if self.device.poweron else HVACMode.OFF
+        
+        # Build list of unique HVAC modes from device mode_names
+        hvac_modes_set = {DREO_HEATER_MODE_TO_HVAC_MODE.get(mode) 
+                          for mode in self.device.modes
+                          if mode in DREO_HEATER_MODE_TO_HVAC_MODE}
+        self._attr_hvac_modes = list(hvac_modes_set)
+        
+        # Build preset modes from device modes that have presets, plus PRESET_NONE
+        preset_modes_set = {DREO_HEATER_MODE_TO_PRESET.get(mode)
+                            for mode in self.device.modes
+                            if mode in DREO_HEATER_MODE_TO_PRESET}
+        self._attr_preset_modes = [PRESET_NONE] + list(preset_modes_set)
 
         _LOGGER.info(
             "new DreoHeaterHA instance(%s), unique ID %s, HVAC mode %s, target temp %s, current temp %s, swing mode %s, swing modes [%s]",
@@ -134,6 +150,37 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         }
 
     @property
+    def preset_modes(self) -> list[str]:
+        """Get the list of available preset modes."""
+        return self._attr_preset_modes
+
+    @property
+    def preset_mode(self) -> str | None:
+        """Get the current preset mode based on device mode."""
+        # Map device mode to preset if it has one, otherwise PRESET_NONE
+        device_mode = DreoHeaterMode(self.device.mode) if self.device.poweron else None
+        preset = DREO_HEATER_MODE_TO_PRESET.get(device_mode, PRESET_NONE)
+        _LOGGER.debug("DreoHeaterHA:preset_mode(%s): %s (device.mode: %s)", 
+                      self.device.name, preset, self.device.mode)
+        return preset
+    
+    def set_preset_mode(self, preset_mode: str) -> None:
+        """Set new preset mode."""
+        _LOGGER.debug("DreoHeaterHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
+        
+        # Map preset to Dreo mode
+        dreo_mode = HVAC_PRESET_TO_DREO_HEATER_MODE.get(preset_mode)
+        
+        if dreo_mode is not None:
+            self.device.mode = dreo_mode
+            if not self.device.poweron:
+                self.device.poweron = True
+            self.schedule_update_ha_state()
+        else:
+            _LOGGER.warning("DreoHeaterHA:set_preset_mode(%s) invalid preset: %s",
+                          self.device.name, preset_mode)
+
+    @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
         supported_features = 0
@@ -144,6 +191,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF
             supported_features |= ClimateEntityFeature.TURN_ON
+        if len(self._attr_preset_modes) > 1:  # More than just PRESET_NONE
+            supported_features |= ClimateEntityFeature.PRESET_MODE
 
         return supported_features
 
@@ -151,7 +200,18 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         """Turn the device on."""
         _LOGGER.debug("DreoHeaterHA:turn_on(%s)", self.device.name)
         self.device.poweron = True
-        self.device.mode = HVAC_MODE_MAP[self._last_hvac_mode]
+        # Use preset if ECO, otherwise map HVAC mode to Dreo mode
+        current_preset = self.preset_mode or PRESET_NONE
+        if current_preset == PRESET_ECO:
+            self.device.mode = DreoHeaterMode.ECO
+        elif self._last_hvac_mode == HVACMode.HEAT:
+            self.device.mode = DreoHeaterMode.HOTAIR
+        elif self._last_hvac_mode == HVACMode.FAN_ONLY:
+            self.device.mode = DreoHeaterMode.COOLAIR
+        elif self._last_hvac_mode == HVACMode.AUTO:
+            self.device.mode = DreoHeaterMode.ECO
+        else:
+            self.device.mode = DreoHeaterMode.HOTAIR
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
@@ -188,7 +248,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
-        if self._attr_hvac_mode == HVACMode.AUTO:
+        if self._attr_hvac_mode == HVACMode.HEAT:
             self.device.ecolevel = self._attr_target_temperature = int(kwargs.get(
                 ATTR_TEMPERATURE
             ))
@@ -219,9 +279,11 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def hvac_mode(self) -> HVACMode:
         # ensure hvac_mode is actually in sync with the device's mode
-        self._attr_hvac_mode = (
-            HEATER_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
-        )
+        self._attr_hvac_mode = DREO_HEATER_MODE_TO_HVAC_MODE.get(DreoHeaterMode(self.device.mode), HVACMode.OFF) if self.device.poweron else HVACMode.OFF
+        _LOGGER.debug("DreoHeaterHA:hvac_mode(%s): %s (device.mode: %s)", 
+                      self.device.name, 
+                      self._attr_hvac_mode,
+                      self.device.mode)
         return self._attr_hvac_mode
 
     @property
@@ -231,20 +293,35 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode."""
-        _LOGGER.debug(
-            "DreoHeaterHA:set_hvac_mode(%s) %s --> %s",
-            self.device.name,
-            hvac_mode,
-            HVAC_MODE_MAP[hvac_mode],
-        )
+        _LOGGER.debug("DreoHeaterHA:set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
+        
+        # Validate that the requested HVAC mode is supported
+        if hvac_mode not in self._attr_hvac_modes:
+            _LOGGER.error("DreoHeaterHA:set_hvac_mode(%s) - Requested HVAC mode %s is not supported. Supported modes: %s",
+                          self.device.name, hvac_mode, self._attr_hvac_modes)
+            return
+        
         self._last_hvac_mode = self._attr_hvac_mode
 
-        if hvac_mode != HVACMode.OFF:
-            self.device.poweron = True
-        else:
+        # Unsure if both of these are needed to be honest.
+        if hvac_mode == HVACMode.OFF:
             self.device.poweron = False
+            self.device.mode = DreoHeaterMode.OFF
+            self._attr_hvac_mode = HVACMode.OFF
+        else:
+            # Map HVAC mode to Dreo mode
+            if hvac_mode == HVACMode.AUTO:
+                self.device.mode = DreoHeaterMode.ECO
+            elif hvac_mode == HVACMode.HEAT:
+                self.device.mode = DreoHeaterMode.HOTAIR
+            elif hvac_mode == HVACMode.FAN_ONLY:
+                self.device.mode = DreoHeaterMode.COOLAIR
+            else:
+                self.device.mode = DreoHeaterMode.HOTAIR
+            self.device.poweron = True
+            self._attr_hvac_mode = hvac_mode
 
-        self.device.mode = HVAC_MODE_MAP[hvac_mode]
+        self.schedule_update_ha_state()
 
     @property
     def swing_modes(self) -> list[str] | None:
@@ -278,10 +355,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def set_humidity(self, humidity: int) -> None:
         """Set target humidity (not supported by heaters)."""
         raise NotImplementedError("Humidity control is not supported by heaters")
-
-    def set_preset_mode(self, preset_mode: str) -> None:
-        """Set preset mode (not supported by heaters)."""
-        raise NotImplementedError("Preset mode is not supported by heaters")
 
     def set_swing_horizontal_mode(self, swing_horizontal_mode: str) -> None:
         """Set horizontal swing mode (not supported by heaters)."""

@@ -117,24 +117,6 @@ DREO_AUTH_REGION_EU = "EU"
 DREO_API_REGION_US = "us"
 DREO_API_REGION_EU = "eu"
 
-HEATER_MODE_COOLAIR = "coolair"
-HEATER_MODE_HOTAIR = "hotair"
-HEATER_MODE_ECO = "eco"
-HEATER_MODE_OFF = "off"
-
-HEATER_MODES = [
-    HEATER_MODE_COOLAIR,
-    HEATER_MODE_HOTAIR,
-    HEATER_MODE_ECO,
-    HEATER_MODE_OFF
-]
-
-AC_ECO_LEVEL_MAP = {
-    1 : "10%",
-    2 : "20%",
-    3 : "30%"
-}
-
 OSCANGLE_ANGLE_MAP = {
     "Oscillate" : 0,
     "60°" : 60,
@@ -253,3 +235,22 @@ class DreoDeviceType(StrEnum):
     DEHUMIDIFIER = "Dehumidifier"
     EVAPORATIVE_COOLER = "Evaporative Cooler"
     UNKNOWN = "Unknown"
+
+class DreoACMode(IntEnum):
+    COOL = 1
+    DRY = 2
+    FAN = 3
+    SLEEP = 4
+    ECO = 5
+
+class DreoACFanMode(IntEnum):
+    LOW = 1
+    MEDIUM = 2
+    HIGH = 3
+    AUTO = 4
+
+class DreoHeaterMode(StrEnum):
+    COOLAIR = "coolair"
+    HOTAIR = "hotair"
+    ECO = "eco"
+    OFF = "off"

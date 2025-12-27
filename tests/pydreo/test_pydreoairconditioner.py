@@ -7,6 +7,7 @@ from  .imports import * # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 from custom_components.dreo.pydreo import PyDreoAC
+from custom_components.dreo.pydreo.pydreoairconditioner import DreoACMode
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -23,25 +24,24 @@ class TestPyDreoAirConditioner(TestBase):
 
         ac : PyDreoAC = self.pydreo_manager.devices[0]
 
-        assert ac.preset_modes == ['none', 'eco', 'sleep']
+        assert sorted(ac.modes) == sorted([DreoACMode.COOL, DreoACMode.DRY, DreoACMode.FAN, DreoACMode.ECO, DreoACMode.SLEEP])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.poweron = True
             mock_send_command.assert_called_once_with(ac, {POWERON_KEY: True})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ac.fan_mode = 'auto'
+            ac.fan_mode = DreoACFanMode.AUTO
             mock_send_command.assert_called_once_with(ac, {WINDLEVEL_KEY: 4})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ac.preset_mode = 'eco'
+            ac.mode = DreoACMode.ECO
             mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 5})
 
         # Test sleep preset mode
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ac.preset_mode = 'sleep'
+            ac.mode = DreoACMode.SLEEP
             mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 4})
-            assert ac.preset_mode == 'sleep'  # Verify mode was set
 
         # TODO: Fix this in the AC class
         # with pytest.raises(ValueError):
