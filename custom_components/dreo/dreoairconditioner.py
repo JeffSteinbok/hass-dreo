@@ -346,8 +346,8 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             self.device.poweron = False
             self._attr_hvac_mode = HVACMode.OFF
         else:
-            self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
             self.device.poweron = True
+            self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
             self._attr_hvac_mode = hvac_mode
 
         self.schedule_update_ha_state()
