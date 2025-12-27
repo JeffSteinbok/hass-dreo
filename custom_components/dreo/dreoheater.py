@@ -204,6 +204,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             if not self.device.poweron:
                 self.device.poweron = True
             self.device.mode = DreoHeaterMode.HOTAIR
+            self.device.htalevel = heat_level
             self.schedule_update_ha_state()
             return
         
