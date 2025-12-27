@@ -164,7 +164,13 @@ class PyDreoAC(PyDreoBaseDevice):
     @mode.setter
     def mode(self, mode: str) -> None:
         _LOGGER.debug("PyDreoAC:mode(%s) --> %s", self.name, mode)
-        self._send_command(MODE_KEY, mode)
+        # If unit is off, send both power on and mode commands together
+        if not self._is_on:
+            _LOGGER.debug("PyDreoAC:mode(%s) - unit is off, sending power on and mode commands together", self.name)
+            params = {POWERON_KEY: True, MODE_KEY: mode}
+            self._dreo.send_command(self, params)
+        else:
+            self._send_command(MODE_KEY, mode)
 
     @property
     def fan_mode(self) -> str:
