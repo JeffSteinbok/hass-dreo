@@ -348,13 +348,13 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             self._attr_hvac_mode = HVACMode.OFF
         else:
             # Map HVAC mode to Dreo mode
+            self.device.poweron = True
             if hvac_mode == HVACMode.HEAT:
                 self.device.mode = DreoHeaterMode.HOTAIR
             elif hvac_mode == HVACMode.FAN_ONLY:
                 self.device.mode = DreoHeaterMode.COOLAIR
             else:
                 self.device.mode = DreoHeaterMode.HOTAIR
-            self.device.poweron = True
             self._attr_hvac_mode = hvac_mode
 
         self.schedule_update_ha_state()
