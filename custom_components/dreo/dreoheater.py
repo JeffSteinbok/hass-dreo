@@ -211,9 +211,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         dreo_mode = HVAC_PRESET_TO_DREO_HEATER_MODE.get(preset_mode)
         
         if dreo_mode is not None:
-            self.device.mode = dreo_mode
             if not self.device.poweron:
                 self.device.poweron = True
+            self.device.mode = dreo_mode
             self.schedule_update_ha_state()
         elif preset_mode != PRESET_NONE:
             _LOGGER.warning("DreoHeaterHA:set_preset_mode(%s) invalid preset: %s",
