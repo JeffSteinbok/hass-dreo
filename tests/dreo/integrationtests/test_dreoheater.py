@@ -44,7 +44,7 @@ class TestDreoHeater(IntegrationTestBase):
                 assert isinstance(heater_ha.current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Heat Level"])
+            self.verify_expected_entities(numbers, [])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -65,6 +65,29 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
             assert heater_ha.hvac_mode == HVACMode.AUTO
 
+            # Test preset modes (H1, H2, H3)
+            assert "H1" in heater_ha.preset_modes
+            assert "H2" in heater_ha.preset_modes
+            assert "H3" in heater_ha.preset_modes
+            
+            # Test setting H1 preset
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H1")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 1})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+            
+            # Test setting H2 preset
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H2")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 2})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+            
+            # Test setting H3 preset
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H3")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 3})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+
     def test_HSH003S(self):  # pylint: disable=invalid-name
         """Load heater and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
@@ -82,7 +105,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Heat Level"])
+            self.verify_expected_entities(numbers, [])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -119,7 +142,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Heat Level"])
+            self.verify_expected_entities(numbers, [])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -157,7 +180,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Heat Level"])
+            self.verify_expected_entities(numbers, [])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -205,24 +228,33 @@ class TestDreoHeater(IntegrationTestBase):
                 assert isinstance(heater_ha.current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Heat Level"])
-            heat_level_number = numbers[0]
+            self.verify_expected_entities(numbers, [])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
 
-            # Test heat level changes
+            # Test preset modes (H1, H2, H3)
+            assert "H1" in heater_ha.preset_modes
+            assert "H2" in heater_ha.preset_modes
+            assert "H3" in heater_ha.preset_modes
+            
+            # Test setting H1 preset
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                heat_level_number.set_native_value(1)
-                mock_send_command.assert_called_once_with(pydreo_heater, {HTALEVEL_KEY: 1})
-
+                heater_ha.set_preset_mode("H1")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 1})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+            
+            # Test setting H2 preset
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                heat_level_number.set_native_value(2)
-                mock_send_command.assert_called_once_with(pydreo_heater, {HTALEVEL_KEY: 2})
-
+                heater_ha.set_preset_mode("H2")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 2})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+            
+            # Test setting H3 preset
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                heat_level_number.set_native_value(3)
-                mock_send_command.assert_called_once_with(pydreo_heater, {HTALEVEL_KEY: 3})
+                heater_ha.set_preset_mode("H3")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 3})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
 
             # Test HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  

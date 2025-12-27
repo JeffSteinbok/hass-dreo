@@ -62,3 +62,34 @@ class TestDreoHeaterHA(TestDeviceBase):
         
         test_heater.set_hvac_mode(HVACMode.FAN_ONLY)
         assert mocked_pydreo_heater.mode == DreoHeaterMode.COOLAIR
+        
+        # Test heat level presets (H1, H2, H3)
+        assert "H1" in test_heater.preset_modes
+        assert "H2" in test_heater.preset_modes
+        assert "H3" in test_heater.preset_modes
+        
+        # Test setting H1 preset
+        test_heater.set_preset_mode("H1")
+        assert mocked_pydreo_heater.htalevel == 1
+        assert mocked_pydreo_heater.mode == DreoHeaterMode.HOTAIR
+        
+        # Test setting H2 preset
+        test_heater.set_preset_mode("H2")
+        assert mocked_pydreo_heater.htalevel == 2
+        assert mocked_pydreo_heater.mode == DreoHeaterMode.HOTAIR
+        
+        # Test setting H3 preset
+        test_heater.set_preset_mode("H3")
+        assert mocked_pydreo_heater.htalevel == 3
+        assert mocked_pydreo_heater.mode == DreoHeaterMode.HOTAIR
+        
+        # Test that preset mode reflects heat level when in HOTAIR mode
+        mocked_pydreo_heater.htalevel = 1
+        mocked_pydreo_heater.mode = DreoHeaterMode.HOTAIR
+        assert test_heater.preset_mode == "H1"
+        
+        mocked_pydreo_heater.htalevel = 2
+        assert test_heater.preset_mode == "H2"
+        
+        mocked_pydreo_heater.htalevel = 3
+        assert test_heater.preset_mode == "H3"

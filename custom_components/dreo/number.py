@@ -119,13 +119,6 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         exists_fn=lambda device: device.is_feature_supported("vertical_oscillation_angle"),
     ),
     DreoNumberEntityDescription(
-        key="Heat Level",
-        translation_key="htalevel",
-        attr_name="htalevel",
-        icon="mdi:heat-wave",
-        exists_fn=lambda device: device.is_feature_supported("htalevel"),
-    ),
-    DreoNumberEntityDescription(
         key="Target Humidity",
         translation_key="target_humidity",
         attr_name="target_humidity",
