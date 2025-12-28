@@ -170,12 +170,13 @@ class TestPyDreoAirCirculator(TestBase):
         # Setting oscillating may trigger both hosc and vosc commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
-            # May send multiple commands for hosc/vosc
-            assert mock_send_command.call_count >= 1
+            # May send 1 command (oscmode) or 2 commands (hosc + vosc)
+            assert mock_send_command.call_count in (1, 2)
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
-            assert mock_send_command.call_count >= 1
+            # May send 1 command (oscmode) or 2 commands (hosc + vosc)
+            assert mock_send_command.call_count in (1, 2)
 
         # Test horizontal oscillation
         with patch(PATCH_SEND_COMMAND) as mock_send_command:

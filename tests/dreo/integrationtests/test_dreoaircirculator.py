@@ -108,13 +108,12 @@ class TestDreoAirCirculator(IntegrationTestBase):
             # Turn off oscillation first, then turn it back on
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.oscillate(False)
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: 0})
             pydreo_fan.handle_server_update({ REPORTED_KEY: {OSCMODE_KEY: 0} })
             
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.oscillate(True)
-                # Oscillation may trigger multiple commands
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: 1})
             pydreo_fan.handle_server_update({ REPORTED_KEY: {OSCMODE_KEY: 1} })
 
             # Turn fan back on for speed tests
@@ -201,12 +200,12 @@ class TestDreoAirCirculator(IntegrationTestBase):
             # Test speed settings across range
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(1)  # Minimum
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 1})
             pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 1} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Maximum
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 9})
             pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 9} })
 
             # Test preset mode commands

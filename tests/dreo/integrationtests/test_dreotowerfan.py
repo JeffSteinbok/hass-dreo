@@ -80,10 +80,10 @@ class TestDreoTowerFan(IntegrationTestBase):
         # Test oscillation
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
-            assert mock_send_command.call_count >= 1
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: False})
         fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: False}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
-            assert mock_send_command.call_count >= 1
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})
         fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: True}})

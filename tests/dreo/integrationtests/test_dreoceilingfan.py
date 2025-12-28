@@ -48,15 +48,15 @@ class TestDreoCeilingFan(IntegrationTestBase):
             # Test speed settings
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(25)  # Speed ~3
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 3})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(50)  # Speed ~6
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 6})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Speed 12 (max)
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 12})
 
             # Check to see what switches are added to ceiling fans
             switches = switch.get_entries([pydreo_fan])
@@ -85,7 +85,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
             if hasattr(light_switch, 'brightness') and light_switch.brightness is not None:
                 with patch(PATCH_SEND_COMMAND) as mock_send_command:
                     light_switch.turn_on(brightness=128)
-                    assert mock_send_command.call_count >= 1                 
+                    mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTLEVEL_KEY: 128})                 
 
     def test_HCF002S(self):  # pylint: disable=invalid-name
         """Test DR-HCF002S ceiling fan with RGB atmosphere lights."""
@@ -144,6 +144,6 @@ class TestDreoCeilingFan(IntegrationTestBase):
             
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
-                # Should send both atmon and atmcolor commands
-                assert mock_send_command.call_count >= 1
+                # Should send atmcolor command (atmon sent first automatically)
+                assert mock_send_command.call_count == 2  # atmon + atmcolor
 

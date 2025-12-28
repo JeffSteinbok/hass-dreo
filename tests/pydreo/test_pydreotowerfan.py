@@ -93,12 +93,12 @@ class TestPyDreoTowerFan(TestBase):
         # Test oscillation commands (HTF005S uses shakehorizon key)
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
-            assert mock_send_command.call_count >= 1  # Device uses shakehorizon key
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: False})
         fan.handle_server_update({ REPORTED_KEY: {SHAKEHORIZON_KEY: False} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
-            assert mock_send_command.call_count >= 1  # Device uses shakehorizon key
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})
 
     def test_HTF010S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
@@ -180,12 +180,12 @@ class TestPyDreoTowerFan(TestBase):
         # Test oscillation commands (HTF010S uses oscon key)
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
-            assert mock_send_command.call_count >= 1  # Device uses oscon key
+            mock_send_command.assert_called_once_with(fan, {OSCON_KEY: False})
         fan._oscillating = False  # pylint: disable=protected-access
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
-            assert mock_send_command.call_count >= 1  # Device uses oscon key
+            mock_send_command.assert_called_once_with(fan, {OSCON_KEY: True})
 
     def test_HTF007S(self):  # pylint: disable=invalid-name
         """Load HTF007S tower fan and test sending commands."""
