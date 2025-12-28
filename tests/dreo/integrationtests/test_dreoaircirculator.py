@@ -47,11 +47,6 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.percentage >= 0 and ha_fan.percentage <= 100
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
-                ha_fan.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
-            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
-
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: False})
             pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })

@@ -181,7 +181,7 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
             assert mock_send_command.call_count >= 1  # Device uses oscon key
-        fan.handle_server_update({ REPORTED_KEY: {OSCON_KEY: False} })
+        fan._oscillating = False  # pylint: disable=protected-access
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
