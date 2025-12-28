@@ -96,10 +96,11 @@ class TestPyDreoAirCirculator(TestBase):
         # Test oscillation commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
-            # Already true, so might send commands to sync hosc/vosc
-            assert mock_send_command.call_count >= 0
+            # oscmode is currently 2 (VERTICAL), setting to True will make it HORIZONTAL (1)
+            mock_send_command.assert_called_once_with(fan, {OSCMODE_KEY: 1})
+        fan.handle_server_update({ REPORTED_KEY: {OSCMODE_KEY: 1} })
 
-        # Test horizontal oscillation
+        # Test horizontal oscillation - turn it off
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.horizontally_oscillating = False
             mock_send_command.assert_called_once_with(fan, {OSCMODE_KEY: 0})
