@@ -54,9 +54,9 @@ class TestPyDreoCeilingFan(TestBase):
         fan.handle_server_update({ REPORTED_KEY: {COLORTEMP_KEY: 50} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'
-            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 1})
-        fan.handle_server_update({ REPORTED_KEY: {MODE_KEY: 1} })
+            fan.preset_mode = 'natural'
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 2})
+        fan.handle_server_update({ REPORTED_KEY: {MODE_KEY: 2} })
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'

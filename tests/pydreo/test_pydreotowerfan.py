@@ -35,49 +35,53 @@ class TestPyDreoTowerFan(TestBase):
 
         # Test power commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.is_on = True
-            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = False
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
         # Test all preset mode commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'
-            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'natural'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 2} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'sleep'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 3} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'auto'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 4} })
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'
 
         # Test fan speed commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.fan_speed = 1
-            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 3
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 3})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 3} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 6
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 6})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 6} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 12
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 12} })
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 1
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
 
         # Test speed boundaries
         with pytest.raises(ValueError):
@@ -90,6 +94,7 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
             assert mock_send_command.call_count >= 1  # Device uses shakehorizon key
+        fan.handle_server_update({ REPORTED_KEY: {SHAKEHORIZON_KEY: False} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
@@ -119,47 +124,51 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = False
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
         # Test all preset mode commands (uses WIND_MODE_KEY instead of WINDTYPE_KEY)
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'
-            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'natural'
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 2})
+        fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 2} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'sleep'
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 3})
+        fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 3} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'auto'
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
+        fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 4} })
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'
 
         # Test fan speed commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.fan_speed = 1
-            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 3
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 3})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 3} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 6
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 6})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 6} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 12
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 12} })
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 1
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
 
         # Test speed boundaries
         with pytest.raises(ValueError):
@@ -172,6 +181,7 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
             assert mock_send_command.call_count >= 1  # Device uses oscon key
+        fan.handle_server_update({ REPORTED_KEY: {OSCON_KEY: False} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = True
@@ -196,43 +206,46 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = False
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
         # Test preset mode commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'
-            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'natural'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 2} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'sleep'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 3} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'auto'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 4} })
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'
 
         # Test fan speed commands (1-4 speed range)
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.fan_speed = 1
-            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 2
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 2})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 2} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 4
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 4})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 4} })
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 1
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
 
         # Test speed boundaries
         with pytest.raises(ValueError):
@@ -260,43 +273,46 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = False
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+        fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
         # Test preset mode commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'
-            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'natural'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 2} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'sleep'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 3} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = 'auto'
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+        fan.handle_server_update({ REPORTED_KEY: {WINDTYPE_KEY: 4} })
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'
 
         # Test fan speed commands (1-9 speed range)
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.fan_speed = 1
-            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 5
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 5})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 5} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 9
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 9})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 9} })
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 1
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 1})
 
         # Test speed boundaries
         with pytest.raises(ValueError):

@@ -25,12 +25,14 @@ class TestPyDreoHeater(TestBase):
                                                DreoHeaterMode.ECO, 
                                                DreoHeaterMode.OFF])
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.poweron = True
-            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
+            heater.poweron = False
+            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: False})
+        heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
         with (patch(PATCH_SEND_COMMAND) as mock_send_command):
             heater.htalevel = 1
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
+        heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 1} })
 
         with pytest.raises(ValueError):
             heater.mode = 'not_a_mode'
@@ -50,12 +52,14 @@ class TestPyDreoHeater(TestBase):
                                                DreoHeaterMode.OFF])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.poweron = True
-            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
+            heater.poweron = False
+            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: False})
+        heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.htalevel = 2
-            mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 2})], True)
+            heater.htalevel = 1
+            mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
+        heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 1} })
 
         with pytest.raises(ValueError):
             heater.mode = 'not_a_mode'
@@ -77,12 +81,14 @@ class TestPyDreoHeater(TestBase):
                                                DreoHeaterMode.OFF])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.poweron = True
-            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
+            heater.poweron = False
+            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: False})
+        heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.htalevel = 3
-            mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 3})], True)
+            heater.htalevel = 1
+            mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
+        heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 1} })
 
         with pytest.raises(ValueError):
             heater.mode = 'not_a_mode'
@@ -104,12 +110,14 @@ class TestPyDreoHeater(TestBase):
                                                DreoHeaterMode.OFF])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.poweron = True
-            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
+            heater.poweron = False
+            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: False})
+        heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.htalevel = 2
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 2})], True)
+        heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 2} })
 
         with pytest.raises(ValueError):
             heater.mode = 'not_a_mode'

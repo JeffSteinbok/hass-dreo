@@ -49,24 +49,29 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
             # Test oscillation
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.oscillate(True)
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {OSCMODE_KEY: False} })
 
             # Test speed settings
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(25)  # Speed 1
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 1} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Speed 4 (max)
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 4} })
 
             # Check to see what switches are added to ceiling fans
             switches = switch.get_entries([pydreo_fan])
@@ -92,30 +97,36 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
             # Test oscillation (both horizontal and vertical)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.oscillate(True)
                 # Oscillation may trigger multiple commands or none if already oscillating
                 # Just verify the call was attempted
-                assert mock_send_command.call_count >= 0
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 4} })
 
             # Test speed range (1-9)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(11)  # Speed 1
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 4} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(50)  # Mid-range
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 4} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Speed 9 (max)
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 4} })
 
             # Check to see what switches are added to air circulator fans
             switches = switch.get_entries([pydreo_fan])
