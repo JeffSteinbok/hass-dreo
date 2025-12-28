@@ -158,7 +158,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
             self.horizontally_oscillating = value
             self.vertically_oscillating = False
         elif self._osc_mode is not None:
-            self._osc_mode = OscillationMode.HORIZONTAL if value else OscillationMode.OFF
+            new_osc_mode = OscillationMode.HORIZONTAL if value else OscillationMode.OFF
+            if self._osc_mode == new_osc_mode:
+                _LOGGER.debug("PyDreoAirCirculator:oscillating - value already %s, skipping command", value)
+                return
+            self._send_command(OSCMODE_KEY, new_osc_mode)
         else:
             raise NotImplementedError("Attempting to set oscillating on a device that doesn't support.")
 
