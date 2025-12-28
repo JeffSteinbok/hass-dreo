@@ -201,8 +201,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             _LOGGER.debug("DreoHeaterHA:set_preset_mode(%s) setting heat level to %s", 
                           self.device.name, heat_level)
             # Set heat level and ensure we're in HEAT mode
-            if not self.device.poweron:
-                self.device.poweron = True
+            self.device.poweron = True
             self.device.mode = DreoHeaterMode.HOTAIR
             self.device.htalevel = heat_level
             self.schedule_update_ha_state()
@@ -212,8 +211,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         dreo_mode = HVAC_PRESET_TO_DREO_HEATER_MODE.get(preset_mode)
         
         if dreo_mode is not None:
-            if not self.device.poweron:
-                self.device.poweron = True
+            self.device.poweron = True
             self.device.mode = dreo_mode
             self.schedule_update_ha_state()
         elif preset_mode != PRESET_NONE:
@@ -350,11 +348,14 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             # Map HVAC mode to Dreo mode
             self.device.poweron = True
             if hvac_mode == HVACMode.HEAT:
-                self.device.mode = DreoHeaterMode.HOTAIR
+                # Only change mode if not already in HOTAIR or ECO
+                if self.device.mode not in [DreoHeaterMode.HOTAIR, DreoHeaterMode.ECO]:
+                    self.device.mode = DreoHeaterMode.HOTAIR
             elif hvac_mode == HVACMode.FAN_ONLY:
                 self.device.mode = DreoHeaterMode.COOLAIR
             else:
-                self.device.mode = DreoHeaterMode.HOTAIR
+                # Nothing to do here....
+                pass
             self._attr_hvac_mode = hvac_mode
 
         self.schedule_update_ha_state()

@@ -38,10 +38,12 @@ class TestDreoCeilingFan(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {FANON_KEY: True} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {FANON_KEY: False} })
 
             # Test speed settings
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -72,10 +74,12 @@ class TestDreoCeilingFan(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 light_switch.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {LIGHTON_KEY: True} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 light_switch.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {LIGHTON_KEY: False} })
 
             # Test brightness if supported
             if hasattr(light_switch, 'brightness') and light_switch.brightness is not None:

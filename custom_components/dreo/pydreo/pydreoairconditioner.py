@@ -103,6 +103,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def poweron(self, value: bool):
         """Set if the air conditioner is on or off"""
         _LOGGER.debug("PyDreoAC:poweron.setter - %s", value)
+        if self._is_on == value:
+            _LOGGER.debug("PyDreoAC:poweron - value already %s, skipping command", value)
+            return
         self._send_command(POWERON_KEY, value)
 
     @property
@@ -113,6 +116,9 @@ class PyDreoAC(PyDreoBaseDevice):
     @devon.setter
     def devon(self, value: bool):
         _LOGGER.debug("PyDreoAC:devon.setter - %s", value)
+        if self._dev_on == value:
+            _LOGGER.debug("PyDreoAC:devon - value already %s, skipping command", value)
+            return
         self._send_command(DEVON_KEY, value)
 
     @property
@@ -128,6 +134,9 @@ class PyDreoAC(PyDreoBaseDevice):
     @mode.setter
     def mode(self, mode: DreoACMode) -> None:
         _LOGGER.debug("PyDreoAC:mode(%s) --> %s", self.name, mode)
+        if self._mode == mode:
+            _LOGGER.debug("PyDreoAC:mode - value already %s, skipping command", mode)
+            return
         self._send_command(MODE_KEY, mode)
 
         if mode == DreoACMode.SLEEP:
@@ -147,6 +156,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def fan_mode(self, fan_mode: DreoACFanMode) -> None:
         """Set fan mode if requested"""
         _LOGGER.debug("PyDreoAC:fan_mode.setter(%s) %s --> %s", self.name, self._fan_mode, fan_mode)
+        if self._fan_mode == fan_mode:
+            _LOGGER.debug("PyDreoAC:fan_mode - value already %s, skipping command", fan_mode)
+            return
         self._fan_mode = fan_mode
         self._send_command(WINDLEVEL_KEY, fan_mode)
 
@@ -188,6 +200,9 @@ class PyDreoAC(PyDreoBaseDevice):
                 celsius_equivalent = round((value - 32) * 5/9)
                 mapped_fahrenheit = CELSIUS_TO_FAHRENHEIT_MAP.get(celsius_equivalent, value)
                 sleeptempoffset = mapped_fahrenheit - self._sleep_preset_initialization_temp
+                if self._target_temperature == mapped_fahrenheit:
+                    _LOGGER.debug("PyDreoAC:target_temperature - value already %s, skipping command", mapped_fahrenheit)
+                    return
                 _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) SLEEP Celsius mode: %s°F (%s°C) --> offset %s (init temp: %s)", 
                               self, value, celsius_equivalent, sleeptempoffset, self._sleep_preset_initialization_temp)
                 self._target_temperature = mapped_fahrenheit
@@ -195,6 +210,9 @@ class PyDreoAC(PyDreoBaseDevice):
             else:
                 # HA uses Fahrenheit - calculate offset directly
                 sleeptempoffset = value - self._sleep_preset_initialization_temp
+                if self._target_temperature == value:
+                    _LOGGER.debug("PyDreoAC:target_temperature - value already %s, skipping command", value)
+                    return
                 _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) SLEEP Fahrenheit mode: %s°F --> offset %s (init temp: %s)", 
                               self, value, sleeptempoffset, self._sleep_preset_initialization_temp)
                 self._target_temperature = value
@@ -204,12 +222,18 @@ class PyDreoAC(PyDreoBaseDevice):
             if self.temperature_units == TemperatureUnit.CELSIUS:
                 celsius_equivalent = round((value - 32) * 5/9)
                 mapped_fahrenheit = CELSIUS_TO_FAHRENHEIT_MAP.get(celsius_equivalent, value)
+                if self._target_temperature == mapped_fahrenheit:
+                    _LOGGER.debug("PyDreoAC:target_temperature - value already %s, skipping command", mapped_fahrenheit)
+                    return
                 _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) Celsius mode: %s°F (%s°C) --> %s°F", 
                               self, value, celsius_equivalent, mapped_fahrenheit)
                 self._target_temperature = mapped_fahrenheit
                 self._send_command(TARGET_TEMPERATURE_KEY, mapped_fahrenheit)
             else:
                 # HA uses Fahrenheit - pass through directly
+                if self._target_temperature == value:
+                    _LOGGER.debug("PyDreoAC:target_temperature - value already %s, skipping command", value)
+                    return
                 _LOGGER.debug("PyDreoAC:target_temperature.setter(%s) Fahrenheit mode: %s°F", self, value)
                 self._target_temperature = value
                 self._send_command(TARGET_TEMPERATURE_KEY, value)
@@ -228,6 +252,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
         _LOGGER.debug("PyDreoAC:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
+        if self._target_humidity == value:
+            _LOGGER.debug("PyDreoAC:target_humidity - value already %s, skipping command", value)
+            return
         self._target_humidity = value
         self._send_command(TARGET_HUMIDITY_KEY, value)
 
@@ -241,6 +268,9 @@ class PyDreoAC(PyDreoBaseDevice):
         """Enable or disable oscillation"""
         set_val = AC_OSC_ON if value else AC_OSC_OFF
         _LOGGER.debug("PyDreoAC:oscon.setter(%s) -> %s (%s)", self.name, value, set_val)
+        if self._osc_mode == set_val:
+            _LOGGER.debug("PyDreoAC:oscon - value already %s, skipping command", value)
+            return
         self._osc_mode = set_val
         self._send_command(OSCMODE_KEY, set_val)
 
@@ -253,6 +283,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def ptcon(self, value: bool) -> None:
         """Enable or disable PTC"""
         _LOGGER.debug("PyDreoAC:ptcon.setter(%s) --> %s", self.name, value)
+        if self._ptc_on == value:
+            _LOGGER.debug("PyDreoAC:ptcon - value already %s, skipping command", value)
+            return
         self._send_command(PTCON_KEY, value)
 
     @property
@@ -264,6 +297,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def display_auto_off(self, value: bool) -> None:
         """Enable or disable display auto-off"""
         _LOGGER.debug("PyDreoAC:display_auto_off.setter(%s) --> %s", self.name, value)
+        if self._display_auto_off == value:
+            _LOGGER.debug("PyDreoAC:display_auto_off - value already %s, skipping command", value)
+            return
         self._send_command(LIGHTON_KEY, not value)
 
     @property
@@ -275,6 +311,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def ctlstatus(self, value: bool) -> None:
         """Enable or disable ctlstatus"""
         _LOGGER.debug("PyDreoAC:ctlstatus.setter(%s) --> %s", self.name, value)
+        if self._ctlstatus == value:
+            _LOGGER.debug("PyDreoAC:ctlstatus - value already %s, skipping command", value)
+            return
         self._send_command(CTLSTATUS_KEY, value)
 
     @property
@@ -286,6 +325,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def childlockon(self, value: bool) -> None:
         """Enable or disable Child Lock"""
         _LOGGER.debug("PyDreoAC:childlockon.setter(%s) --> %s", self.name, value)
+        if self._childlockon == value:
+            _LOGGER.debug("PyDreoAC:childlockon - value already %s, skipping command", value)
+            return
         self._send_command(CHILDLOCKON_KEY, value)
 
     @property
@@ -299,6 +341,9 @@ class PyDreoAC(PyDreoBaseDevice):
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
         _LOGGER.debug("PyDreoAC:panel_sound.setter(%s) --> %s", self.name, value)
+        if self._mute_on == (not value):
+            _LOGGER.debug("PyDreoAC:panel_sound - value already %s, skipping command", value)
+            return
         self._send_command(MUTEON_KEY, not value)
 
     def update_state(self, state: dict):

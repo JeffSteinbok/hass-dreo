@@ -105,6 +105,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
         _LOGGER.debug("PyDreoHumidifier:is_on.setter - %s", value)
+        if self._is_on == value:
+            _LOGGER.debug("PyDreoHumidifier:is_on - value already %s, skipping command", value)
+            return
         self._send_command(POWERON_KEY, value)
 
     @property
@@ -126,6 +129,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
         _LOGGER.debug("PyDreoHumidifier:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
+        if self._target_humidity == value:
+            _LOGGER.debug("PyDreoHumidifier:target_humidity - value already %s, skipping command", value)
+            return
         self._target_humidity = value
         self._send_command(TARGET_AUTO_HUMIDITY_KEY, value)
 
@@ -140,6 +146,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
         _LOGGER.debug("PyDreoHumidifier:panel_sound.setter(%s) --> %s", self.name, value)
+        if self._mute_on == (not value):
+            _LOGGER.debug("PyDreoHumidifier:panel_sound - value already %s, skipping command", value)
+            return
         self._send_command(MUTEON_KEY, not value)
         
     @property
@@ -180,11 +189,17 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def scheon(self, value: bool):
         """Set if the fan is on or off"""
         _LOGGER.debug("PyDreoHumidifier:scheon.setter - %s", value)
+        if self._scheon == value:
+            _LOGGER.debug("PyDreoHumidifier:scheon - value already %s, skipping command", value)
+            return
         self._send_command(SCHEDULE_ENABLE, value)        
     @mode.setter
     def mode(self, value: str) -> None:
         numeric_value = Helpers.value_from_name(self._modes, value)
         if numeric_value is not None:
+            if self._mode == numeric_value:
+                _LOGGER.debug("PyDreoHumidifier:mode - value already %s, skipping command", value)
+                return
             self._send_command(MODE_KEY, numeric_value)
         else:
             raise ValueError(f"Preset mode {value} is not in the acceptable list: {self._modes}")

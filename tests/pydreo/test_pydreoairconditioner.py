@@ -29,19 +29,18 @@ class TestPyDreoAirConditioner(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.poweron = True
             mock_send_command.assert_called_once_with(ac, {POWERON_KEY: True})
-
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ac.fan_mode = DreoACFanMode.AUTO
-            mock_send_command.assert_called_once_with(ac, {WINDLEVEL_KEY: 4})
+        ac.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.mode = DreoACMode.ECO
             mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 5})
+        ac.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 5} })
 
         # Test sleep preset mode
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.mode = DreoACMode.SLEEP
             mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 4})
+        ac.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 4} })
 
         # TODO: Fix this in the AC class
         # with pytest.raises(ValueError):

@@ -36,8 +36,10 @@ class TestDreoHeater(IntegrationTestBase):
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert heater_ha.preset_mode == "H3"
             assert heater_ha.unique_id is not None
             assert heater_ha.name is not None
+            assert heater_ha.is_on is True
 
             # Test temperature reading
             if heater_ha.current_temperature is not None:
@@ -52,18 +54,14 @@ class TestDreoHeater(IntegrationTestBase):
             # Test HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+                mock_send_command.assert_not_called()
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: False})
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
-            assert heater_ha.hvac_mode == HVACMode.AUTO
+            assert heater_ha.hvac_mode == HVACMode.HEAT
 
             # Test preset modes (H1, H2, H3)
             assert "H1" in heater_ha.preset_modes
@@ -75,18 +73,22 @@ class TestDreoHeater(IntegrationTestBase):
                 heater_ha.set_preset_mode("H1")
                 mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 1})
                 mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 1} })
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "hotair"} })
+
             
             # Test setting H2 preset
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_preset_mode("H2")
                 mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 2})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
-            
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 2} })
+
             # Test setting H3 preset
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_preset_mode("H3")
                 mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 3})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 3} })
 
     def test_HSH003S(self):  # pylint: disable=invalid-name
         """Load heater and test sending commands."""
@@ -99,9 +101,10 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater : PyDreoHeater = self.pydreo_manager.devices[0]
             assert pydreo_heater.type == 'Heater'
             assert pydreo_heater.model == "DR-HSH003S"
+            assert pydreo_heater.poweron is True
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.hvac_mode == HVACMode.AUTO
+            assert heater_ha.hvac_mode == HVACMode.HEAT
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
@@ -113,7 +116,6 @@ class TestDreoHeater(IntegrationTestBase):
             # Test multiple HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.FAN_ONLY)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
                 mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "coolair"})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -122,7 +124,7 @@ class TestDreoHeater(IntegrationTestBase):
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
-            assert heater_ha.hvac_mode == HVACMode.AUTO            
+            assert heater_ha.hvac_mode == HVACMode.HEAT            
 
 
     def test_HSH034S(self):  # pylint: disable=invalid-name
@@ -136,7 +138,8 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater : PyDreoHeater = self.pydreo_manager.devices[0]
             assert pydreo_heater.type == 'Heater'
             assert pydreo_heater.model == "DR-HSH034S"
-            
+            assert pydreo_heater.poweron is False
+
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.hvac_mode == HVACMode.OFF
             assert heater_ha.unique_id is not None
@@ -151,15 +154,17 @@ class TestDreoHeater(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True}})
+            # Note that this device was set to OFF/Hotair, so mode should remain HEAT
+            assert heater_ha.hvac_mode == HVACMode.HEAT
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+                mock_send_command.assert_not_called()
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
-            assert heater_ha.hvac_mode == HVACMode.AUTO            
+            assert heater_ha.hvac_mode == HVACMode.HEAT            
 
 
     def test_WH714S(self):  # pylint: disable=invalid-name
@@ -174,9 +179,12 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.type == 'Heater'
             assert pydreo_heater.model == "DR-HSH034S"
             assert pydreo_heater.series_name == "WH714S"
+            assert pydreo_heater.poweron is True
+            assert pydreo_heater.mode == "eco"
             
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
-            assert heater_ha.hvac_mode == HVACMode.AUTO
+            assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert heater_ha.preset_mode == PRESET_ECO
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
@@ -188,12 +196,11 @@ class TestDreoHeater(IntegrationTestBase):
             # Test turning heater on and setting mode
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+                mock_send_command.assert_not_called()
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+                mock_send_command.assert_not_called()
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
@@ -201,9 +208,7 @@ class TestDreoHeater(IntegrationTestBase):
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
-            assert heater_ha.hvac_mode == HVACMode.AUTO            
-
-
+            assert heater_ha.hvac_mode == HVACMode.HEAT            
 
     def test_HSH004S(self):  # pylint: disable=invalid-name
         """Load HSH004S (Atom One S) heater and test sending commands."""
@@ -220,6 +225,8 @@ class TestDreoHeater(IntegrationTestBase):
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert heater_ha.preset_mode == "H3"
+            assert heater_ha.is_on is True
             assert heater_ha.unique_id is not None
             assert heater_ha.name is not None
 
@@ -242,29 +249,24 @@ class TestDreoHeater(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_preset_mode("H1")
                 mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 1})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
-            
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 1} })
+
             # Test setting H2 preset
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_preset_mode("H2")
                 mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 2})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
-            
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 2} })
+
             # Test setting H3 preset
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_preset_mode("H3")
                 mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 3})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 3} })
 
             # Test HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "hotair"})
-
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+                mock_send_command.assert_not_called()
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
