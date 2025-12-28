@@ -54,8 +54,11 @@ class TestDreoAirCirculator(IntegrationTestBase):
             # Test oscillation (HAF001S uses hoscon/voscon, not oscmode)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.oscillate(True)
-                # HAF001S triggers both hoscon and voscon
+                # HAF001S triggers hoscon=True and voscon=False (horizontal oscillation only)
                 assert mock_send_command.call_count == 2
+                calls = [call[0][1] for call in mock_send_command.call_args_list]
+                assert {'hoscon': True} in calls
+                assert {'voscon': False} in calls
             pydreo_fan.handle_server_update({ REPORTED_KEY: {'hoscon': True, 'voscon': False} })
 
             # Test speed settings  
@@ -63,8 +66,8 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_percentage(25)  # Speed 1 (also turns on the fan since it's off)
                 # This triggers both poweron and windlevel commands
                 assert mock_send_command.call_count == 2
-                # Check that windlevel was set to 1
                 calls = [call[0][1] for call in mock_send_command.call_args_list]
+                assert {POWERON_KEY: True} in calls
                 assert {WINDLEVEL_KEY: 1} in calls
             pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True, WINDLEVEL_KEY: 1} })
 

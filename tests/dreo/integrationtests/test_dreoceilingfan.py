@@ -45,18 +45,27 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
             pydreo_fan.handle_server_update({ REPORTED_KEY: {FANON_KEY: False} })
 
+            # Turn fan back on for speed tests
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {FANON_KEY: True} })
+
             # Test speed settings
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(25)  # Speed ~3
                 mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 3})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 3} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(50)  # Speed ~6
                 mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 6})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 6} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Speed 12 (max)
                 mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 12})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 12} })
 
             # Check to see what switches are added to ceiling fans
             switches = switch.get_entries([pydreo_fan])
@@ -83,14 +92,21 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             # Test brightness if supported
             if hasattr(light_switch, 'brightness') and light_switch.brightness is not None:
+                # Turn light on first - light_switch.turn_on(brightness=X) turns light on if off
                 with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                    light_switch.turn_on()
+                    mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+                pydreo_fan.handle_server_update({ REPORTED_KEY: {LIGHTON_KEY: True} })
+                
+                with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                    # Brightness is converted from HA's 0-255 scale to device's 1-100 scale
+                    # 128/255 * 100 = ~50.2, which gets ceil'd to 51
                     light_switch.turn_on(brightness=128)
-                    mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTLEVEL_KEY: 128})                 
+                    mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 51})
 
     def test_HCF002S(self):  # pylint: disable=invalid-name
-        """Test DR-HCF002S ceiling fan with RGB atmosphere lights."""
+        """Load fan and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
-            
             self.get_devices_file_name = "get_devices_HCF002S.json"
             self.pydreo_manager.load_devices()
             assert len(self.pydreo_manager.devices) == 1
