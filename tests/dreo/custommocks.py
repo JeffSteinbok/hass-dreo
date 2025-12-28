@@ -8,6 +8,7 @@ class PyDreoDeviceMock(MagicMock):
         super().__init__(*args, **kwargs)
         self.type = kwargs.get('type')
         self.name = kwargs.get('name')
+        self.modes = kwargs.get('modes', [])
         self.serial_number = kwargs.get('serial_number')
         self._supported_features : list[str] = []
         

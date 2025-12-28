@@ -158,7 +158,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
             self.horizontally_oscillating = value
             self.vertically_oscillating = False
         elif self._osc_mode is not None:
-            self._osc_mode = OscillationMode.HORIZONTAL if value else OscillationMode.OFF
+            new_osc_mode = OscillationMode.HORIZONTAL if value else OscillationMode.OFF
+            if self._osc_mode == new_osc_mode:
+                _LOGGER.debug("PyDreoAirCirculator:oscillating - value already %s, skipping command", value)
+                return
+            self._send_command(OSCMODE_KEY, new_osc_mode)
         else:
             raise NotImplementedError("Attempting to set oscillating on a device that doesn't support.")
 
@@ -179,6 +183,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Enable or disable vertical oscillation"""
         _LOGGER.debug("PyDreoAirCirculator:horizontally_oscillating.setter")
         if self._horizontally_oscillating is not None:
+            if self._horizontally_oscillating == value:
+                _LOGGER.debug("PyDreoAirCirculator:horizontally_oscillating - value already %s, skipping command", value)
+                return
             self._send_command(HORIZONTAL_OSCILLATION_KEY, value)
         elif self._osc_mode is not None:
             osc_computed = None
@@ -186,6 +193,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 osc_computed = self._osc_mode | OscillationMode.HORIZONTAL
             else:
                 osc_computed = self._osc_mode & ~OscillationMode.HORIZONTAL
+            if self._osc_mode == osc_computed:
+                _LOGGER.debug("PyDreoAirCirculator:horizontally_oscillating - value already %s, skipping command", value)
+                return
             self._send_command(OSCMODE_KEY, osc_computed)
         else:
             raise NotImplementedError("Horizontal oscillation is not supported.")
@@ -214,6 +224,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def vertically_oscillating(self, value: bool) -> None:
         """Enable or disable vertical oscillation"""
         if self._horizontally_oscillating is not None:
+            if self._vertically_oscillating == value:
+                _LOGGER.debug("PyDreoAirCirculator:vertically_oscillating - value already %s, skipping command", value)
+                return
             self._send_command(VERTICAL_OSCILLATION_KEY, value)
         elif self._osc_mode is not None:
             osc_computed = None
@@ -221,6 +234,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 osc_computed = self._osc_mode | OscillationMode.VERTICAL
             else:
                 osc_computed = self._osc_mode & ~OscillationMode.VERTICAL
+            if self._osc_mode == osc_computed:
+                _LOGGER.debug("PyDreoAirCirculator:vertically_oscillating - value already %s, skipping command", value)
+                return
             self._send_command(OSCMODE_KEY, osc_computed)
         else:
             raise NotImplementedError("Vertical oscillation is not supported.")
@@ -270,7 +286,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 raise ValueError(f"Top angle must be at least {MIN_OSC_ANGLE_DIFFERENCE} greater than bottom angle")
             cruise_conf_values = self._cruise_conf.split(',')
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            cruise_conf_values[0] = int(value)
+            new_value = int(value)
+            if int(cruise_conf_values[0]) == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:vertical_osc_angle_top - value already %s, skipping command", new_value)
+                return
+            cruise_conf_values[0] = new_value
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
@@ -291,7 +311,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 raise ValueError(f"Bottom angle must be at least {MIN_OSC_ANGLE_DIFFERENCE} less than top angle")
             cruise_conf_values = self._cruise_conf.split(',')
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            cruise_conf_values[2] = int(value)
+            new_value = int(value)
+            if int(cruise_conf_values[2]) == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:vertical_osc_angle_bottom - value already %s, skipping command", new_value)
+                return
+            cruise_conf_values[2] = new_value
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
@@ -312,7 +336,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 raise ValueError(f"Right angle must be at least {MIN_OSC_ANGLE_DIFFERENCE} greater than left angle")
             cruise_conf_values = self._cruise_conf.split(',')
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            cruise_conf_values[1] = int(value)
+            new_value = int(value)
+            if int(cruise_conf_values[1]) == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:horizontal_osc_angle_right - value already %s, skipping command", new_value)
+                return
+            cruise_conf_values[1] = new_value
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
@@ -333,7 +361,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 raise ValueError(f"Left angle must be at least {MIN_OSC_ANGLE_DIFFERENCE} less than right angle")
             cruise_conf_values = self._cruise_conf.split(',')
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            cruise_conf_values[3] = int(value)
+            new_value = int(value)
+            if int(cruise_conf_values[3]) == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:horizontal_osc_angle_left - value already %s, skipping command", new_value)
+                return
+            cruise_conf_values[3] = new_value
             self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
 
     @property
@@ -354,11 +386,20 @@ class PyDreoAirCirculator(PyDreoFanBase):
         # First check if hangleadj is available (simpler angle control)
         if self._horizontal_angle_adj is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            self._send_command(HORIZONTAL_ANGLE_ADJ_KEY, int(value))
+            new_value = int(value)
+            if self._horizontal_angle_adj == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:horizontal_angle - value already %s, skipping command", new_value)
+                return
+            self._send_command(HORIZONTAL_ANGLE_ADJ_KEY, new_value)
         # Otherwise use fixedconf (more complex angle control)
         elif (self._fixed_conf is not None):
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{int(value)}")
+            new_value = int(value)
+            current_value = int(self._fixed_conf.split(',')[1])
+            if current_value == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:horizontal_angle - value already %s, skipping command", new_value)
+                return
+            self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{new_value}")
 
     @property
     def vertical_angle(self) -> int:
@@ -373,7 +414,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
         _LOGGER.debug("PyDreoAirCirculator:vertical_angle.setter")
         if self._fixed_conf is not None:
             # Note that HA seems to send this in as a float, we need to convert to int just in case
-            self._send_command(FIXEDCONF_KEY, f"{int(value)},{self._fixed_conf.split(',')[1]}")
+            new_value = int(value)
+            current_value = int(self._fixed_conf.split(',')[0])
+            if current_value == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:vertical_angle - value already %s, skipping command", new_value)
+                return
+            self._send_command(FIXEDCONF_KEY, f"{new_value},{self._fixed_conf.split(',')[1]}")
 
     @property
     def horizontal_oscillation_angle(self) -> int:
@@ -400,7 +446,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
         
         if self._horizontal_oscillation_angle is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, int(value))
+            new_value = int(value)
+            if self._horizontal_oscillation_angle == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:horizontal_oscillation_angle - value already %s, skipping command", new_value)
+                return
+            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, new_value)
 
     @property
     def horizontal_oscillation_angle_range(self):
@@ -435,7 +485,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
         
         if self._vertical_oscillation_angle is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
-            self._send_command(VERTICAL_OSCILLATION_ANGLE_KEY, int(value))
+            new_value = int(value)
+            if self._vertical_oscillation_angle == new_value:
+                _LOGGER.debug("PyDreoAirCirculator:vertical_oscillation_angle - value already %s, skipping command", new_value)
+                return
+            self._send_command(VERTICAL_OSCILLATION_ANGLE_KEY, new_value)
 
     @property
     def vertical_oscillation_angle_range(self):

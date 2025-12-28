@@ -47,30 +47,38 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.percentage >= 0 and ha_fan.percentage <= 100
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
-                ha_fan.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
-
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
-            # Test oscillation
+            # Test oscillation (HAF001S uses hoscon/voscon, not oscmode)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.oscillate(True)
-                assert mock_send_command.call_count >= 1
+                # HAF001S triggers hoscon=True and voscon=False (horizontal oscillation only)
+                assert mock_send_command.call_count == 2
+                calls = [call[0][1] for call in mock_send_command.call_args_list]
+                assert {'hoscon': True} in calls
+                assert {'voscon': False} in calls
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {'hoscon': True, 'voscon': False} })
 
-            # Test speed settings
+            # Test speed settings  
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                ha_fan.set_percentage(25)  # Speed 1
-                assert mock_send_command.call_count >= 1
+                ha_fan.set_percentage(25)  # Speed 1 (also turns on the fan since it's off)
+                # This triggers both poweron and windlevel commands
+                assert mock_send_command.call_count == 2
+                calls = [call[0][1] for call in mock_send_command.call_args_list]
+                assert {POWERON_KEY: True} in calls
+                assert {WINDLEVEL_KEY: 1} in calls
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True, WINDLEVEL_KEY: 1} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Speed 4 (max)
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 4})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 4} })
 
-            # Check to see what switches are added to ceiling fans
+            # Check to see what switches are added to air circulator fans
             switches = switch.get_entries([pydreo_fan])
-            self.verify_expected_entities(switches, ['Horizontally Oscillating', 'Panel Sound'])
+            self.verify_expected_entities(switches, ['Horizontally Oscillating', 'Panel Sound', 'Vertically Oscillating'])
 
     def test_HAF004S(self):  # pylint: disable=invalid-name
         """Test HAF004S fan."""
@@ -92,30 +100,46 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:    
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
 
-            # Test oscillation (both horizontal and vertical)
+            # Test oscillation (device starts with oscmode=2 which is VERTICAL oscillation)
+            # Turn off oscillation first, then turn it back on
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.oscillate(False)
+                mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: 0})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {OSCMODE_KEY: 0} })
+            
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.oscillate(True)
-                # Oscillation may trigger multiple commands or none if already oscillating
-                # Just verify the call was attempted
-                assert mock_send_command.call_count >= 0
+                mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: 1})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {OSCMODE_KEY: 1} })
+
+            # Turn fan back on for speed tests
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
 
             # Test speed range (1-9)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(11)  # Speed 1
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 1})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 1} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                ha_fan.set_percentage(50)  # Mid-range
-                assert mock_send_command.call_count >= 1
+                ha_fan.set_percentage(50)  # Mid-range (~speed 5)
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 5})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 5} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Speed 9 (max)
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 9})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 9} })
 
             # Check to see what switches are added to air circulator fans
             switches = switch.get_entries([pydreo_fan])
@@ -169,36 +193,44 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {FANON_KEY: False} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {FANON_KEY: True} })
 
             # Test speed settings across range
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(1)  # Minimum
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 1})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 1} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)  # Maximum
-                assert mock_send_command.call_count >= 1
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 9})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 9} })
 
             # Test preset mode commands
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("auto")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 2} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("sleep")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 3})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 3} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("natural")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 4} })
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("turbo")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 5} })
 
     def test_HAF003S_newer_firmware(self):  # pylint: disable=invalid-name
         """Test HAF003S fan with newer firmware (Device 1 - with cruiseconf/fixedconf)."""
@@ -276,10 +308,12 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 pydreo_fan.horizontal_oscillation_angle = 30
                 mock_send_command.assert_called_once_with(pydreo_fan, {HORIZONTAL_OSCILLATION_ANGLE_KEY: 30})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {HORIZONTAL_OSCILLATION_ANGLE_KEY: 30} })
             
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 pydreo_fan.vertical_oscillation_angle = 45
                 mock_send_command.assert_called_once_with(pydreo_fan, {VERTICAL_OSCILLATION_ANGLE_KEY: 45})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {VERTICAL_OSCILLATION_ANGLE_KEY: 45} })
 
     def test_HPF005S(self):  # pylint: disable=invalid-name
         """Test HPF005S fan with hangleadj support."""
@@ -325,6 +359,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 pydreo_fan.horizontal_angle = 45
                 mock_send_command.assert_called_once_with(pydreo_fan, {HORIZONTAL_ANGLE_ADJ_KEY: 45})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {HORIZONTAL_ANGLE_ADJ_KEY: 45} })
             
             # Should NOT have cruise mode entities (those require cruise_conf)
             assert 'Horizontal Oscillation Angle Left' not in number_names

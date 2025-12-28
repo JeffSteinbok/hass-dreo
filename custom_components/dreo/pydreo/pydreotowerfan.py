@@ -28,7 +28,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         super().__init__(device_definition, details, dreo)
         
         self._speed_range = None
-        if (device_definition.device_ranges is not None):
+        if (device_definition.device_ranges is not None and SPEED_RANGE in device_definition.device_ranges):
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
         if (self._speed_range is None):
             self._speed_range = self.parse_speed_range(details)
@@ -96,8 +96,14 @@ class PyDreoTowerFan(PyDreoFanBase):
         _LOGGER.debug("PyDreoFan:oscillating.setter")
 
         if self._shakehorizon is not None:
+            if self._shakehorizon == value:
+                _LOGGER.debug("PyDreoTowerFan:oscillating - value already %s, skipping command", value)
+                return
             self._send_command(SHAKEHORIZON_KEY, value)
         elif self._oscillating is not None:
+            if self._oscillating == value:
+                _LOGGER.debug("PyDreoTowerFan:oscillating - value already %s, skipping command", value)
+                return
             self._send_command(OSCILLATION_KEY, value)
         else:
             raise NotImplementedError("Attempting to set oscillating on a device that doesn't support.")
@@ -113,7 +119,11 @@ class PyDreoTowerFan(PyDreoFanBase):
         """Set the oscillation angle."""
         _LOGGER.debug("PyDreoFan:shakehorizonangle.setter")
         if self._shakehorizonangle is not None:
-            self._send_command(SHAKEHORIZONANGLE_KEY, int(value))           
+            new_value = int(value)
+            if self._shakehorizonangle == new_value:
+                _LOGGER.debug("PyDreoTowerFan:shakehorizonangle - value already %s, skipping command", new_value)
+                return
+            self._send_command(SHAKEHORIZONANGLE_KEY, new_value)           
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""

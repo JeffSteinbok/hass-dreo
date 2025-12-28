@@ -21,10 +21,17 @@ class TestDeviceBase:
                            type : str = None,
                            name: str = "Mocked Dreo Device", 
                            serial_number: str = "123456", 
-                           features: dict[str, any] = None):
+                           features: dict[str, any] = None,
+                           modes: list[str] = None,
+                           swing_modes: list[str] = None) -> PyDreoDeviceMock:
         
         """Create a mock device."""
-        pydreo_device_mock : PyDreoDeviceMock = PyDreoDeviceMock(type=type, name=name, serial_number=serial_number, features=features)
+        pydreo_device_mock : PyDreoDeviceMock = PyDreoDeviceMock(type=type, 
+                                                                 name=name, 
+                                                                 serial_number=serial_number, 
+                                                                 features=features,
+                                                                 modes=modes,
+                                                                 swing_modes=swing_modes)
         return MagicMock(return_value=pydreo_device_mock)()
    
     def verify_expected_entities(self, ha_entities: list[Entity], expected_keys: list[str]) -> None:

@@ -23,8 +23,8 @@ from .pydreo import (
 )
 
 from .pydreo.pydreoairconditioner import (
-    DREO_AC_MODE_COOL,
-    DREO_AC_MODE_DRY,
+    DreoACMode,
+    DreoACFanMode
 )
 
 from .const import (
@@ -41,23 +41,50 @@ from homeassistant.components.climate import (
     FAN_HIGH,
     PRESET_ECO,
     PRESET_NONE,
+    PRESET_SLEEP,
     HVACMode,
 )
 
-AC_MODE_MAP = {
-    1: HVACMode.COOL,
-    2: HVACMode.DRY,
-    3: HVACMode.FAN_ONLY,
-    5: HVACMode.COOL,
-    HVACMode.COOL: 1,
-    HVACMode.DRY: 2,
-    HVACMode.FAN_ONLY: 3,
+# Map Dreo AC modes to Home Assistant HVAC modes
+# Per HA guidelines, ECO and SLEEP are preset modes, not HVAC modes
+DREO_MODE_TO_HVAC_MODE = {
+    DreoACMode.COOL: HVACMode.COOL,
+    DreoACMode.DRY: HVACMode.DRY,
+    DreoACMode.FAN: HVACMode.FAN_ONLY,
+    DreoACMode.SLEEP: HVACMode.COOL,  # SLEEP is COOL mode with preset
+    DreoACMode.ECO: HVACMode.COOL,    # ECO is COOL mode with preset
 }
 
-HVAC_AC_MODE_MAP = {
-    HVACMode.COOL: 1,
-    HVACMode.DRY: 2,
-    HVACMode.FAN_ONLY: 3,
+# Map Dreo AC modes to Home Assistant preset modes
+# Only SLEEP and ECO have corresponding presets
+DREO_MODE_TO_PRESET = {
+    DreoACMode.SLEEP: PRESET_SLEEP,
+    DreoACMode.ECO: PRESET_ECO,
+}
+
+# Reverse mapping: HVAC mode + preset to Dreo mode
+HVAC_PRESET_TO_DREO_MODE = {
+    (HVACMode.COOL, PRESET_NONE): DreoACMode.COOL,
+    (HVACMode.COOL, PRESET_ECO): DreoACMode.ECO,
+    (HVACMode.COOL, PRESET_SLEEP): DreoACMode.SLEEP,
+    (HVACMode.DRY, PRESET_NONE): DreoACMode.DRY,
+    (HVACMode.FAN_ONLY, PRESET_NONE): DreoACMode.FAN,
+}
+
+# Map Dreo AC fan modes to Home Assistant fan mode strings
+DREO_FAN_MODE_TO_HA = {
+    DreoACFanMode.LOW: FAN_LOW,
+    DreoACFanMode.MEDIUM: FAN_MEDIUM,
+    DreoACFanMode.HIGH: FAN_HIGH,
+    DreoACFanMode.AUTO: FAN_AUTO,
+}
+
+# Reverse mapping: HA fan mode to Dreo fan mode
+HA_FAN_MODE_TO_DREO = {
+    FAN_LOW: DreoACFanMode.LOW,
+    FAN_MEDIUM: DreoACFanMode.MEDIUM,
+    FAN_HIGH: DreoACFanMode.HIGH,
+    FAN_AUTO: DreoACFanMode.AUTO,
 }
 
 _LOGGER = logging.getLogger(LOGGER)
@@ -97,11 +124,30 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         self._attr_current_temperature = self.device.temperature
         self._attr_swing_mode = self.device.device_definition.swing_modes[0] if self.device.device_definition.swing_modes else None
         self._attr_swing_modes = self.device.device_definition.swing_modes
-        self._attr_hvac_mode = AC_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
-        self._attr_hvac_modes = self.device.device_definition.hvac_modes
-        self._attr_preset_modes = self.device.device_definition.preset_modes
-        self._attr_fan_modes = self.device.device_definition.fan_modes
-        self._attr_fan_mode = self.device.fan_mode
+        
+        # Map device mode to HVAC mode using new mappings
+        self._attr_hvac_mode = DREO_MODE_TO_HVAC_MODE.get(DreoACMode(self.device.mode), HVACMode.OFF) if self.device.poweron else HVACMode.OFF
+        
+        # Build list of unique HVAC modes from device modes
+        hvac_modes_set = {DREO_MODE_TO_HVAC_MODE.get(DreoACMode(mode_num)) 
+                          for mode_num in self.device.modes
+                          if DreoACMode(mode_num) in DREO_MODE_TO_HVAC_MODE}
+        self._attr_hvac_modes = list(hvac_modes_set) + [HVACMode.OFF]
+        
+        # Build preset modes from device modes that have presets, plus PRESET_NONE
+        preset_modes_set = {DREO_MODE_TO_PRESET.get(DreoACMode(mode_num))
+                            for mode_num in self.device.modes
+                            if DreoACMode(mode_num) in DREO_MODE_TO_PRESET}
+        self._attr_preset_modes = [PRESET_NONE] + list(preset_modes_set)
+        
+        # Map device fan modes to HA fan mode strings
+        if self.device.device_definition.fan_modes:
+            self._attr_fan_modes = self.device.device_definition.fan_modes
+        else:
+            self._attr_fan_modes = [FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO]
+        
+        # Map current fan mode if device has one
+        self._attr_fan_mode = DREO_FAN_MODE_TO_HA.get(DreoACFanMode(self.device.fan_mode)) if self.device.fan_mode else None
         self._attr_oscon = self.device.oscon
 
         _LOGGER.info(
@@ -137,15 +183,22 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def fan_mode(self) -> str:
-        """Return the current fan mode - if on, it means that we're in 'coolair' mode"""
-        _LOGGER.debug("DreoAirConditionerHA:fan_mode(%s): %s", self.device.name, self.device.fan_mode)
-        return self.device.fan_mode
+        """Return the current fan mode."""
+        ha_fan_mode = DREO_FAN_MODE_TO_HA.get(DreoACFanMode(self.device.fan_mode), FAN_AUTO) if self.device.fan_mode else FAN_AUTO
+        _LOGGER.debug("DreoAirConditionerHA:fan_mode(%s): %s (device.fan_mode: %s)", 
+                      self.device.name, ha_fan_mode, self.device.fan_mode)
+        return ha_fan_mode
 
     def set_fan_mode(self, fan_mode: str) -> None:
         """Set new target fan mode."""
         _LOGGER.debug("DreoAirConditionerHA:set_fan_mode(%s) --> %s", self.device.name, fan_mode)
-        self.device.fan_mode = fan_mode
-        self._attr_fan_mode = fan_mode
+        dreo_fan_mode = HA_FAN_MODE_TO_DREO.get(fan_mode)
+        if dreo_fan_mode is not None:
+            self.device.fan_mode = dreo_fan_mode
+            self._attr_fan_mode = fan_mode
+        else:
+            _LOGGER.warning("DreoAirConditionerHA:set_fan_mode(%s) invalid fan mode: %s",
+                          self.device.name, fan_mode)
 
     @property
     def is_on(self) -> bool:
@@ -165,27 +218,36 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def preset_modes(self) -> list[str]:
         """Get the list of available preset modes."""
-        _LOGGER.debug("DreoAirConditionerHA:preset_mode(%s): %s", self.device.name, self.device.preset_mode)
-        return self.device.preset_modes
+        return self._attr_preset_modes
 
     @property
     def preset_mode(self) -> str | None:
-        """Get the current preset mode."""
-        return self.device.preset_mode
-
+        """Get the current preset mode based on device mode."""
+        # Map device mode to preset if it has one, otherwise PRESET_NONE
+        device_mode = DreoACMode(self.device.mode) if self.device.poweron else None
+        preset = DREO_MODE_TO_PRESET.get(device_mode, PRESET_NONE)
+        _LOGGER.debug("DreoAirConditionerHA:preset_mode(%s): %s (device.mode: %s)", 
+                      self.device.name, preset, self.device.mode)
+        return preset
+    
     def set_preset_mode(self, preset_mode: str) -> None:
-        """Set the preset mode of the device."""
+        """Set new preset mode."""
         _LOGGER.debug("DreoAirConditionerHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
-        if preset_mode == PRESET_ECO:
-            self.device.mode = DREO_AC_MODE_COOL
-            self.device.preset_mode = preset_mode
-        elif preset_mode == PRESET_SLEEP:
-            self.device.mode = DREO_AC_MODE_COOL
-            self.device.preset_mode = preset_mode
+        
+        # Get current HVAC mode or use last known
+        current_hvac_mode = self._attr_hvac_mode if self.device.poweron else self._last_hvac_mode
+        
+        # Map HVAC mode + preset to Dreo mode
+        dreo_mode = HVAC_PRESET_TO_DREO_MODE.get((current_hvac_mode, preset_mode))
+        
+        if dreo_mode is not None:
+            self.device.mode = dreo_mode
+            if not self.device.poweron:
+                self.device.poweron = True
+            self.schedule_update_ha_state()
         else:
-            self.device.preset_mode = PRESET_NONE
-
-        self._attr_preset_mode = preset_mode
+            _LOGGER.warning("DreoAirConditionerHA:set_preset_mode(%s) invalid combination: hvac=%s, preset=%s",
+                          self.device.name, current_hvac_mode, preset_mode)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -198,10 +260,9 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     def supported_features(self) -> int:
         """Return the list of supported features."""
         supported_features = 0
-        if self.device.target_temperature is not None and self.device.mode == DREO_AC_MODE_COOL:
+        if self.device.target_temperature is not None:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if ((self.device.preset_mode is not None or self.device.device_definition.preset_modes is not None) and 
-            self.device.mode == DREO_AC_MODE_COOL):
+        if (self.preset_modes is not None and self.device.modes.count != 0):
             supported_features |= ClimateEntityFeature.PRESET_MODE
         if self.device.oscon is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
@@ -210,7 +271,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF
             supported_features |= ClimateEntityFeature.TURN_ON
-        if self.device.target_humidity is not None and self.device.mode == DREO_AC_MODE_DRY:
+        if self.device.target_humidity is not None:
             supported_features |= ClimateEntityFeature.TARGET_HUMIDITY
         
         _LOGGER.debug("DreoAirConditionerHA:supported_features(%s): %s (device.mode: %s)", self, supported_features, self.device.mode)
@@ -221,8 +282,10 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         """Turn the device on."""
         _LOGGER.debug("DreoAirConditionerHA:turn_on(%s)", self.device.name)
         self.device.poweron = True
-        self.device.mode = HVAC_AC_MODE_MAP[self._last_hvac_mode]
-        self.device._attr_hvac_mode = self._last_hvac_mode
+        # Use HVAC_PRESET_TO_DREO_MODE with current preset
+        current_preset = self.preset_mode or PRESET_NONE
+        self.device.mode = HVAC_PRESET_TO_DREO_MODE.get((self._last_hvac_mode, current_preset), DreoACMode.COOL)
+        self._attr_hvac_mode = self._last_hvac_mode
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
@@ -325,7 +388,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     @property
     def hvac_mode(self):
         # ensure hvac_mode is actually in sync with the device's mode
-        self._attr_hvac_mode = AC_MODE_MAP[self.device.mode] if self.device.poweron else HVACMode.OFF
+        self._attr_hvac_mode = DREO_MODE_TO_HVAC_MODE.get(DreoACMode(self.device.mode), HVACMode.OFF) if self.device.poweron else HVACMode.OFF
         _LOGGER.debug("DreoAirConditionerHA:hvac_mode(%s): %s (device.mode: %s)", 
                       self.device.name, 
                       self._attr_hvac_mode,
@@ -346,7 +409,9 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             self.device.poweron = False
             self._attr_hvac_mode = HVACMode.OFF
         else:
-            self.device.mode = HVAC_AC_MODE_MAP[hvac_mode]
+            # Use HVAC_PRESET_TO_DREO_MODE with current preset
+            current_preset = self.preset_mode or PRESET_NONE
+            self.device.mode = HVAC_PRESET_TO_DREO_MODE.get((hvac_mode, current_preset), DreoACMode.COOL)
             self.device.poweron = True
             self._attr_hvac_mode = hvac_mode
 

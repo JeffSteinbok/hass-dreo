@@ -31,26 +31,32 @@ class TestPyDreoCeilingFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
             mock_send_command.assert_called_once_with(fan, {FANON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {FANON_KEY: True} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.light_on = True
             mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {LIGHTON_KEY: True} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.light_on = True
-            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True})
+            fan.light_on = False
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: False})
+        fan.handle_server_update({ REPORTED_KEY: {LIGHTON_KEY: False} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.brightness = 50
             mock_send_command.assert_called_once_with(fan, {BRIGHTNESS_KEY: 50})
+        fan.handle_server_update({ REPORTED_KEY: {BRIGHTNESS_KEY: 50} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.color_temperature = 50
             mock_send_command.assert_called_once_with(fan, {COLORTEMP_KEY: 50})
+        fan.handle_server_update({ REPORTED_KEY: {COLORTEMP_KEY: 50} })
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'
-            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 1})
+            fan.preset_mode = 'natural'
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 2})
+        fan.handle_server_update({ REPORTED_KEY: {MODE_KEY: 2} })
 
         with pytest.raises(ValueError):
             fan.preset_mode = 'not_a_mode'
@@ -58,6 +64,7 @@ class TestPyDreoCeilingFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 3
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 3})
+        fan.handle_server_update({ REPORTED_KEY: {WINDLEVEL_KEY: 3} })
 
         with pytest.raises(ValueError):
             fan.fan_speed = 13
@@ -92,12 +99,15 @@ class TestPyDreoCeilingFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.atm_light_on = True
             mock_send_command.assert_called_once_with(fan, {ATMON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {ATMON_KEY: True} })
         
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.atm_brightness = 5
             mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 5})
+        fan.handle_server_update({ REPORTED_KEY: {ATMBRI_KEY: 5} })
         
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.atm_color_rgb = (255, 0, 0)  # Red
             mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
+        fan.handle_server_update({ REPORTED_KEY: {ATMCOLOR_KEY: 16711680} })
 

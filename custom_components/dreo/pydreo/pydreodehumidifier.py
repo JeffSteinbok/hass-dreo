@@ -58,6 +58,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the dehumidifier is on or off"""
         _LOGGER.debug("PyDreoDehumidifier:is_on.setter - %s", value)
+        if self._is_on == value:
+            _LOGGER.debug("PyDreoDehumidifier:is_on - value already %s, skipping command", value)
+            return
         self._send_command(POWERON_KEY, value)
 
     @property
@@ -81,6 +84,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoDehumidifier:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         if value < 30 or value > 85:
             raise ValueError(f"Target humidity {value} is out of range (30-85)")
+        if self._target_humidity == value:
+            _LOGGER.debug("PyDreoDehumidifier:target_humidity - value already %s, skipping command", value)
+            return
         self._target_humidity = value
         self._send_command(RHAUTOLEVEL_KEY, value)
 
@@ -95,6 +101,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoDehumidifier:wind_level.setter(%s) %s --> %s", self, self._wind_level, value)
         if value < 1 or value > 3:
             raise ValueError(f"Wind level {value} is out of range (1-3)")
+        if self._wind_level == value:
+            _LOGGER.debug("PyDreoDehumidifier:wind_level - value already %s, skipping command", value)
+            return
         self._wind_level = value
         self._send_command(WINDLEVEL_KEY, value)
 
@@ -109,6 +118,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound is on"""
         _LOGGER.debug("PyDreoDehumidifier:panel_sound.setter(%s) --> %s", self.name, value)
+        if self._mute_on == (not value):
+            _LOGGER.debug("PyDreoDehumidifier:panel_sound - value already %s, skipping command", value)
+            return
         self._send_command(MUTEON_KEY, not value)
 
     @property
@@ -120,6 +132,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     def display_light(self, value: bool) -> None:
         """Set if the display light is on"""
         _LOGGER.debug("PyDreoDehumidifier:display_light.setter(%s) --> %s", self.name, value)
+        if self._light_on == value:
+            _LOGGER.debug("PyDreoDehumidifier:display_light - value already %s, skipping command", value)
+            return
         self._send_command(LIGHTON_KEY, value)
 
     @property
@@ -131,6 +146,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     def childlockon(self, value: bool) -> None:
         """Set if the child lock is on"""
         _LOGGER.debug("PyDreoDehumidifier:childlockon.setter(%s) --> %s", self.name, value)
+        if self._child_lock_on == value:
+            _LOGGER.debug("PyDreoDehumidifier:childlockon - value already %s, skipping command", value)
+            return
         self._send_command(CHILDLOCKON_KEY, value)
 
     @property
@@ -142,6 +160,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     def auto_mode(self, value: bool) -> None:
         """Set if auto mode is on"""
         _LOGGER.debug("PyDreoDehumidifier:auto_mode.setter(%s) --> %s", self.name, value)
+        if self._auto_on == value:
+            _LOGGER.debug("PyDreoDehumidifier:auto_mode - value already %s, skipping command", value)
+            return
         self._send_command(AUTOON_KEY, value)
 
     @property
@@ -216,6 +237,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
                 
         if mode_value is not None:
             _LOGGER.debug("PyDreoDehumidifier:mode.setter(%s) %s --> %s", self, self._mode, mode_value)
+            if self._mode == mode_value:
+                _LOGGER.debug("PyDreoDehumidifier:mode - value already %s, skipping command", value)
+                return
             self._send_command(MODE_KEY, mode_value)
         else:
             raise ValueError(f"Operating mode {value} is not in the acceptable list: {self.modes}")

@@ -46,6 +46,9 @@ class PyDreoChefMaker(PyDreoBaseDevice):
     @is_on.setter
     def is_on(self, value: bool) -> None:
         """Set the power state of the device."""
+        if self._is_on == value:
+            _LOGGER.debug("PyDreoChefMaker:is_on - value already %s, skipping command", value)
+            return
         self._is_on = value
         self.set_mode_from_is_on()
         self._send_command(POWERON_KEY, value)
@@ -58,7 +61,11 @@ class PyDreoChefMaker(PyDreoBaseDevice):
     @ledpotkepton.setter
     def ledpotkepton(self, value: bool) -> None:
         """Set the power state of the device."""
-        self._ledpotkepton = 1 if value else 0
+        new_value = 1 if value else 0
+        if self._ledpotkepton == new_value:
+            _LOGGER.debug("PyDreoChefMaker:ledpotkepton - value already %s, skipping command", value)
+            return
+        self._ledpotkepton = new_value
         self._send_command(LIGHT_KEY, self._ledpotkepton)
 
     @property

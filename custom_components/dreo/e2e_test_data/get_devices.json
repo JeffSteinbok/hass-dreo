@@ -4334,7 +4334,7 @@
         "model": "DR-HHM003S",
         "productId": "HHM003S_1",
         "productName": "Humidifier",
-        "deviceName": "DEBUGTEST - Heater - DR-HHM003S",
+        "deviceName": "DEBUGTEST - Humidifier - DR-HHM003S",
         "shared": false,
         "series": null,
         "seriesName": "HM713S/813S",

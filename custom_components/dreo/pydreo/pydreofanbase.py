@@ -128,6 +128,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
         _LOGGER.debug("PyDreoFanBase:is_on.setter - %s", value)
+        if self._is_on == value:
+            _LOGGER.debug("PyDreoFanBase:is_on - value already %s, skipping command", value)
+            return
         self._send_command(self._power_on_key, value)
 
     @property
@@ -143,6 +146,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
                           fan_speed,
                           self._speed_range)
             raise ValueError(f"fan_speed must be between {self._speed_range[0]} and {self._speed_range[1]}")
+        if self._fan_speed == fan_speed:
+            _LOGGER.debug("PyDreoFanBase:fan_speed - value already %s, skipping command", fan_speed)
+            return
         self._send_command(WINDLEVEL_KEY, fan_speed)
 
     @property
@@ -179,6 +185,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         numeric_value = Helpers.value_from_name(self._preset_modes, value)
         if numeric_value is not None:
+            # Check current value
+            current_value = self._wind_mode if self._wind_mode is not None else self._wind_type
+            if current_value == numeric_value:
+                _LOGGER.debug("PyDreoFanBase:preset_mode - value already %s, skipping command", value)
+                return
             self._send_command(key, numeric_value)
         else:
             raise ValueError(f"Preset mode {value} is not in the acceptable list: {self.preset_modes}")
@@ -246,6 +257,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFan:display_auto_off.setter")
 
         if self._led_always_on is not None:
+            if self._led_always_on == (not value):
+                _LOGGER.debug("PyDreoFanBase:display_auto_off - value already %s, skipping command", value)
+                return
             self._send_command(LEDALWAYSON_KEY, not value)
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set display always on on a device that doesn't support.")
@@ -264,6 +278,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFanBase:adaptive_brightness.setter")
 
         if self._light_sensor_on is not None:
+            if self._light_sensor_on == value:
+                _LOGGER.debug("PyDreoFanBase:adaptive_brightness - value already %s, skipping command", value)
+                return
             self._send_command(LIGHTSENSORON_KEY, value)
         else:
             raise NotImplementedError("PyDreoFanBase: ttempting to set adaptive brightness on on a device that doesn't support.")
@@ -283,8 +300,14 @@ class PyDreoFanBase(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFanBase:panel_sound.setter")
 
         if self._voice_on is not None:
+            if self._voice_on == value:
+                _LOGGER.debug("PyDreoFanBase:panel_sound - value already %s, skipping command", value)
+                return
             self._send_command(VOICEON_KEY, value)
         elif self._mute_on is not None:
+            if self._mute_on == (not value):
+                _LOGGER.debug("PyDreoFanBase:panel_sound - value already %s, skipping command", value)
+                return
             self._send_command(MUTEON_KEY, not value)
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set panel_sound on a device that doesn't support.")
@@ -302,6 +325,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         _LOGGER.debug("PyDreoFanBase:pm25.setter")
 
         if self._pm25 is not None:
+            if self._pm25 == value:
+                _LOGGER.debug("PyDreoFanBase:pm25 - value already %s, skipping command", value)
+                return
             self._send_command(PM25_KEY, value)
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set pm25 on a device that doesn't support.")

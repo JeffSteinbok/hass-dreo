@@ -26,8 +26,9 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.target_humidity == 60
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            humidifier.mode = 'auto'
-            mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 1})
+            humidifier.mode = 'manual'
+            mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 0})
+        humidifier.handle_server_update({ REPORTED_KEY: {MODE_KEY: 0} })
 
     def test_HHM001S_websocket_updates(self):  # pylint: disable=invalid-name
         """Test that humidity values are updated from websocket messages."""
@@ -92,8 +93,9 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.worktime == 10
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            humidifier.mode = 'auto'
-            mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 1})
+            humidifier.mode = 'manual'
+            mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 0})
+        humidifier.handle_server_update({ REPORTED_KEY: {MODE_KEY: 0} })
 
     def test_HHM003S_websocket_updates(self):  # pylint: disable=invalid-name
         """Test that humidity values are updated from websocket messages for HHM003S."""
