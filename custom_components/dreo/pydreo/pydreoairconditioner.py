@@ -381,7 +381,7 @@ class PyDreoAC(PyDreoBaseDevice):
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_poweron, bool):
             self._is_on = val_poweron  # Ensure poweron state is updated
-            _LOGGER.debug("handle_server_update: handle_server_update - poweron is %s", self._is_on)
+            _LOGGER.debug("handle_server_update: poweron is %s", self._is_on)
 
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):
@@ -389,7 +389,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
         val_target_temperature = self.get_server_update_key_value(message, TARGET_TEMPERATURE_KEY)
         if isinstance(val_target_temperature, int):
-            _LOGGER.debug("handle_server_update: handle_server_update - target_temperature: %s --> %s", 
+            _LOGGER.debug("handle_server_update: %s - target_temperature: %s --> %s", 
                           self, 
                           self._target_temperature, 
                           val_target_temperature)
@@ -407,7 +407,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
         val_fan_mode = self.get_server_update_key_value(message, WINDLEVEL_KEY)
         if isinstance(val_fan_mode, int):
-            _LOGGER.debug("handle_server_update: handle_server_update - fan_mode: %s --> %s", self, self._fan_mode, val_fan_mode)
+            _LOGGER.debug("handle_server_update: %s - fan_mode: %s --> %s", self, self._fan_mode, val_fan_mode)
             self._fan_mode = val_fan_mode
 
         val_osc_mode = self.get_server_update_key_value(message, OSCMODE_KEY)
