@@ -118,7 +118,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     def humidify(self, mode: bool) -> None:
         """Enable or disable humidifying"""
         if self._humidify == mode:
-            _LOGGER.debug("PyDreoEvaporativeCooler:humidify - value already %s, skipping command", mode)
+            _LOGGER.debug("humidify: humidify - value already %s, skipping command", mode)
             return
         self._humidify = mode
         self._send_command(HUMIDIFY_MODE_KEY, HUMIDIFY_MODE_MAP[mode])
@@ -131,9 +131,9 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @target_humidity.setter
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
-        _LOGGER.debug("PyDreoEvaporativeCooler:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
+        _LOGGER.debug("target_humidity: target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         if self._target_humidity == value:
-            _LOGGER.debug("PyDreoEvaporativeCooler:target_humidity - value already %s, skipping command", value)
+            _LOGGER.debug("target_humidity: target_humidity - value already %s, skipping command", value)
             return
         self._target_humidity = value
         self._send_command(HUMIDITY_TARGET_KEY, value)
@@ -147,7 +147,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     def oscillating(self, value: bool) -> None:
         """Enable or disable oscillation"""
         if self._oscillating == value:
-            _LOGGER.debug("PyDreoEvaporativeCooler:oscillating - value already %s, skipping command", value)
+            _LOGGER.debug("oscillating: oscillating - value already %s, skipping command", value)
             return
         self._oscillating = value
         self._send_command(HORIZONTAL_OSCILLATION_KEY, value)
@@ -161,7 +161,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     def childlockon(self, value: bool) -> None:
         """Enable or disable child lock"""
         if self._childlockon == value:
-            _LOGGER.debug("PyDreoEvaporativeCooler:childlockon - value already %s, skipping command", value)
+            _LOGGER.debug("childlockon: childlockon - value already %s, skipping command", value)
             return
         self._childlockon = value
         self._send_command(CHILDLOCKON_KEY, value)
@@ -176,7 +176,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         """Set preset mode"""
         new_value = WINDMODE_MAP[value]
         if self._wind_mode == new_value:
-            _LOGGER.debug("PyDreoEvaporativeCooler:preset_mode - value already %s, skipping command", value)
+            _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
             return
         self._send_command(WIND_MODE_KEY, new_value)
 
@@ -199,7 +199,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
    
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API"""
-        _LOGGER.debug("PyDreoEvaporativeCooler:update_state")
+        _LOGGER.debug("update_state: update_state")
         super().update_state(state)
         
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
@@ -214,7 +214,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoEvaporativeCooler:handle_server_update")
+        _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
         
         val_temperature_offset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)

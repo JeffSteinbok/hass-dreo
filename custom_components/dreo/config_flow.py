@@ -11,7 +11,7 @@ from .const import (
 )
 from .pydreo import PyDreo
 
-_LOGGER = logging.getLogger("dreo")
+_LOGGER = logging.getLogger(__name__)
 
 OPTIONS_SCHEMA = vol.Schema(
     {
@@ -31,9 +31,9 @@ class OptionsFlowHandler(OptionsFlow):
     async def async_step_init(self, user_input: Dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options for the custom component."""
         
-        _LOGGER.debug("Options Flow Step Init")
+        _LOGGER.debug("async_step_init: Options Flow Step Init")
         if user_input is not None:
-            _LOGGER.debug("UserInput is not none")
+            _LOGGER.debug("async_step_init: UserInput is not none")
             return self.async_create_entry(data=user_input)
 
         return self.async_show_form(

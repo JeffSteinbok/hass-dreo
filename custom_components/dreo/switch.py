@@ -139,21 +139,21 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSwitchHA]:
     switch_ha_collection : DreoSwitchHA = []
 
     for pydreo_device in pydreo_devices:
-        _LOGGER.debug("Switch:get_entries: Adding switches for %s", pydreo_device.name)
+        _LOGGER.debug("get_entries: Adding switches for %s", pydreo_device.name)
         switch_keys : list[str] = []  # Track keys to prevent duplicates
 
         # Check each switch definition to see if this device supports it
         for switch_definition in SWITCHES:
-            _LOGGER.debug("Switch:get_entries: checking attribute: %s on %s", switch_definition.attr_name, pydreo_device.name)
+            _LOGGER.debug("get_entries: checking attribute: %s on %s", switch_definition.attr_name, pydreo_device.name)
 
             # Only create switch if device supports this feature
             if pydreo_device.is_feature_supported(switch_definition.attr_name):
                 # Prevent duplicate switches (shouldn't happen, but defensive coding)
                 if (switch_definition.key in switch_keys):
-                    _LOGGER.error("Switch:get_entries: Duplicate switch key %s", switch_definition.key)
+                    _LOGGER.error("get_entries: Duplicate switch key %s", switch_definition.key)
                     continue
                 
-                _LOGGER.debug("Switch:get_entries: Adding switch %s", switch_definition.key)
+                _LOGGER.debug("get_entries: Adding switch %s", switch_definition.key)
                 switch_keys.append(switch_definition.key)
                 switch_ha_collection.append(DreoSwitchHA(pydreo_device, switch_definition))
 
@@ -170,7 +170,7 @@ async def async_setup_entry(
     Called by Home Assistant when the integration is loaded. Creates switch entities
     for each supported device feature, plus special handling for ChefMaker devices.
     """
-    _LOGGER.info("Starting Dreo Switch Platform")
+    _LOGGER.info("get_entries: Starting Dreo Switch Platform")
 
     # Get the PyDreo manager from Home Assistant's data storage
     pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
@@ -224,7 +224,7 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
         is updated automatically via WebSocket messages from Dreo's servers.
         """
         _LOGGER.debug(
-            "DreoSwitchHA:is_on for %s %s is %s",
+            "is_on for %s %s is %s",
             self.pydreo_device.name,
             self.entity_description.key,
             getattr(self.pydreo_device, self.entity_description.attr_name),
@@ -246,7 +246,7 @@ class DreoSwitchHA(DreoBaseDeviceHA, SwitchEntity):
         Note: percentage and preset_mode parameters are not used for switches but are
         part of the Home Assistant API signature.
         """
-        _LOGGER.debug("Turning on switch %s %s", self.pydreo_device.name, self.entity_description.key)
+        _LOGGER.debug("turn_on: Turning on switch %s %s", self.pydreo_device.name, self.entity_description.key)
         # Setting this attribute triggers PyDreo to send a command to the device
         setattr(self.pydreo_device, self.entity_description.attr_name, True)
 

@@ -116,15 +116,15 @@ class Helpers:
         status_code = None
         r = None # Response object
         try:
-            _LOGGER.debug("=======call_api=============================")
-            _LOGGER.debug("[%s] calling '%s' api", method, api)
-            _LOGGER.debug("API call URL: \n  %s%s", url, api)
+            _LOGGER.debug("call_api: =======call_api=============================")
+            _LOGGER.debug("call_api: [%s] calling '%s' api", method, api)
+            _LOGGER.debug("call_api: API call URL: \n  %s%s", url, api)
             _LOGGER.debug(
-                "API call headers: \n  %s", Helpers.redactor(
+                "call_api: API call headers: \n  %s", Helpers.redactor(
                     json.dumps(headers))
             )
             _LOGGER.debug(
-                "API call json: \n  %s", Helpers.redactor(
+                "call_api: API call json: \n  %s", Helpers.redactor(
                     json.dumps(json_object))
             )
             if method.lower() == "get":
@@ -147,25 +147,25 @@ class Helpers:
                     url + api, json=json_object, headers=headers, timeout=API_TIMEOUT
                 )
         except requests.exceptions.RequestException as exception:
-            _LOGGER.debug(exception)
+            _LOGGER.debug("call_api: %s", exception)
         else:
             if r.status_code == 200:
                 status_code = 200
                 if r.content:
                     response = r.json()
                     _LOGGER.debug(
-                        "API response: \n\n  %s \n ",
+                        "call_api: API response: \n\n  %s \n ",
                         Helpers.redactor(json.dumps(response)),
                     )
             else:
-                _LOGGER.debug("Unable to fetch %s%s", url, api)
+                _LOGGER.debug("call_api: Unable to fetch %s%s", url, api)
         return response, status_code
 
     @staticmethod
     def     code_check(reponse_dict: dict) -> bool:
         """Test if code == 0 for successful API call."""
         if reponse_dict is None:
-            _LOGGER.error("No response from API")
+            _LOGGER.error("code_check: No response from API")
             return False
         if isinstance(reponse_dict, dict) and reponse_dict.get("code") == 0:
             return True

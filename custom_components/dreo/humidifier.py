@@ -23,10 +23,10 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list:
 
     for pydreo_device in pydreo_devices:
         if (pydreo_device.type == DreoDeviceType.HUMIDIFIER):
-            _LOGGER.debug("Humidifier:get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
+            _LOGGER.debug("get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
             humidifier_entities_ha.append(DreoHumidifierHA(pydreo_device))
         elif (pydreo_device.type == DreoDeviceType.DEHUMIDIFIER):
-            _LOGGER.debug("Humidifier:get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
+            _LOGGER.debug("get_entries: Found a %s - %s", pydreo_device.type, pydreo_device.name)
             humidifier_entities_ha.append(DreoDehumidifierHA(pydreo_device))
 
     return humidifier_entities_ha
@@ -38,7 +38,7 @@ async def async_setup_entry(
     _discovery_info=None,
 ) -> None:
     """Set up the Dreo Humidifier platform."""
-    _LOGGER.info("Starting Dreo Humidifier Platform")
+    _LOGGER.info("get_entries: Starting Dreo Humidifier Platform")
     _LOGGER.debug("Dreo Humidifier:async_setup_entry")
 
     pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]

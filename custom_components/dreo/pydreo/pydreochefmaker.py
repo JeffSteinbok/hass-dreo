@@ -47,7 +47,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
     def is_on(self, value: bool) -> None:
         """Set the power state of the device."""
         if self._is_on == value:
-            _LOGGER.debug("PyDreoChefMaker:is_on - value already %s, skipping command", value)
+            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
             return
         self._is_on = value
         self.set_mode_from_is_on()
@@ -63,7 +63,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         """Set the power state of the device."""
         new_value = 1 if value else 0
         if self._ledpotkepton == new_value:
-            _LOGGER.debug("PyDreoChefMaker:ledpotkepton - value already %s, skipping command", value)
+            _LOGGER.debug("ledpotkepton: ledpotkepton - value already %s, skipping command", value)
             return
         self._ledpotkepton = new_value
         self._send_command(LIGHT_KEY, self._ledpotkepton)
@@ -82,7 +82,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         """Set the mode based on the power state."""
         val = MODE_STANDBY if self._is_on else MODE_OFF
         _LOGGER.debug(
-            "PyDreoChefMaker(%s):set_mode_from_is_on: %s --> %s", self, self.mode, val
+            "set_mode_from_is_on: %s --> %s", self.mode, val
         )
         self.mode = val
 
@@ -90,7 +90,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         """Process the state dictionary from the REST API."""
         super().update_state(state)  # handles _is_on
 
-        _LOGGER.debug("PyDreoChefMaker(%s):update_state: %s", self, state)
+        _LOGGER.debug("update_state: %s", state)
 
         self._is_on = self.get_state_update_value(state, POWERON_KEY)
         self.set_mode_from_is_on()
@@ -102,13 +102,13 @@ class PyDreoChefMaker(PyDreoBaseDevice):
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug(
-            "PyDreoChefMaker:handle_server_update(%s): %s", self.name, message
+            "handle_server_update: %s", message
         )
 
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_poweron, bool):
             _LOGGER.debug(
-                "PyDreoChefMaker:handle_server_update - poweron: %s --> %s",
+                "handle_server_update: poweron: %s --> %s",
                 self._is_on,
                 val_poweron,
             )
@@ -118,7 +118,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         val_ledpotkepton = self.get_server_update_key_value(message, LIGHT_KEY)
         if isinstance(val_ledpotkepton, int):
             _LOGGER.debug(
-                "PyDreoChefMaker:handle_server_update - ledpotkepton: %s --> %s",
+                "handle_server_update: ledpotkepton: %s --> %s",
                 self._ledpotkepton,
                 val_ledpotkepton,
             )
@@ -127,7 +127,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, str):
             _LOGGER.debug(
-                "PyDreoChefMaker:handle_server_update - mode: %s --> %s",
+                "handle_server_update: mode: %s --> %s",
                 self.mode,
                 val_mode,
             )

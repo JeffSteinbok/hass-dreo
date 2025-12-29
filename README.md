@@ -84,9 +84,6 @@ Copy the `dreo` directory into your `/config/custom_components` directory, then 
 
 ## Initial Configuration
 
-> [!IMPORTANT]
-> If you used the very early version of this that required editing `configuration.yaml`, you will need to do a one-time reconfiguration. Delete the configuration entries you added and then go through the configuration flow within HomeAssistant.
-
 1. In HA, open `Settings`
 2. Click `Devices & services`
 3. Click `Add integration` (blue button at the bottom right of the screen)
@@ -120,6 +117,9 @@ You can remove individual Dreo devices from Home Assistant through the UI:
 The device will be removed from Home Assistant but will remain in your Dreo account. If you reload the integration or restart Home Assistant, the device will be re-discovered and added back automatically.
 
 ## Debugging
+
+> [!IMPORTANT]
+> This has changed in v1.6.3 to use HA/Python standard loggers.  Please review the below.
 
 Use the **Diagnostics** feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
 

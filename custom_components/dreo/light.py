@@ -38,16 +38,16 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoLightHA]:
     light_ha_collection : list[DreoLightHA] = []
 
     for pydreo_device in pydreo_devices:
-        _LOGGER.debug("Light:get_entries: Adding Lights for %s", pydreo_device.name)
+        _LOGGER.debug("get_entries: Adding Lights for %s", pydreo_device.name)
 
         # Check if device has a main light (display, main light with brightness/color temp)
         if pydreo_device.is_feature_supported("light_on"):
-            _LOGGER.debug("Light:get_entries: Adding Light for %s", pydreo_device.name)
+            _LOGGER.debug("get_entries: Adding Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoLightHA(pydreo_device))
 
         # Check if device has an RGB atmosphere light (ceiling fans)
         if pydreo_device.is_feature_supported("atm_light"):
-            _LOGGER.debug("Light:get_entries: Adding RGB Light for %s", pydreo_device.name)
+            _LOGGER.debug("get_entries: Adding RGB Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoRGBLightHA(pydreo_device))
 
     return light_ha_collection
@@ -63,7 +63,7 @@ async def async_setup_entry(
     from the PyDreo manager and creates appropriate light entities for each device
     that supports lighting features.
     """
-    _LOGGER.info("Starting Dreo Light Platform")
+    _LOGGER.info("get_entries: Starting Dreo Light Platform")
 
     # Get the PyDreo manager from Home Assistant's data storage
     pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
@@ -149,7 +149,7 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity): # pylint: disable=abstract-met
     def is_on(self) -> bool:
         """Return True if device is on."""
         _LOGGER.debug(
-            "DreoLightHA:is_on for %s is %s",
+            "is_on for %s is %s",
             self.pydreo_device.name,
             getattr(self.pydreo_device, self._light_on_attr)
         )
@@ -166,24 +166,24 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity): # pylint: disable=abstract-met
         to turn_on(). When the user adjusts brightness or color temperature in the UI,
         Home Assistant calls turn_on() with the new values in kwargs.
         """
-        _LOGGER.debug("Turning on light %s", self.pydreo_device.name)
+        _LOGGER.debug("turn_on: Turning on light %s", self.pydreo_device.name)
         setattr(self.pydreo_device, self._light_on_attr, True)
 
         # Handle brightness adjustment (part of turn_on action, not a separate method)
         if (ATTR_BRIGHTNESS in kwargs):
             brightness = kwargs[ATTR_BRIGHTNESS]
-            _LOGGER.debug("Setting brightness to %s", brightness)
+            _LOGGER.debug("turn_on: Setting brightness to %s", brightness)
             setattr(self.pydreo_device, self._brightness_attr, math.ceil(brightness_to_value(self._brightness_scale, brightness)))
 
         # Handle color temperature adjustment (part of turn_on action, not a separate method)
         if (ATTR_COLOR_TEMP_KELVIN in kwargs):
             color_temp = kwargs[ATTR_COLOR_TEMP_KELVIN]
-            _LOGGER.debug("Setting color temperature to %s", color_temp)
+            _LOGGER.debug("turn_on: Setting color temperature to %s", color_temp)
             setattr(self.pydreo_device, self._color_temp_attr, math.ceil(ranged_value_to_percentage((self.min_color_temp_kelvin,self.max_color_temp_kelvin), color_temp)))
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        _LOGGER.debug("Turning off %s", self.pydreo_device.name)
+        _LOGGER.debug("turn_off: Turning off %s", self.pydreo_device.name)
         setattr(self.pydreo_device, self._light_on_attr, False)
 
     @property
@@ -272,5 +272,5 @@ class DreoRGBLightHA(DreoLightHA):
         # Handle RGB color adjustment (part of turn_on action, not a separate method)
         if ATTR_RGB_COLOR in kwargs:
             rgb = kwargs[ATTR_RGB_COLOR]
-            _LOGGER.debug("Setting RGB color to %s", rgb)
+            _LOGGER.debug("turn_on: Setting RGB color to %s", rgb)
             setattr(self.pydreo_device, "atm_color_rgb", rgb)

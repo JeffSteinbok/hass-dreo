@@ -64,7 +64,7 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
             continue
 
 
-        _LOGGER.debug("Loaded data for serial number %s: %s", serial_number, device_state)
+        _LOGGER.debug("get_debug_test_mode_payload: Loaded data for serial number %s: %s", serial_number, device_state)
         debug_test_mode_payload[serial_number] = device_state
 
         # Load all device setting files for this serial number

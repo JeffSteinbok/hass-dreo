@@ -29,12 +29,12 @@ def get_entries(
     for pydreo_device in pydreo_devices:
         if pydreo_device.type == DreoDeviceType.HEATER:
             _LOGGER.debug(
-                "climate:get_entries: Found a Heater - %s", pydreo_device.name
+                "get_entries: Found a Heater - %s", pydreo_device.name
             )
             climate_entities_ha.append(DreoHeaterHA(pydreo_device))
         elif pydreo_device.type == DreoDeviceType.AIR_CONDITIONER:
             _LOGGER.debug(
-                "climate:get_entries: Found an Air Conditioner - %s",
+                "get_entries: Found an Air Conditioner - %s",
                 pydreo_device.name,
             )
             climate_entities_ha.append(DreoAirConditionerHA(pydreo_device))
@@ -48,15 +48,15 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Dreo Climate platform."""
-    _LOGGER.info("Starting Dreo Climate Platform")
-    _LOGGER.debug("Dreo Climate:async_setup_entry")
+    _LOGGER.info("get_entries: Starting Dreo Climate Platform")
+    _LOGGER.debug("get_entries: async_setup_entry")
 
     pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     climate_entities_ha = get_entries(pydreo_manager.devices)
 
     _LOGGER.debug(
-        "Climate:async_setup_entry: Adding Climate Devices (%s)",
+        "async_setup_entry: Adding Climate Devices (%s)",
         len(climate_entities_ha),
     )
     async_add_entities(climate_entities_ha)
