@@ -69,6 +69,14 @@ def main():
             file_path.unlink()
             print(f"  ✓ Deleted {file_path.name}")
     
+    # Clean existing settings files in destination
+    existing_setting_files = list(E2E_TEST_DATA_DIR.glob("get_device_setting_*.json"))
+    if existing_setting_files:
+        print(f"\nCleaning {len(existing_setting_files)} existing setting files:")
+        for file_path in existing_setting_files:
+            file_path.unlink()
+            print(f"  ✓ Deleted {file_path.name}")
+
     # Copy all get_device_state files
     state_files = list(API_RESPONSES_DIR.glob("get_device_state_*.json"))
     state_files.sort()
