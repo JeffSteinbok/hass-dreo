@@ -13,12 +13,11 @@ from .dreoairconditioner import DreoAirConditionerHA
 from .dreoheater import DreoHeaterHA
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER,
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_entries(

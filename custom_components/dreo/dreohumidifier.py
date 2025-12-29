@@ -13,11 +13,10 @@ from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreoHumidifier
 
 from .const import (
-    LOGGER,
     DOMAIN,
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 # Implementation of the Humidifier
 class DreoHumidifierHA(DreoBaseDeviceHA, HumidifierEntity):

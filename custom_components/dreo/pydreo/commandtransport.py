@@ -16,7 +16,7 @@ from .constant import * # pylint: disable=W0401,W0614
 from .helpers import Helpers
 from .models import * # pylint: disable=W0401,W0614
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 class CommandTransport: 
     """Command transport class for Dreo API."""

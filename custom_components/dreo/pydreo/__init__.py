@@ -28,7 +28,7 @@ from .pydreohumidifier import PyDreoHumidifier
 from .pydreodehumidifier import PyDreoDehumidifier
 from .pydreoevaporativecooler import PyDreoEvaporativeCooler
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 _DREO_DEVICE_TYPE_TO_CLASS = {
     DreoDeviceType.TOWER_FAN: PyDreoTowerFan,

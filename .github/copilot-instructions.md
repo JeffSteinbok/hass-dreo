@@ -38,6 +38,8 @@ This is an unofficial Home Assistant custom integration for Dreo brand smart dev
 - Add docstrings for public classes and methods
 - Follow Home Assistant's async patterns (use `async def` for async operations)
 - Use `_LOGGER.debug()`, `_LOGGER.info()`, `_LOGGER.warning()`, `_LOGGER.error()` for logging
+  - Initialize logger with: `_LOGGER = logging.getLogger(__name__)`
+  - This follows the standard Python logging pattern and provides proper module hierarchy
 - Device classes should inherit from `DreoBaseDevice`
 
 ### Naming Conventions

@@ -16,12 +16,11 @@ from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
 from .dreobasedevice import DreoBaseDeviceHA
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoLightHA]:
     """Add Light entries for Dreo devices.

@@ -7,13 +7,10 @@ from typing import Any
 from .haimports import * # pylint: disable=W0401,W0614
 
 from .dreobasedevice import DreoBaseDeviceHA
-from .const import (
-    LOGGER
-)
 
 from .pydreo.pydreochefmaker import PyDreoChefMaker
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 class DreoChefMakerHA(DreoBaseDeviceHA, SwitchEntity):
     """Representation of a Dreo chefmaker."""

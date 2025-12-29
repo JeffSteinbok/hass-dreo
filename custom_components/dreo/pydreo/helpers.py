@@ -8,9 +8,7 @@ from typing import Optional, Union
 import re
 import requests
 
-from .constant import LOGGER_NAME
-
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 API_TIMEOUT = 30
 

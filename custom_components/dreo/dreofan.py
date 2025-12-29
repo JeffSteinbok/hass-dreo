@@ -10,13 +10,9 @@ from .haimports import * # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
 
-from .const import (
-    LOGGER
-)
-
 from .pydreo.pydreofanbase import PyDreoFanBase
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     """Representation of a Dreo fan."""

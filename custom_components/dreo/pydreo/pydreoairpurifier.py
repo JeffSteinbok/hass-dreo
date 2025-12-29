@@ -10,7 +10,7 @@ from .constant import (
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydreo import PyDreo

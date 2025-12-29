@@ -31,7 +31,6 @@ from .pydreo.pydreoevaporativecooler import (
 from .haimports import *  # pylint: disable=W0401,W0614
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER,
 )
@@ -52,7 +51,7 @@ from .pydreo.pydreohumidifier import (
     LIGHT_OFF,
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass

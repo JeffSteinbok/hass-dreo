@@ -21,7 +21,7 @@ from .helpers import Helpers
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 WATER_LEVEL_STATUS_KEY = "wrong"
 WORKTIME_KEY = "worktime"

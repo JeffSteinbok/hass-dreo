@@ -4,13 +4,13 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .constant import LOGGER_NAME, REPORTED_KEY, POWERON_KEY, STATE_KEY, PRESET_MODE_STRINGS
+from .constant import REPORTED_KEY, POWERON_KEY, STATE_KEY, PRESET_MODE_STRINGS
 from .models import DreoDeviceDetails
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 class UnknownProductError(Exception):
     """Exception thrown when we don't recognize a product of a device."""

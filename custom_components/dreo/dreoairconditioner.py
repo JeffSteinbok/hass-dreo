@@ -28,7 +28,6 @@ from .pydreo.pydreoairconditioner import (
 )
 
 from .const import (
-    LOGGER,
     DOMAIN,
 )
 
@@ -87,7 +86,7 @@ HA_FAN_MODE_TO_DREO = {
     FAN_AUTO: DreoACFanMode.AUTO,
 }
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 # Implementation of the air conditioner
 class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):

@@ -14,7 +14,7 @@ from .constant import (
 
 from .models import DreoDeviceDetails
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 WIND_MODE_KEY = "windmode"
 HUMIDIFY_MODE_KEY = "rhmode"

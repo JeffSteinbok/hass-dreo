@@ -20,7 +20,6 @@ from .pydreo import (
 from .pydreo.constant import DreoHeaterMode
 
 from .const import (
-    LOGGER,
     DOMAIN,
 )
 
@@ -28,7 +27,7 @@ from homeassistant.components.climate import (
     PRESET_ECO
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 # Heat level preset modes
 PRESET_H1 = "H1"

@@ -16,9 +16,9 @@ from .dreochefmaker import DreoChefMakerHA
 from .pydreo import PyDreo, PyDreoBaseDevice
 from .pydreo.constant import DreoDeviceType
 
-from .const import LOGGER, DOMAIN, PYDREO_MANAGER
+from .const import DOMAIN, PYDREO_MANAGER
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass

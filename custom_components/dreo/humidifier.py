@@ -11,12 +11,11 @@ from .dreodehumidifier import DreoDehumidifierHA
 from .dreohumidifier import DreoHumidifierHA
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list:
     """Get the Dreo Humidifier entities for the devices."""

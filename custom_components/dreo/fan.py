@@ -8,12 +8,11 @@ from .pydreo.constant import DreoDeviceType
 from .dreofan import DreoFanHA 
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoFanHA]:
     """Get the Dreo Fan entities for the devices."""

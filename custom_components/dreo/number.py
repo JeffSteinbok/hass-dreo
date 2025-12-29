@@ -16,12 +16,11 @@ from .pydreo.constant import DreoDeviceType
 from .dreobasedevice import DreoBaseDeviceHA
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class DreoNumberEntityDescription(NumberEntityDescription):

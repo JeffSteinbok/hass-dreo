@@ -5,12 +5,11 @@ import os
 import glob
 
 from .const import (
-    LOGGER,
     DEBUG_TEST_MODE_DIRECTORY_NAME,
     DEBUG_TEST_MODE_DEVICES_FILE_NAME
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_debug_test_mode_payload(base_dir: str) -> dict:

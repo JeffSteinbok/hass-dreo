@@ -20,7 +20,7 @@ MODE_COOKING = "cooking"
 MODE_PAUSED = "ckpause"
 MODE_OFF = "off"
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 
 class PyDreoChefMaker(PyDreoBaseDevice):

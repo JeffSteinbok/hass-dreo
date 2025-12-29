@@ -31,7 +31,7 @@ KEYS_TO_REDACT = {
     "productId"
 }
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_get_config_entry_diagnostics(

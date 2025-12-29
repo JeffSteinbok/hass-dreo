@@ -58,7 +58,7 @@ CELSIUS_TO_FAHRENHEIT_MAP = {
     30: 86,   # Set 30°C → Send 86°F
 }
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydreo import PyDreo

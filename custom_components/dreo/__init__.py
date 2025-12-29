@@ -5,7 +5,6 @@ import time
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER,
     DREO_PLATFORMS,
@@ -13,7 +12,7 @@ from .const import (
     DEBUG_TEST_MODE
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
