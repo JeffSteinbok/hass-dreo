@@ -162,10 +162,10 @@ class Helpers:
         return response, status_code
 
     @staticmethod
-    def     code_check(reponse_dict: dict) -> bool:
+    def code_check(reponse_dict: dict) -> bool:
         """Test if code == 0 for successful API call."""
         if reponse_dict is None:
-            _LOGGER.error("code_check: No response from API")
+            _LOGGER.error("Helpers::code_check - reponse_dict is None")
             return False
         if isinstance(reponse_dict, dict) and reponse_dict.get("code") == 0:
             return True
@@ -179,6 +179,9 @@ class Helpers:
     @staticmethod
     def name_from_value(name_value_list : list[tuple], value) -> str:
         """Return name from list of tuples."""
+        if not name_value_list:
+            _LOGGER.error("Helpers::name_from_value - name_value_list is None")
+            return None
         for name, val in name_value_list:
             if val == value:
                 return name
@@ -187,6 +190,9 @@ class Helpers:
     @staticmethod
     def value_from_name(name_value_list : list[tuple], name) -> any:
         """Return value from list of tuples."""
+        if not name_value_list:
+            _LOGGER.error("Helpers::value_from_name - name_value_list is None")
+            return None
         for n, val in name_value_list:
             if n == name:
                 return val
@@ -195,4 +201,7 @@ class Helpers:
     @staticmethod
     def get_name_list(name_value_list : list[tuple]) -> list[str]:
         """Return list of names from list of tuples."""
+        if not name_value_list:
+            _LOGGER.error("Helpers::get_name_list - name_value_list is None")
+            return []
         return [name for name, _ in name_value_list]
