@@ -116,7 +116,6 @@ venv.bak/
 *.orig
 *.diff
 tmp
-custom_components/aarlo/pyaarlo/main.py
 .ycm_extra_conf.py
 
 # Stuff Jeff Added for now
@@ -127,4 +126,4 @@ ignore
 
 # Mac-specific files
 **/.DS_Store
-
+custom_components/dreo/e2e_test_data/
