@@ -91,7 +91,9 @@ The integration supports multiple device types, each mapped to Home Assistant pl
 - **Fans** → `fan` platform
 - **Heaters** → `climate` platform
 - **Humidifiers/Dehumidifiers** → `humidifier` platform
-- **Lights** (device displays) → `light` platform
+- **Lights** (device displays, main lights) → `light` platform
+  - `DreoLightHA` - Standard lights with brightness and color temperature support
+  - `DreoRGBLightHA` - RGB atmosphere lights for ceiling fans (RGB color control)
 - **Switches** (device features) → `switch` platform
 - **Sensors** (temperature, humidity) → `sensor` platform
 - **Numbers** (adjustable values) → `number` platform

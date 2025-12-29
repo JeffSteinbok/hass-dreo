@@ -52,6 +52,19 @@ This integration supports the following device types:
 
 **[Space Heater Documentation →](HEATERS.md)** - Learn about heater-specific features, thermostat controls, and the 24-hour remote control timeout.
 
+### Supported Entity Types
+
+Depending on your device model and capabilities, the integration creates the following Home Assistant entities:
+
+- **Fan** - Primary fan control (speed, oscillation, preset modes)
+- **Climate** - For heaters and air conditioners (temperature control, modes)
+- **Humidifier** - For humidifiers and dehumidifiers
+- **Light** - Display lights and main lights (on/off, brightness, color temperature when supported)
+- **RGB Light** - Atmosphere/ambient lights for ceiling fans (RGB color control)
+- **Switch** - Individual device features (child lock, oscillation, mute, etc.)
+- **Sensor** - Temperature, humidity, and other sensor readings
+- **Number** - Adjustable numeric settings
+
 ## Installation
 
 ### HACS (Recommended)

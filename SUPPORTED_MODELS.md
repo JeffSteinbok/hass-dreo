@@ -34,6 +34,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 
 - DR-HCF001S
 - DR-HCF002S
+- DR-HCF003S
 
 ### Air Purifiers (DR-HAP Series)
 
@@ -44,8 +45,6 @@ All DR-HAP models should be supported. Tested models include:
 - DR-HAP005S
 
 ## Humidifiers (DR-HHM Series)
-
-*Beta-level support*
 
 - DR-HHM001S
 - DR-HHM003S (HM713S/813S)
