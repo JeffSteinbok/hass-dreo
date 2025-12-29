@@ -1,13 +1,13 @@
 {
   "domain": "dreo",
   "name": "Dreo",
-  "codeowners": ["@jeffsteinbok", "@andy-cooper"],
+  "codeowners": ["@jeffsteinbok"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/jeffsteinbok/hass-dreo/blob/master/README.md",
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/jeffsteinbok/hass-dreo/issues",  
-  "loggers": ["dreo", "pydreo"],
+  "loggers": ["custom_compoments.dreo"],
   "requirements": ["websockets"],
   "version": "1.6.2"
 }
