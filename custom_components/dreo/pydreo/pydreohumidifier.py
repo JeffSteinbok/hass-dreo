@@ -5,7 +5,6 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     MODE_KEY,
     MUTEON_KEY,
     POWERON_KEY,
@@ -21,7 +20,7 @@ from .helpers import Helpers
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 WATER_LEVEL_STATUS_KEY = "wrong"
 WORKTIME_KEY = "worktime"
@@ -91,9 +90,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
         modes.sort(key=lambda tup: tup[1])  # sorts in place
         if (len(modes) == 0):
-            _LOGGER.debug("PyDreoHumidifier:No preset modes detected")
+            _LOGGER.debug("parse_modes: No preset modes detected")
             modes = None
-        _LOGGER.debug("PyDreoHumidifier:Detected preset modes - %s", modes)
+        _LOGGER.debug("parse_modes: Detected preset modes - %s", modes)
         return modes
         
     @property
@@ -104,9 +103,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @is_on.setter
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
-        _LOGGER.debug("PyDreoHumidifier:is_on.setter - %s", value)
+        _LOGGER.debug("is_on: is_on.setter - %s", value)
         if self._is_on == value:
-            _LOGGER.debug("PyDreoHumidifier:is_on - value already %s, skipping command", value)
+            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
             return
         self._send_command(POWERON_KEY, value)
 
@@ -128,9 +127,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @target_humidity.setter
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
-        _LOGGER.debug("PyDreoHumidifier:target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
+        _LOGGER.debug("target_humidity: target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         if self._target_humidity == value:
-            _LOGGER.debug("PyDreoHumidifier:target_humidity - value already %s, skipping command", value)
+            _LOGGER.debug("target_humidity: target_humidity - value already %s, skipping command", value)
             return
         self._target_humidity = value
         self._send_command(TARGET_AUTO_HUMIDITY_KEY, value)
@@ -145,9 +144,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
-        _LOGGER.debug("PyDreoHumidifier:panel_sound.setter(%s) --> %s", self.name, value)
+        _LOGGER.debug("panel_sound: panel_sound.setter(%s) --> %s", self.name, value)
         if self._mute_on == (not value):
-            _LOGGER.debug("PyDreoHumidifier:panel_sound - value already %s, skipping command", value)
+            _LOGGER.debug("panel_sound: panel_sound - value already %s, skipping command", value)
             return
         self._send_command(MUTEON_KEY, not value)
         
@@ -188,9 +187,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @scheon.setter
     def scheon(self, value: bool):
         """Set if the fan is on or off"""
-        _LOGGER.debug("PyDreoHumidifier:scheon.setter - %s", value)
+        _LOGGER.debug("scheon: scheon.setter - %s", value)
         if self._scheon == value:
-            _LOGGER.debug("PyDreoHumidifier:scheon - value already %s, skipping command", value)
+            _LOGGER.debug("scheon: scheon - value already %s, skipping command", value)
             return
         self._send_command(SCHEDULE_ENABLE, value)        
     @mode.setter
@@ -198,7 +197,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         numeric_value = Helpers.value_from_name(self._modes, value)
         if numeric_value is not None:
             if self._mode == numeric_value:
-                _LOGGER.debug("PyDreoHumidifier:mode - value already %s, skipping command", value)
+                _LOGGER.debug("mode: mode - value already %s, skipping command", value)
                 return
             self._send_command(MODE_KEY, numeric_value)
         else:
@@ -208,7 +207,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         """Process the state dictionary from the REST API."""
         super().update_state(state)  # handles _is_on
 
-        _LOGGER.debug("PyDreoHumidifier(%s):update_state: %s", self.name, state)
+        _LOGGER.debug("update_state: %s - %s", self.name, state)
         self._mode = self.get_state_update_value(state, MODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
@@ -220,12 +219,12 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoHumidifier:handle_server_update(%s): %s", self.name, message)
+        _LOGGER.debug("handle_server_update: handle_server_update(%s): %s", self.name, message)
 
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_poweron, bool):
             self._is_on = val_poweron  # Ensure poweron state is updated
-            _LOGGER.debug("PyDreoHumidifier:handle_server_update - poweron is %s", self._is_on)
+            _LOGGER.debug("handle_server_update: handle_server_update - poweron is %s", self._is_on)
 
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
@@ -256,9 +255,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
         if isinstance(val_humidity, int):
             self._humidity = val_humidity
-            _LOGGER.debug("PyDreoHumidifier:handle_server_update - humidity is %s", self._humidity)
+            _LOGGER.debug("handle_server_update: handle_server_update - humidity is %s", self._humidity)
 
         val_target_humidity = self.get_server_update_key_value(message, TARGET_AUTO_HUMIDITY_KEY)
         if isinstance(val_target_humidity, int):
             self._target_humidity = val_target_humidity
-            _LOGGER.debug("PyDreoHumidifier:handle_server_update - target_humidity is %s", self._target_humidity)
+            _LOGGER.debug("handle_server_update: handle_server_update - target_humidity is %s", self._target_humidity)

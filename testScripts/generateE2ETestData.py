@@ -6,8 +6,10 @@ import shutil
 from pathlib import Path
 
 # Paths
-API_RESPONSES_DIR = Path("tests/pydreo/api_responses")
-E2E_TEST_DATA_DIR = Path("custom_components/dreo/e2e_test_data")
+SCRIPT_DIR = Path(__file__).parent.absolute()
+PROJECT_ROOT = SCRIPT_DIR.parent
+API_RESPONSES_DIR = PROJECT_ROOT / "tests" / "pydreo" / "api_responses"
+E2E_TEST_DATA_DIR = SCRIPT_DIR / "temp" / "e2e_test_data"
 
 def main():
     """Generate E2E test data."""
@@ -67,6 +69,14 @@ def main():
             file_path.unlink()
             print(f"  ✓ Deleted {file_path.name}")
     
+    # Clean existing settings files in destination
+    existing_setting_files = list(E2E_TEST_DATA_DIR.glob("get_device_setting_*.json"))
+    if existing_setting_files:
+        print(f"\nCleaning {len(existing_setting_files)} existing setting files:")
+        for file_path in existing_setting_files:
+            file_path.unlink()
+            print(f"  ✓ Deleted {file_path.name}")
+
     # Copy all get_device_state files
     state_files = list(API_RESPONSES_DIR.glob("get_device_state_*.json"))
     state_files.sort()

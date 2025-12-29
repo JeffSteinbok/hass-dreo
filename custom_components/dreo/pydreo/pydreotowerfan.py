@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     SHAKEHORIZON_KEY,
     SHAKEHORIZONANGLE_KEY,
     OSCILLATION_KEY,
@@ -14,7 +13,7 @@ from .constant import (
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -75,9 +74,9 @@ class PyDreoTowerFan(PyDreoFanBase):
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
         if (len(preset_modes) == 0):
-            _LOGGER.debug("PyDreoFan:No preset modes detected")
+            _LOGGER.debug("parse_preset_modes: No preset modes detected")
             preset_modes = None
-        _LOGGER.debug("PyDreoFan:Detected preset modes - %s", preset_modes)
+        _LOGGER.debug("parse_preset_modes: Detected preset modes - %s", preset_modes)
         return preset_modes
 
     @property
@@ -93,16 +92,16 @@ class PyDreoTowerFan(PyDreoFanBase):
     def oscillating(self, value: bool) -> None:
 
         """Enable or disable oscillation"""
-        _LOGGER.debug("PyDreoFan:oscillating.setter")
+        _LOGGER.debug("oscillating: oscillating.setter")
 
         if self._shakehorizon is not None:
             if self._shakehorizon == value:
-                _LOGGER.debug("PyDreoTowerFan:oscillating - value already %s, skipping command", value)
+                _LOGGER.debug("oscillating: oscillating - value already %s, skipping command", value)
                 return
             self._send_command(SHAKEHORIZON_KEY, value)
         elif self._oscillating is not None:
             if self._oscillating == value:
-                _LOGGER.debug("PyDreoTowerFan:oscillating - value already %s, skipping command", value)
+                _LOGGER.debug("oscillating: oscillating - value already %s, skipping command", value)
                 return
             self._send_command(OSCILLATION_KEY, value)
         else:
@@ -117,17 +116,17 @@ class PyDreoTowerFan(PyDreoFanBase):
     @shakehorizonangle.setter
     def shakehorizonangle(self, value: int) -> None:
         """Set the oscillation angle."""
-        _LOGGER.debug("PyDreoFan:shakehorizonangle.setter")
+        _LOGGER.debug("shakehorizonangle: shakehorizonangle.setter")
         if self._shakehorizonangle is not None:
             new_value = int(value)
             if self._shakehorizonangle == new_value:
-                _LOGGER.debug("PyDreoTowerFan:shakehorizonangle - value already %s, skipping command", new_value)
+                _LOGGER.debug("shakehorizonangle: shakehorizonangle - value already %s, skipping command", new_value)
                 return
             self._send_command(SHAKEHORIZONANGLE_KEY, new_value)           
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        _LOGGER.debug("PyDreoFan:update_state")
+        _LOGGER.debug("update_state: update_state")
         super().update_state(state)
 
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
@@ -136,7 +135,7 @@ class PyDreoTowerFan(PyDreoFanBase):
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoFan:handle_server_update")
+        _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
 
         # Some tower fans use SHAKEHORIZON and some seem to use OSCON

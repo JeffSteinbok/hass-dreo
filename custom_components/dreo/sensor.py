@@ -31,7 +31,6 @@ from .pydreo.pydreoevaporativecooler import (
 from .haimports import *  # pylint: disable=W0401,W0614
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER,
 )
@@ -52,7 +51,7 @@ from .pydreo.pydreohumidifier import (
     LIGHT_OFF,
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -149,18 +148,18 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSensorHA]:
     sensor_ha_collection : list[DreoSensorHA] = []
 
     for pydreo_device in pydreo_devices:
-        _LOGGER.debug("Sensor:get_entries: Adding Sensors for %s", pydreo_device.name)
+        _LOGGER.debug("get_entries: Adding Sensors for %s", pydreo_device.name)
         sensor_keys : list[str] = []
         
         for sensor_definition in SENSORS:
-            _LOGGER.debug("Sensor:get_entries: checking exists fn: %s on %s", sensor_definition.key, pydreo_device.name)
+            _LOGGER.debug("get_entries: checking exists fn: %s on %s", sensor_definition.key, pydreo_device.name)
 
             if sensor_definition.exists_fn(pydreo_device):
                 if (sensor_definition.key in sensor_keys):
-                    _LOGGER.error("Sensor:get_entries: Duplicate sensor key %s", sensor_definition.key)
+                    _LOGGER.error("get_entries: Duplicate sensor key %s", sensor_definition.key)
                     continue
 
-                _LOGGER.debug("Sensor:get_entries: Adding Sensor %s", sensor_definition.key)
+                _LOGGER.debug("get_entries: Adding Sensor %s", sensor_definition.key)
                 sensor_keys.append(sensor_definition.key)
 
                 sensor_ha_collection.append(DreoSensorHA(pydreo_device, sensor_definition))
@@ -174,7 +173,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Dreo Sensor platform."""
-    _LOGGER.info("Starting Dreo Sensor Platform")
+    _LOGGER.info("get_entries: Starting Dreo Sensor Platform")
 
     pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 

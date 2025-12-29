@@ -10,13 +10,9 @@ from .haimports import * # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
 
-from .const import (
-    LOGGER
-)
-
 from .pydreo.pydreofanbase import PyDreoFanBase
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     """Representation of a Dreo fan."""
@@ -98,12 +94,12 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         **kwargs: Any,
     ) -> None:
         """Turn the device on."""
-        _LOGGER.debug("DreoFanHA:turn_on")
+        _LOGGER.debug("turn_on: turn_on")
         self.device.is_on = True
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        _LOGGER.debug("DreoFanHA:turn_off")
+        _LOGGER.debug("turn_off: turn_off")
         self.device.is_on = False
 
     def set_percentage(self, percentage: int) -> None:

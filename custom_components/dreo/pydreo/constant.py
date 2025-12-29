@@ -1,8 +1,6 @@
 """Constants for the PyDreo library."""
 from enum import Enum, IntEnum, StrEnum
 
-LOGGER_NAME = "pydreo"
-
 # Various keys read from server JSON responses.
 ACCESS_TOKEN_KEY = "access_token"
 REGION_KEY = "region"

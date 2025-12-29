@@ -5,7 +5,6 @@ import time
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER,
     DREO_PLATFORMS,
@@ -13,19 +12,19 @@ from .const import (
     DEBUG_TEST_MODE
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     "HomeAssistant EntryPoint"
-    _LOGGER.debug("async_setup_entry")
+    _LOGGER.debug("async_setup_entry: Starting setup")
 
-    _LOGGER.debug(config_entry.data.get(CONF_USERNAME))
+    _LOGGER.debug("async_setup_entry: Username: %s", config_entry.data.get(CONF_USERNAME))
     username = config_entry.data.get(CONF_USERNAME)
     password = config_entry.data.get(CONF_PASSWORD)
     auto_reconnect = config_entry.options.get(CONF_AUTO_RECONNECT)
     if auto_reconnect is None:
-        _LOGGER.debug("auto_reconnect is None.  Default to True")
+        _LOGGER.debug("async_setup_entry: auto_reconnect is None.  Default to True")
         auto_reconnect = True
 
     region = "us"
@@ -34,11 +33,11 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
 
     if DEBUG_TEST_MODE:
-        _LOGGER.error("DEBUG_TEST_MODE is True!")
+        _LOGGER.error("async_setup_entry: DEBUG_TEST_MODE is True!")
         from .debug_test_mode import get_debug_test_mode_payload  # pylint: disable=C0415
         debug__test_mode_payload : json = get_debug_test_mode_payload("custom_components/dreo")
         if debug__test_mode_payload is None:
-            _LOGGER.error("DEBUG_TEST_MODE: Unable to get debug test mode payload.  Exiting setup.")
+            _LOGGER.error("async_setup_entry: Unable to get debug test mode payload.  Exiting setup.")
             return False
         pydreo_manager = PyDreo("TEST_EMAIL",
                              "TEST_PASSWORD", 
@@ -52,21 +51,21 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     login = await hass.async_add_executor_job(pydreo_manager.login)
 
     if not login:
-        _LOGGER.error("Unable to login to the dreo server")
+        _LOGGER.error("async_setup_entry: Unable to login to the dreo server")
         return False
 
     load_devices = await hass.async_add_executor_job(pydreo_manager.load_devices)
 
     if not load_devices:
-        _LOGGER.error("Unable to load devices from the dreo server")
+        _LOGGER.error("async_setup_entry: Unable to load devices from the dreo server")
         return False
 
-    _LOGGER.debug("Checking for supported installed device types")
+    _LOGGER.debug("async_setup_entry: Checking for supported installed device types")
     device_types = set()
     for device in pydreo_manager.devices:
         device_types.add(device.type)   
-    _LOGGER.debug("Device types found are: %s", device_types)
-    _LOGGER.info("%d Dreo devices found", len(pydreo_manager.devices))
+    _LOGGER.debug("async_setup_entry: Device types found are: %s", device_types)
+    _LOGGER.info("async_setup_entry: %d Dreo devices found", len(pydreo_manager.devices))
 
     platforms = set()
     if (DreoDeviceType.TOWER_FAN in device_types or 
@@ -118,7 +117,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data[DOMAIN][PYDREO_MANAGER] = pydreo_manager
     hass.data[DOMAIN][DREO_PLATFORMS] = platforms
 
-    _LOGGER.debug("Platforms are: %s", platforms)
+    _LOGGER.debug("async_setup_entry: Platforms are: %s", platforms)
 
     await hass.config_entries.async_forward_entry_setups(config_entry, platforms)
 
@@ -153,7 +152,7 @@ async def async_remove_config_entry_device(
     we can safely remove them from Home Assistant's device registry.
     """
     _LOGGER.debug(
-        "Removing device %s (identifiers: %s) from config entry %s",
+        "async_remove_config_entry_device: Removing device %s (identifiers: %s) from config entry %s",
         device_entry.name,
         device_entry.identifiers,
         config_entry.entry_id,

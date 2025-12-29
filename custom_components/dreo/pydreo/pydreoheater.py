@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     HTALEVEL_KEY,
     TEMPERATURE_KEY,
     MODE_KEY,
@@ -31,7 +30,7 @@ from .constant import (
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoHeaterDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -89,9 +88,9 @@ class PyDreoHeater(PyDreoBaseDevice):
     @poweron.setter
     def poweron(self, value: bool):
         """Set if the heater is on or off"""
-        _LOGGER.debug("PyDreoHeater:poweron.setter - %s", value)
+        _LOGGER.debug("poweron: poweron.setter - %s", value)
         if self._is_on == value:
-            _LOGGER.debug("PyDreoHeater:poweron - value already %s, skipping command", value)
+            _LOGGER.debug("poweron: poweron - value already %s, skipping command", value)
             return
         self._send_command(POWERON_KEY, value)
 
@@ -112,9 +111,9 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @devon.setter
     def devon(self, value: bool):
-        _LOGGER.debug("PyDreoHeater:dev_on.setter - %s", value)
+        _LOGGER.debug("devon: dev_on.setter - %s", value)
         if self._dev_on == value:
-            _LOGGER.debug("PyDreoHeater:devon - value already %s, skipping command", value)
+            _LOGGER.debug("devon: devon - value already %s, skipping command", value)
             return
         self._send_command(DEVON_KEY, value)
 
@@ -127,14 +126,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     def htalevel(self, htalevel : int) :
         """Set the heat level."""
         htalevel = int(htalevel) # ensure it's an int
-        _LOGGER.debug("PyDreoHeater:htalevel.setter(%s, %s)", self.name, htalevel)
+        _LOGGER.debug("htalevel: htalevel.setter(%s, %s)", self.name, htalevel)
         if (self._device_definition.device_ranges[HEAT_RANGE][0] > htalevel > self._device_definition.device_ranges[HEAT_RANGE][1]):
-            _LOGGER.error("Heat level %s is not in the acceptable range: %s",
+            _LOGGER.error("htalevel: Heat level %s is not in the acceptable range: %s",
                             htalevel,
                             self._device_definition.device_ranges[HEAT_RANGE])
             return
         if self._htalevel == htalevel:
-            _LOGGER.debug("PyDreoHeater:htalevel - value already %s, skipping command", htalevel)
+            _LOGGER.debug("htalevel: htalevel - value already %s, skipping command", htalevel)
             return
         self._send_command(HTALEVEL_KEY, htalevel)
 
@@ -151,14 +150,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     @ecolevel.setter
     def ecolevel(self, ecolevel : int):
         """Set the target temperature."""
-        _LOGGER.debug("PyDreoHeater:ecolevel(%s)", ecolevel)
+        _LOGGER.debug("ecolevel: ecolevel(%s)", ecolevel)
         if self._device_definition.device_ranges[ECOLEVEL_RANGE][0] > ecolevel > self._device_definition.device_ranges[ECOLEVEL_RANGE][1]:
-            _LOGGER.error("Target Temperature %s is not in the acceptable range: %s",
+            _LOGGER.error("ecolevel: Target Temperature %s is not in the acceptable range: %s",
                             ecolevel,
                             self._device_definition.device_ranges[ECOLEVEL_RANGE])
             return
         if self._ecolevel == ecolevel:
-            _LOGGER.debug("PyDreoHeater:ecolevel - value already %s, skipping command", ecolevel)
+            _LOGGER.debug("ecolevel: ecolevel - value already %s, skipping command", ecolevel)
             return
         self._send_command(ECOLEVEL_KEY, ecolevel)
 
@@ -171,7 +170,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def mode(self, value: DreoHeaterMode) -> None:
         if value in self.modes:
             if self._mode == value:
-                _LOGGER.debug("PyDreoHeater:mode - value already %s, skipping command", value)
+                _LOGGER.debug("mode: mode - value already %s, skipping command", value)
                 return
             self._send_command(MODE_KEY, value)
         else:
@@ -204,14 +203,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     def oscon(self, value: bool) -> None:
 
         """Enable or disable oscillation"""
-        _LOGGER.debug("PyDreoHeater:oscon.setter(%s) -> %s", self.name, value)
+        _LOGGER.debug("oscon: oscon.setter(%s) -> %s", self.name, value)
         if self._oscon is not None:
             if self._oscon == value:
-                _LOGGER.debug("PyDreoHeater:oscon - value already %s, skipping command", value)
+                _LOGGER.debug("oscon: oscon - value already %s, skipping command", value)
                 return
             self._send_command(OSCON_KEY, value)
         else:
-            _LOGGER.error("Attempting to set oscillation on on a device that doesn't support it.")
+            _LOGGER.error("oscon: Attempting to set oscillation on on a device that doesn't support it.")
             raise ValueError("Attempting to set oscillation on on a device that doesn't support it.")
 
     @property
@@ -222,14 +221,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     @oscangle.setter
     def oscangle(self, value: int) -> None:
         "Set the oscillation angle. I assume 0 means it oscillates"
-        _LOGGER.debug("PyDreoHeater:oscangle.setter(%s) -> %d", self.name, value)
+        _LOGGER.debug("oscangle: oscangle.setter(%s) -> %d", self.name, value)
         if self._oscangle is not None:
             if self._oscangle == value:
-                _LOGGER.debug("PyDreoHeater:oscangle - value already %s, skipping command", value)
+                _LOGGER.debug("oscangle: oscangle - value already %s, skipping command", value)
                 return
             self._send_command(OSCANGLE_KEY, value)
         else:
-            _LOGGER.error("Attempting to set oscillation angle on a device that doesn't support it.")
+            _LOGGER.error("oscangle: Attempting to set oscillation angle on a device that doesn't support it.")
             return
 
     @property
@@ -241,14 +240,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     def ptcon(self, value: bool) -> None:
 
         """Enable or disable PTC"""
-        _LOGGER.debug("PyDreoHeater:ptcon.setter(%s) --> %s", self.name, value)
+        _LOGGER.debug("ptcon: ptcon.setter(%s) --> %s", self.name, value)
         if self._ptc_on is not None:
             if self._ptc_on == value:
-                _LOGGER.debug("PyDreoHeater:ptcon - value already %s, skipping command", value)
+                _LOGGER.debug("ptcon: ptcon - value already %s, skipping command", value)
                 return
             self._send_command(PTCON_KEY, value)
         else:
-            _LOGGER.error("Attempting to set PTC on on a device that doesn't support it.")
+            _LOGGER.error("ptcon: Attempting to set PTC on on a device that doesn't support it.")
             return
 
     @property
@@ -260,14 +259,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     def lighton(self, value: bool) -> None:
 
         """Enable or disable light"""
-        _LOGGER.debug("PyDreoHeater:lighton.setter(%s) --> %s", self.name, value)
+        _LOGGER.debug("lighton: lighton.setter(%s) --> %s", self.name, value)
         if self._light_on is not None:
             if self._light_on == (not value):
-                _LOGGER.debug("PyDreoHeater:lighton - value already %s, skipping command", value)
+                _LOGGER.debug("lighton: lighton - value already %s, skipping command", value)
                 return
             self._send_command(LIGHTON_KEY, not value)
         else:
-            _LOGGER.error("Attempting to set Display Auto Off on a device that doesn't support it.")
+            _LOGGER.error("lighton: Attempting to set Display Auto Off on a device that doesn't support it.")
             return
 
     @property
@@ -279,14 +278,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     def ctlstatus(self, value: bool) -> None:
 
         """Enable or disable ctlstatus"""
-        _LOGGER.debug("PyDreoHeater:ctlstatus.setter(%s) --> %s", self.name, value)
+        _LOGGER.debug("ctlstatus: ctlstatus.setter(%s) --> %s", self.name, value)
         if self._ctlstatus is not None:
             if self._ctlstatus == value:
-                _LOGGER.debug("PyDreoHeater:ctlstatus - value already %s, skipping command", value)
+                _LOGGER.debug("ctlstatus: ctlstatus - value already %s, skipping command", value)
                 return
             self._send_command(CTLSTATUS_KEY, value)
         else:
-            _LOGGER.error("Attempting to set ctlstatus on on a device that doesn't support it.")
+            _LOGGER.error("ctlstatus: Attempting to set ctlstatus on on a device that doesn't support it.")
             return
 
     @property
@@ -298,14 +297,14 @@ class PyDreoHeater(PyDreoBaseDevice):
     def childlockon(self, value: bool) -> None:
 
         """Enable or disable Child Lock"""
-        _LOGGER.debug("PyDreoHeater:childlockon.setter(%s) --> %s", self.name, value)
+        _LOGGER.debug("childlockon: childlockon.setter(%s) --> %s", self.name, value)
         if self._childlockon is not None:
             if self._childlockon == value:
-                _LOGGER.debug("PyDreoHeater:childlockon - value already %s, skipping command", value)
+                _LOGGER.debug("childlockon: childlockon - value already %s, skipping command", value)
                 return
             self._send_command(CHILDLOCKON_KEY, value)
         else:
-            _LOGGER.error("Attempting to set child lock on on a device that doesn't support it.")
+            _LOGGER.error("childlockon: Attempting to set child lock on on a device that doesn't support it.")
             return
 
     @property
@@ -318,16 +317,16 @@ class PyDreoHeater(PyDreoBaseDevice):
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
-        _LOGGER.debug("PyDreoHeater:panel_sound.setter(%s) --> %s", self.name, value)
+        _LOGGER.debug("panel_sound: panel_sound.setter(%s) --> %s", self.name, value)
 
         if self._mute_on is not None and value is not None:
             if self._mute_on == (not value):
-                _LOGGER.debug("PyDreoHeater:panel_sound - value already %s, skipping command", value)
+                _LOGGER.debug("panel_sound: panel_sound - value already %s, skipping command", value)
                 return
-            _LOGGER.debug("Setting _muteon to %s", not value)
+            _LOGGER.debug("panel_sound: Setting _muteon to %s", not value)
             self._send_command(MUTEON_KEY, not value)
         else:
-            _LOGGER.error("Attempting to set panel_sound on a device that doesn't support.")
+            _LOGGER.error("panel_sound: Attempting to set panel_sound on a device that doesn't support.")
             return
 
 
@@ -338,7 +337,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         _LOGGER.debug("update_state: %s", state)
         self._htalevel = self.get_state_update_value(state, HTALEVEL_KEY)
         if self._htalevel is None:
-            _LOGGER.error("Unable to get heat level from state. Check debug logs for more information.")
+            _LOGGER.error("update_state: Unable to get heat level from state. Check debug logs for more information.")
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._mode = self.get_state_update_value(state, MODE_KEY)
@@ -362,7 +361,7 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoHeater:handle_server_update(%s): %s", self.name, message)
+        _LOGGER.debug("handle_server_update: handle_server_update(%s): %s", self.name, message)
 
         val_htalevel = self.get_server_update_key_value(message, HTALEVEL_KEY)
         if isinstance(val_htalevel, int):

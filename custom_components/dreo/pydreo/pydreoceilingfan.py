@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     FANON_KEY,
     LIGHTON_KEY,
     WINDLEVEL_KEY,
@@ -21,7 +20,7 @@ from .constant import (
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -93,17 +92,17 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
         if (len(preset_modes) == 0):
-            _LOGGER.debug("PyDreoFan:No preset modes detected")
+            _LOGGER.debug("parse_preset_modes: No preset modes detected")
             preset_modes = None
-        _LOGGER.debug("PyDreoFan:Detected preset modes - %s", preset_modes)
+        _LOGGER.debug("parse_preset_modes: Detected preset modes - %s", preset_modes)
         return preset_modes
 
     @PyDreoFanBase.is_on.setter
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
-        _LOGGER.debug("PyDreoFan:is_on.setter - %s", value)
+        _LOGGER.debug("is_on: is_on.setter - %s", value)
         if self._is_on == value:
-            _LOGGER.debug("PyDreoCeilingFan:is_on - value already %s, skipping command", value)
+            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
             return
         self._send_command(FANON_KEY, value)
 
@@ -115,12 +114,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
     @light_on.setter
     def light_on(self, value: bool):
         """Set if the fan is on or off"""
-        _LOGGER.debug("PyDreoCeilingFan:light_on.setter - %s", value)
+        _LOGGER.debug("light_on: light_on.setter - %s", value)
         if (self._light_on is None):
-            _LOGGER.error("Light control not supported by this fan model.")
+            _LOGGER.error("light_on: Light control not supported by this fan model.")
             return
         if self._light_on == value:
-            _LOGGER.debug("PyDreoCeilingFan:light_on - value already %s, skipping command", value)
+            _LOGGER.debug("light_on: light_on - value already %s, skipping command", value)
             return
         self._send_command(LIGHTON_KEY, value)
 
@@ -140,12 +139,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
     @brightness.setter
     def brightness(self, value: int):
         """Set the brightness of the light on the fan."""
-        _LOGGER.debug("PyDreoCeilingFan:brightness.setter - %s", value)
+        _LOGGER.debug("brightness: brightness.setter - %s", value)
         if (self._brightness is None):
-            _LOGGER.error("Brightness not supported by this fan model.")
+            _LOGGER.error("brightness: Brightness not supported by this fan model.")
             return
         if self._brightness == value:
-            _LOGGER.debug("PyDreoCeilingFan:brightness - value already %s, skipping command", value)
+            _LOGGER.debug("brightness: brightness - value already %s, skipping command", value)
             return
         self._send_command(BRIGHTNESS_KEY, value)
 
@@ -157,12 +156,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
     @color_temperature.setter
     def color_temperature(self, value: int):
         """Set the color temperature of the light on the fan."""
-        _LOGGER.debug("PyDreoCeilingFan:color_temperature.setter - %s", value)
+        _LOGGER.debug("color_temperature: color_temperature.setter - %s", value)
         if (self._color_temp is None):
-            _LOGGER.error("Color temperature not supported by this fan model.")
+            _LOGGER.error("color_temperature: Color temperature not supported by this fan model.")
             return
         if self._color_temp == value:
-            _LOGGER.debug("PyDreoCeilingFan:color_temperature - value already %s, skipping command", value)
+            _LOGGER.debug("color_temperature: color_temperature - value already %s, skipping command", value)
             return
         self._send_command(COLORTEMP_KEY, value)        
 
@@ -174,12 +173,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
     @atm_light_on.setter
     def atm_light_on(self, value: bool):
         """Set if the atmosphere light is on or off"""
-        _LOGGER.debug("PyDreoCeilingFan:atm_light_on.setter - %s", value)
+        _LOGGER.debug("atm_light_on: atm_light_on.setter - %s", value)
         if (self._atm_light_on is None):
-            _LOGGER.error("Atmosphere light not supported by this fan model.")
+            _LOGGER.error("atm_light_on: Atmosphere light not supported by this fan model.")
             return
         if self._atm_light_on == value:
-            _LOGGER.debug("PyDreoCeilingFan:atm_light_on - value already %s, skipping command", value)
+            _LOGGER.debug("atm_light_on: atm_light_on - value already %s, skipping command", value)
             return
         self._send_command(ATMON_KEY, value)
 
@@ -191,14 +190,14 @@ class PyDreoCeilingFan(PyDreoFanBase):
     @atm_brightness.setter
     def atm_brightness(self, value: int):
         """Set the brightness of the atmosphere light (1-5 scale)."""
-        _LOGGER.debug("PyDreoCeilingFan:atm_brightness.setter - %s", value)
+        _LOGGER.debug("atm_brightness: atm_brightness.setter - %s", value)
         if (self._atm_brightness is None):
-            _LOGGER.error("Atmosphere brightness not supported by this fan model.")
+            _LOGGER.error("atm_brightness: Atmosphere brightness not supported by this fan model.")
             return
         # Ensure value is in valid range
         brightness = max(1, min(5, value))
         if self._atm_brightness == brightness:
-            _LOGGER.debug("PyDreoCeilingFan:atm_brightness - value already %s, skipping command", brightness)
+            _LOGGER.debug("atm_brightness: atm_brightness - value already %s, skipping command", brightness)
             return
         self._send_command(ATMBRI_KEY, brightness)
 
@@ -216,12 +215,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
         # Clamp RGB values and pack into 24-bit integer
         r_int, g_int, b_int = self._clamp_rgb_tuple(rgb)
         color_value = self._pack_rgb_to_int((r_int, g_int, b_int))
-        _LOGGER.debug("PyDreoCeilingFan:atm_color_rgb.setter - RGB(%d,%d,%d) -> %d", r_int, g_int, b_int, color_value)
+        _LOGGER.debug("atm_color_rgb: atm_color_rgb.setter - RGB(%d,%d,%d) -> %d", r_int, g_int, b_int, color_value)
         if (self._atm_color is None):
-            _LOGGER.error("Atmosphere color not supported by this fan model.")
+            _LOGGER.error("atm_color_rgb: Atmosphere color not supported by this fan model.")
             return
         if self._atm_color == color_value:
-            _LOGGER.debug("PyDreoCeilingFan:atm_color_rgb - value already %s, skipping command", color_value)
+            _LOGGER.debug("atm_color_rgb: atm_color_rgb - value already %s, skipping command", color_value)
             return
         self._send_command(ATMCOLOR_KEY, color_value)
 
@@ -232,12 +231,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
     
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        _LOGGER.debug("PyDreoFan:update_state")
+        _LOGGER.debug("update_state: Processing state")
         super().update_state(state)
 
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
         if self._fan_speed is None:
-            _LOGGER.error("Unable to get fan speed from state. Check debug logs for more information.")
+            _LOGGER.error("update_state: Unable to get fan speed from state. Check debug logs for more information.")
 
         self._is_on = self.get_state_update_value(state, FANON_KEY)
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
@@ -251,7 +250,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoCeilingFan:handle_server_update")
+        _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
 
         val_power_on = self.get_server_update_key_value(message, FANON_KEY)
@@ -293,13 +292,13 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if val_poweron is False:
             self._is_on = False
             self._light_on = False
-            _LOGGER.debug("PyDreoCeilingFan: Device powered off - fan and light off")
+            _LOGGER.debug("_handle_power_state_update: Device powered off - fan and light off")
             
         # Handle fanon: True/False = specific fan motor control
         val_fan_on = self.get_server_update_key_value(message, FANON_KEY)
         if isinstance(val_fan_on, bool):
             self._is_on = val_fan_on
-            _LOGGER.debug("PyDreoCeilingFan: Fan state updated from fanon: %s", val_fan_on)
+            _LOGGER.debug("_handle_power_state_update: Fan state updated from fanon: %s", val_fan_on)
 
     def is_feature_supported(self, feature: str) -> bool:
         """Check if this ceiling fan supports a specific feature"""

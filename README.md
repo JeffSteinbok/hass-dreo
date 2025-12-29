@@ -52,6 +52,19 @@ This integration supports the following device types:
 
 **[Space Heater Documentation →](HEATERS.md)** - Learn about heater-specific features, thermostat controls, and the 24-hour remote control timeout.
 
+### Supported Entity Types
+
+Depending on your device model and capabilities, the integration creates the following Home Assistant entities:
+
+- **Fan** - Primary fan control (speed, oscillation, preset modes)
+- **Climate** - For heaters and air conditioners (temperature control, modes)
+- **Humidifier** - For humidifiers and dehumidifiers
+- **Light** - Display lights and main lights (on/off, brightness, color temperature when supported)
+- **RGB Light** - Atmosphere/ambient lights for ceiling fans (RGB color control)
+- **Switch** - Individual device features (child lock, oscillation, mute, etc.)
+- **Sensor** - Temperature, humidity, and other sensor readings
+- **Number** - Adjustable numeric settings
+
 ## Installation
 
 ### HACS (Recommended)
@@ -70,9 +83,6 @@ Dreo is now part of the default [HACS](https://hacs.xyz) store. If you're not in
 Copy the `dreo` directory into your `/config/custom_components` directory, then restart your HomeAssistant Core.
 
 ## Initial Configuration
-
-> [!IMPORTANT]
-> If you used the very early version of this that required editing `configuration.yaml`, you will need to do a one-time reconfiguration. Delete the configuration entries you added and then go through the configuration flow within HomeAssistant.
 
 1. In HA, open `Settings`
 2. Click `Devices & services`
@@ -108,6 +118,9 @@ The device will be removed from Home Assistant but will remain in your Dreo acco
 
 ## Debugging
 
+> [!IMPORTANT]
+> This has changed in v1.6.3 to use HA/Python standard loggers.  Please review the below.
+
 Use the **Diagnostics** feature in HomeAssistant to get diagnostics from the integration. Sensitive info should be redacted automatically.
 
 In your `configuration.yaml` file, add this:
@@ -115,8 +128,7 @@ In your `configuration.yaml` file, add this:
 ```
 logger:
     logs:
-        dreo: debug
-        pydreo: debug
+        custom_compoments.dreo: debug
 ```
 
 Now restart HomeAssistant. Perform the actions needed to generate some debugging info.

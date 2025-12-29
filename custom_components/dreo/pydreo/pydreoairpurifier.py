@@ -3,14 +3,10 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import (
-    LOGGER_NAME
-)
-
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -21,7 +17,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
-        _LOGGER.debug("PyDreoAirPurifier:__init__")
+        _LOGGER.debug("__init__: __init__")
         super().__init__(device_definition, details, dreo)
 
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
@@ -53,9 +49,9 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
         if (len(preset_modes) == 0):
-            _LOGGER.debug("PyDreoAirPurifier:No preset modes detected")
+            _LOGGER.debug("parse_preset_modes: No preset modes detected")
             preset_modes = None
-        _LOGGER.debug("PyDreoAirPurifier:Detected preset modes - %s", preset_modes)
+        _LOGGER.debug("parse_preset_modes: Detected preset modes - %s", preset_modes)
         return preset_modes
 
     @property
@@ -68,10 +64,10 @@ class PyDreoAirPurifier(PyDreoFanBase):
     
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        _LOGGER.debug("PyDreoAirPurifier:update_state")
+        _LOGGER.debug("update_state: update_state")
         super().update_state(state)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("PyDreoAirPurifier:handle_server_update")
+        _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)

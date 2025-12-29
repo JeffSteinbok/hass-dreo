@@ -20,7 +20,6 @@ from .pydreo import (
 from .pydreo.constant import DreoHeaterMode
 
 from .const import (
-    LOGGER,
     DOMAIN,
 )
 
@@ -28,7 +27,7 @@ from homeassistant.components.climate import (
     PRESET_ECO
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 # Heat level preset modes
 PRESET_H1 = "H1"
@@ -180,25 +179,25 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         if self.device.poweron and self.device.mode == DreoHeaterMode.HOTAIR:
             if self.device.htalevel is not None and self.device.htalevel in HEAT_LEVEL_TO_PRESET:
                 preset = HEAT_LEVEL_TO_PRESET[self.device.htalevel]
-                _LOGGER.debug("DreoHeaterHA:preset_mode(%s): %s (htalevel: %s)", 
+                _LOGGER.debug("preset_mode: preset_mode(%s): %s (htalevel: %s)", 
                               self.device.name, preset, self.device.htalevel)
                 return preset
         
         # Map device mode to preset if it has one, otherwise PRESET_NONE
         device_mode = DreoHeaterMode(self.device.mode) if self.device.poweron else None
         preset = DREO_HEATER_MODE_TO_PRESET.get(device_mode, PRESET_NONE)
-        _LOGGER.debug("DreoHeaterHA:preset_mode(%s): %s (device.mode: %s)", 
+        _LOGGER.debug("preset_mode: preset_mode(%s): %s (device.mode: %s)", 
                       self.device.name, preset, self.device.mode)
         return preset
     
     def set_preset_mode(self, preset_mode: str) -> None:
         """Set new preset mode."""
-        _LOGGER.debug("DreoHeaterHA:set_preset_mode(%s) --> %s", self.device.name, preset_mode)
+        _LOGGER.debug("set_preset_mode: set_preset_mode(%s) --> %s", self.device.name, preset_mode)
         
         # Check if this is a heat level preset (H1/H2/H3)
         if preset_mode in PRESET_TO_HEAT_LEVEL:
             heat_level = PRESET_TO_HEAT_LEVEL[preset_mode]
-            _LOGGER.debug("DreoHeaterHA:set_preset_mode(%s) setting heat level to %s", 
+            _LOGGER.debug("set_preset_mode: set_preset_mode(%s) setting heat level to %s", 
                           self.device.name, heat_level)
             # Set heat level and ensure we're in HEAT mode
             self.device.poweron = True
@@ -215,7 +214,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             self.device.mode = dreo_mode
             self.schedule_update_ha_state()
         elif preset_mode != PRESET_NONE:
-            _LOGGER.warning("DreoHeaterHA:set_preset_mode(%s) invalid preset: %s",
+            _LOGGER.warning("set_preset_mode: set_preset_mode(%s) invalid preset: %s",
                           self.device.name, preset_mode)
 
     @property
@@ -236,7 +235,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
-        _LOGGER.debug("DreoHeaterHA:turn_on(%s)", self.device.name)
+        _LOGGER.debug("turn_on: turn_on(%s)", self.device.name)
         self.device.poweron = True
         # Use preset if ECO, otherwise map HVAC mode to Dreo mode
         current_preset = self.preset_mode or PRESET_NONE
@@ -251,20 +250,20 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
-        _LOGGER.debug("DreoHeaterHA:turn_off(%s)", self.device.name)
+        _LOGGER.debug("turn_off: turn_off(%s)", self.device.name)
         self.device.poweron = False
         self._last_hvac_mode = self._attr_hvac_mode
 
     @oscon.setter
     def oscon(self, oscon: bool) -> None:
         """Oscillate the fan."""
-        _LOGGER.debug("DreoHeaterHA::oscon(%s) --> %s", self.device.name, oscon)
+        _LOGGER.debug("oscon: :oscon(%s) --> %s", self.device.name, oscon)
         self.device.oscon = oscon
 
     @oscangle.setter
     def oscangle(self, oscangle: str) -> None:
         """Set the oscillation angle"""
-        _LOGGER.debug("DreoHeaterHA::oscangle(%s) -> %s", self.device.name, oscangle)
+        _LOGGER.debug("oscangle: :oscangle(%s) -> %s", self.device.name, oscangle)
         self.device.oscangle = OSCANGLE_ANGLE_MAP[oscangle]
 
     def panel_sound(self, panel_sound: bool) -> None:
@@ -274,7 +273,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         self.device.muteon = not panel_sound
 
     def muteon(self, muteon: bool) -> None:
-        _LOGGER.debug("DreoHeaterHA::muteon(%s) --> %s", self.device.name, muteon)
+        _LOGGER.debug("muteon: :muteon(%s) --> %s", self.device.name, muteon)
         self.device.muteon = muteon
 
     ### Implementation of climate methods
@@ -316,7 +315,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def hvac_mode(self) -> HVACMode:
         # ensure hvac_mode is actually in sync with the device's mode
         self._attr_hvac_mode = DREO_HEATER_MODE_TO_HVAC_MODE.get(DreoHeaterMode(self.device.mode), HVACMode.OFF) if self.device.poweron else HVACMode.OFF
-        _LOGGER.debug("DreoHeaterHA:hvac_mode(%s): %s (device.mode: %s)", 
+        _LOGGER.debug("hvac_mode: hvac_mode(%s): %s (device.mode: %s)", 
                       self.device.name, 
                       self._attr_hvac_mode,
                       self.device.mode)
@@ -329,11 +328,11 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     def set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set new target hvac mode."""
-        _LOGGER.debug("DreoHeaterHA:set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
+        _LOGGER.debug("set_hvac_mode: set_hvac_mode(%s) %s --> %s", self.device.name, self._last_hvac_mode, hvac_mode)
         
         # Validate that the requested HVAC mode is supported
         if hvac_mode not in self._attr_hvac_modes:
-            _LOGGER.error("DreoHeaterHA:set_hvac_mode(%s) - Requested HVAC mode %s is not supported. Supported modes: %s",
+            _LOGGER.error("set_hvac_mode: set_hvac_mode(%s) - Requested HVAC mode %s is not supported. Supported modes: %s",
                           self.device.name, hvac_mode, self._attr_hvac_modes)
             return
         

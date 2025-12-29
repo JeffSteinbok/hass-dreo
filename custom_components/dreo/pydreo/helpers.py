@@ -8,9 +8,7 @@ from typing import Optional, Union
 import re
 import requests
 
-from .constant import LOGGER_NAME
-
-_LOGGER = logging.getLogger(LOGGER_NAME)
+_LOGGER = logging.getLogger(__name__)
 
 API_TIMEOUT = 30
 
@@ -118,15 +116,15 @@ class Helpers:
         status_code = None
         r = None # Response object
         try:
-            _LOGGER.debug("=======call_api=============================")
-            _LOGGER.debug("[%s] calling '%s' api", method, api)
-            _LOGGER.debug("API call URL: \n  %s%s", url, api)
+            _LOGGER.debug("call_api: =======call_api=============================")
+            _LOGGER.debug("call_api: [%s] calling '%s' api", method, api)
+            _LOGGER.debug("call_api: API call URL: \n  %s%s", url, api)
             _LOGGER.debug(
-                "API call headers: \n  %s", Helpers.redactor(
+                "call_api: API call headers: \n  %s", Helpers.redactor(
                     json.dumps(headers))
             )
             _LOGGER.debug(
-                "API call json: \n  %s", Helpers.redactor(
+                "call_api: API call json: \n  %s", Helpers.redactor(
                     json.dumps(json_object))
             )
             if method.lower() == "get":
@@ -149,18 +147,18 @@ class Helpers:
                     url + api, json=json_object, headers=headers, timeout=API_TIMEOUT
                 )
         except requests.exceptions.RequestException as exception:
-            _LOGGER.debug(exception)
+            _LOGGER.debug("call_api: %s", exception)
         else:
             if r.status_code == 200:
                 status_code = 200
                 if r.content:
                     response = r.json()
                     _LOGGER.debug(
-                        "API response: \n\n  %s \n ",
+                        "call_api: API response: \n\n  %s \n ",
                         Helpers.redactor(json.dumps(response)),
                     )
             else:
-                _LOGGER.debug("Unable to fetch %s%s", url, api)
+                _LOGGER.debug("call_api: Unable to fetch %s%s", url, api)
         return response, status_code
 
     @staticmethod

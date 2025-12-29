@@ -13,11 +13,10 @@ from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreoDehumidifier
 
 from .const import (
-    LOGGER,
-    DOMAIN
+    DOMAIN,
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 # Implementation of the Dehumidifier
 class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
@@ -99,12 +98,12 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     
     def turn_on(self, **kwargs: any) -> None:
         """Turn the device on."""
-        _LOGGER.debug("DreoDehumidifierHA:turn_on(%s)", self.device.name)
+        _LOGGER.debug("turn_on: turn_on(%s)", self.device.name)
         self.device.is_on = True
 
     def turn_off(self, **kwargs: any) -> None:
         """Turn the device off."""
-        _LOGGER.debug("DreoDehumidifierHA:turn_off(%s)", self.device.name)
+        _LOGGER.debug("turn_off: turn_off(%s)", self.device.name)
         self.device.is_on = False
 
     def set_mode(self, mode: str) -> None:

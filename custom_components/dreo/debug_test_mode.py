@@ -5,12 +5,11 @@ import os
 import glob
 
 from .const import (
-    LOGGER,
     DEBUG_TEST_MODE_DIRECTORY_NAME,
     DEBUG_TEST_MODE_DEVICES_FILE_NAME
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_debug_test_mode_payload(base_dir: str) -> dict:
@@ -65,7 +64,7 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
             continue
 
 
-        _LOGGER.debug("Loaded data for serial number %s: %s", serial_number, device_state)
+        _LOGGER.debug("get_debug_test_mode_payload: Loaded data for serial number %s: %s", serial_number, device_state)
         debug_test_mode_payload[serial_number] = device_state
 
         # Load all device setting files for this serial number

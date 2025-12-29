@@ -38,6 +38,8 @@ This is an unofficial Home Assistant custom integration for Dreo brand smart dev
 - Add docstrings for public classes and methods
 - Follow Home Assistant's async patterns (use `async def` for async operations)
 - Use `_LOGGER.debug()`, `_LOGGER.info()`, `_LOGGER.warning()`, `_LOGGER.error()` for logging
+  - Initialize logger with: `_LOGGER = logging.getLogger(__name__)`
+  - This follows the standard Python logging pattern and provides proper module hierarchy
 - Device classes should inherit from `DreoBaseDevice`
 
 ### Naming Conventions
@@ -91,7 +93,9 @@ The integration supports multiple device types, each mapped to Home Assistant pl
 - **Fans** → `fan` platform
 - **Heaters** → `climate` platform
 - **Humidifiers/Dehumidifiers** → `humidifier` platform
-- **Lights** (device displays) → `light` platform
+- **Lights** (device displays, main lights) → `light` platform
+  - `DreoLightHA` - Standard lights with brightness and color temperature support
+  - `DreoRGBLightHA` - RGB atmosphere lights for ceiling fans (RGB color control)
 - **Switches** (device features) → `switch` platform
 - **Sensors** (temperature, humidity) → `sensor` platform
 - **Numbers** (adjustable values) → `number` platform

@@ -16,12 +16,11 @@ from .pydreo.constant import DreoDeviceType
 from .dreobasedevice import DreoBaseDeviceHA
 
 from .const import (
-    LOGGER,
     DOMAIN,
     PYDREO_MANAGER
 )
 
-_LOGGER = logging.getLogger(LOGGER)
+_LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class DreoNumberEntityDescription(NumberEntityDescription):
@@ -134,18 +133,18 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
     number_ha_collection : list[DreoNumberHA] = []
     
     for pydreo_device in pydreo_devices:
-        _LOGGER.debug("Number:get_entries: Adding Numbers for %s", pydreo_device.name)
+        _LOGGER.debug("get_entries: Adding Numbers for %s", pydreo_device.name)
         number_keys : list[str] = []
         
         for number_definition in NUMBERS:
-            _LOGGER.debug("Number:get_entries: checking exists fn: %s on %s", number_definition.key, pydreo_device.name)
+            _LOGGER.debug("get_entries: checking exists fn: %s on %s", number_definition.key, pydreo_device.name)
 
             if number_definition.exists_fn(pydreo_device):
                 if (number_definition.key in number_keys):
-                    _LOGGER.error("Number:get_entries: Duplicate number key %s", number_definition.key)
+                    _LOGGER.error("get_entries: Duplicate number key %s", number_definition.key)
                     continue
 
-                _LOGGER.debug("Number:get_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
+                _LOGGER.debug("get_entries: Adding Number %s for %s", number_definition.key, number_definition.attr_name)
                 number_keys.append(number_definition.key)
 
                 device_range = get_device_range(pydreo_device, number_definition)
@@ -173,12 +172,12 @@ def get_device_range(device: PyDreoBaseDevice, number_definition: DreoNumberEnti
 
     range_from_device = getattr(device, range_name, None)
     if range_from_device is not None:
-        _LOGGER.debug("Number:get_device_range: range %s from device is %s", range_name, range_from_device)
+        _LOGGER.debug("get_device_range: range %s from device is %s", range_name, range_from_device)
         return range_from_device
 
     range_from_device_definition = getattr(device.device_definition.device_ranges, range_name, None)
     if range_from_device_definition is not None:
-        _LOGGER.debug("Number:get_device_range: range %s from device definition is %s", range_name,
+        _LOGGER.debug("get_device_range: range %s from device definition is %s", range_name,
                       range_from_device_definition)
         return range_from_device_definition
 
@@ -190,7 +189,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Dreo Number platform."""
-    _LOGGER.info("Starting Dreo Number Platform")
+    _LOGGER.info("get_device_range: Starting Dreo Number Platform")
 
     pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
