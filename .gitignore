@@ -8,6 +8,9 @@ testScripts/secrets/
 !testScripts/secrets/.gitignore
 !testScripts/secrets/credentials.example.py
 
+# Test scripts temp directory (generated E2E test data)
+testScripts/temp/
+
 # Distribution / packaging
 .Python
 build/

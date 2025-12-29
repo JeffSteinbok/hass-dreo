@@ -6,8 +6,10 @@ import shutil
 from pathlib import Path
 
 # Paths
-API_RESPONSES_DIR = Path("tests/pydreo/api_responses")
-E2E_TEST_DATA_DIR = Path("custom_components/dreo/e2e_test_data")
+SCRIPT_DIR = Path(__file__).parent.absolute()
+PROJECT_ROOT = SCRIPT_DIR.parent
+API_RESPONSES_DIR = PROJECT_ROOT / "tests" / "pydreo" / "api_responses"
+E2E_TEST_DATA_DIR = SCRIPT_DIR / "temp" / "e2e_test_data"
 
 def main():
     """Generate E2E test data."""
