@@ -5,7 +5,6 @@ from enum import IntEnum
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     TEMPERATURE_KEY,
     TARGET_TEMPERATURE_KEY,
     SLEEPTEMPOFFSET_KEY,
@@ -350,7 +349,6 @@ class PyDreoAC(PyDreoBaseDevice):
         """Process the state dictionary from the REST API."""
         super().update_state(state)  # handles _is_on
 
-        _LOGGER.debug("update_state: update_state: %s", self.name, state)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._target_temperature = self.get_state_update_value(state, TARGET_TEMPERATURE_KEY)
         
@@ -401,7 +399,7 @@ class PyDreoAC(PyDreoBaseDevice):
         # explicitly setting that to off.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, int):
-            _LOGGER.debug("handle_server_update: handle_server_update - mode: %s --> %s", 
+            _LOGGER.debug("handle_server_update: %s - mode: %s --> %s", 
                           self, 
                           self._mode, 
                           val_mode)

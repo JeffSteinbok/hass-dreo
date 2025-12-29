@@ -3,10 +3,6 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import (
-    LOGGER_NAME
-)
-
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
 

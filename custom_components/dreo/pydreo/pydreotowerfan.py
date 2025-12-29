@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     SHAKEHORIZON_KEY,
     SHAKEHORIZONANGLE_KEY,
     OSCILLATION_KEY,

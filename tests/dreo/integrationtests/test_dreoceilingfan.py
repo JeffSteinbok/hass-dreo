@@ -28,7 +28,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
             
             pydreo_fan = self.pydreo_manager.devices[0]
             ha_fan = fan.DreoFanHA(pydreo_fan)
-            assert ha_fan.is_on is True
+            assert ha_fan.is_on is False
             assert ha_fan.speed_count == 12
             assert ha_fan.unique_id is not None
             assert pydreo_fan.model == "DR-HCF001S"

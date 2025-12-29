@@ -13,8 +13,7 @@ from .pydreo import PyDreo
 from .haimports import * # pylint: disable=W0401,W0614
 from .const import (
     DOMAIN,
-    PYDREO_MANAGER,
-    LOGGER
+    PYDREO_MANAGER
 )
 
 KEYS_TO_REDACT = {

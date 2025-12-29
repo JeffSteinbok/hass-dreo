@@ -4,7 +4,6 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     MODE_KEY,
     MUTEON_KEY,
     POWERON_KEY,
@@ -248,7 +247,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         """Process the state dictionary from the REST API."""
         super().update_state(state)
 
-        _LOGGER.debug("update_state: update_state: %s", self.name, state)
+        _LOGGER.debug("update_state: %s - %s", self.name, state)
         self._mode = self.get_state_update_value(state, MODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)

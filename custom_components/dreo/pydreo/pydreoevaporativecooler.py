@@ -8,7 +8,6 @@ from .constant import (
     CHILDLOCKON_KEY,
     HORIZONTAL_OSCILLATION_KEY,
     HUMIDITY_KEY,
-    LOGGER_NAME,
     TEMPOFFSET_KEY,
 )
 

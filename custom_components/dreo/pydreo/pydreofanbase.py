@@ -3,7 +3,6 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    LOGGER_NAME,
     POWERON_KEY,
     FANON_KEY,
     WINDLEVEL_KEY,

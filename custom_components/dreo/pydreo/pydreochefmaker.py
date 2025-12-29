@@ -3,7 +3,6 @@ import logging
 from typing import Dict, TYPE_CHECKING
 
 from .constant import (
-    LOGGER_NAME,
     POWERON_KEY,
 )
 from .models import DreoDeviceDetails
