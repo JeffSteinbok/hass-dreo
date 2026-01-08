@@ -10,6 +10,8 @@ from .constant import (
     POWERON_KEY,
     HUMIDITY_KEY,
     TARGET_AUTO_HUMIDITY_KEY,
+    TARGET_SLEEP_HUMIDITY_KEY,
+    FOG_LEVEL_KEY,
     RGB_LEVEL,
     SCHEDULE_ENABLE     
 )
@@ -69,10 +71,12 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._mute_on = None
         self._humidity = None
         self._target_humidity = None
+        self._sleep_target_humidity = None
         self._wrong = None
         self._worktime = None
         self._rgblevel = None
         self._scheon = None
+        self._fog_level = None
         
     def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -133,6 +137,52 @@ class PyDreoHumidifier(PyDreoBaseDevice):
             return
         self._target_humidity = value
         self._send_command(TARGET_AUTO_HUMIDITY_KEY, value)
+
+    @property
+    def sleep_target_humidity(self):
+        """Get the sleep target humidity."""
+        return self._sleep_target_humidity
+
+    @sleep_target_humidity.setter
+    def sleep_target_humidity(self, value: int) -> None:
+        """Set the sleep target humidity."""
+        _LOGGER.debug(
+            "sleep_target_humidity: sleep_target_humidity.setter(%s) %s --> %s",
+            self,
+            self._sleep_target_humidity,
+            value,
+        )
+        if self._sleep_target_humidity == value:
+            _LOGGER.debug(
+                "sleep_target_humidity: sleep_target_humidity - value already %s, skipping command",
+                value,
+            )
+            return
+        self._sleep_target_humidity = value
+        self._send_command(TARGET_SLEEP_HUMIDITY_KEY, value)
+
+    @property
+    def fog_level(self):
+        """Get the manual fog level."""
+        return self._fog_level
+
+    @fog_level.setter
+    def fog_level(self, value: int) -> None:
+        """Set the manual fog level."""
+        _LOGGER.debug(
+            "fog_level: fog_level.setter(%s) %s --> %s",
+            self,
+            self._fog_level,
+            value,
+        )
+        if self._fog_level == value:
+            _LOGGER.debug(
+                "fog_level: fog_level - value already %s, skipping command",
+                value,
+            )
+            return
+        self._fog_level = value
+        self._send_command(FOG_LEVEL_KEY, value)
 
     @property
     def panel_sound(self) -> bool:
@@ -212,10 +262,12 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_AUTO_HUMIDITY_KEY)
+        self._sleep_target_humidity = self.get_state_update_value(state, TARGET_SLEEP_HUMIDITY_KEY)
         self._wrong = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
         self._worktime = self.get_state_update_value(state, WORKTIME_KEY)
         self._rgblevel = self.get_state_update_value_mapped(state, RGB_LEVEL, RGB_MAP)
         self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
+        self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
         
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -261,3 +313,19 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         if isinstance(val_target_humidity, int):
             self._target_humidity = val_target_humidity
             _LOGGER.debug("handle_server_update: handle_server_update - target_humidity is %s", self._target_humidity)
+
+        val_sleep_target_humidity = self.get_server_update_key_value(message, TARGET_SLEEP_HUMIDITY_KEY)
+        if isinstance(val_sleep_target_humidity, int):
+            self._sleep_target_humidity = val_sleep_target_humidity
+            _LOGGER.debug(
+                "handle_server_update: handle_server_update - sleep_target_humidity is %s",
+                self._sleep_target_humidity,
+            )
+
+        val_fog_level = self.get_server_update_key_value(message, FOG_LEVEL_KEY)
+        if isinstance(val_fog_level, int):
+            self._fog_level = val_fog_level
+            _LOGGER.debug(
+                "handle_server_update: handle_server_update - fog_level is %s",
+                self._fog_level,
+            )
