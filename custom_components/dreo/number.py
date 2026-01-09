@@ -125,6 +125,26 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         min_value=40,
         max_value=90,
         exists_fn=lambda device: device.type != DreoDeviceType.HUMIDIFIER and device.is_feature_supported("target_humidity"),
+    ),
+    DreoNumberEntityDescription(
+        key="Fog Level",
+        translation_key="fog_level",
+        attr_name="fog_level",
+        icon="mdi:weather-fog",
+        min_value=0,
+        max_value=6,
+        step=1,
+        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("fog_level"),
+    ),
+    DreoNumberEntityDescription(
+        key="Sleep Target Humidity",
+        translation_key="sleep_target_humidity",
+        attr_name="sleep_target_humidity",
+        icon="mdi:water-percent",
+        min_value=30,
+        max_value=90,
+        step=1,
+        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("sleep_target_humidity"),
     )
 )
 
@@ -232,4 +252,7 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-m
         return getattr(self.device, self.entity_description.attr_name)
 
     def set_native_value(self, value: float) -> None:
+        # Humidifier controls expect integer values.
+        if self.entity_description.attr_name in {"fog_level", "sleep_target_humidity"}:
+            value = int(value)
         return setattr(self.device, self.entity_description.attr_name, value)
