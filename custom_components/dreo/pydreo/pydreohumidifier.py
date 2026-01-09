@@ -13,6 +13,7 @@ from .constant import (
     TARGET_SLEEP_HUMIDITY_KEY,
     FOG_LEVEL_KEY,
     RGB_LEVEL,
+    LED_LEVEL_KEY,
     SCHEDULE_ENABLE     
 )
 
@@ -77,6 +78,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._rgblevel = None
         self._scheon = None
         self._fog_level = None
+        self._ledlevel = None
         
     def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -228,6 +230,42 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def rgblevel(self):
         """Return RGB Level to verify Light is ON/OFF """
         return self._rgblevel
+
+    @property
+    def display_light(self) -> bool | None:
+        """Return True if the display light is enabled."""
+        if self._ledlevel is None:
+            return None
+        return self._ledlevel > 0
+
+    @display_light.setter
+    def display_light(self, value: bool) -> None:
+        """Set the display light on/off via ledlevel."""
+        _LOGGER.debug("display_light: display_light.setter(%s) --> %s", self.name, value)
+        new_level = 2 if value else 0
+        if self._ledlevel == new_level:
+            _LOGGER.debug("display_light: display_light - value already %s, skipping command", value)
+            return
+        self._ledlevel = new_level
+        self._send_command(LED_LEVEL_KEY, new_level)
+
+    @property
+    def rgb_indicator(self) -> bool | None:
+        """Return True if the water level RGB indicator is enabled."""
+        if self._rgblevel is None:
+            return None
+        return self._rgblevel == LIGHT_ON
+
+    @rgb_indicator.setter
+    def rgb_indicator(self, value: bool) -> None:
+        """Set the water level RGB indicator on/off."""
+        _LOGGER.debug("rgb_indicator: rgb_indicator.setter(%s) --> %s", self.name, value)
+        new_level = LIGHT_ON if value else LIGHT_OFF
+        if self._rgblevel == new_level:
+            _LOGGER.debug("rgb_indicator: rgb_indicator - value already %s, skipping command", value)
+            return
+        self._rgblevel = new_level
+        self._send_command(RGB_LEVEL, RGB_MAP[new_level])
     
     @property
     def scheon(self):
@@ -268,6 +306,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._rgblevel = self.get_state_update_value_mapped(state, RGB_LEVEL, RGB_MAP)
         self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
         self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
+        self._ledlevel = self.get_state_update_value(state, LED_LEVEL_KEY)
         
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -295,6 +334,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         if isinstance(val_rgblevel, int):
             val_rgblevel = RGB_MAP[val_rgblevel]
             self._rgblevel = val_rgblevel 
+
+        val_ledlevel = self.get_server_update_key_value(message, LED_LEVEL_KEY)
+        if isinstance(val_ledlevel, int):
+            self._ledlevel = val_ledlevel
 
         val_scheon = self.get_server_update_key_value(message, SCHEDULE_ENABLE)
         if isinstance(val_scheon, bool):

@@ -54,6 +54,7 @@ ATMCOLOR_KEY = 'atmcolor'
 ATMBRI_KEY = 'atmbri'
 ATMMODE_KEY = 'atmmode'
 RGB_LEVEL = 'rgblevel'
+LED_LEVEL_KEY = "ledlevel"
 SCHEDULE_ENABLE = 'scheon'
 
 # Preferences Names
