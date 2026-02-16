@@ -150,3 +150,44 @@ class TestDreoHeaterHA(TestDeviceBase):
         supported_features_eco = test_heater.supported_features
         assert supported_features_eco & ClimateEntityFeature.TARGET_TEMPERATURE, \
             "TARGET_TEMPERATURE feature should be supported in ECO mode"
+
+    def test_set_temperature_in_eco_mode(self):
+        """Test that target temperature can be set when device is in ECO mode."""
+        # Create a heater device in ECO mode
+        mocked_pydreo_heater : PyDreoDeviceMock = self.create_mock_device(
+            name="WH517S Test Heater ECO", 
+            serial_number="123456", 
+            features={
+                "poweron": True,  # Device is ON
+                "temperature": 67,  # Current temperature
+                "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+                "htalevel": 3,
+                "ecolevel": 72,  # Initial target temperature
+                "mode": DreoHeaterMode.ECO,  # Mode is ECO
+            },
+            modes=[
+                DreoHeaterMode.COOLAIR,
+                DreoHeaterMode.HOTAIR,
+                DreoHeaterMode.ECO,
+                DreoHeaterMode.OFF,
+            ],
+            swing_modes=None
+        )
+        
+        test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
+        
+        # Verify device is in ECO mode
+        assert test_heater.is_on is True
+        assert test_heater.hvac_mode == HVACMode.HEAT  # ECO maps to HEAT
+        assert test_heater.preset_mode == PRESET_ECO
+        
+        # Verify target temperature is initially 72
+        assert test_heater.target_temperature == 72
+        
+        # Set a new target temperature
+        from homeassistant.components.climate import ATTR_TEMPERATURE
+        test_heater.set_temperature(**{ATTR_TEMPERATURE: 80})
+        
+        # Verify the target temperature was updated
+        assert mocked_pydreo_heater.ecolevel == 80
+        assert test_heater.target_temperature == 80
