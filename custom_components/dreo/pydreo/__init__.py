@@ -307,7 +307,8 @@ class PyDreo:  # pylint: disable=function-redefined
         response, status_code = self.call_dreo_api(DREO_API_LOGIN)
 
         if response is None:
-            _LOGGER.error("login: No response from Dreo API (status: %s). Check network connectivity and API endpoint.", status_code)
+            status_msg = f"status: {status_code}" if status_code else "no status code"
+            _LOGGER.error("login: No response from Dreo API (%s). Check network connectivity and API endpoint.", status_msg)
             return False
 
         if Helpers.code_check(response) and DATA_KEY in response:
