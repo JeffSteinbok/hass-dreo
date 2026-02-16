@@ -100,11 +100,13 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         """Turn the device on."""
         _LOGGER.debug("turn_on: turn_on(%s)", self.device.name)
         self.device.is_on = True
+        self.schedule_update_ha_state()
 
     def turn_off(self, **kwargs: any) -> None:
         """Turn the device off."""
         _LOGGER.debug("turn_off: turn_off(%s)", self.device.name)
         self.device.is_on = False
+        self.schedule_update_ha_state()
 
     def set_mode(self, mode: str) -> None:
         """Set the mode of the device."""
@@ -121,6 +123,7 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
             )
 
         self.device.mode = mode
+        self.schedule_update_ha_state()
 
     def set_humidity(self, humidity: float) -> None:
         """Set the target humidity level."""
@@ -128,6 +131,7 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
             "DreoDehumidifierHA:set_humidity(%s) --> %s", self.device.name, humidity
         )
         self.device.target_humidity = int(humidity)
+        self.schedule_update_ha_state()
 
 
     @property

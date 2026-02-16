@@ -144,4 +144,37 @@ class TestDreoHumidifier(IntegrationTestBase):
             
             self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
+    def test_HHM003S_mode_changes(self):  # pylint: disable=invalid-name
+        """Test that HHM003S (HM713S/813S) mode changes call schedule_update_ha_state."""
+        
+        self.get_devices_file_name = "get_devices_HHM003S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        
+        pydreo_humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+        ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
+        
+        # Mock _send_command to avoid transport errors
+        with patch.object(pydreo_humidifier, '_send_command'):
+            # Mock schedule_update_ha_state to verify it's called
+            with patch.object(ha_humidifier, 'schedule_update_ha_state') as mock_schedule:
+                # Test turn_on
+                ha_humidifier.turn_on()
+                mock_schedule.assert_called()
+                mock_schedule.reset_mock()
+                
+                # Test turn_off
+                ha_humidifier.turn_off()
+                mock_schedule.assert_called()
+                mock_schedule.reset_mock()
+                
+                # Test set_mode
+                ha_humidifier.set_mode('sleep')
+                mock_schedule.assert_called()
+                mock_schedule.reset_mock()
+                
+                # Test set_humidity
+                ha_humidifier.set_humidity(60)
+                mock_schedule.assert_called()
+
         
