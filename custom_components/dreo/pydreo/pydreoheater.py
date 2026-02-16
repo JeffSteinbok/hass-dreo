@@ -412,6 +412,11 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_ptc_on = self.get_server_update_key_value(message, PTCON_KEY)
         if isinstance(val_ptc_on, bool):
             self._ptc_on = val_ptc_on
+            # If PTC (heating element) is on, the device must be powered on
+            # This handles cases where the WebSocket update includes ptcon but not poweron
+            if val_ptc_on and not self._is_on:
+                _LOGGER.debug("handle_server_update: PTC turned on, inferring device is powered on")
+                self._is_on = True
 
         val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_light_on, bool):

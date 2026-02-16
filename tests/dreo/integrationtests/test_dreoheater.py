@@ -274,3 +274,36 @@ class TestDreoHeater(IntegrationTestBase):
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "hotair"} })
             assert heater_ha.hvac_mode == HVACMode.HEAT
+
+    def test_HSH009S_ptc_update_without_poweron(self):  # pylint: disable=invalid-name
+        """Test that when PTC turns on without explicit poweron update, the heater state is updated correctly."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            # Load a heater that is initially OFF
+            self.get_devices_file_name = "get_devices_HSH034S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater : PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.model == "DR-HSH034S"
+            
+            # Verify heater starts OFF
+            assert pydreo_heater.poweron is False
+            assert pydreo_heater.ptcon is False
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.hvac_mode == HVACMode.OFF
+            assert heater_ha.is_on is False
+
+            # Simulate external turn-on: PTC turns on without explicit poweron update
+            # This simulates what happens when user turns on heater via app or manually
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {PTCON_KEY: True} })
+            
+            # After PTC turns on, the heater should be considered ON
+            # This is the bug: PTC shows as On but heater shows as Off
+            assert pydreo_heater.ptcon is True, "PTC should be on after update"
+            
+            # The issue: poweron doesn't get updated when only PTC updates
+            # This assertion will FAIL with current code, demonstrating the bug
+            assert pydreo_heater.poweron is True, "Heater should be on when PTC is on"
+            assert heater_ha.is_on is True, "HA entity should show heater as on"
+            assert heater_ha.hvac_mode != HVACMode.OFF, "HVAC mode should not be OFF when PTC is on"
