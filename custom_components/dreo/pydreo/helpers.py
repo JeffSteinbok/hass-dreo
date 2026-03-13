@@ -53,7 +53,6 @@ class Helpers:
             body["himei"] = "faede31549d649f58864093158787ec9"
             body["password"] = cls.hash_password(pydreo_manager.password)
             body["scope"] = "all"
-            print(body)
 
         elif type_ == "devicelist":
             body = {**cls.req_body_base()}
@@ -147,7 +146,7 @@ class Helpers:
                     url + api, json=json_object, headers=headers, timeout=API_TIMEOUT
                 )
         except requests.exceptions.RequestException as exception:
-            _LOGGER.debug("call_api: %s", exception)
+            _LOGGER.error("call_api: Request failed - %s", exception)
         else:
             if r.status_code == 200:
                 status_code = 200
@@ -158,7 +157,8 @@ class Helpers:
                         Helpers.redactor(json.dumps(response)),
                     )
             else:
-                _LOGGER.debug("call_api: Unable to fetch %s%s", url, api)
+                _LOGGER.error("call_api: API request failed with status code %s for %s%s",
+                             r.status_code, url, api)
         return response, status_code
 
     @staticmethod
