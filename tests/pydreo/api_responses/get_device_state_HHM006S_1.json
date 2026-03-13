@@ -1,0 +1,63 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "ledlevel": {
+                "state": 2,
+                "timestamp": 1771448992
+            },
+            "poweron": {
+                "state": false,
+                "timestamp": 1771448998
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1771446671
+            },
+            "rhsleeplevel": {
+                "state": 70,
+                "timestamp": 1771446565
+            },
+            "mode": {
+                "state": 1,
+                "timestamp": 1771448899
+            },
+            "rgblevel": {
+                "state": 2,
+                "timestamp": 1771448981
+            },
+            "rhautolevel": {
+                "state": 55,
+                "timestamp": 1771448909
+            },
+            "muteon": {
+                "state": false,
+                "timestamp": 1771448996
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1771446565
+            },
+            "rh": {
+                "state": 65,
+                "timestamp": 1771449229
+            },
+            "foglevel": {
+                "state": 6,
+                "timestamp": 1771448902
+            },
+            "filtertime": {
+                "state": 100,
+                "timestamp": 1771446565
+            },
+            "worktime": {
+                "state": 0,
+                "timestamp": 1771446565
+            }
+        },
+        "sn": "HHM006S_1",
+        "productId": "1787385943342247937",
+        "region": "us-east-2/emq"
+    }
+}
