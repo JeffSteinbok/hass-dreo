@@ -59,6 +59,7 @@ All DR-HHM* models should have basic support.
 
 - DR-HDH001S
 - DR-HDH002S
+- DR-HDH005S
 
 ## Space Heaters
 
