@@ -144,4 +144,33 @@ class TestDreoHumidifier(IntegrationTestBase):
             
             self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
+    def test_HHM015S(self):  # pylint: disable=invalid-name
+        """Load HHM015S (HM755S) humidifier and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+
+            self.get_devices_file_name = "get_devices_HHM015S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+            assert pydreo_humidifier.type == 'Humidifier'
+            assert pydreo_humidifier.humidity == 31
+            assert pydreo_humidifier.model == "DR-HHM015S"
+            assert pydreo_humidifier.series_name == "HM755S"
+
+            ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
+            assert ha_humidifier.is_on is False
+            assert ha_humidifier.current_humidity == 31
+            assert ha_humidifier.target_humidity == 60
+            assert ha_humidifier.unique_id is not None
+            assert ha_humidifier.name is not None
+
+            # Check to see what numbers are added to humidifiers
+            numbers = number.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(numbers, [])
+
+            # Check to see what sensors are added
+            sensors = sensor.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
+
         

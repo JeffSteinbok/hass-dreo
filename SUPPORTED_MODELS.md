@@ -49,7 +49,8 @@ All DR-HAP models should be supported. Tested models include:
 - DR-HHM001S
 - DR-HHM003S (HM713S/813S)
 - DR-HHM004S
-- DR-HHM014S
+- DR-HHM014S (HM774S)
+- DR-HHM015S (HM755S)
 
 All DR-HHM* models should have basic support.
 
