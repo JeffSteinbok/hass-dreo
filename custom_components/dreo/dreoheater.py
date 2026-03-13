@@ -221,7 +221,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def supported_features(self) -> int:
         """Return the list of supported features."""
         supported_features = 0
-        if self.preset_mode == PRESET_ECO and self.device.ecolevel is not None:
+        # Support target temperature if the device has ecolevel capability
+        if self.device.ecolevel is not None:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
         if self.device.oscon is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
@@ -293,11 +294,13 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def target_temperature(self) -> int | None:
-        return (
-            self.device.ecolevel
-            if self.preset_mode == PRESET_ECO
-            else self.device.temperature
-        )
+        """Return the target temperature.
+        
+        Returns the ecolevel (target temperature) if the device supports it,
+        otherwise returns None. This ensures the target temperature is visible
+        even when the device is OFF or in a different mode.
+        """
+        return self.device.ecolevel if self.device.ecolevel is not None else None
 
     @property
     def min_temp(self) -> int | None:
