@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2024058901655793665",
+        "sn": "HSH011S_1",
+        "brand": "Dreo",
+        "model": "DR-HSH011S",
+        "productId": "**REDACTED**",
+        "productName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH011S",
+        "shared": false,
+        "series": null,
+        "seriesName": "OH521S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202506/208f2b9258713d4e0086f259cdeb55f491.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202506/203cd8fdd66991423daf063983187eaea7.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202506/209966af0b4fbf4624b182ded20ebbcc4e.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202506/20b84e412791054041a74954d9b22f7613.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202506/246cdd7ca7489547939635f46505034394.pdf",
+            "icon": null,
+            "desc": "DR-HSH011S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}
