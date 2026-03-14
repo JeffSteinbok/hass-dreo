@@ -141,8 +141,8 @@ The integration includes a special debug mode for testing without live devices:
 
 1. Add test that reproduces the bug
 2. Fix the issue with minimal changes
-3. Ensure all tests pass
-4. Run pylint to check for issues
+3. **Run pylint (errors only) before committing**: `pylint --recursive=yes --disable=W,C,R .`
+4. Ensure all tests pass
 5. Update relevant documentation if needed
 
 ### Updating Dependencies
@@ -196,10 +196,12 @@ The integration includes a special debug mode for testing without live devices:
 
 ## Best Practices for Copilot
 
+> **Always run pylint before pushing**: `pylint --recursive=yes --disable=W,C,R .` must report 0 errors before any commit is pushed.
+
 - Focus on minimal, surgical changes
 - Follow existing patterns in the codebase
+- **Run pylint (errors only) before pushing** — `pylint --recursive=yes --disable=W,C,R .` must pass with 0 errors
 - Run tests after changes
-- Check pylint before committing
 - Update documentation when adding features
 - Use existing device classes as templates for new devices
 - Test with debug mode when possible before requesting user testing
