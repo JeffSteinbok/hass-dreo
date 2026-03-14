@@ -338,6 +338,14 @@ SUPPORTED_DEVICES = {
         }
     ),
 
+    "DR-HDH005S": DreoDeviceDetails(
+        device_type=DreoDeviceType.DEHUMIDIFIER,
+        device_ranges={
+            HUMIDITY_RANGE: (30, 85),
+            SPEED_RANGE: (1, 3)
+        }
+    ),
+
     # Evaporative Coolers
     "DR-HEC": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
