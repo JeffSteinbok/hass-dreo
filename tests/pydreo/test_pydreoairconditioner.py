@@ -264,3 +264,22 @@ class TestPyDreoAirConditioner(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.poweron = True
             mock_send_command.assert_called_once_with(ac, {POWERON_KEY: True})
+        # TODO: Fix this in the AC class
+        # with pytest.raises(ValueError):
+        #    ac.preset_mode = 'not_a_mode'
+
+    def test_HAC006S_temperature_offset(self): # pylint: disable=invalid-name
+        """Test that temperature offset is applied to air conditioner temperature."""
+        self.get_devices_file_name = "get_devices_HAC006S.json"
+        self.pydreo_manager.load_devices()
+
+        ac : PyDreoAC = self.pydreo_manager.devices[0]
+
+        # Initial state: raw temp 74, offset 0 -> calibrated 74
+        assert ac.temperature_offset == 0
+        assert ac.temperature == 74
+
+        # Simulate a WebSocket update with new temperature and offset
+        ac.handle_server_update({ REPORTED_KEY: {TEMPERATURE_KEY: 80, TEMPOFFSET_KEY: -5} })
+        assert ac.temperature_offset == -5
+        assert ac.temperature == 75  # raw 80 + offset -5

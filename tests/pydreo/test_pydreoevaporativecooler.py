@@ -234,3 +234,18 @@ class TestPyDreoEvaporativeCooler(TestBase):
             "handle_server_update should store _wind_mode as int"
         )
         assert ec_fan._wind_mode == 1
+    def test_HEC002S_temperature_offset(self): # pylint: disable=invalid-name
+        """Test that temperature offset is applied to evaporative cooler temperature."""
+        self.get_devices_file_name = "get_devices_HEC002S.json"
+        self.pydreo_manager.load_devices()
+
+        ec_fan : PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        # Initial state: raw temp 76, offset 0 -> calibrated 76
+        assert ec_fan.temperature_offset == 0
+        assert ec_fan.temperature == 76
+
+        # Simulate a WebSocket update with new temperature and offset
+        ec_fan.handle_server_update({ REPORTED_KEY: {TEMPERATURE_KEY: 80, TEMPOFFSET_KEY: -4} })
+        assert ec_fan.temperature_offset == -4
+        assert ec_fan.temperature == 76  # raw 80 + offset -4
