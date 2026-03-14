@@ -33,8 +33,10 @@ class DreoBaseDeviceHA(Entity):
     @property
     def available(self) -> bool:
         """Return True if device is available."""
-        # return self.device.connection_status == "online"
-        return True
+        connected = self.pydreo_device.connected
+        if connected is None:
+            return True
+        return connected
 
     @property
     def should_poll(self):

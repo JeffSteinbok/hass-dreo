@@ -4,7 +4,7 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
-from .constant import REPORTED_KEY, POWERON_KEY, STATE_KEY, PRESET_MODE_STRINGS
+from .constant import REPORTED_KEY, POWERON_KEY, CONNECTED_KEY, STATE_KEY, PRESET_MODE_STRINGS
 from .models import DreoDeviceDetails
 
 if TYPE_CHECKING:
@@ -47,6 +47,7 @@ class PyDreoBaseDevice:
 
         self._dreo = dreo
         self._is_on = False
+        self._connected = None
 
         self._feature_key_names: Dict[str, str] = {}
 
@@ -115,6 +116,11 @@ class PyDreoBaseDevice:
         """Initial method called when we get a WebSocket message."""
         _LOGGER.debug("handle_server_update_base: {%s}: got {%s} message **", self.name, message)
 
+        val_connected = self.get_server_update_key_value(message, CONNECTED_KEY)
+        if isinstance(val_connected, bool):
+            _LOGGER.debug("handle_server_update_base: connected: %s --> %s", self._connected, val_connected)
+            self._connected = val_connected
+
         # This method exists so that we can run the polymorphic function to process updates, and then
         # run a _do_callbacks() command safely afterwards.
         self.handle_server_update(message)
@@ -174,6 +180,10 @@ class PyDreoBaseDevice:
 
         # TODO: Inconsistent placement of POWERON between BaseDevice and Fan for State/WebSocket
         self._is_on = self.get_state_update_value(state, POWERON_KEY)
+
+        connected_val = self.get_state_update_value(state, CONNECTED_KEY)
+        if connected_val is not None:
+            self._connected = connected_val
 
     def add_attr_callback(self, cb):
         """Add a callback to be called by _do_callbacks."""
@@ -257,6 +267,11 @@ class PyDreoBaseDevice:
     def color(self):
         """Returns the color of the device. Maybe use for an image at some point"""
         return self._color
+
+    @property
+    def connected(self) -> bool | None:
+        """Returns True if the device is connected, None if unknown."""
+        return self._connected
 
     def is_feature_supported(self, feature: str) -> bool:
         """Does this device support a given feature"""
