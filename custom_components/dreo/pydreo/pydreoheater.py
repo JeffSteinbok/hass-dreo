@@ -9,6 +9,7 @@ from .constant import (
     MODE_KEY,
     OSCON_KEY,
     OSCANGLE_KEY,
+    OSCMODE_KEY,
     MUTEON_KEY,
     POWERON_KEY,
     DEVON_KEY,
@@ -24,7 +25,10 @@ from .constant import (
     FIXEDCONF_KEY,
     DreoHeaterMode,
     TemperatureUnit,
-    HeaterOscillationAngles
+    HeaterOscillationAngles,
+    HEATER_OSCMODE_SWING_MAP,
+    HEATER_SWING_OSCMODE_MAP,
+    SWING_OFF,
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
@@ -47,6 +51,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._htalevel = None
         self._oscon = None
         self._oscangle = None
+        self._oscmode = None
         self._temperature = None
         self._mute_on = None
         self._fixed_conf = None
@@ -237,6 +242,24 @@ class PyDreoHeater(PyDreoBaseDevice):
             return
 
     @property
+    def oscmode(self) -> int | None:
+        """Get the oscmode integer value (used by newer heater firmware)."""
+        return self._oscmode
+
+    @oscmode.setter
+    def oscmode(self, value: int) -> None:
+        """Set the oscmode value."""
+        _LOGGER.debug("oscmode: oscmode.setter(%s) -> %s", self.name, value)
+        if self._oscmode is not None:
+            if self._oscmode == value:
+                _LOGGER.debug("oscmode: oscmode - value already %s, skipping command", value)
+                return
+            self._send_command(OSCMODE_KEY, value)
+        else:
+            _LOGGER.error("oscmode: Attempting to set oscmode on a device that doesn't support it.")
+            raise ValueError("Attempting to set oscmode on a device that doesn't support it.")
+
+    @property
     def ptcon(self) -> bool:
         """Returns `True` if PTC is on."""
         return self._ptc_on
@@ -348,6 +371,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._mode = self.get_state_update_value(state, MODE_KEY)
         self._oscon = self.get_state_update_value(state, OSCON_KEY)
         self._oscangle = self.get_state_update_value(state, OSCANGLE_KEY)
+        self._oscmode = self.get_state_update_value(state, OSCMODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
         timeron = self.get_state_update_value(state, TIMERON_KEY)
@@ -396,6 +420,10 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_oscangle = self.get_server_update_key_value(message, OSCANGLE_KEY)
         if isinstance(val_oscangle, int):
             self._oscangle = val_oscangle
+
+        val_oscmode = self.get_server_update_key_value(message, OSCMODE_KEY)
+        if isinstance(val_oscmode, int):
+            self._oscmode = val_oscmode
 
         val_muteon = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_muteon, bool):

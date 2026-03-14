@@ -252,11 +252,35 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.series_name == "WH714S"
             assert pydreo_heater.poweron is True
             assert pydreo_heater.mode == "eco"
-            
+
+            # WH714S uses oscmode (integer) for oscillation - oscmode 3 = 90°
+            assert pydreo_heater.oscmode == 3
+
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.hvac_mode == HVACMode.HEAT
             assert heater_ha.preset_mode == PRESET_ECO
             assert heater_ha.unique_id is not None
+
+            # Swing mode should be available since oscmode is not None
+            from homeassistant.components.climate import ClimateEntityFeature
+            assert heater_ha.supported_features & ClimateEntityFeature.SWING_MODE
+
+            # Current swing mode should map oscmode 3 -> "90°"
+            assert heater_ha.swing_mode == "90°"
+
+            # Setting swing mode should send oscmode command (set to "Oscillate" = oscmode 1, different from current 3)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_swing_mode("Oscillate")
+                mock_send_command.assert_any_call(pydreo_heater, {OSCMODE_KEY: 1})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_swing_mode("off")
+                mock_send_command.assert_any_call(pydreo_heater, {OSCMODE_KEY: 0})
+
+            # Server update for oscmode
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {OSCMODE_KEY: 1} })
+            assert pydreo_heater.oscmode == 1
+            assert heater_ha.swing_mode == "Oscillate"
 
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, [])
@@ -280,7 +304,7 @@ class TestDreoHeater(IntegrationTestBase):
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
-            assert heater_ha.hvac_mode == HVACMode.HEAT            
+            assert heater_ha.hvac_mode == HVACMode.HEAT
 
     def test_HSH004S(self):  # pylint: disable=invalid-name
         """Load HSH004S (Atom One S) heater and test sending commands."""
