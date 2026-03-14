@@ -17,7 +17,11 @@ from .pydreo import (
     OSCANGLE_ANGLE_MAP,
 )
 
-from .pydreo.constant import DreoHeaterMode
+from .pydreo.constant import (
+    DreoHeaterMode,
+    HEATER_OSCMODE_SWING_MAP,
+    HEATER_SWING_OSCMODE_MAP,
+)
 
 from .const import (
     DOMAIN,
@@ -224,7 +228,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         # Support target temperature if the device has ecolevel capability
         if self.device.ecolevel is not None:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if self.device.oscon is not None:
+        if self.device.oscon is not None or self.device.oscmode is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF
@@ -369,7 +373,10 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def swing_mode(self) -> str | None:
-        if self.device.oscon is not None and self.device.oscon is True:
+        if self.device.oscmode is not None:
+            # Newer firmware uses oscmode integer; map to swing mode string.
+            self._attr_swing_mode = HEATER_OSCMODE_SWING_MAP.get(self.device.oscmode, SWING_OFF)
+        elif self.device.oscon is not None and self.device.oscon is True:
             self._attr_swing_mode = SWING_ON
         elif self.device.oscangle is not None:
             self._attr_swing_mode = ANGLE_OSCANGLE_MAP[self.device.oscangle]
@@ -382,7 +389,11 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         _LOGGER.debug(
             "DreoHeaterHA:set_swing_mode(%s) -> %s", self.device.name, swing_mode
         )
-        if self.device.oscon is not None:
+        if self.device.oscmode is not None:
+            # Newer firmware uses oscmode integer.
+            new_oscmode = HEATER_SWING_OSCMODE_MAP.get(swing_mode, 0)
+            self.device.oscmode = new_oscmode
+        elif self.device.oscon is not None:
             self.oscon = False if swing_mode != SWING_ON and swing_mode in self._attr_swing_modes else True
         elif self.device.oscangle is not None:
             self.oscangle = swing_mode

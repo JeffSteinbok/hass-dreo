@@ -182,6 +182,17 @@ class HeaterOscillationAngles(StrEnum):
 # Possible swing state
 SWING_ON = "on"
 SWING_OFF = "off"
+
+# Maps oscmode integer values (used by newer heater firmware) to swing mode strings.
+# oscmode 0 = no oscillation; 1-4 correspond to oscillation modes in increasing angle.
+HEATER_OSCMODE_SWING_MAP = {
+    0: SWING_OFF,
+    1: HeaterOscillationAngles.OSC,
+    2: HeaterOscillationAngles.SIXTY,
+    3: HeaterOscillationAngles.NINETY,
+    4: HeaterOscillationAngles.ONE_TWENTY,
+}
+HEATER_SWING_OSCMODE_MAP = {v: k for k, v in HEATER_OSCMODE_SWING_MAP.items()}
 # Possible fan state
 FAN_ON = "on"
 FAN_OFF = "off"
