@@ -24,7 +24,7 @@ def get_entries(
     pydreo_devices: list[PyDreoBaseDevice],
 ) -> list[DreoHeaterHA | DreoAirConditionerHA]:
     """Get the Dreo climate entities for the devices."""
-    climate_entities_ha: DreoHeaterHA | DreoAirConditionerHA = []
+    climate_entities_ha: list[DreoHeaterHA | DreoAirConditionerHA] = []
 
     for pydreo_device in pydreo_devices:
         if pydreo_device.type == DreoDeviceType.HEATER:

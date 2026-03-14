@@ -1,4 +1,4 @@
-"""Support additionl Lights for some Dreo devices"""
+"""Support additional Lights for some Dreo devices"""
 # Suppress warnings about DataClass constructors
 # pylint: disable=E1123
 

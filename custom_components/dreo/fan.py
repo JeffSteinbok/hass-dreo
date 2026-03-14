@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoFanHA]:
     """Get the Dreo Fan entities for the devices."""
-    fan_entities_ha : DreoFanHA = []
+    fan_entities_ha : list[DreoFanHA] = []
 
     for pydreo_device in pydreo_devices:
         if (pydreo_device.type == DreoDeviceType.TOWER_FAN or

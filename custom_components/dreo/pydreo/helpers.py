@@ -162,12 +162,12 @@ class Helpers:
         return response, status_code
 
     @staticmethod
-    def code_check(reponse_dict: dict) -> bool:
+    def code_check(response_dict: dict) -> bool:
         """Test if code == 0 for successful API call."""
-        if reponse_dict is None:
-            _LOGGER.error("Helpers::code_check - reponse_dict is None")
+        if response_dict is None:
+            _LOGGER.error("Helpers::code_check - response_dict is None")
             return False
-        if isinstance(reponse_dict, dict) and reponse_dict.get("code") == 0:
+        if isinstance(response_dict, dict) and response_dict.get("code") == 0:
             return True
         return False
 
