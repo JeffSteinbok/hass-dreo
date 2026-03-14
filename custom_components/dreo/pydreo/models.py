@@ -170,6 +170,18 @@ SUPPORTED_DEVICES = {
     # Tower Fans
     "DR-HTF": DreoDeviceDetails(device_type=DreoDeviceType.TOWER_FAN),
 
+    "DR-HTF018S": DreoDeviceDetails(
+        device_type=DreoDeviceType.TOWER_FAN,
+        preset_modes=[
+            ("normal", 1),
+            ("natural", 2),
+            ("sleep", 3),
+            ("auto", 4),
+        ],
+        device_ranges={
+            SPEED_RANGE: (1, 9)
+        }),
+
     # Air Circulators
     "DR-HAF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
@@ -331,6 +343,14 @@ SUPPORTED_DEVICES = {
     ),
 
     "DR-HDH002S": DreoDeviceDetails(
+        device_type=DreoDeviceType.DEHUMIDIFIER,
+        device_ranges={
+            HUMIDITY_RANGE: (30, 85),
+            SPEED_RANGE: (1, 3)
+        }
+    ),
+
+    "DR-HDH005S": DreoDeviceDetails(
         device_type=DreoDeviceType.DEHUMIDIFIER,
         device_ranges={
             HUMIDITY_RANGE: (30, 85),

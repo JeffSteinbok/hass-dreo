@@ -103,6 +103,10 @@ Note that at present you need to restart HA when you change an option for it to 
 
 ## Device Management
 
+### Adding Devices
+
+Use the manufacturer's app to set up a new device.
+
 ### Removing Devices
 
 You can remove individual Dreo devices from Home Assistant through the UI:
@@ -159,7 +163,7 @@ logger:
         homeassistant.components.websocket_api: debug
 ```
 
-## Adding New Devices
+## Adding Support for New Devices
 
 Don't see your model listed above? Create an [issue](https://github.com/JeffSteinbok/hass-dreo/issues) and I'll add it.
 

@@ -304,7 +304,12 @@ class PyDreo:  # pylint: disable=function-redefined
         if pass_check is False:
             _LOGGER.error("login: Password invalid")
             return False
-        response, _ = self.call_dreo_api(DREO_API_LOGIN)
+        response, status_code = self.call_dreo_api(DREO_API_LOGIN)
+
+        if response is None:
+            status_msg = f"status: {status_code}" if status_code else "no status code"
+            _LOGGER.error("login: No response from Dreo API (%s). Check network connectivity and API endpoint.", status_msg)
+            return False
 
         if Helpers.code_check(response) and DATA_KEY in response:
             # get the region code from auth
@@ -321,7 +326,15 @@ class PyDreo:  # pylint: disable=function-redefined
                 self.enabled = True
                 _LOGGER.debug("login: Login successful")
                 return True
-        _LOGGER.error("login: Error logging in with username and password")
+        
+        # Provide more detailed error information
+        if response and isinstance(response, dict):
+            error_code = response.get("code", "unknown")
+            error_msg = response.get("msg", "no message")
+            _LOGGER.error("login: Authentication failed - API returned code: %s, message: %s", 
+                         error_code, error_msg)
+        else:
+            _LOGGER.error("login: Error logging in with username and password - invalid response format")
         return False
 
     def get_device_setting(self, device: PyDreoBaseDevice, setting : DreoDeviceSetting) -> bool | int:

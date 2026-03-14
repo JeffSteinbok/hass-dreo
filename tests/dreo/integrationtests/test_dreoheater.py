@@ -52,9 +52,11 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(sensors, [])
 
             # Test HVAC mode changes
+            # Device is already ON and in HEAT mode. Setting HEAT again should
+            # still send the poweron command (fixes stale state after power cycle)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
@@ -158,9 +160,10 @@ class TestDreoHeater(IntegrationTestBase):
             # Note that this device was set to OFF/Hotair, so mode should remain HEAT
             assert heater_ha.hvac_mode == HVACMode.HEAT
 
+            # Device is now ON. Setting HEAT again should still send poweron command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
@@ -194,13 +197,14 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(sensors, [])
 
             # Test turning heater on and setting mode
+            # Device is already ON. Setting HEAT should still send poweron command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
@@ -264,9 +268,10 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 3} })
 
             # Test HVAC mode changes
+            # Device is already ON. Setting HEAT should still send poweron command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
@@ -274,3 +279,38 @@ class TestDreoHeater(IntegrationTestBase):
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "hotair"} })
             assert heater_ha.hvac_mode == HVACMode.HEAT
+
+    def test_ptc_update_without_poweron(self):  # pylint: disable=invalid-name
+        """Test that when PTC turns on without explicit poweron update, the heater state is updated correctly.
+        
+        This test reproduces the issue where heaters turned on externally (via app or manually)
+        show PTC as on but the main heater state doesn't update in HA.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            # Load HSH034S heater that is initially OFF
+            self.get_devices_file_name = "get_devices_HSH034S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.model == "DR-HSH034S"
+            
+            # Verify heater starts OFF
+            assert pydreo_heater.poweron is False
+            assert pydreo_heater.ptcon is False
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.hvac_mode == HVACMode.OFF
+            assert heater_ha.is_on is False
+
+            # Simulate external turn-on: PTC turns on without explicit poweron update
+            # This simulates what happens when user turns on heater via app or manually
+            pydreo_heater.handle_server_update({ REPORTED_KEY: {PTCON_KEY: True} })
+            
+            # After PTC turns on, the heater should be considered ON
+            assert pydreo_heater.ptcon is True, "PTC should be on after update"
+            
+            # With the fix, poweron should be inferred from PTC being on
+            assert pydreo_heater.poweron is True, "Heater should be on when PTC is on"
+            assert heater_ha.is_on is True, "HA entity should show heater as on"
+            assert heater_ha.hvac_mode != HVACMode.OFF, "HVAC mode should not be OFF when PTC is on"

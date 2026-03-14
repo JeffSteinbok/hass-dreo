@@ -9,6 +9,7 @@ from homeassistant.components.fan import (
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
+from custom_components.dreo import light
 from .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 from custom_components.dreo.pydreo.constant import (
@@ -231,6 +232,29 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_preset_mode("turbo")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
             pydreo_fan.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 5} })
+
+            # Test atmosphere (RGB) light support
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["RGB Light"])
+
+            rgb_light = self.get_entity_by_key(lights, "RGB Light")
+            assert rgb_light is not None
+            assert rgb_light.is_on is False  # atmon=false in initial state
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: True})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {ATMON_KEY: True} })
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: False})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {ATMON_KEY: False} })
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
+                assert mock_send_command.call_count == 2  # atmon + atmcolor
+                mock_send_command.assert_any_call(pydreo_fan, {ATMCOLOR_KEY: 16711680})
 
     def test_HAF003S_newer_firmware(self):  # pylint: disable=invalid-name
         """Test HAF003S fan with newer firmware (Device 1 - with cruiseconf/fixedconf)."""

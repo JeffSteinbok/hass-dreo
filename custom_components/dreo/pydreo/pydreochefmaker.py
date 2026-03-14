@@ -45,9 +45,6 @@ class PyDreoChefMaker(PyDreoBaseDevice):
     @is_on.setter
     def is_on(self, value: bool) -> None:
         """Set the power state of the device."""
-        if self._is_on == value:
-            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
-            return
         self._is_on = value
         self.set_mode_from_is_on()
         self._send_command(POWERON_KEY, value)

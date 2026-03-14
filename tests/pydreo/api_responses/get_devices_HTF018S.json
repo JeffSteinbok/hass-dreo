@@ -1,0 +1,61 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2027937427577901057",
+        "sn": "HTF018S_1",
+        "brand": "Dreo",
+        "model": "DR-HTF018S",
+        "productId": "**REDACTED**",
+        "productName": "Tower Fan",
+        "deviceName": "DEBUGTEST - Tower Fan - DR-HTF018S",
+        "shared": false,
+        "series": null,
+        "seriesName": "Cruiser TF518S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202504/2dc499ba9087348d6912645d6239376ec.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202504/2a7a7ad3fd8d54bb9bef0782173b13677.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HTF018S"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202504/2c3d46b813f0243249ede840668c6d711.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202504/29544487cbc704e19bb0b3a2c388d559b.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202503/1206ba6e56cdf54f6590ad1ff7afffb483.pdf",
+            "icon": null,
+            "desc": "DR-HTF018S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}
