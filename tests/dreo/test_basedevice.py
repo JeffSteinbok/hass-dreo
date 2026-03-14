@@ -44,15 +44,37 @@ class TestDreoBaseDeviceHA(TestDeviceBase):
             assert (DOMAIN, "DEV001") in info["identifiers"]
 
     def test_base_device_available(self):
-        """Test available property always returns True."""
+        """Test available property returns True when connected is None (unknown)."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
                 name="Test Device",
                 serial_number="DEV001",
             )
-
+            device.connected = None
             base = DreoBaseDeviceHA(device)
             assert base.available is True
+
+    def test_base_device_available_when_connected(self):
+        """Test available property returns True when device is connected."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self.create_mock_device(
+                name="Test Device",
+                serial_number="DEV001",
+            )
+            device.connected = True
+            base = DreoBaseDeviceHA(device)
+            assert base.available is True
+
+    def test_base_device_available_when_disconnected(self):
+        """Test available property returns False when device is not connected."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self.create_mock_device(
+                name="Test Device",
+                serial_number="DEV001",
+            )
+            device.connected = False
+            base = DreoBaseDeviceHA(device)
+            assert base.available is False
 
     def test_base_device_should_poll(self):
         """Test should_poll returns False (push-based via WebSocket)."""
