@@ -96,13 +96,13 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         """Return the maximum humidity."""
         return 85
     
-    def turn_on(self, **kwargs: any) -> None:
+    def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
         _LOGGER.debug("turn_on: turn_on(%s)", self.device.name)
         self.device.is_on = True
         self.schedule_update_ha_state()
 
-    def turn_off(self, **kwargs: any) -> None:
+    def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
         _LOGGER.debug("turn_off: turn_off(%s)", self.device.name)
         self.device.is_on = False

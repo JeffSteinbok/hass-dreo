@@ -180,7 +180,7 @@ class CommandTransport:
                     with self._ws_send_lock: 
                         await self._ws.send(content)
                     break
-                except: # pylint: disable=bare-except
+                except Exception:  # pylint: disable=broad-except
                     retry_count += 1
                     _LOGGER.error("send_message: Error sending command. Retrying in %s seconds. Retry count: %s", 
                                   RETRY_DELAY, 
