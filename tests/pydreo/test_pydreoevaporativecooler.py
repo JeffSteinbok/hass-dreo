@@ -185,9 +185,9 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan.handle_server_update({REPORTED_KEY: {CHILDLOCKON_KEY: True}})
         assert ec_fan.childlockon is True
 
-        # wind_mode -- WebSocket sends int 1-4; should be stored as int
+        # wind_mode -- WebSocket sends int 1-4; should be stored as int in _wind_mode
         ec_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
-        assert ec_fan.preset_mode == 2  # stored as int, consistent with update_state
+        assert ec_fan._wind_mode == 2  # internal state stored as int, consistent with update_state
 
         # work_time
         ec_fan.handle_server_update({REPORTED_KEY: {WORKTIME_KEY: 25}})

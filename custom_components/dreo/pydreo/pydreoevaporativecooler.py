@@ -1,7 +1,7 @@
 """Dreo API for controling evaporative coolers."""
 
 import logging
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Optional
 from .pydreofanbase import PyDreoFanBase
 
 from .constant import (
@@ -197,7 +197,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
        return self._water_level
    
     @staticmethod
-    def _map_wind_mode_from_rest(index: int) -> int:
+    def _map_wind_mode_from_rest(index: int) -> Optional[int]:
         """Convert REST API windmode 0-based index to internal int (1-4).
 
         The REST API returns 0-based indices into the WINDMODES list, while
