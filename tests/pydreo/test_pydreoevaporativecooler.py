@@ -97,10 +97,10 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan : PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
         ec_fan.handle_server_update({REPORTED_KEY: {HUMIDIFY_MODE_KEY: 2}})
-        assert ec_fan.humidify == True  # pylint: disable=singleton-comparison
+        assert ec_fan.humidify
 
         ec_fan.handle_server_update({REPORTED_KEY: {HUMIDIFY_MODE_KEY: 0}})
-        assert ec_fan.humidify == False  # pylint: disable=singleton-comparison
+        assert not ec_fan.humidify
 
     def test_HEC002S_handle_server_update_oscillating(self): # pylint: disable=invalid-name
         """Test handle_server_update updates oscillating state."""
