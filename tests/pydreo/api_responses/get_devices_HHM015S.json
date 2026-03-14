@@ -1,0 +1,65 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2026426528048353282",
+        "sn": "HHM015S_1",
+        "brand": "Dreo",
+        "model": "DR-HHM015S",
+        "productId": "1892879795729002498",
+        "productName": "Humidifier",
+        "deviceName": "DEBUGTEST - Humidifier - DR-HHM015S",
+        "shared": false,
+        "series": null,
+        "seriesName": "HM755S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202507/14d5bb34c4049942aa930ff76a1c140218.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202507/14d3acbf9c1bf44c7f81012b8d3acb4e49.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202507/14b3e2e2d36d864465825c9234b3755fe3.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202509/1b3307f38b8d44da89aeef6392259c403.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202508/1911b3e5cac1834973bbed82176f29f29c.pdf",
+            "icon": null,
+            "desc": "DR-HHM015S User Manual V1",
+            "lang": "en"
+          },
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202509/18a5b38c40825f427fbeb2169ee8ae1ad2.pdf",
+            "icon": null,
+            "desc": "DR-HHM015S_User Manual",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

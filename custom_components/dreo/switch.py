@@ -136,7 +136,7 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSwitchHA]:
     Returns:
         List of DreoSwitchHA entities to be registered with Home Assistant
     """
-    switch_ha_collection : DreoSwitchHA = []
+    switch_ha_collection : list[DreoSwitchHA] = []
 
     for pydreo_device in pydreo_devices:
         _LOGGER.debug("get_entries: Adding switches for %s", pydreo_device.name)
