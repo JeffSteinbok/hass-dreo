@@ -180,3 +180,72 @@ class TestPyDreoHeater(TestBase):
             heater.poweron = True  # Attempt to turn on
             # Command MUST be sent even though cached state matches
             mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
+
+    def test_HSH009S_handle_server_update_temperature(self):  # pylint: disable=invalid-name
+        """Test handle_server_update updates temperature."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        heater.handle_server_update({REPORTED_KEY: {TEMPERATURE_KEY: 75}})
+        assert heater.temperature == 75
+
+    def test_HSH009S_handle_server_update_mode_valid(self):  # pylint: disable=invalid-name
+        """Test handle_server_update updates mode with valid mode string."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: DreoHeaterMode.HOTAIR}})
+        assert heater.mode == DreoHeaterMode.HOTAIR
+
+    def test_HSH009S_handle_server_update_mode_invalid_becomes_off(self):  # pylint: disable=invalid-name
+        """Test handle_server_update sets mode to OFF when receiving an unknown mode."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "unknown_mode"}})
+        assert heater.mode == DreoHeaterMode.OFF
+
+    def test_HSH009S_handle_server_update_ecolevel(self):  # pylint: disable=invalid-name
+        """Test handle_server_update updates ecolevel (target temperature)."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        heater.handle_server_update({REPORTED_KEY: {ECOLEVEL_KEY: 75}})
+        assert heater.ecolevel == 75
+
+    def test_HSH009S_handle_server_update_ptcon_implies_power_on(self):  # pylint: disable=invalid-name
+        """Test that handle_server_update infers device is on when PTC turns on."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        # Power off device first
+        heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        assert heater.poweron is False
+
+        # PTC turning on implies device is powered on
+        heater.handle_server_update({REPORTED_KEY: {PTCON_KEY: True}})
+        assert heater.ptcon is True
+        assert heater.poweron is True
+
+    def test_HSH009S_handle_server_update_childlockon(self):  # pylint: disable=invalid-name
+        """Test handle_server_update updates childlockon state."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        heater.handle_server_update({REPORTED_KEY: {CHILDLOCKON_KEY: True}})
+        assert heater.childlockon is True
+
+    def test_HSH009S_mode_setter_invalid_raises(self):  # pylint: disable=invalid-name
+        """Test that mode setter raises ValueError for invalid mode."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        with pytest.raises(ValueError):
+            heater.mode = "totally_invalid_mode"

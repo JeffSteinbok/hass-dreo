@@ -173,6 +173,8 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
         """Set preset mode"""
+        if value not in WINDMODES:
+            raise ValueError(f"Preset mode {value} is not in the acceptable list: {WINDMODES}")
         new_value = WINDMODE_MAP[value]
         if self._wind_mode == new_value:
             _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
@@ -241,11 +243,6 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         if (isinstance(val_childlockon, bool)):
             self._childlockon = val_childlockon
 
-        val_wind_mode = self.get_server_update_key_value(message, WIND_MODE_KEY)
-        if isinstance(val_wind_mode, int):
-            val_wind_mode = WINDMODE_MAP[val_wind_mode]
-            self._wind_mode = val_wind_mode
-            
         val_work_time = self.get_server_update_key_value(message, WORKTIME_KEY)
         if isinstance(val_work_time, int):
             self._work_time = val_work_time
