@@ -234,6 +234,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
             "handle_server_update should store _wind_mode as int"
         )
         assert ec_fan._wind_mode == 1
+
     def test_HEC002S_temperature_offset(self): # pylint: disable=invalid-name
         """Test that temperature offset is applied to evaporative cooler temperature."""
         self.get_devices_file_name = "get_devices_HEC002S.json"
