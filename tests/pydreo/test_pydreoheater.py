@@ -37,6 +37,34 @@ class TestPyDreoHeater(TestBase):
         with pytest.raises(ValueError):
             heater.mode = 'not_a_mode'
 
+    def test_HSH011(self): # pylint: disable=invalid-name
+        """Load DR-HSH011 oil radiator heater and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HSH011.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        assert heater.model == "DR-HSH011"
+        assert heater.htalevel_range == (1, 3)
+        assert sorted(heater.modes) == sorted([DreoHeaterMode.COOLAIR,
+                                               DreoHeaterMode.HOTAIR,
+                                               DreoHeaterMode.ECO,
+                                               DreoHeaterMode.OFF])
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.poweron = False
+            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: False})
+        heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: False} })
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 1
+            mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
+        heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 1} })
+
+        with pytest.raises(ValueError):
+            heater.mode = 'not_a_mode'
+
     def test_HSH010S(self): # pylint: disable=invalid-name
         """Load oil radiator heater and test sending commands."""
 
@@ -138,6 +166,10 @@ class TestPyDreoHeater(TestBase):
                                                DreoHeaterMode.ECO, 
                                                DreoHeaterMode.OFF])
 
+        # Test temperature offset is applied to temperature reading
+        assert heater.temperature_offset == 2
+        assert heater.temperature == 66  # raw 64 + offset 2
+
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = False
             mock_send_command.assert_called_once_with(heater, {POWERON_KEY: False})
@@ -150,6 +182,21 @@ class TestPyDreoHeater(TestBase):
 
         with pytest.raises(ValueError):
             heater.mode = 'not_a_mode'
+
+    def test_HSH004S_temperature_offset_update(self): # pylint: disable=invalid-name
+        """Test that temperature offset from server updates is applied to temperature."""
+
+        self.get_devices_file_name = "get_devices_HSH004S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        # Initial state: raw temp 64, offset 2 -> calibrated 66
+        assert heater.temperature == 66
+
+        # Simulate a WebSocket update with new temperature and offset
+        heater.handle_server_update({ REPORTED_KEY: {TEMPERATURE_KEY: 70, TEMPOFFSET_KEY: -3} })
+        assert heater.temperature_offset == -3
+        assert heater.temperature == 67  # raw 70 + offset -3
 
     def test_HSH009S_power_cycle_stale_state(self):  # pylint: disable=invalid-name
         """Test that poweron command is sent even when cached state is stale after power cycle."""

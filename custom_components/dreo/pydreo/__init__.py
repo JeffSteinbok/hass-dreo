@@ -56,9 +56,9 @@ class PyDreo:  # pylint: disable=function-redefined
                  redact=True, 
                  debug_test_mode=False,
                  debug_test_mode_payload=None) -> None:
+        """Initialize Dreo class with username, password and time zone."""
         self._transport = CommandTransport(self._transport_consume_message)
 
-        """Initialize Dreo class with username, password and time zone."""
         self.auth_region = DREO_AUTH_REGION_NA  # Will get the region from the auth call
 
         self._redact = redact
@@ -69,7 +69,6 @@ class PyDreo:  # pylint: disable=function-redefined
         self.password : str  = password
         self.token = None
         self.account_id = None
-        self.devices = None
         self.enabled = False
         self.in_process = False
         self._dev_list = {}
@@ -98,6 +97,7 @@ class PyDreo:  # pylint: disable=function-redefined
             return DREO_API_REGION_EU
         else:
             _LOGGER.error("api_server_region: Invalid Auth Region: %s", self.auth_region)
+            raise ValueError(f"Invalid Auth Region: {self.auth_region}")
 
     @property
     def auto_reconnect(self) -> bool:
@@ -135,16 +135,8 @@ class PyDreo:  # pylint: disable=function-redefined
 
     @staticmethod
     def set_dev_id(devices: list) -> list:
-        """Correct devices without cid or uuid."""
-        dev_num = 0
-        dev_rem = []
-        for dev in devices:
-            if dev.get(DEVICEID_KEY) is not None:
-                dev[DEVICEID_KEY] = dev[DEVICEID_KEY]
-            dev_num += 1
-            if dev_rem:
-                devices = [i for j, i in enumerate(devices) if j not in dev_rem]
-        return devices
+        """Return device list, filtering out devices without a deviceId."""
+        return [dev for dev in devices if dev.get("deviceId") is not None]
 
     def _process_devices(self, dev_list: list) -> bool:
         """Instantiate Device Objects."""
