@@ -15,7 +15,11 @@ from .constant import (
     FIXEDCONF_KEY,
     OscillationMode,
     HORIZONTAL_ANGLE_RANGE,
-    VERTICAL_ANGLE_RANGE
+    VERTICAL_ANGLE_RANGE,
+    ATMON_KEY,
+    ATMCOLOR_KEY,
+    ATMBRI_KEY,
+    ATMMODE_KEY,
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -29,6 +33,25 @@ if TYPE_CHECKING:
 
 class PyDreoAirCirculator(PyDreoFanBase):
     """Base class for Dreo Fan API Calls."""
+
+    @staticmethod
+    def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:
+        """Clamp RGB tuple values to 0-255 integers."""
+        return tuple(max(0, min(255, int(round(c)))) for c in rgb)
+
+    @staticmethod
+    def _pack_rgb_to_int(rgb: tuple[int, int, int]) -> int:
+        """Pack RGB tuple into 24-bit integer."""
+        r, g, b = rgb
+        return (r << 16) | (g << 8) | b
+
+    @staticmethod
+    def _unpack_int_to_rgb(color: int) -> tuple[int, int, int]:
+        """Unpack 24-bit integer to RGB tuple."""
+        r = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        b = color & 0xFF
+        return (r, g, b)
 
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
@@ -63,6 +86,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
         
         # Horizontal angle adjustment (simpler angle control, similar to Tower Fan)
         self._horizontal_angle_adj = None
+
+        # Atmosphere (RGB) light support
+        self._atm_light_on : bool = None
+        self._atm_brightness : int = None
+        self._atm_color : int = None
+        self._atm_mode : int = None
 
     def _uses_hangleadj_for_horizontal(self) -> bool:
         """Check if device uses hangleadj (simpler angle control) instead of hoscangle."""
@@ -498,6 +527,73 @@ class PyDreoAirCirculator(PyDreoFanBase):
             return None
         return self.vertical_angle_range
 
+    @property
+    def atm_light_on(self) -> bool | None:
+        """Returns True if the atmosphere light is on, False otherwise."""
+        return self._atm_light_on
+
+    @atm_light_on.setter
+    def atm_light_on(self, value: bool):
+        """Set if the atmosphere light is on or off."""
+        _LOGGER.debug("atm_light_on: atm_light_on.setter - %s", value)
+        if self._atm_light_on is None:
+            _LOGGER.error("atm_light_on: Atmosphere light not supported by this fan model.")
+            return
+        if self._atm_light_on == value:
+            _LOGGER.debug("atm_light_on: atm_light_on - value already %s, skipping command", value)
+            return
+        self._send_command(ATMON_KEY, value)
+
+    @property
+    def atm_brightness(self) -> int | None:
+        """Returns the brightness of the atmosphere light (1-5), or None if not supported."""
+        return self._atm_brightness
+
+    @atm_brightness.setter
+    def atm_brightness(self, value: int):
+        """Set the brightness of the atmosphere light (1-5 scale)."""
+        _LOGGER.debug("atm_brightness: atm_brightness.setter - %s", value)
+        if self._atm_brightness is None:
+            _LOGGER.error("atm_brightness: Atmosphere brightness not supported by this fan model.")
+            return
+        brightness = max(1, min(5, value))
+        if self._atm_brightness == brightness:
+            _LOGGER.debug("atm_brightness: atm_brightness - value already %s, skipping command", brightness)
+            return
+        self._send_command(ATMBRI_KEY, brightness)
+
+    @property
+    def atm_color_rgb(self) -> tuple[int, int, int] | None:
+        """Returns the RGB color as a tuple (r, g, b), or None if not supported."""
+        if self._atm_color is None:
+            return None
+        return self._unpack_int_to_rgb(self._atm_color)
+
+    @atm_color_rgb.setter
+    def atm_color_rgb(self, rgb: tuple[int | float, int | float, int | float]):
+        """Set the RGB color of the atmosphere light."""
+        r_int, g_int, b_int = self._clamp_rgb_tuple(rgb)
+        color_value = self._pack_rgb_to_int((r_int, g_int, b_int))
+        _LOGGER.debug("atm_color_rgb: atm_color_rgb.setter - RGB(%d,%d,%d) -> %d", r_int, g_int, b_int, color_value)
+        if self._atm_color is None:
+            _LOGGER.error("atm_color_rgb: Atmosphere color not supported by this fan model.")
+            return
+        if self._atm_color == color_value:
+            _LOGGER.debug("atm_color_rgb: atm_color_rgb - value already %s, skipping command", color_value)
+            return
+        self._send_command(ATMCOLOR_KEY, color_value)
+
+    @property
+    def atm_mode(self) -> int | None:
+        """Returns the atmosphere mode (1=Constant, 2=Circle, 3=Breath), or None if not supported."""
+        return self._atm_mode
+
+    def is_feature_supported(self, feature: str) -> bool:
+        """Check if this air circulator supports a specific feature."""
+        if feature == "atm_light":
+            return self._atm_light_on is not None
+        return super().is_feature_supported(feature)
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: Processing state")
@@ -520,6 +616,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
             self._vertical_oscillation_angle = voscangle_val
         
         self._horizontal_angle_adj = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
+
+        self._atm_light_on = self.get_state_update_value(state, ATMON_KEY)
+        self._atm_brightness = self.get_state_update_value(state, ATMBRI_KEY)
+        self._atm_color = self.get_state_update_value(state, ATMCOLOR_KEY)
+        self._atm_mode = self.get_state_update_value(state, ATMMODE_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -557,3 +658,19 @@ class PyDreoAirCirculator(PyDreoFanBase):
         val_horiz_angle_adj = self.get_server_update_key_value(message, HORIZONTAL_ANGLE_ADJ_KEY)
         if isinstance(val_horiz_angle_adj, int):
             self._horizontal_angle_adj = val_horiz_angle_adj
+
+        val_atm_on = self.get_server_update_key_value(message, ATMON_KEY)
+        if isinstance(val_atm_on, bool):
+            self._atm_light_on = val_atm_on
+
+        val_atm_brightness = self.get_server_update_key_value(message, ATMBRI_KEY)
+        if isinstance(val_atm_brightness, int):
+            self._atm_brightness = val_atm_brightness
+
+        val_atm_color = self.get_server_update_key_value(message, ATMCOLOR_KEY)
+        if isinstance(val_atm_color, int):
+            self._atm_color = val_atm_color
+
+        val_atm_mode = self.get_server_update_key_value(message, ATMMODE_KEY)
+        if isinstance(val_atm_mode, int):
+            self._atm_mode = val_atm_mode
