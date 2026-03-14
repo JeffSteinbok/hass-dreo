@@ -1,4 +1,5 @@
 """Tests for the Dreo Switch entity."""
+# pylint: disable=E1123
 from unittest.mock import patch
 
 from custom_components.dreo import switch

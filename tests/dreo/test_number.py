@@ -1,4 +1,5 @@
 """Tests for the Dreo Number entity."""
+# pylint: disable=E1123
 from unittest.mock import patch, MagicMock
 
 from custom_components.dreo import number
