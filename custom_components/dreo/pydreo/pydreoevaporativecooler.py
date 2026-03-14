@@ -176,6 +176,8 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
         """Set preset mode"""
+        if value not in WINDMODES:
+            raise ValueError(f"Preset mode {value} is not in the acceptable list: {WINDMODES}")
         new_value = WINDMODE_MAP[value]
         if self._wind_mode == new_value:
             _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
