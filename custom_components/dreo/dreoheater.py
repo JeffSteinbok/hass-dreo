@@ -285,7 +285,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def set_temperature(self, **kwargs: Any) -> None:
         """Set new target temperature."""
         if self._attr_hvac_mode == HVACMode.HEAT:
-            self.device.ecolevel = self._attr_target_temperature = int(kwargs.get(
+            self.device.ecolevel = self._attr_target_temperature = round(kwargs.get(
                 ATTR_TEMPERATURE
             ))
         else:
