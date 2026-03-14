@@ -3,6 +3,12 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Coverage reports (build artifacts)
+coverage.json
+.coverage
+coverage.xml
+htmlcov/
+
 # Test scripts secrets (credentials, tokens, etc.)
 testScripts/secrets/
 !testScripts/secrets/.gitignore

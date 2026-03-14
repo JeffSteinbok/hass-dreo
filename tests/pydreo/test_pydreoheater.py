@@ -180,3 +180,191 @@ class TestPyDreoHeater(TestBase):
             heater.poweron = True  # Attempt to turn on
             # Command MUST be sent even though cached state matches
             mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
+
+    def test_HSH009S_handle_server_update_all_fields(self):  # pylint: disable=invalid-name
+        """Test that handle_server_update correctly updates all device state fields."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        # temperature
+        heater.handle_server_update({REPORTED_KEY: {TEMPERATURE_KEY: 70}})
+        assert heater.temperature == 70
+
+        # mode (string for heater)
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: DreoHeaterMode.HOTAIR}})
+        assert heater.mode == DreoHeaterMode.HOTAIR
+
+        # oscon
+        heater.handle_server_update({REPORTED_KEY: {OSCON_KEY: True}})
+        assert heater.oscon is True
+
+        # oscangle
+        heater.handle_server_update({REPORTED_KEY: {OSCANGLE_KEY: 90}})
+        assert heater.oscangle == 90
+
+        # muteon
+        heater.handle_server_update({REPORTED_KEY: {MUTEON_KEY: False}})
+        assert heater._mute_on is False
+
+        # ptcon (PTC on implies device on)
+        heater._is_on = False
+        heater.handle_server_update({REPORTED_KEY: {PTCON_KEY: True}})
+        assert heater.ptcon is True
+        assert heater.poweron is True  # inferred from PTC turning on
+
+        # ptcon off does not force device off
+        heater.handle_server_update({REPORTED_KEY: {PTCON_KEY: False}})
+        assert heater.ptcon is False
+
+        # lighton
+        heater.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: False}})
+        assert heater._light_on is False
+
+        # ecolevel (target temperature)
+        heater.handle_server_update({REPORTED_KEY: {ECOLEVEL_KEY: 75}})
+        assert heater.ecolevel == 75
+
+        # childlockon
+        heater.handle_server_update({REPORTED_KEY: {CHILDLOCKON_KEY: True}})
+        assert heater.childlockon is True
+
+        # tempoffset
+        heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 2}})
+        assert heater._tempoffset == 2
+
+    def test_HSH009S_setters_send_commands(self):  # pylint: disable=invalid-name
+        """Test that heater setters send the correct commands."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        # oscon setter
+        heater._oscon = False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.oscon = True
+            mock_send_command.assert_called_once_with(heater, {OSCON_KEY: True})
+
+        # Duplicate value -- no command
+        heater._oscon = True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.oscon = True
+            mock_send_command.assert_not_called()
+
+        # oscangle setter
+        heater._oscangle = 120
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.oscangle = 90
+            mock_send_command.assert_called_once_with(heater, {OSCANGLE_KEY: 90})
+
+        # Duplicate value -- no command
+        heater._oscangle = 90
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.oscangle = 90
+            mock_send_command.assert_not_called()
+
+        # panel_sound setter (inverts mute)
+        heater._mute_on = True  # currently muted (sound off)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.panel_sound = True  # turn sound on -> muteon=False
+            mock_send_command.assert_called_once_with(heater, {MUTEON_KEY: False})
+
+        # Duplicate value -- no command
+        heater._mute_on = False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.panel_sound = True  # sound already on (muteon=False)
+            mock_send_command.assert_not_called()
+
+        # ptcon setter
+        heater._ptc_on = False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ptcon = True
+            mock_send_command.assert_called_once_with(heater, {PTCON_KEY: True})
+
+        # Duplicate value -- no command
+        heater._ptc_on = True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ptcon = True
+            mock_send_command.assert_not_called()
+
+        # childlockon setter
+        heater._childlockon = False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.childlockon = True
+            mock_send_command.assert_called_once_with(heater, {CHILDLOCKON_KEY: True})
+
+        # Duplicate value -- no command
+        heater._childlockon = True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.childlockon = True
+            mock_send_command.assert_not_called()
+
+    def test_HSH009S_ecolevel_setter(self):  # pylint: disable=invalid-name
+        """Test ecolevel setter sends correct command."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ecolevel = 68
+            mock_send_command.assert_called_once_with(heater, {ECOLEVEL_KEY: 68})
+
+        # Duplicate value -- no command
+        heater._ecolevel = 68
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ecolevel = 68
+            mock_send_command.assert_not_called()
+
+    def test_HSH009S_devon_setter(self):  # pylint: disable=invalid-name
+        """Test devon setter sends correct command."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        heater._dev_on = False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.devon = True
+            mock_send_command.assert_called_once_with(heater, {DEVON_KEY: True})
+
+        # Duplicate value -- no command
+        heater._dev_on = True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.devon = True
+            mock_send_command.assert_not_called()
+
+    def test_HSH009S_lighton_setter(self):  # pylint: disable=invalid-name
+        """Test lighton setter sends the inverted display auto-off command."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        # Manually set _light_on to a non-None value to enable the setter
+        # (HSH009S state may not have a lighton field; we simulate a device that supports it)
+        heater._light_on = True  # auto-off is ON
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            # lighton property = not _light_on; setting lighton=True flips to auto-off OFF
+            heater.lighton = True  # turn display auto-off OFF -> send LIGHTON_KEY: False
+            mock_send_command.assert_called_once_with(heater, {LIGHTON_KEY: False})
+
+        # Duplicate value -- no command (_light_on=False -> lighton property is True; already True)
+        heater._light_on = False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.lighton = True
+            mock_send_command.assert_not_called()
+
+    def test_HSH009S_poweron_mode_off(self):  # pylint: disable=invalid-name
+        """Test that poweron=False sets mode to OFF."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        heater._mode = DreoHeaterMode.HOTAIR
+        heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        assert heater.poweron is False
+        assert heater.mode == DreoHeaterMode.OFF
