@@ -175,7 +175,15 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def temperature(self):
         """Get the temperature"""
-        return self._temperature
+        temp = self._temperature
+        if (temp is not None and self.temperature_offset is not None):
+            temp += self.temperature_offset
+        return temp
+
+    @property
+    def temperature_offset(self):
+        """Get the temperature calibration value"""
+        return self._tempoffset
 
     @property
     def temperature_units(self) -> TemperatureUnit:

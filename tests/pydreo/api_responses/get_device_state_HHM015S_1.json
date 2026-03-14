@@ -1,0 +1,144 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {
+                "state": -48,
+                "timestamp": 1771972715
+            },
+            "ledlevel": {
+                "state": 2,
+                "timestamp": 1771972715
+            },
+            "poweron": {
+                "state": false,
+                "timestamp": 1771972715
+            },
+            "scheid": {
+                "state": 0,
+                "timestamp": 1771972715
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 1771972715
+                },
+                "timestamp": null
+            },
+            "rhoffset": {
+                "state": 0,
+                "timestamp": 1771972715
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1771972715
+            },
+            "rhsleeplevel": {
+                "state": 70,
+                "timestamp": 1771972715
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1771972715
+            },
+            "mode": {
+                "state": 0,
+                "timestamp": 1771972715
+            },
+            "network_latency": {
+                "state": 37,
+                "timestamp": 1771972715
+            },
+            "rgbmode": {
+                "state": 0,
+                "timestamp": 1771972715
+            },
+            "module_hardware_model": {
+                "state": "HeFi",
+                "timestamp": 1771972715
+            },
+            "rgblevel": {
+                "state": 2,
+                "timestamp": 1771972715
+            },
+            "mcu_firmware_version": {
+                "state": "0.0.1",
+                "timestamp": 1771972715
+            },
+            "filteron": {
+                "state": false,
+                "timestamp": 1771972715
+            },
+            "module_hardware_mac": "HHM015S_1",
+            "rhautolevel": {
+                "state": 60,
+                "timestamp": 1771972715
+            },
+            "muteon": {
+                "state": false,
+                "timestamp": 1771972715
+            },
+            "suspend": {
+                "state": true,
+                "timestamp": 1771972718
+            },
+            "mcu_hardware_model": {
+                "state": "midea/US",
+                "timestamp": 1771972715
+            },
+            "wifi_ssid": "HHM015S_1",
+            "module_firmware_version": {
+                "state": "3.7.16",
+                "timestamp": 1771972715
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1771972715
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1771972715
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 1771972715
+                },
+                "timestamp": null
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1771972715
+            },
+            "rh": {
+                "state": 31,
+                "timestamp": 1771972718
+            },
+            "foglevel": {
+                "state": 6,
+                "timestamp": 1771972715
+            },
+            "rgbth": {
+                "state": "30,60",
+                "timestamp": 1771972715
+            },
+            "filtertime": {
+                "state": 100,
+                "timestamp": 1771972715
+            },
+            "worktime": {
+                "state": 0,
+                "timestamp": 1771972715
+            },
+            "rgbcolor": {
+                "state": 30719,
+                "timestamp": 1771972715
+            }
+        },
+        "sn": "HHM015S_1",
+        "productId": "1892879795729002498",
+        "region": "us-east-2/emq",
+        "deviceInfo": null
+    }
+}
