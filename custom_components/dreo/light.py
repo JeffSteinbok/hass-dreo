@@ -117,9 +117,9 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity): # pylint: disable=abstract-met
         # Determine color mode based on device capabilities
         # Color mode affects what controls are shown in the Home Assistant UI
         self._color_mode : ColorMode = ColorMode.ONOFF  # Default: simple on/off
-        if self.device.is_feature_supported("color_temperature"):
+        if self.device.is_feature_supported(color_temp_attr):
             self._color_mode = ColorMode.COLOR_TEMP  # Supports brightness + color temperature
-        elif self.device.is_feature_supported("brightness"):
+        elif self.device.is_feature_supported(brightness_attr):
             self._color_mode = ColorMode.BRIGHTNESS  # Supports brightness only
 
         _LOGGER.info(
@@ -193,7 +193,7 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity): # pylint: disable=abstract-met
         Converts from device-specific brightness scale to Home Assistant's 0-255 scale.
         Returns None if device doesn't support brightness control.
         """
-        if not self.device.is_feature_supported("brightness"):
+        if not self.device.is_feature_supported(self._brightness_attr):
             return None
 
         # Convert device's brightness scale (e.g., 1-100) to HA's 0-255 scale
@@ -206,7 +206,7 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity): # pylint: disable=abstract-met
         Converts from device's percentage-based color temperature to Kelvin (2700K-6500K).
         Returns None if device doesn't support color temperature control.
         """
-        if not self.device.is_feature_supported("color_temperature"):
+        if not self.device.is_feature_supported(self._color_temp_attr):
             return None
 
         # Convert device's percentage (0-100) to Kelvin range (2700K-6500K)
