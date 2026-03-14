@@ -1,7 +1,7 @@
 """Dreo API for controling evaporative coolers."""
 
 import logging
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, Optional
 from .pydreofanbase import PyDreoFanBase
 
 from .constant import (
@@ -198,6 +198,20 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
        """Return the water level status"""
        return self._water_level
    
+    @staticmethod
+    def _map_wind_mode_from_rest(index: int) -> Optional[int]:
+        """Convert REST API windmode 0-based index to internal int (1-4).
+
+        The REST API returns 0-based indices into the WINDMODES list, while
+        the WebSocket and internal storage use the 1-4 int values defined in
+        WINDMODE_MAP.  Extracting this conversion makes both paths consistent
+        and individually testable.
+        """
+        if index is None or index < 0 or index >= len(WINDMODES):
+            _LOGGER.error("_map_wind_mode_from_rest: invalid windmode index %s", index)
+            return None
+        return WINDMODE_MAP.get(WINDMODES[index])
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API"""
         _LOGGER.debug("update_state: update_state")
@@ -206,10 +220,13 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, HUMIDITY_TARGET_KEY)
-        self._humidify = self.get_state_update_value_mapped(state, HUMIDIFY_MODE_KEY, HUMIDIFY_MODE_MAP)
+        raw_humidify = self.get_state_update_value(state, HUMIDIFY_MODE_KEY)
+        self._humidify = (raw_humidify == 2) if raw_humidify is not None else None
         self._oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
-        self._wind_mode = WINDMODE_MAP[WINDMODES[self.get_state_update_value(state, WIND_MODE_KEY)]]
+        self._wind_mode = self._map_wind_mode_from_rest(
+            self.get_state_update_value(state, WIND_MODE_KEY)
+        )
         self._work_time = self.get_state_update_value(state, WORKTIME_KEY)
         self._water_level = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
 
@@ -232,16 +249,21 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
 
         val_humidify = self.get_server_update_key_value(message, HUMIDIFY_MODE_KEY)
         if isinstance(val_humidify, int):
-            val_humidify = HUMIDIFY_MODE_MAP[val_humidify]
-            self._humidify =  val_humidify
+            self._humidify = (val_humidify == 2)
 
         val_target_humidity = self.get_server_update_key_value(message, HUMIDITY_TARGET_KEY)
         if isinstance(val_target_humidity, int):
             self._target_humidity = val_target_humidity
 
         val_childlockon = self.get_server_update_key_value(message, CHILDLOCKON_KEY)
-        if (isinstance(val_childlockon, bool)):
+        if isinstance(val_childlockon, bool):
             self._childlockon = val_childlockon
+
+        val_wind_mode = self.get_server_update_key_value(message, WIND_MODE_KEY)
+        if isinstance(val_wind_mode, int):
+            # WebSocket sends 1-4 directly — store as int to stay consistent with
+            # the int stored by update_state via _map_wind_mode_from_rest().
+            self._wind_mode = val_wind_mode
 
         val_work_time = self.get_server_update_key_value(message, WORKTIME_KEY)
         if isinstance(val_work_time, int):
@@ -249,6 +271,5 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             
         val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
         if isinstance(val_water_level, int):
-            val_water_level = WATER_LEVEL_STATUS_MAP[val_water_level]
-            self._water_level = val_water_level
+            self._water_level = WATER_LEVEL_STATUS_MAP[val_water_level]
 

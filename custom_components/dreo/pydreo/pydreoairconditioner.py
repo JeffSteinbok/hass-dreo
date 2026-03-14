@@ -460,7 +460,7 @@ class PyDreoAC(PyDreoBaseDevice):
             self.work_time = val_work_time
 
         val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED_KEY)
-        if isinstance(val_work_time, int):
+        if isinstance(val_temp_target_reached, int):
             self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"
 
     def set_ha_temperature_unit_is_celsius(self, is_celsius: bool) -> None:
