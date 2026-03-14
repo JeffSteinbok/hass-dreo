@@ -153,6 +153,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @property
     def mode(self):
         """Return the current mode."""
+        # Handle case where modes haven't been initialized
+        if self._modes is None:
+            _LOGGER.debug("mode: _modes is None, returning None")
+            return None
         
         str_value : str = Helpers.name_from_value(self._modes, self._mode)
         if (str_value is None):
