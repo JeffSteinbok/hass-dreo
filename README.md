@@ -8,6 +8,19 @@
 
 Unofficial HomeAssistant integration for Dreo brand smart devices. Currently supports most models of Fans, Air Conditioners, Humidifiers, Dehumidifiers and Space Heaters as well as ChefMaker. I do not work for Dreo; just something I'm doing for fun.
 
+## hass-dreo vs. the Official Dreo Integration (hass-dreoverse)
+
+Dreo also maintains an [official Home Assistant integration](https://github.com/dreo-team/hass-dreoverse). Here's the short version of how they differ:
+
+| | **hass-dreo** (this project) | **hass-dreoverse** (official) |
+|---|---|---|
+| API used | Mobile app API | Dreo Open API |
+| Device feature coverage | ~61 state fields — more controls exposed | ~36 state fields — fewer controls |
+| Notable extras here | Timers, PTC heater status, PM2.5 sensors, ChefMaker, cruise control, work time, and more | Not available |
+| Support model | Community-maintained | Officially maintained by Dreo |
+
+**tl;dr** — If you want the broadest feature set and control over your Dreo devices in Home Assistant, use this integration. If you prefer an officially-supported integration with a smaller feature set, use hass-dreoverse.
+
 You can purchase these devices from Amazon: [Dreo Fans on Amazon](https://www.amazon.com/gp/search?ie=UTF8&tag=jeffsteinbok-20&linkCode=ur2&linkId=264bf9285db76a172f81bad93760d162&camp=1789&creative=9325&index=hpc&keywords=Dreo%20Smart%20Fan)
 
 This integration is based on the engineering that Gavin Zyonse did for the HomeBridge integration here: <https://github.com/zyonse/homebridge-dreo>.
