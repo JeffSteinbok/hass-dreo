@@ -1,4 +1,4 @@
-"""Support additionl Numberes for some Dreo devices"""
+"""Support additional Numbers for some Dreo devices"""
 # Suppress warnings about DataClass constructors
 # pylint: disable=E1123
 
@@ -189,7 +189,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Dreo Number platform."""
-    _LOGGER.info("get_device_range: Starting Dreo Number Platform")
+    _LOGGER.info("async_setup_entry: Starting Dreo Number Platform")
 
     pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
@@ -218,7 +218,7 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-m
         self._device_class_name = description.device_class
 
         _LOGGER.info(
-            "new DreoSensorHA instance(%s), unique ID %s",
+            "new DreoNumberHA instance(%s), unique ID %s",
             self._attr_name,
             self._attr_unique_id)
 
