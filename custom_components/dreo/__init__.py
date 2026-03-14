@@ -52,13 +52,13 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     if not login:
         _LOGGER.error("async_setup_entry: Unable to login to the dreo server")
-        return False
+        raise ConfigEntryNotReady("Unable to login to the Dreo server")
 
     load_devices = await hass.async_add_executor_job(pydreo_manager.load_devices)
 
     if not load_devices:
         _LOGGER.error("async_setup_entry: Unable to load devices from the dreo server")
-        return False
+        raise ConfigEntryNotReady("Unable to load devices from the Dreo server")
 
     _LOGGER.debug("async_setup_entry: Checking for supported installed device types")
     device_types = set()

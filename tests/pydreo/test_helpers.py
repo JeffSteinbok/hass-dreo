@@ -131,4 +131,74 @@ class TestHelpers:
         assert len(names) == 5
         assert names[0] == "off"
         assert names[-1] == "auto"
+
+    def test_hash_password_simple(self):
+        """Test hash_password() with simple password."""
+        hashed = Helpers.hash_password("simple123")
+        assert hashed == "ee2da41de9eb269679017db7613bc778"
+        assert len(hashed) == 32  # MD5 produces 32-character hex string
+
+    def test_hash_password_with_special_characters(self):
+        """Test hash_password() with passwords containing special characters."""
+        # Test common special characters that might appear in passwords
+        test_cases = [
+            ("Test@Pass123", "653207b624fb1980f4348606dbe9c115"),
+            ("P@ssw0rd!", "8a24367a1f46c141048752f2d5bbd14b"),
+            ("user&pass", "c1c852bf3981df03b989a6f466af9d62"),
+            ("test=value", "84fb50487551d2e89da17080d0ebde85"),
+            ("test?query", "4a4882479489d59e6a3226a61128d535"),
+            ("test#hash", "656ce5d715c16b0d96d45b93d21a360e"),
+            ("test+plus", "875f0982fdc91507d3686b9820d5a2b5"),
+            ("test%percent", "71770b09d686ad7ee626dc52b882f4e1"),
+            ("test/slash", "7827c077e17fe24f53637576418ef205"),
+        ]
+        for password, expected_hash in test_cases:
+            hashed = Helpers.hash_password(password)
+            assert hashed == expected_hash, f"Failed for password: {password}"
+            assert len(hashed) == 32
+
+    def test_hash_password_with_quotes_and_backslashes(self):
+        """Test hash_password() with quotes and backslashes."""
+        # These are particularly problematic for JSON encoding
+        test_cases = [
+            'pass"word',  # double quote
+            "pass'word",  # single quote
+            "pass\\word",  # backslash
+            'pass"\\\'word',  # mixed quotes and backslash
+        ]
+        for password in test_cases:
+            hashed = Helpers.hash_password(password)
+            assert isinstance(hashed, str)
+            assert len(hashed) == 32
+            # Verify it's a valid hex string
+            int(hashed, 16)  # Should not raise ValueError
+
+    def test_hash_password_with_unicode(self):
+        """Test hash_password() with Unicode characters."""
+        test_cases = [
+            "пароль123",  # Cyrillic
+            "密码123",  # Chinese
+            "パスワード123",  # Japanese
+            "🔒secure123",  # Emoji
+            "café@123",  # Accented characters
+        ]
+        for password in test_cases:
+            hashed = Helpers.hash_password(password)
+            assert isinstance(hashed, str)
+            assert len(hashed) == 32
+            # Verify it's a valid hex string
+            int(hashed, 16)  # Should not raise ValueError
+
+    def test_hash_password_empty_string(self):
+        """Test hash_password() with empty string."""
+        hashed = Helpers.hash_password("")
+        assert hashed == "d41d8cd98f00b204e9800998ecf8427e"  # MD5 of empty string
+        assert len(hashed) == 32
+
+    def test_hash_password_consistency(self):
+        """Test that hash_password() produces consistent results."""
+        password = "TestPass@123"
+        hash1 = Helpers.hash_password(password)
+        hash2 = Helpers.hash_password(password)
+        assert hash1 == hash2
     

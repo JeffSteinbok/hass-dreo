@@ -14,6 +14,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HTF008S
 - DR-HTF009S
 - DR-HTF010S
+- DR-HTF018S
 
 ### Air Circulators
 
@@ -59,6 +60,7 @@ All DR-HHM* models should have basic support.
 
 - DR-HDH001S
 - DR-HDH002S
+- DR-HDH005S
 
 ## Space Heaters
 

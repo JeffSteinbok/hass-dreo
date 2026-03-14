@@ -151,3 +151,56 @@ class TestPyDreoHumidifier(TestBase):
         # Check that water_level is accessible and returns the expected value
         assert humidifier.is_feature_supported('water_level') is True
         assert humidifier.water_level == "Ok"
+
+    def test_HHM001S_power_cycle_stale_state(self):  # pylint: disable=invalid-name
+        """Test that turn_on command is sent even when cached state is stale after power cycle."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+        
+        # Simulate device power cycle scenario:
+        # 1. Device is physically OFF (power cycled)
+        # 2. Cloud sends stale WebSocket state with poweron: true
+        # 3. User calls turn_on
+        # 4. Command should be sent even though cached state shows ON
+        
+        # Simulate stale WebSocket update reporting device is ON (but it's actually OFF)
+        message = {
+            "method": "control-report",
+            "devicesn": "HHM001S_1",
+            "reported": {
+                "poweron": True
+            }
+        }
+        humidifier.handle_server_update(message)
+        assert humidifier.is_on is True  # Cached state shows ON
+        
+        # User calls turn_on - command should be sent despite cached state being ON
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.is_on = True  # Attempt to turn on
+            # Command MUST be sent even though cached state matches
+            mock_send_command.assert_called_once_with(humidifier, {POWERON_KEY: True})
+
+    def test_HHM003S_power_cycle_stale_state(self):  # pylint: disable=invalid-name
+        """Test that turn_on command is sent even when cached state is stale for HHM003S."""
+        self.get_devices_file_name = "get_devices_HHM003S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+        
+        # Simulate stale WebSocket update reporting device is ON
+        message = {
+            "method": "control-report",
+            "devicesn": "HHM003S_1",
+            "reported": {
+                "poweron": True
+            }
+        }
+        humidifier.handle_server_update(message)
+        assert humidifier.is_on is True
+        
+        # Command should be sent even when cached state matches
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.is_on = True
+            mock_send_command.assert_called_once_with(humidifier, {POWERON_KEY: True})

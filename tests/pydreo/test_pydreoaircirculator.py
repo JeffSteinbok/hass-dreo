@@ -310,3 +310,36 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.temperature is not None
         assert isinstance(fan.temperature, (int, float))
 
+        # Test atmosphere (RGB) light support - HPF008S has atm light
+        assert fan.is_feature_supported("atm_light") is True
+        assert fan.atm_light_on is False  # Initial state from JSON: atmon=false
+        assert fan.atm_brightness == 1   # Initial state from JSON: atmbri=1
+        assert fan.atm_color_rgb is not None
+        assert fan.atm_mode == 1         # Initial state from JSON: atmmode=1
+
+        # Test atm_light_on command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_light_on = True
+            mock_send_command.assert_called_once_with(fan, {ATMON_KEY: True})
+        fan.handle_server_update({ REPORTED_KEY: {ATMON_KEY: True} })
+        assert fan.atm_light_on is True
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_light_on = False
+            mock_send_command.assert_called_once_with(fan, {ATMON_KEY: False})
+        fan.handle_server_update({ REPORTED_KEY: {ATMON_KEY: False} })
+
+        # Test atm_brightness command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_brightness = 5
+            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 5})
+        fan.handle_server_update({ REPORTED_KEY: {ATMBRI_KEY: 5} })
+        assert fan.atm_brightness == 5
+
+        # Test atm_color_rgb command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (255, 0, 0)  # Red
+            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
+        fan.handle_server_update({ REPORTED_KEY: {ATMCOLOR_KEY: 16711680} })
+        assert fan.atm_color_rgb == (255, 0, 0)
+

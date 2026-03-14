@@ -104,9 +104,6 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
         _LOGGER.debug("is_on: is_on.setter - %s", value)
-        if self._is_on == value:
-            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
-            return
         self._send_command(POWERON_KEY, value)
 
     @property
@@ -153,6 +150,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @property
     def mode(self):
         """Return the current mode."""
+        # Handle case where modes haven't been initialized
+        if self._modes is None:
+            _LOGGER.debug("mode: _modes is None, returning None")
+            return None
         
         str_value : str = Helpers.name_from_value(self._modes, self._mode)
         if (str_value is None):
