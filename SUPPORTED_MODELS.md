@@ -71,7 +71,8 @@ All DR-HHM* models should have basic support.
 - DR-HSH006S
 - DR-HSH009S
 - DR-HSH009AS
-- DR-HSH010S
+- DR-HSH010S (OH310S)
+- DR-HSH011S (OH521S)
 - DR-HSH0017S
 - DR-HSH034S
 

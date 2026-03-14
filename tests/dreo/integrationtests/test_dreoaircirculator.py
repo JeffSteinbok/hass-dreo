@@ -241,6 +241,10 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert rgb_light is not None
             assert rgb_light.is_on is False  # atmon=false in initial state
 
+            # Verify brightness is reported correctly (atmbri=1, scale 1-5)
+            assert rgb_light.brightness is not None
+            assert rgb_light.brightness == 51  # 1/5 * 255 = 51
+
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgb_light.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: True})
@@ -255,6 +259,13 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
                 assert mock_send_command.call_count == 2  # atmon + atmcolor
                 mock_send_command.assert_any_call(pydreo_fan, {ATMCOLOR_KEY: 16711680})
+
+            # Test brightness control via turn_on
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on(brightness=255)  # Max brightness -> 5 on 1-5 scale
+                mock_send_command.assert_any_call(pydreo_fan, {ATMBRI_KEY: 5})
+            pydreo_fan.handle_server_update({ REPORTED_KEY: {ATMBRI_KEY: 5} })
+            assert rgb_light.brightness == 255
 
     def test_HAF003S_newer_firmware(self):  # pylint: disable=invalid-name
         """Test HAF003S fan with newer firmware (Device 1 - with cruiseconf/fixedconf)."""

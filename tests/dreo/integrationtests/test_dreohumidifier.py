@@ -173,6 +173,43 @@ class TestDreoHumidifier(IntegrationTestBase):
             sensors = sensor.get_entries([pydreo_humidifier])
             self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
 
+    def test_HHM006S(self):  # pylint: disable=invalid-name
+        """Load HHM006S (HM306S) humidifier and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+
+            self.get_devices_file_name = "get_devices_HHM006S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+            assert pydreo_humidifier.type == 'Humidifier'
+            assert pydreo_humidifier.humidity == 65
+            assert pydreo_humidifier.model == "DR-HHM006S"
+            assert pydreo_humidifier.series_name == "HM306S"
+
+            ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
+            assert ha_humidifier.is_on is False  # Device is off in test data
+            assert ha_humidifier.current_humidity == 65
+            assert ha_humidifier.target_humidity == 55
+            assert ha_humidifier.unique_id is not None
+            assert ha_humidifier.name is not None
+
+            # Test modes - HHM006S supports manual/auto/sleep
+            assert ha_humidifier.available_modes is not None
+            assert len(ha_humidifier.available_modes) == 3
+            assert "manual" in ha_humidifier.available_modes
+            assert "auto" in ha_humidifier.available_modes
+            assert "sleep" in ha_humidifier.available_modes
+            assert ha_humidifier.mode == "auto"  # mode=1 in test data
+
+            # Check to see what numbers are added to humidifiers
+            numbers = number.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(numbers, [])
+
+            # Check to see what sensors are added
+            sensors = sensor.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning"])
+
     def test_HHM003S_mode_changes(self):  # pylint: disable=invalid-name
         """Test that HHM003S (HM713S/813S) mode changes call schedule_update_ha_state."""
         
