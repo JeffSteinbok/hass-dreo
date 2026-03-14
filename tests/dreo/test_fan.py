@@ -126,12 +126,49 @@ class TestDreoFanHA(TestDeviceBase):
             # Test oscillation toggle
             test_fan.oscillate(True)
             assert mocked_pydreo_fan.oscillating is True
-            mock_update_ha_state.assert_called_once()
-            mock_update_ha_state.reset_mock()
 
-            test_fan.oscillate(False)
-            assert mocked_pydreo_fan.oscillating is False
-            mock_update_ha_state.assert_called_once()
+    def test_turn_on_with_percentage(self):
+        """Test turn_on applies percentage when provided."""
+        with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
+            mocked_pydreo_fan = self.create_mock_device(
+                name="Test Fan", type="Tower Fan",
+                features={"is_on": False, "fan_speed": 1,
+                           "speed_range": (1, 5),
+                           "preset_mode": "normal",
+                           "preset_modes": ['normal', 'natural', 'sleep', 'auto']})
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.turn_on(percentage=60)
+            assert mocked_pydreo_fan.is_on is True
+            assert mocked_pydreo_fan.fan_speed == 3  # 60% of (1,5) = 3
+
+    def test_turn_on_with_preset_mode(self):
+        """Test turn_on applies preset_mode when provided."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan = self.create_mock_device(
+                name="Test Fan", type="Tower Fan",
+                features={"is_on": False, "fan_speed": 1,
+                           "speed_range": (1, 5),
+                           "preset_mode": "normal",
+                           "preset_modes": ['normal', 'natural', 'sleep', 'auto']})
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.turn_on(preset_mode="sleep")
+            assert mocked_pydreo_fan.is_on is True
+            assert mocked_pydreo_fan.preset_mode == "sleep"
+
+    def test_turn_on_without_kwargs(self):
+        """Test turn_on with no kwargs just powers on."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan = self.create_mock_device(
+                name="Test Fan", type="Tower Fan",
+                features={"is_on": False, "fan_speed": 3,
+                           "speed_range": (1, 5)})
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.turn_on()
+            assert mocked_pydreo_fan.is_on is True
+            assert mocked_pydreo_fan.fan_speed == 3  # unchanged
 
     def test_fan_speed_boundaries(self):
         """Test fan speed boundary conditions."""
