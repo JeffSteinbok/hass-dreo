@@ -152,6 +152,66 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.is_feature_supported('water_level') is True
         assert humidifier.water_level == "Ok"
 
+    def test_HHM015S(self):  # pylint: disable=invalid-name
+        """Load HHM015S (HM755S) and test humidity properties."""
+
+        self.get_devices_file_name = "get_devices_HHM015S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+        assert humidifier.model == 'DR-HHM015S'
+        assert humidifier.series_name == 'HM755S'
+        assert humidifier.is_feature_supported('is_on') is True
+        assert humidifier.is_feature_supported('humidity') is True
+        assert humidifier.is_feature_supported('target_humidity') is True
+        assert humidifier.is_on is False
+        assert humidifier.humidity == 31
+        assert humidifier.target_humidity == 60
+
+    def test_HHM015S_websocket_updates(self):  # pylint: disable=invalid-name
+        """Test that humidity values are updated from websocket messages for HHM015S."""
+        self.get_devices_file_name = "get_devices_HHM015S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        # Initial values
+        assert humidifier.humidity == 31
+        assert humidifier.target_humidity == 60
+
+        # Simulate websocket update for humidity
+        message = {
+            "method": "control-report",
+            "devicesn": "HHM015S_1",
+            "reported": {
+                "rh": 45
+            }
+        }
+        humidifier.handle_server_update(message)
+        assert humidifier.humidity == 45
+
+        # Simulate websocket update for target_humidity
+        message = {
+            "method": "control-report",
+            "devicesn": "HHM015S_1",
+            "reported": {
+                "rhautolevel": 65
+            }
+        }
+        humidifier.handle_server_update(message)
+        assert humidifier.target_humidity == 65
+
+    def test_HHM015S_water_level_property(self):  # pylint: disable=invalid-name
+        """Test that water_level property works correctly for HHM015S."""
+        self.get_devices_file_name = "get_devices_HHM015S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier : PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        # Check that water_level is accessible and returns the expected value
+        assert humidifier.is_feature_supported('water_level') is True
+        assert humidifier.water_level == "Ok"
+
     def test_HHM001S_power_cycle_stale_state(self):  # pylint: disable=invalid-name
         """Test that turn_on command is sent even when cached state is stale after power cycle."""
         self.get_devices_file_name = "get_devices_HHM001S.json"
