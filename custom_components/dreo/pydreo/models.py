@@ -277,6 +277,7 @@ SUPPORTED_DEVICES = {
         ],
     ),
     "DR-HSH010S": DreoHeaterDeviceDetails(),
+    "DR-HSH011S": DreoHeaterDeviceDetails(),
 
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH714S": DreoHeaterDeviceDetails(
