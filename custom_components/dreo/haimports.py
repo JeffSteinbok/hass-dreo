@@ -19,6 +19,7 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dis
 
 from homeassistant.components.diagnostics import REDACTED 
 from homeassistant.config_entries import ConfigEntry, OptionsFlow, ConfigFlowResult
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
