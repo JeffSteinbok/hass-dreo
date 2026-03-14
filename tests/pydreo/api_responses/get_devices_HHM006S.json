@@ -1,0 +1,63 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "list": [
+      {
+        "deviceId": "2024217162477998081",
+        "sn": "HHM006S_1",
+        "brand": "Dreo",
+        "model": "DR-HHM006S",
+        "productId": "1787385943342247937",
+        "productName": "Humidifier",
+        "deviceName": "DEBUGTEST - Humidifier - DR-HHM006S",
+        "shared": false,
+        "series": null,
+        "seriesName": "HM306S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202411/1343452ad87ba747589d06df65d8773c50.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202411/137c491a3c63094652b19a032e0014ad28.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "version": {
+            "minControlVer": "2.7.6",
+            "minPairingVer": "2.7.6"
+          }
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202409/1912e50d61f1dd41ac9e7dc3320b43b256.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202409/192561e478de904d7d9f4b4c79c372b4ba.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202512/5abeb942eb08148ef9a80bf3f2c878ee4.pdf",
+            "icon": null,
+            "desc": "DR-HHM006S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

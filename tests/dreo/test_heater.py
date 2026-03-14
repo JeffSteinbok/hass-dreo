@@ -191,3 +191,55 @@ class TestDreoHeaterHA(TestDeviceBase):
         # Verify the target temperature was updated
         assert mocked_pydreo_heater.ecolevel == 80
         assert test_heater.target_temperature == 80
+
+    def test_set_temperature_rounds_instead_of_truncating(self):
+        """Test that set_temperature rounds fractional Fahrenheit values instead of truncating.
+
+        When HA is configured in Celsius and the entity uses Fahrenheit,
+        HA converts the user's Celsius input to Fahrenheit before calling set_temperature.
+        For example, 21°C = 69.8°F. Using int() would truncate to 69°F (≈20.6°C),
+        but round() correctly gives 70°F (≈21.1°C).
+        """
+        mocked_pydreo_heater : PyDreoDeviceMock = self.create_mock_device(
+            name="HSH003S Test Heater",
+            serial_number="123456",
+            features={
+                "poweron": True,
+                "temperature": 67,
+                "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+                "htalevel": 3,
+                "ecolevel": 72,
+                "mode": DreoHeaterMode.ECO,
+            },
+            modes=[
+                DreoHeaterMode.COOLAIR,
+                DreoHeaterMode.HOTAIR,
+                DreoHeaterMode.ECO,
+                DreoHeaterMode.OFF,
+            ],
+            swing_modes=None
+        )
+
+        test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
+
+        from homeassistant.components.climate import ATTR_TEMPERATURE
+
+        # 21°C = 69.8°F - should round to 70, not truncate to 69
+        test_heater.set_temperature(**{ATTR_TEMPERATURE: 69.8})
+        assert mocked_pydreo_heater.ecolevel == 70
+        assert test_heater.target_temperature == 70
+
+        # 25°C = 77°F - exact conversion, no rounding needed
+        test_heater.set_temperature(**{ATTR_TEMPERATURE: 77.0})
+        assert mocked_pydreo_heater.ecolevel == 77
+        assert test_heater.target_temperature == 77
+
+        # 18°C = 64.4°F - should round to 64, not truncate to 64 (same result here)
+        test_heater.set_temperature(**{ATTR_TEMPERATURE: 64.4})
+        assert mocked_pydreo_heater.ecolevel == 64
+        assert test_heater.target_temperature == 64
+
+        # 22°C = 71.6°F - should round to 72, not truncate to 71
+        test_heater.set_temperature(**{ATTR_TEMPERATURE: 71.6})
+        assert mocked_pydreo_heater.ecolevel == 72
+        assert test_heater.target_temperature == 72
