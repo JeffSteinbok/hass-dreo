@@ -52,9 +52,11 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(sensors, [])
 
             # Test HVAC mode changes
+            # Device is already ON and in HEAT mode. Setting HEAT again should
+            # still send the poweron command (fixes stale state after power cycle)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
@@ -158,9 +160,10 @@ class TestDreoHeater(IntegrationTestBase):
             # Note that this device was set to OFF/Hotair, so mode should remain HEAT
             assert heater_ha.hvac_mode == HVACMode.HEAT
 
+            # Device is now ON. Setting HEAT again should still send poweron command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             pydreo_heater.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
             pydreo_heater.handle_server_update({ REPORTED_KEY: {MODE_KEY: "eco"} })
@@ -194,13 +197,14 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(sensors, [])
 
             # Test turning heater on and setting mode
+            # Device is already ON. Setting HEAT should still send poweron command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
@@ -264,9 +268,10 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({ REPORTED_KEY: {HTALEVEL_KEY: 3} })
 
             # Test HVAC mode changes
+            # Device is already ON. Setting HEAT should still send poweron command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:  
                 heater_ha.set_hvac_mode(HVACMode.HEAT)
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)

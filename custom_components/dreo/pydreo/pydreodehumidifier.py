@@ -57,9 +57,6 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the dehumidifier is on or off"""
         _LOGGER.debug("is_on: is_on.setter - %s", value)
-        if self._is_on == value:
-            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
-            return
         self._send_command(POWERON_KEY, value)
 
     @property
