@@ -190,13 +190,16 @@ class PyDreoBaseDevice:
         self._attr_cbs.append(cb)
 
     def _do_callbacks(self):
-        """Run all registered callback"""
+        """Run all registered callbacks."""
         cbs = []
         with self._lock:
             for cb in self._attr_cbs:
                 cbs.append(cb)
         for cb in cbs:
-            cb()
+            try:
+                cb()
+            except Exception as ex:  # pylint: disable=broad-except
+                _LOGGER.error("_do_callbacks: Callback %s raised: %s", cb, ex)
 
     @property
     def device_definition(self) -> DreoDeviceDetails:
