@@ -375,13 +375,13 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
         timeron = self.get_state_update_value(state, TIMERON_KEY)
-        self._timer_on = timeron["du"]
+        self._timer_on = timeron.get("du") if isinstance(timeron, dict) else None
         self._cooldown = self.get_state_update_value(state, COOLDOWN_KEY)
         self._ptc_on = self.get_state_update_value(state, PTCON_KEY)
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
         self._ctlstatus = self.get_state_update_value(state, CTLSTATUS_KEY)
         timeroff = self.get_state_update_value(state, TIMEROFF_KEY)
-        self._timer_off = timeroff["du"]
+        self._timer_off = timeroff.get("du") if isinstance(timeroff, dict) else None
         self._ecolevel = self.get_state_update_value(state, ECOLEVEL_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)

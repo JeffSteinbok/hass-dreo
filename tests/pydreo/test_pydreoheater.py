@@ -466,3 +466,29 @@ class TestPyDreoHeater(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.ecolevel = eco_range[0]
             mock_send_command.assert_called_once_with(heater, {ECOLEVEL_KEY: eco_range[0]})
+
+    def test_HSH009S_timer_parsing_safe(self):  # pylint: disable=invalid-name
+        """Test that timer parsing handles None and missing 'du' gracefully."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater = self.pydreo_manager.devices[0]
+
+        # Timer with valid dict
+        heater.update_state({TIMERON_KEY: {"state": {"du": 120}}, TIMEROFF_KEY: {"state": {"du": 60}}})
+        assert heater._timer_on == 120
+        assert heater._timer_off == 60
+
+        # Timer with None value in state
+        heater.update_state({TIMERON_KEY: {"state": None}, TIMEROFF_KEY: {"state": None}})
+        assert heater._timer_on is None
+        assert heater._timer_off is None
+
+        # Timer key absent from state entirely
+        heater.update_state({})
+        assert heater._timer_on is None
+        assert heater._timer_off is None
+
+        # Timer with dict missing 'du' key
+        heater.update_state({TIMERON_KEY: {"state": {"other": 1}}, TIMEROFF_KEY: {"state": {"other": 2}}})
+        assert heater._timer_on is None
+        assert heater._timer_off is None
