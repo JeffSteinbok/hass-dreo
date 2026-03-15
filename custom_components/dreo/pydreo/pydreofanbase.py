@@ -137,7 +137,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
     @fan_speed.setter
     def fan_speed(self, fan_speed: int):
         """Set the fan speed."""
-        if fan_speed < 1 or fan_speed > self._speed_range[1]:
+        if fan_speed < self._speed_range[0] or fan_speed > self._speed_range[1]:
             _LOGGER.error("fan_speed: Fan speed %s is not in the acceptable range: %s",
                           fan_speed,
                           self._speed_range)
