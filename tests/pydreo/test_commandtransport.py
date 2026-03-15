@@ -157,36 +157,58 @@ class TestCommandTransport:
         assert "Command transport disabled" in str(exc_info.value)
         assert "Run start_transport first" in str(exc_info.value)
 
+    def test_send_message_no_event_loop_raises(self):
+        """Test that send_message raises when event loop is not available."""
+        callback = MagicMock()
+        transport = CommandTransport(callback)
+        transport._transport_enabled = True
+        transport._loop = None
+
+        with pytest.raises(RuntimeError) as exc_info:
+            transport.send_message({"command": "test"})
+        assert "event loop not available" in str(exc_info.value)
+
     def test_send_message_enabled(self):
         """Test that send_message calls ws.send when transport is enabled."""
         callback = MagicMock()
         transport = CommandTransport(callback)
         
-        # Enable transport
+        # Enable transport and set up mock event loop
         transport._transport_enabled = True
         
         # Create a mock websocket
         mock_ws = AsyncMock()
+        mock_ws.closed = False
         transport._ws = mock_ws
         
         test_message = {"command": "power", "value": "on"}
         
-        # Call send_message (it uses asyncio.run internally)
-        transport.send_message(test_message)
+        # Use a real event loop running in a thread to test send_message
+        loop = asyncio.new_event_loop()
+        transport._loop = loop
         
-        # Verify ws.send was called with the correct content
-        mock_ws.send.assert_called_once_with(test_message)
+        def run_loop():
+            loop.run_forever()
+        
+        t = threading.Thread(target=run_loop, daemon=True)
+        t.start()
+        try:
+            transport.send_message(test_message)
+            # Verify ws.send was called with the correct content
+            mock_ws.send.assert_called_once_with(test_message)
+        finally:
+            loop.call_soon_threadsafe(loop.stop)
+            t.join(timeout=5)
 
     def test_send_message_retry_on_failure(self):
         """Test that send_message retries on failure."""
         callback = MagicMock()
         transport = CommandTransport(callback)
         
-        # Enable transport
         transport._transport_enabled = True
         
-        # Create a mock websocket that fails twice then succeeds
         mock_ws = AsyncMock()
+        mock_ws.closed = False
         mock_ws.send.side_effect = [
             Exception("Connection error"),
             Exception("Connection error"),
@@ -196,35 +218,52 @@ class TestCommandTransport:
         
         test_message = {"command": "power", "value": "on"}
         
-        # Mock asyncio.sleep to avoid actual delays
-        with patch('asyncio.sleep', new_callable=AsyncMock):
-            transport.send_message(test_message)
+        loop = asyncio.new_event_loop()
+        transport._loop = loop
         
-        # Verify ws.send was called 3 times (2 failures + 1 success)
-        assert mock_ws.send.call_count == 3
-        mock_ws.send.assert_called_with(test_message)
+        def run_loop():
+            loop.run_forever()
+        
+        t = threading.Thread(target=run_loop, daemon=True)
+        t.start()
+        try:
+            with patch('asyncio.sleep', new_callable=AsyncMock):
+                transport.send_message(test_message)
+            assert mock_ws.send.call_count == 3
+            mock_ws.send.assert_called_with(test_message)
+        finally:
+            loop.call_soon_threadsafe(loop.stop)
+            t.join(timeout=5)
 
     def test_send_message_max_retries(self):
         """Test that send_message stops after MAX_RETRY_COUNT failures."""
         callback = MagicMock()
         transport = CommandTransport(callback)
         
-        # Enable transport
         transport._transport_enabled = True
         
-        # Create a mock websocket that always fails
         mock_ws = AsyncMock()
+        mock_ws.closed = False
         mock_ws.send.side_effect = Exception("Connection error")
         transport._ws = mock_ws
         
         test_message = {"command": "power", "value": "on"}
         
-        # Mock asyncio.sleep to avoid actual delays
-        with patch('asyncio.sleep', new_callable=AsyncMock):
-            transport.send_message(test_message)
+        loop = asyncio.new_event_loop()
+        transport._loop = loop
         
-        # Verify ws.send was called MAX_RETRY_COUNT times (3)
-        assert mock_ws.send.call_count == 3
+        def run_loop():
+            loop.run_forever()
+        
+        t = threading.Thread(target=run_loop, daemon=True)
+        t.start()
+        try:
+            with patch('asyncio.sleep', new_callable=AsyncMock):
+                transport.send_message(test_message)
+            assert mock_ws.send.call_count == 3
+        finally:
+            loop.call_soon_threadsafe(loop.stop)
+            t.join(timeout=5)
 
     def test_ws_consume_message_calls_callback(self):
         """Test that _ws_consume_message calls the recv_callback."""
@@ -621,15 +660,23 @@ class TestCommandTransport:
         transport._transport_enabled = True
         
         mock_ws = AsyncMock()
+        mock_ws.closed = False
         transport._ws = mock_ws
         
-        # The lock is used internally - we can't easily test it directly
-        # but we can verify that send_message works correctly
-        # and that multiple calls don't interfere with each other
-        transport.send_message({"test": "data"})
+        loop = asyncio.new_event_loop()
+        transport._loop = loop
         
-        # Verify message was sent
-        mock_ws.send.assert_called_once_with({"test": "data"})
+        def run_loop():
+            loop.run_forever()
+        
+        t = threading.Thread(target=run_loop, daemon=True)
+        t.start()
+        try:
+            transport.send_message({"test": "data"})
+            mock_ws.send.assert_called_once_with({"test": "data"})
+        finally:
+            loop.call_soon_threadsafe(loop.stop)
+            t.join(timeout=5)
 
     def test_multiple_messages_sequential(self):
         """Test sending multiple messages sequentially."""
@@ -638,21 +685,33 @@ class TestCommandTransport:
         transport._transport_enabled = True
         
         mock_ws = AsyncMock()
+        mock_ws.closed = False
         transport._ws = mock_ws
         
-        messages = [
-            {"command": "power", "value": "on"},
-            {"command": "speed", "value": 5},
-            {"command": "oscillate", "value": True},
-        ]
+        loop = asyncio.new_event_loop()
+        transport._loop = loop
         
-        for msg in messages:
-            transport.send_message(msg)
+        def run_loop():
+            loop.run_forever()
         
-        # Verify all messages were sent
-        assert mock_ws.send.call_count == 3
-        for i, msg in enumerate(messages):
-            assert mock_ws.send.call_args_list[i] == call(msg)
+        t = threading.Thread(target=run_loop, daemon=True)
+        t.start()
+        try:
+            messages = [
+                {"command": "power", "value": "on"},
+                {"command": "speed", "value": 5},
+                {"command": "oscillate", "value": True},
+            ]
+            
+            for msg in messages:
+                transport.send_message(msg)
+            
+            assert mock_ws.send.call_count == 3
+            for i, msg in enumerate(messages):
+                assert mock_ws.send.call_args_list[i] == call(msg)
+        finally:
+            loop.call_soon_threadsafe(loop.stop)
+            t.join(timeout=5)
 
     def test_recv_callback_not_called_without_messages(self):
         """Test that recv_callback is not called when no messages are received."""
@@ -691,16 +750,28 @@ class TestCommandTransport:
         transport._transport_enabled = True
         
         mock_ws = AsyncMock()
+        mock_ws.closed = False
         transport._ws = mock_ws
         
-        # Test with various data types
-        messages = [
-            {"string": "value", "int": 42, "float": 3.14},
-            {"bool": True, "none": None},
-            {"list": [1, 2, 3], "nested": {"a": {"b": "c"}}},
-        ]
+        loop = asyncio.new_event_loop()
+        transport._loop = loop
         
-        for msg in messages:
-            transport.send_message(msg)
+        def run_loop():
+            loop.run_forever()
         
-        assert mock_ws.send.call_count == len(messages)
+        t = threading.Thread(target=run_loop, daemon=True)
+        t.start()
+        try:
+            messages = [
+                {"string": "value", "int": 42, "float": 3.14},
+                {"bool": True, "none": None},
+                {"list": [1, 2, 3], "nested": {"a": {"b": "c"}}},
+            ]
+            
+            for msg in messages:
+                transport.send_message(msg)
+            
+            assert mock_ws.send.call_count == len(messages)
+        finally:
+            loop.call_soon_threadsafe(loop.stop)
+            t.join(timeout=5)
