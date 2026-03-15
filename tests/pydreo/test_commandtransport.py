@@ -639,13 +639,16 @@ class TestCommandTransport:
             transport = CommandTransport(callback)
             transport._api_server_region = "eu"
             transport._token = "my_token_123"
-            transport._signal_close = True  # Exit immediately after checking URL
             
             captured_url = [None]
             
             async def mock_connect(url):
                 captured_url[0] = url
-                yield AsyncMock()
+                # Signal close after capturing URL so the loop exits
+                transport._signal_close = True
+                # Yield nothing — the async for won't iterate
+                return
+                yield  # Make this an async generator  # pylint: disable=unreachable
             
             with patch('custom_components.dreo.pydreo.commandtransport.websockets.connect', side_effect=mock_connect):
                 with patch.object(transport._recv_callback, '__call__'):
@@ -653,7 +656,7 @@ class TestCommandTransport:
             
             # Verify URL format
             assert captured_url[0] is not None
-            url = str(captured_url[0])  # Convert to string to satisfy pylint
+            url = str(captured_url[0])
             assert url.startswith("wss://wsb-eu.dreo-tech.com/websocket")
             assert "accessToken=my_token_123" in url
             assert "timestamp=" in url
@@ -785,3 +788,48 @@ class TestCommandTransport:
         finally:
             loop.call_soon_threadsafe(loop.stop)
             t.join(timeout=5)
+
+    def test_update_token(self):
+        """Test that update_token updates the stored token."""
+        callback = MagicMock()
+        transport = CommandTransport(callback)
+        transport._token = "old_token"
+
+        transport.update_token("new_token")
+        assert transport._token == "new_token"
+
+    def test_reconnect_uses_fresh_token(self):
+        """Test that WebSocket reconnect picks up a new token."""
+        async def _test():
+            callback = MagicMock()
+            transport = CommandTransport(callback)
+            transport._api_server_region = "us"
+            transport._token = "token_v1"
+
+            captured_urls = []
+            call_count = [0]
+
+            async def mock_connect(url):
+                captured_urls.append(url)
+                call_count[0] += 1
+                if call_count[0] == 1:
+                    # After first connection, update token and yield a mock WS
+                    transport._token = "token_v2"
+                    mock_ws = AsyncMock()
+                    mock_ws.__aiter__ = MagicMock(return_value=iter([]))
+                    yield mock_ws
+                elif call_count[0] == 2:
+                    # Second connection should use new token; signal close
+                    transport._signal_close = True
+                    return
+                    yield  # pylint: disable=unreachable
+
+            with patch('custom_components.dreo.pydreo.commandtransport.websockets.connect', side_effect=mock_connect):
+                transport._auto_reconnect = True
+                await transport._start_websocket()
+
+            assert len(captured_urls) == 2
+            assert "accessToken=token_v1" in captured_urls[0]
+            assert "accessToken=token_v2" in captured_urls[1]
+
+        asyncio.run(_test())

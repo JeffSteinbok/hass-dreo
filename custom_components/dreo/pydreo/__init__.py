@@ -418,7 +418,7 @@ class PyDreo:  # pylint: disable=function-redefined
     
     def call_dreo_api(self, api: str, json_object: Optional[dict] = None) -> tuple:
         """Call the Dreo API. This is used for login and the initial device list and states as well
-           as device settings."""
+           as device settings. Automatically retries once on 401 (token expired)."""
         _LOGGER.debug("call_dreo_api: Calling Dreo API: {%s}", api)
         api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
 
@@ -427,13 +427,42 @@ class PyDreo:  # pylint: disable=function-redefined
 
         json_object_full = {**Helpers.req_body(self, api), **json_object}
 
-        return Helpers.call_api(
+        response, status_code = Helpers.call_api(
             api_url,
             DREO_APIS[api][DREO_API_PATH],
             DREO_APIS[api][DREO_API_METHOD],
             json_object_full,
             Helpers.req_headers(self),
         )
+
+        # If we got a 401 and this isn't the login call itself, try re-authenticating
+        if status_code == 401 and api != DREO_API_LOGIN:
+            _LOGGER.warning("call_dreo_api: Got 401 for %s — attempting re-login", api)
+            if self._re_login():
+                # Retry the original call with refreshed token
+                json_object_full = {**Helpers.req_body(self, api), **json_object}
+                response, status_code = Helpers.call_api(
+                    api_url,
+                    DREO_APIS[api][DREO_API_PATH],
+                    DREO_APIS[api][DREO_API_METHOD],
+                    json_object_full,
+                    Helpers.req_headers(self),
+                )
+
+        return response, status_code
+
+    def _re_login(self) -> bool:
+        """Re-authenticate to refresh the token. Updates transport if running."""
+        _LOGGER.info("_re_login: Attempting to refresh authentication token")
+        old_token = self.token
+        if self.login():
+            _LOGGER.info("_re_login: Re-login successful, token refreshed")
+            # Update the WebSocket transport with the new token
+            if not self.debug_test_mode and self.token != old_token:
+                self._transport.update_token(self.token)
+            return True
+        _LOGGER.error("_re_login: Re-login failed")
+        return False
 
     def start_transport(self) -> None:
         """Initialize the websocket and start transport"""
