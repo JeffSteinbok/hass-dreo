@@ -415,3 +415,54 @@ class TestPyDreoHeater(TestBase):
         heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
         assert heater.poweron is False
         assert heater.mode == DreoHeaterMode.OFF
+
+    def test_HSH009S_htalevel_range_validation(self):  # pylint: disable=invalid-name
+        """Test that htalevel rejects values outside the valid range."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        # Range is (1, 3) for HSH009S
+        assert heater.htalevel_range == (1, 3)
+
+        # Value below range should be rejected (no command sent)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 0
+            mock_send_command.assert_not_called()
+
+        # Value above range should be rejected (no command sent)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 4
+            mock_send_command.assert_not_called()
+
+        # Value within range should be accepted
+        heater._htalevel = None  # reset to avoid duplicate check
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 2
+            mock_send_command.assert_called_once_with(heater, {HTALEVEL_KEY: 2})
+
+    def test_HSH009S_ecolevel_range_validation(self):  # pylint: disable=invalid-name
+        """Test that ecolevel rejects values outside the valid range."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        eco_range = heater.ecolevel_range
+
+        # Value below range should be rejected
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ecolevel = eco_range[0] - 1
+            mock_send_command.assert_not_called()
+
+        # Value above range should be rejected
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ecolevel = eco_range[1] + 1
+            mock_send_command.assert_not_called()
+
+        # Boundary values should be accepted
+        heater._ecolevel = None
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ecolevel = eco_range[0]
+            mock_send_command.assert_called_once_with(heater, {ECOLEVEL_KEY: eco_range[0]})
