@@ -127,6 +127,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
         _LOGGER.debug("is_on: is_on.setter - %s", value)
+        if self._power_on_key is None:
+            _LOGGER.error("is_on: Cannot set power state — power on key is unknown")
+            return
         self._send_command(self._power_on_key, value)
 
     @property
@@ -346,7 +349,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
                 self._power_on_key = FANON_KEY
             else:
                 _LOGGER.error("update_state: Unable to get power on state from state. Check debug logs for more information.")
-                self._power_on_key = None
+                # Default to POWERON_KEY so is_on setter doesn't send None key
+                if self._power_on_key is None:
+                    self._power_on_key = POWERON_KEY
                 
         self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
         if self._fan_speed is None:
