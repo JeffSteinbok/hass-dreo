@@ -7,7 +7,7 @@
   "documentation": "https://github.com/jeffsteinbok/hass-dreo/blob/master/README.md",
   "iot_class": "cloud_push",
   "issue_tracker": "https://github.com/jeffsteinbok/hass-dreo/issues",  
-  "loggers": ["custom_compoments.dreo"],
+  "loggers": ["custom_components.dreo"],
   "requirements": ["websockets"],
   "version": "1.7.0"
 }
