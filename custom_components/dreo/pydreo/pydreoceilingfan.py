@@ -32,6 +32,8 @@ class PyDreoCeilingFan(PyDreoFanBase):
     @staticmethod
     def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:
         """Clamp RGB tuple values to 0-255 integers."""
+        if len(rgb) != 3:
+            raise ValueError(f"RGB tuple must have exactly 3 elements, got {len(rgb)}")
         return tuple(max(0, min(255, int(round(c)))) for c in rgb)
 
     @staticmethod

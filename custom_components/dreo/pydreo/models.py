@@ -54,7 +54,7 @@ class DreoDeviceDetails:
     preset_modes: list[str]
     """List of possible preset mode names"""
 
-    device_ranges: dict[range]
+    device_ranges: dict[str, tuple]
     """Dictionary of different ranges"""
 
     mode_names: list[str] | dict

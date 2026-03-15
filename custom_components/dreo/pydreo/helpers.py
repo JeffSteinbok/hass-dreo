@@ -177,7 +177,7 @@ class Helpers:
         return str(int(time.time() * 1000))
 
     @staticmethod
-    def name_from_value(name_value_list : list[tuple], value) -> str:
+    def name_from_value(name_value_list : list[tuple], value) -> str | None:
         """Return name from list of tuples."""
         if not name_value_list:
             _LOGGER.error("Helpers::name_from_value - name_value_list is None")
