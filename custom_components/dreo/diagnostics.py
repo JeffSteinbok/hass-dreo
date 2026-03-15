@@ -27,7 +27,9 @@ KEYS_TO_REDACT = {
     "_username",
     "token",
     "_token",
-    "productId"
+    "access_token",
+    "productId",
+    "deviceId"
 }
 
 _LOGGER = logging.getLogger(__name__)
