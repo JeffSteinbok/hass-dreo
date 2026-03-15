@@ -133,7 +133,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(RGB_LEVEL),
     ),
     DreoSensorEntityDescription(
-        key="Use since cleaning",
+        key="Use since cleaning HM",
         translation_key="use_hours_HM",
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
