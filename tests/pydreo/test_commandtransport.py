@@ -17,8 +17,7 @@ class TestCommandTransport:
         
         assert transport._event_thread is None
         assert transport._ws is None
-        assert transport._ws_send_lock is not None
-        assert isinstance(transport._ws_send_lock, threading.Lock)
+        assert transport._ws_send_lock is None  # created lazily on WS event loop
         assert transport._transport_enabled is False
         assert transport._signal_close is False
         assert transport._testonly_signal_interrupt is False
@@ -186,6 +185,7 @@ class TestCommandTransport:
         # Use a real event loop running in a thread to test send_message
         loop = asyncio.new_event_loop()
         transport._loop = loop
+        transport._ws_send_lock = asyncio.Lock()
         
         def run_loop():
             loop.run_forever()
@@ -220,6 +220,7 @@ class TestCommandTransport:
         
         loop = asyncio.new_event_loop()
         transport._loop = loop
+        transport._ws_send_lock = asyncio.Lock()
         
         def run_loop():
             loop.run_forever()
@@ -251,6 +252,7 @@ class TestCommandTransport:
         
         loop = asyncio.new_event_loop()
         transport._loop = loop
+        transport._ws_send_lock = asyncio.Lock()
         
         def run_loop():
             loop.run_forever()
@@ -352,6 +354,7 @@ class TestCommandTransport:
         async def _test():
             callback = MagicMock()
             transport = CommandTransport(callback)
+            transport._ws_send_lock = asyncio.Lock()
             
             # Set signal_close immediately
             transport._signal_close = True
@@ -376,6 +379,7 @@ class TestCommandTransport:
         async def _test():
             callback = MagicMock()
             transport = CommandTransport(callback)
+            transport._ws_send_lock = asyncio.Lock()
             
             # Set test interrupt flag
             transport._testonly_signal_interrupt = True
@@ -402,6 +406,7 @@ class TestCommandTransport:
         async def _test():
             callback = MagicMock()
             transport = CommandTransport(callback)
+            transport._ws_send_lock = asyncio.Lock()
             
             mock_ws = AsyncMock()
             
@@ -429,6 +434,7 @@ class TestCommandTransport:
         async def _test():
             callback = MagicMock()
             transport = CommandTransport(callback)
+            transport._ws_send_lock = asyncio.Lock()
             
             mock_ws = AsyncMock()
             mock_ws.send.side_effect = websockets.exceptions.ConnectionClosedError(None, None)
@@ -446,6 +452,7 @@ class TestCommandTransport:
         async def _test():
             callback = MagicMock()
             transport = CommandTransport(callback)
+            transport._ws_send_lock = asyncio.Lock()
             
             mock_ws = AsyncMock()
             mock_ws.send.side_effect = asyncio.CancelledError()
@@ -665,6 +672,7 @@ class TestCommandTransport:
         
         loop = asyncio.new_event_loop()
         transport._loop = loop
+        transport._ws_send_lock = asyncio.Lock()
         
         def run_loop():
             loop.run_forever()
@@ -690,6 +698,7 @@ class TestCommandTransport:
         
         loop = asyncio.new_event_loop()
         transport._loop = loop
+        transport._ws_send_lock = asyncio.Lock()
         
         def run_loop():
             loop.run_forever()
@@ -755,6 +764,7 @@ class TestCommandTransport:
         
         loop = asyncio.new_event_loop()
         transport._loop = loop
+        transport._ws_send_lock = asyncio.Lock()
         
         def run_loop():
             loop.run_forever()

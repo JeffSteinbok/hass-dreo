@@ -31,7 +31,7 @@ class CommandTransport:
 
         self._event_thread = None
         self._ws = None
-        self._ws_send_lock = threading.Lock()
+        self._ws_send_lock = None  # asyncio.Lock, created on the WS event loop
         self._transport_enabled = False
         self._signal_close = False
         self._testonly_signal_interrupt = False
@@ -106,6 +106,7 @@ class CommandTransport:
         This function exits when monitoring is stopped."""
         _LOGGER.info("_start_websocket: Starting WebSocket for incoming changes and commands.")
         self._loop = asyncio.get_event_loop()
+        self._ws_send_lock = asyncio.Lock()
         # open websocket
         url = f"wss://wsb-{self._api_server_region}.dreo-tech.com/websocket?accessToken={self._token}&timestamp={Helpers.api_timestamp()}"
         try:
@@ -180,7 +181,7 @@ class CommandTransport:
                         await ws.close()
                     except CancelledError:
                         pass
-                with self._ws_send_lock:
+                async with self._ws_send_lock:
                     await ws.send(WEBSOCKET_PING_MESSAGE)
                 await asyncio.sleep(WEBSOCKET_PING_INTERVAL)
                
@@ -213,7 +214,7 @@ class CommandTransport:
                 try:
                     if self._ws is None or self._ws.closed:
                         raise RuntimeError("WebSocket not connected")
-                    with self._ws_send_lock: 
+                    async with self._ws_send_lock: 
                         await self._ws.send(content)
                     break
                 except Exception:  # pylint: disable=broad-except
