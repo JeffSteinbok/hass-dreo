@@ -175,7 +175,10 @@ def get_device_range(device: PyDreoBaseDevice, number_definition: DreoNumberEnti
         _LOGGER.debug("get_device_range: range %s from device is %s", range_name, range_from_device)
         return range_from_device
 
-    range_from_device_definition = getattr(device.device_definition.device_ranges, range_name, None)
+    if device.device_definition.device_ranges is not None:
+        range_from_device_definition = device.device_definition.device_ranges.get(range_name)
+    else:
+        range_from_device_definition = None
     if range_from_device_definition is not None:
         _LOGGER.debug("get_device_range: range %s from device definition is %s", range_name,
                       range_from_device_definition)

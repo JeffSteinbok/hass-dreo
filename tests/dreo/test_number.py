@@ -206,8 +206,7 @@ class TestDreoNumberHA(TestDeviceBase):
         device = MagicMock()
         device.horizontal_angle_range = None
         device.device_definition = MagicMock()
-        device.device_definition.device_ranges = MagicMock()
-        device.device_definition.device_ranges.horizontal_angle_range = (-50, 50)
+        device.device_definition.device_ranges = {"horizontal_angle_range": (-50, 50)}
 
         desc = DreoNumberEntityDescription(
             key="Horizontal Angle",
@@ -224,8 +223,7 @@ class TestDreoNumberHA(TestDeviceBase):
         device = MagicMock()
         device.horizontal_angle_range = None
         device.device_definition = MagicMock()
-        device.device_definition.device_ranges = MagicMock()
-        device.device_definition.device_ranges.horizontal_angle_range = None
+        device.device_definition.device_ranges = {}
 
         desc = DreoNumberEntityDescription(
             key="Horizontal Angle",
