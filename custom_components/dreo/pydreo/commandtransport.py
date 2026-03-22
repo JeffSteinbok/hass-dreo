@@ -84,7 +84,7 @@ class CommandTransport:
         self._transport_enabled = False
 
         # Close WebSocket from the WS thread's event loop if available
-        if self._loop and self._ws and not self._ws.closed:
+        if self._loop and self._ws:
             try:
                 asyncio.run_coroutine_threadsafe(self._ws.close(), self._loop)
             except Exception:  # pylint: disable=broad-except
@@ -212,7 +212,7 @@ class CommandTransport:
             retry_count = 0
             while retry_count < MAX_RETRY_COUNT:
                 try:
-                    if self._ws is None or self._ws.closed:
+                    if self._ws is None:
                         raise RuntimeError("WebSocket not connected")
                     async with self._ws_send_lock: 
                         await self._ws.send(content)
