@@ -106,6 +106,16 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         _LOGGER.debug("turn_off: turn_off")
         self.device.is_on = False
 
+    async def async_set_percentage(self, percentage: int) -> None:
+        """Set the speed of the fan, as a percentage.
+
+        Override the base class to avoid calling async_turn_off() when percentage
+        is 0. The base FanEntity.async_set_percentage(0) calls async_turn_off()
+        before set_percentage(0), which causes a spurious turn_off command. Our
+        set_percentage(0) already handles the turn-off correctly.
+        """
+        await self.hass.async_add_executor_job(self.set_percentage, percentage)
+
     def set_percentage(self, percentage: int) -> None:
         """Set the speed of the device."""
         if percentage == 0:

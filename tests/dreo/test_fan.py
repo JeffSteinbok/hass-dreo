@@ -127,6 +127,53 @@ class TestDreoFanHA(TestDeviceBase):
             test_fan.oscillate(True)
             assert mocked_pydreo_fan.oscillating is True
 
+    def test_oscillate_does_not_affect_power_state(self):
+        """Test that oscillate does not turn the fan off (issue: fan.oscillate with
+        oscillating=False was causing fan to turn off instead of toggling oscillation)."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan = self.create_mock_device(
+                name="Test Tower Fan",
+                serial_number="OSC_POWER_TEST",
+                features={"is_on": True,
+                           "oscillating": True,
+                           "fan_speed": 6,
+                           "speed_range": (1, 12)})
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            assert test_fan.is_on is True
+            assert test_fan.oscillating is True
+
+            # Oscillate to False should NOT turn the fan off
+            test_fan.oscillate(False)
+            assert mocked_pydreo_fan.oscillating is False
+            assert mocked_pydreo_fan.is_on is True  # Fan must remain on
+
+            # Oscillate to True should NOT turn the fan off
+            test_fan.oscillate(True)
+            assert mocked_pydreo_fan.oscillating is True
+            assert mocked_pydreo_fan.is_on is True  # Fan must remain on
+
+    def test_set_percentage_zero_does_not_call_turn_off(self):
+        """Test that set_percentage(0) turns off via is_on=False without calling turn_off().
+
+        The base FanEntity.async_set_percentage(0) calls async_turn_off() before
+        set_percentage(0), causing a spurious turn_off command. Our override skips
+        the async_turn_off() call and delegates directly to set_percentage(0)."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan = self.create_mock_device(
+                name="Test Fan",
+                serial_number="PCT_ZERO_TEST",
+                features={"is_on": True,
+                           "fan_speed": 6,
+                           "speed_range": (1, 12)})
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            assert test_fan.is_on is True
+
+            # set_percentage(0) should turn off the fan
+            test_fan.set_percentage(0)
+            assert mocked_pydreo_fan.is_on is False
+
     def test_turn_on_with_percentage(self):
         """Test turn_on applies percentage when provided."""
         with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
