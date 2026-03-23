@@ -158,10 +158,11 @@ class TestDreoAirCirculator(IntegrationTestBase):
             ha_fan = fan.DreoFanHA(pydreo_fan)
             assert ha_fan.is_on is True
             assert ha_fan.speed_count == 10
-            assert not(ha_fan.supported_features & FanEntityFeature.PRESET_MODE)
+            assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
 
-            """This shouldn't be needed, but for some reason HA calls this even if preset_mode is not supported."""
-            assert ha_fan.preset_mode is None
+            # Verify preset modes
+            assert pydreo_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
+            assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
 
 
     def test_HPF008S(self):  # pylint: disable=invalid-name
