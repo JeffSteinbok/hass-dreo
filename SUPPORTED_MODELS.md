@@ -30,6 +30,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HPF005S
 - DR-HPF007S
 - DR-HPF008S
+- DR-HPF025S
 
 ### Ceiling Fans (DR-HCF Series)
 
