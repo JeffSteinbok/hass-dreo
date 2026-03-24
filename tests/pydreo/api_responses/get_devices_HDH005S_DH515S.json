@@ -1,0 +1,65 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2032758700299071490",
+        "sn": "HDH005S_DH515S_1",
+        "brand": "Dreo",
+        "model": "DR-HDH005S",
+        "productId": "**REDACTED**",
+        "productName": "Dehumidifier",
+        "deviceName": "Deumidificatore",
+        "shared": false,
+        "series": null,
+        "seriesName": "DH515S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202508/2761b0044224bd45c9b6f4d1ee72786f87.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202508/27726e2de31a8f44ca87d29c694ff6e533.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": "2709fff65e5bfd4b30824847b832c32e8f",
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202508/27faa03f06ee0d4bc29e132195125289ff.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202508/2744f44abc78ec4ed48c7324a619152e7e.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202603/131bc73598175c458287103661b5cb6a2f.pdf",
+            "icon": null,
+            "desc": "DR-HDH005S UK manual",
+            "lang": "en"
+          },
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202603/13db30501f24cd4605abfa97796cfad462.pdf",
+            "icon": null,
+            "desc": "DR-HDH005S EU manual",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}
