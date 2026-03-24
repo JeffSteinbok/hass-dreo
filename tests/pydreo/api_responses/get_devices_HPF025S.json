@@ -1,0 +1,78 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1925377202249068545",
+        "sn": "HPF025S_1",
+        "brand": "Dreo",
+        "model": "DR-HPF025S",
+        "productId": "1925377202249068545",
+        "productName": "Air Circulator",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HPF025S",
+        "shared": false,
+        "series": null,
+        "seriesName": "PF025S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "s",
+        "controlsConf": {
+          "template": "DR-HPF025S",
+          "control": [
+            {
+              "id": "100",
+              "type": "Mode",
+              "title": "device_mode",
+              "items": [
+                {"text": "device_fans_mode_straight", "cmd": "mode", "value":
+1},
+                {"text": "device_control_mode_auto", "cmd": "mode", "value":
+2},
+                {"text": "device_control_mode_sleep", "cmd": "mode", "value":
+3},
+                {"text": "device_fans_mode_natural", "cmd": "mode", "value":
+4},
+                {"text": "device_fans_mode_turbo", "cmd": "mode", "value": 5}
+              ]
+            },
+            {
+              "id": "110",
+              "type": "Speed",
+              "title": "device_control_speed",
+              "items": [
+                {"text": "1", "cmd": "windlevel", "value": 1},
+                {"text": "9", "cmd": "windlevel", "value": 9}
+              ]
+            },
+            {"id": "130", "type": "DPad", "step": 5}
+          ],
+          "category": "Air Circulators"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": null,
+          "imageFullSrc": null,
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "userManuals": []
+      }
+    ]
+  }
+}
