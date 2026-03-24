@@ -109,6 +109,8 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @property
     def modes(self) -> list[str]:
         """Get the list of modes"""
+        if self._modes is None:
+            return None
         return Helpers.get_name_list(self._modes)
 
     @property
@@ -195,6 +197,8 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._send_command(SCHEDULE_ENABLE, value)        
     @mode.setter
     def mode(self, value: str) -> None:
+        if self._modes is None:
+            raise NotImplementedError("Attempting to set mode on a device that doesn't support modes.")
         numeric_value = Helpers.value_from_name(self._modes, value)
         if numeric_value is not None:
             if self._mode == numeric_value:

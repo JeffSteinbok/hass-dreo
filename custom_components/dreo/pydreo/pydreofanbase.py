@@ -173,6 +173,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
+        if self._preset_modes is None:
+            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support modes.")
+
         key: str = None
 
         if self._wind_type is not None:

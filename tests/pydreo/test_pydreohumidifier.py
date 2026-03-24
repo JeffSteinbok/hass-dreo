@@ -167,6 +167,9 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.is_on is False
         assert humidifier.humidity == 31
         assert humidifier.target_humidity == 60
+        # HHM015S has no modes configured - modes should return None, not an empty list or error
+        assert humidifier.modes is None
+        assert humidifier.mode is None
 
     def test_HHM015S_websocket_updates(self):  # pylint: disable=invalid-name
         """Test that humidity values are updated from websocket messages for HHM015S."""

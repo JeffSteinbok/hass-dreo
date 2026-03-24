@@ -5,6 +5,7 @@ from unittest.mock import patch
 from custom_components.dreo import number
 from custom_components.dreo import humidifier
 from custom_components.dreo import sensor
+from homeassistant.components.humidifier import HumidifierEntityFeature
 
 from  .imports import * # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
@@ -164,6 +165,11 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert ha_humidifier.target_humidity == 60
             assert ha_humidifier.unique_id is not None
             assert ha_humidifier.name is not None
+
+            # HHM015S has no modes — available_modes should be None (not empty list)
+            # and supported_features should not include MODES
+            assert ha_humidifier.available_modes is None
+            assert not (ha_humidifier.supported_features & HumidifierEntityFeature.MODES)
 
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
