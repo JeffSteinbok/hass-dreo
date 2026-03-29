@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Generate E2E test data by combining device JSON files."""
 import json
-import os
 import shutil
 from pathlib import Path
 

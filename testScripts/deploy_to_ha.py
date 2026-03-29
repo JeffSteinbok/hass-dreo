@@ -9,12 +9,10 @@ This script:
 5. On Windows: uses robocopy (TBD)
 """
 import argparse
-import os
 import platform
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 # Paths
@@ -36,7 +34,7 @@ def enable_debug_mode():
     """Uncomment DEBUG_TEST_MODE = True in const_debug_test_mode.py."""
     print("Enabling DEBUG_TEST_MODE...")
     
-    with open(CONST_DEBUG_FILE, 'r') as f:
+    with open(CONST_DEBUG_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
     
     # Uncomment the line if it's commented
@@ -45,7 +43,7 @@ def enable_debug_mode():
         "DEBUG_TEST_MODE = True"
     )
     
-    with open(CONST_DEBUG_FILE, 'w') as f:
+    with open(CONST_DEBUG_FILE, 'w', encoding='utf-8') as f:
         f.write(modified_content)
     
     print("DEBUG_TEST_MODE enabled")
@@ -55,7 +53,7 @@ def disable_debug_mode():
     """Comment out DEBUG_TEST_MODE = True in const_debug_test_mode.py."""
     print("Disabling DEBUG_TEST_MODE...")
     
-    with open(CONST_DEBUG_FILE, 'r') as f:
+    with open(CONST_DEBUG_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
     
     # Find and comment the line if it's uncommented
@@ -64,20 +62,13 @@ def disable_debug_mode():
     
     for line in lines:
         if line.strip() == "DEBUG_TEST_MODE = True" and not line.strip().startswith("#"):
-            # Check if previous line is already a comment about uncommenting
-            if modified_lines and "Uncomment to enable" in modified_lines[-1]:
-                modified_lines.append("# " + line)
-            else:
-                modified_lines.append("# " + line)
+            modified_lines.append("# " + line)
         else:
             modified_lines.append(line)
     
     modified_content = '\n'.join(modified_lines)
     
-    with open(CONST_DEBUG_FILE, 'w') as f:
-        f.write(modified_content)
-    
-    print("DEBUG_TEST_MODE disabled")
+    with open(CONST_DEBUG_FILE, 'w', encoding='utf-8') as f:
 
 
 def generate_e2e_test_data():
