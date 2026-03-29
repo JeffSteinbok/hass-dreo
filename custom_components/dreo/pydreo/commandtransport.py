@@ -175,8 +175,10 @@ class CommandTransport:
                 _LOGGER.debug("_ws_consumer_handler: got message")
                 try:
                     self._ws_consume_message(json.loads(message))
-                except (json.JSONDecodeError, Exception) as ex:  # pylint: disable=broad-except
-                    _LOGGER.error("_ws_consumer_handler: Error processing message: %s", ex)
+                except json.JSONDecodeError as ex:
+                    _LOGGER.error("_ws_consumer_handler: Failed to parse message as JSON: %s", ex)
+                except Exception:  # pylint: disable=broad-except
+                    _LOGGER.exception("_ws_consumer_handler: Unexpected error processing message")
         except websockets.exceptions.ConnectionClosedError:
             _LOGGER.debug("_ws_consumer_handler: WebSocket appears closed.")
         
@@ -231,13 +233,14 @@ class CommandTransport:
                         raise RuntimeError("WebSocket not connected")
                     async with self._ws_send_lock: 
                         await self._ws.send(content)
-                    break
+                    return
                 except Exception:  # pylint: disable=broad-except
                     retry_count += 1
                     _LOGGER.error("send_message: Error sending command. Retrying in %s seconds. Retry count: %s", 
                                   RETRY_DELAY, 
                                   retry_count)
                     await asyncio.sleep(RETRY_DELAY)
+            raise RuntimeError(f"send_message: Failed to send command after {MAX_RETRY_COUNT} retries")
 
         future = asyncio.run_coroutine_threadsafe(send_internal(), self._loop)
         future.result(timeout=MAX_RETRY_COUNT * RETRY_DELAY + 5)

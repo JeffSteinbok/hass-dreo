@@ -237,7 +237,7 @@ class TestCommandTransport:
             t.join(timeout=5)
 
     def test_send_message_max_retries(self):
-        """Test that send_message stops after MAX_RETRY_COUNT failures."""
+        """Test that send_message raises RuntimeError after MAX_RETRY_COUNT failures."""
         callback = MagicMock()
         transport = CommandTransport(callback)
         
@@ -261,7 +261,8 @@ class TestCommandTransport:
         t.start()
         try:
             with patch('asyncio.sleep', new_callable=AsyncMock):
-                transport.send_message(test_message)
+                with pytest.raises(RuntimeError, match="Failed to send command after"):
+                    transport.send_message(test_message)
             assert mock_ws.send.call_count == 3
         finally:
             loop.call_soon_threadsafe(loop.stop)
@@ -345,6 +346,42 @@ class TestCommandTransport:
             # Should not raise an exception
             await transport._ws_consumer_handler(mock_ws)
         
+        asyncio.run(_test())
+
+    def test_ws_consumer_handler_json_decode_error(self):
+        """Test _ws_consumer_handler handles JSONDecodeError without propagating."""
+        async def _test():
+            callback = MagicMock()
+            transport = CommandTransport(callback)
+
+            mock_ws = AsyncMock()
+            bad_messages = ["not-json", "also{bad"]
+
+            mock_ws.__aiter__.return_value = iter(bad_messages)
+
+            # Should not raise — JSONDecodeError is caught and logged
+            await transport._ws_consumer_handler(mock_ws)
+
+            # Callback should never have been called
+            callback.assert_not_called()
+
+        asyncio.run(_test())
+
+    def test_ws_consumer_handler_unexpected_exception_logged(self):
+        """Test _ws_consumer_handler logs unexpected exceptions from callback."""
+        async def _test():
+            callback = MagicMock(side_effect=AttributeError("missing field"))
+            transport = CommandTransport(callback)
+
+            mock_ws = AsyncMock()
+            mock_ws.__aiter__.return_value = iter(['{"type": "status"}'])
+
+            # Unexpected exception is caught by the broad handler and logged
+            await transport._ws_consumer_handler(mock_ws)
+
+            # Callback was called once and raised
+            callback.assert_called_once()
+
         asyncio.run(_test())
 
     def test_ws_ping_handler_signal_close(self):
