@@ -164,6 +164,43 @@ class TestInit:
         assert Platform.SWITCH in platforms
         assert Platform.NUMBER in platforms
 
+    def test_successful_setup_with_air_circulator(self):
+        """Test successful setup with an AIR_CIRCULATOR device includes LIGHT platform."""
+        from custom_components.dreo import async_setup_entry
+        from custom_components.dreo.pydreo.constant import DreoDeviceType
+        from homeassistant.const import Platform
+
+        mock_hass = MagicMock()
+        mock_hass.data = {}
+        mock_hass.async_add_executor_job = AsyncMock(side_effect=[True, True])
+        mock_hass.config_entries = MagicMock()
+        mock_hass.config_entries.async_forward_entry_setups = AsyncMock()
+
+        mock_entry = MagicMock()
+        mock_entry.data = {"username": "test@example.com", "password": "password"}
+        mock_entry.options = {}
+        mock_entry.add_update_listener = MagicMock(return_value=MagicMock())
+        mock_entry.async_on_unload = MagicMock()
+
+        mock_device = MagicMock()
+        mock_device.type = DreoDeviceType.AIR_CIRCULATOR
+
+        mock_pydreo = MagicMock()
+        mock_pydreo.devices = [mock_device]
+        mock_pydreo.start_transport = MagicMock()
+        mock_pydreo.auto_reconnect = True
+
+        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+            result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
+
+        assert result is True
+        platforms = mock_hass.data["dreo"]["platforms"]
+        assert Platform.FAN in platforms
+        assert Platform.LIGHT in platforms
+        assert Platform.SENSOR in platforms
+        assert Platform.SWITCH in platforms
+        assert Platform.NUMBER in platforms
+
     def test_successful_setup_with_humidifier(self):
         """Test successful setup with a HUMIDIFIER device."""
         from custom_components.dreo import async_setup_entry
