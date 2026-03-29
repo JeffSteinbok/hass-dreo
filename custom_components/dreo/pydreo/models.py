@@ -184,6 +184,11 @@ SUPPORTED_DEVICES = {
 
     # Air Circulators
     "DR-HAF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
+    "DR-HAF004S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        device_ranges={
+            VERTICAL_ANGLE_RANGE: (0, 90)
+        }),
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
     # HPF-series devices: The API returns controlsConf with only a template reference
     # (e.g. {"template": "DR-HPF002S"}) and no control/schedule.modes data, so

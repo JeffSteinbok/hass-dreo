@@ -42,6 +42,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:angle-acute",
         min_value=-60,
         max_value=60,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("horizontal_angle"),
     ),
     DreoNumberEntityDescription(
@@ -51,6 +52,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:angle-acute",
         min_value=0,
         max_value=90,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("vertical_angle"),
     ),
     DreoNumberEntityDescription(
@@ -60,6 +62,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:vector-radius",
         min_value=-60,
         max_value=60,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("horizontal_osc_angle_left"),
     ),
     DreoNumberEntityDescription(
@@ -69,6 +72,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:vector-radius",
         min_value=-60,
         max_value=60,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("horizontal_osc_angle_right"),
     ),
     DreoNumberEntityDescription(
@@ -78,6 +82,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:vector-radius",
         min_value=0,
         max_value=90,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("vertical_osc_angle_top"),
     ),
     DreoNumberEntityDescription(
@@ -87,6 +92,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:vector-radius",
         min_value=0,
         max_value=90,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("vertical_osc_angle_bottom"),
     ),
     DreoNumberEntityDescription(
@@ -106,6 +112,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:angle-acute",
         min_value=-60,
         max_value=60,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("horizontal_oscillation_angle"),
     ),
     DreoNumberEntityDescription(
@@ -115,6 +122,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:angle-acute",
         min_value=0,
         max_value=90,
+        step=5,
         exists_fn=lambda device: device.is_feature_supported("vertical_oscillation_angle"),
     ),
     DreoNumberEntityDescription(
@@ -156,6 +164,7 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
                         icon=number_definition.icon,
                         min_value=device_range[0],
                         max_value=device_range[1],
+                        step=number_definition.step,
                         device_class=number_definition.device_class,
                         native_unit_of_measurement=number_definition.native_unit_of_measurement,
                         exists_fn=number_definition.exists_fn,

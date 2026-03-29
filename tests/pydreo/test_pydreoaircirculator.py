@@ -25,13 +25,13 @@ class TestPyDreoAirCirculator(TestBase):
 
         # Test initial state values
         assert fan.horizontal_angle_range == (-60, 60)
-        assert fan.vertical_angle_range == (-30, 90)
+        assert fan.vertical_angle_range == (0, 90)
         assert fan.speed_range == (1, 9)
         assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto', 'turbo', 'custom']
         assert fan.oscillating is True
         assert fan.vertically_oscillating is True
-        assert fan.vertical_osc_angle_top_range == (-30, 90)
-        assert fan.vertical_osc_angle_bottom_range == (-30, 90)
+        assert fan.vertical_osc_angle_top_range == (0, 90)
+        assert fan.vertical_osc_angle_bottom_range == (0, 90)
         assert fan.horizontally_oscillating is False
         assert fan.horizontal_osc_angle_left_range == (-60, 60)
         assert fan.horizontal_osc_angle_right_range == (-60, 60)
