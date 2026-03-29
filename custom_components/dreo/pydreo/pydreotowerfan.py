@@ -149,4 +149,4 @@ class PyDreoTowerFan(PyDreoFanBase):
 
         val_horiz_oscillation = self.get_server_update_key_value(message, OSCILLATION_KEY)
         if isinstance(val_horiz_oscillation, bool):
-            self._horizontally_oscillating = val_horiz_oscillation
+            self._oscillating = val_horiz_oscillation

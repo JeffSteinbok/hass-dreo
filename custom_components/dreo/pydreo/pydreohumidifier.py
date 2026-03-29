@@ -241,12 +241,12 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
         val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
         if isinstance(val_water_level, int):
-            val_water_level = WATER_LEVEL_STATUS_MAP[val_water_level]
+            val_water_level = WATER_LEVEL_STATUS_MAP.get(val_water_level, val_water_level)
             self._wrong = val_water_level		
 
         val_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
         if isinstance(val_rgblevel, int):
-            val_rgblevel = RGB_MAP[val_rgblevel]
+            val_rgblevel = RGB_MAP.get(val_rgblevel, val_rgblevel)
             self._rgblevel = val_rgblevel 
 
         val_scheon = self.get_server_update_key_value(message, SCHEDULE_ENABLE)

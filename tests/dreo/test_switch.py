@@ -216,7 +216,7 @@ class TestDreoSwitchHA(TestDeviceBase):
         device2 = self.create_mock_device(
             name="Heater",
             serial_number="HTR001",
-            features={"ptcon": True, "mute_on": False}
+            features={"ptcon": True, "panel_sound": False}
         )
 
         entities = switch.get_entries([device1, device2])

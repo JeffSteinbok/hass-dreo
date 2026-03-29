@@ -252,6 +252,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def vertically_oscillating(self, value: bool) -> None:
         """Enable or disable vertical oscillation"""
         if self._horizontally_oscillating is not None:
+            # hoscon/voscon device — send voscon command
             if self._vertically_oscillating == value:
                 _LOGGER.debug("vertically_oscillating.setter: value already %s, skipping command", value)
                 return
@@ -281,18 +282,17 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     def set_horizontal_oscillation_angle(self, angle: int) -> None:
         """Set the horizontal oscillation angle."""
-        _LOGGER.debug("set_horizontal_oscillation_angle: set_horizontal_oscillation_angle: set_horizontal_oscillation_angle")
-        if not self._horizontally_oscillating is None:
+        _LOGGER.debug("set_horizontal_oscillation_angle: Setting angle to %s", angle)
+        if self._horizontally_oscillating is None:
             raise NotImplementedError("This device does not support horizontal oscillation")
             
         self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, angle)
 
     def set_vertical_oscillation_angle(self, angle: int) -> None:
         """Set the vertical oscillation angle."""
-        _LOGGER.debug("set_vertical_oscillation_angle: set_vertical_oscillation_angle: set_vertical_oscillation_angle")
-        if not self._vertically_oscillating is None:
+        _LOGGER.debug("set_vertical_oscillation_angle: Setting angle to %s", angle)
+        if self._vertically_oscillating is None:
             raise NotImplementedError("This device does not support vertical oscillation")
-            
 
         self._send_command(VERTICAL_OSCILLATION_ANGLE_KEY, angle)
 

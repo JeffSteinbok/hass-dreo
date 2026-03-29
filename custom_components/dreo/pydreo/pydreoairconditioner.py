@@ -363,20 +363,21 @@ class PyDreoAC(PyDreoBaseDevice):
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
         timeron = self.get_state_update_value(state, TIMERON_KEY)
-        self._timer_on = timeron["du"]
+        self._timer_on = timeron["du"] if timeron is not None else None
         self._cooldown = self.get_state_update_value(state, COOLDOWN_KEY)
         self._ptc_on = self.get_state_update_value(state, PTCON_KEY)
         self._display_auto_off = not self.get_state_update_value(state, LIGHTON_KEY)
         self._ctlstatus = self.get_state_update_value(state, CTLSTATUS_KEY)
         timeroff = self.get_state_update_value(state, TIMEROFF_KEY)
-        self._timer_off = timeroff["du"]
+        self._timer_off = timeroff["du"] if timeroff is not None else None
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
         self.work_time = self.get_state_update_value(state, WORKTIME_KEY)
-        self.temp_target_reached = "Yes" if self.get_state_update_value(state, TEMP_TARGET_REACHED_KEY) > 0 else "No"
+        temp_target_val = self.get_state_update_value(state, TEMP_TARGET_REACHED_KEY)
+        self.temp_target_reached = "Yes" if temp_target_val is not None and temp_target_val > 0 else "No"
         # TODO ecopauserate
 
     def handle_server_update(self, message):

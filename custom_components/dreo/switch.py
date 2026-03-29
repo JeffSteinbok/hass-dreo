@@ -68,12 +68,6 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         icon="mdi:monitor",
     ),
     DreoSwitchEntityDescription(
-        key="Panel Mute",
-        translation_key="mute_on",
-        attr_name="mute_on",
-        icon="mdi:volume-high",
-    ),  
-    DreoSwitchEntityDescription(
         key="Oscillating",
         translation_key="oscon",
         attr_name="oscon",

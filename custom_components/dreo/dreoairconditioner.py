@@ -261,7 +261,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         supported_features = 0
         if self.device.target_temperature is not None:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if (self.preset_modes is not None and self.device.modes.count != 0):
+        if (self.preset_modes is not None and len(self.device.modes) != 0):
             supported_features |= ClimateEntityFeature.PRESET_MODE
         if self.device.oscon is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE

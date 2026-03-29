@@ -36,7 +36,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.preset_modes == ['Normal', 'Natural', 'Sleep', 'Auto']
         assert ec_fan.oscillating is True
         assert ec_fan.childlockon is False
-        assert ec_fan.preset_mode == 3
+        assert ec_fan.preset_mode == "Sleep"
         assert ec_fan.work_time == 19
         assert ec_fan.water_level == 'Ok'
         

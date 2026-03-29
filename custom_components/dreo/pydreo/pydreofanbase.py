@@ -96,10 +96,13 @@ class PyDreoFanBase(PyDreoBaseDevice):
         """Parse the speed range from a control node"""
         for control_item in control_node:
             if control_item.get("type", None) == "Speed":
-                speed_low = control_item.get("items", None)[0].get("value", None)
-                speed_high = control_item.get("items", None)[1].get("value", None)
-                speed_range = (speed_low, speed_high)
-                return speed_range
+                items = control_item.get("items", None)
+                if items is not None and len(items) >= 2:
+                    speed_low = items[0].get("value", None)
+                    speed_high = items[1].get("value", None)
+                    speed_range = (speed_low, speed_high)
+                    return speed_range
+                _LOGGER.warning("parse_speed_range_from_control_node: Speed items missing or too few: %s", items)
         return None
     
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:

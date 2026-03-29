@@ -148,14 +148,17 @@ class PyDreoBaseDevice:
     def get_state_update_value(self, state: dict, key: str):
         """Get a value from the state update in a safe manner."""
         if key in state:
-            key_val_object: dict = state[key]
+            key_val_object = state[key]
             if key_val_object is not None:
-                _LOGGER.debug(
-                    "get_state_update_value: %s-> %s",
-                    key,
-                    key_val_object[STATE_KEY],
-                )
-                return key_val_object[STATE_KEY]
+                if isinstance(key_val_object, dict) and STATE_KEY in key_val_object:
+                    _LOGGER.debug(
+                        "get_state_update_value: %s-> %s",
+                        key,
+                        key_val_object[STATE_KEY],
+                    )
+                    return key_val_object[STATE_KEY]
+                _LOGGER.debug("get_state_update_value: %s-> raw value %s", key, key_val_object)
+                return key_val_object
 
         _LOGGER.debug("get_state_update_value: State value (%s) not present.  Device: %s", key, self.name)
         return None
@@ -187,7 +190,8 @@ class PyDreoBaseDevice:
 
     def add_attr_callback(self, cb):
         """Add a callback to be called by _do_callbacks."""
-        self._attr_cbs.append(cb)
+        with self._lock:
+            self._attr_cbs.append(cb)
 
     def _do_callbacks(self):
         """Run all registered callbacks."""

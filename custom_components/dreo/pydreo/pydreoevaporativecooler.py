@@ -170,8 +170,10 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         
     @property
     def preset_mode(self):
-        """Return the current preset mode"""
-        return self._wind_mode
+        """Return the current preset mode as a string."""
+        if self._wind_mode is None:
+            return None
+        return WINDMODE_MAP.get(self._wind_mode, self._wind_mode)
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
@@ -274,5 +276,5 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             
         val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
         if isinstance(val_water_level, int):
-            self._water_level = WATER_LEVEL_STATUS_MAP[val_water_level]
+            self._water_level = WATER_LEVEL_STATUS_MAP.get(val_water_level, val_water_level)
 
