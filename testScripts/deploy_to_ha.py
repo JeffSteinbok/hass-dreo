@@ -69,6 +69,9 @@ def disable_debug_mode():
     modified_content = '\n'.join(modified_lines)
     
     with open(CONST_DEBUG_FILE, 'w', encoding='utf-8') as f:
+        f.write(modified_content)
+    
+    print("DEBUG_TEST_MODE disabled")
 
 
 def generate_e2e_test_data():
@@ -79,7 +82,8 @@ def generate_e2e_test_data():
     result = subprocess.run(
         [sys.executable, str(GENERATE_SCRIPT)],
         capture_output=True,
-        text=True
+        text=True,
+        check=False
     )
     
     if result.returncode != 0:
@@ -102,7 +106,7 @@ def generate_e2e_test_data():
     return True
 
 
-def deploy_mac(ha_path, debug_mode):
+def deploy_mac(ha_path):
     """Deploy to HA instance on macOS using rsync."""
     print(f"\nDeploying to {ha_path}...")
     
@@ -149,8 +153,7 @@ def deploy_windows(ha_path):
     print(f"Running: {' '.join(cmd)}")
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        # robocopy returns 0-7 for success, 8+ for errors
+        result = subprocess.run(cmd, capture_output=True, text=True, check=False)
         if result.returncode >= 8:
             print(f"Error during robocopy (exit code {result.returncode}): {result.stderr}")
             return False
@@ -160,6 +163,34 @@ def deploy_windows(ha_path):
     except subprocess.CalledProcessError as e:
         print(f"Error during robocopy: {e.stderr}")
         return False
+
+
+def resolve_ha_path(args):
+    """Determine the HA deployment path based on args and OS."""
+    if args.ha_path:
+        return args.ha_path
+
+    system = platform.system()
+    if system == "Darwin":
+        return DEFAULT_HA_PATH_MAC
+    if system == "Windows":
+        if DEFAULT_HA_PATH_WINDOWS:
+            return DEFAULT_HA_PATH_WINDOWS
+        print("Error: Please specify --ha-path for Windows deployment")
+        return None
+
+    print(f"Error: Unsupported OS: {system}")
+    return None
+
+
+def deploy(ha_path):
+    """Deploy to the appropriate OS target."""
+    system = platform.system()
+    if system == "Darwin":
+        return deploy_mac(ha_path)
+    if system == "Windows":
+        return deploy_windows(ha_path)
+    return False
 
 
 def main():
@@ -185,22 +216,11 @@ def main():
     
     args = parser.parse_args()
     
-    # Detect OS
     system = platform.system()
     print(f"Detected OS: {system}")
     
-    # Determine HA path
-    if args.ha_path:
-        ha_path = args.ha_path
-    elif system == "Darwin":  # macOS
-        ha_path = DEFAULT_HA_PATH_MAC
-    elif system == "Windows":
-        ha_path = DEFAULT_HA_PATH_WINDOWS
-        if not ha_path:
-            print("Error: Please specify --ha-path for Windows deployment")
-            return 1
-    else:
-        print(f"Error: Unsupported OS: {system}")
+    ha_path = resolve_ha_path(args)
+    if ha_path is None:
         return 1
     
     # Validate HA path exists
@@ -212,35 +232,27 @@ def main():
     success = True
     
     try:
-        # Enable debug mode if requested
         if args.debug:
             enable_debug_mode()
         
-        # Generate E2E test data
         if not args.skip_generate:
             if not generate_e2e_test_data():
                 print("Warning: E2E test data generation failed")
                 success = False
         
-        # Deploy based on OS
-        if system == "Darwin":
-            if not deploy_mac(ha_path, args.debug):
-                success = False
-        elif system == "Windows":
-            if not deploy_windows(ha_path):
-                success = False
+        if not deploy(ha_path):
+            success = False
         
     finally:
-        # Always disable debug mode when done (restore to safe state)
         if args.debug:
             disable_debug_mode()
     
     if success:
         print("\nAll deployment steps completed successfully")
         return 0
-    else:
-        print("\nDeployment completed with warnings or errors")
-        return 1
+
+    print("\nDeployment completed with warnings or errors")
+    return 1
 
 
 if __name__ == "__main__":

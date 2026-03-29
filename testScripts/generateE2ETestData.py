@@ -30,7 +30,7 @@ def main():
     combined_devices = []
     
     for file_path in device_files:
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
             
         # Extract the device list from each file
@@ -55,7 +55,7 @@ def main():
     
     # Write combined file
     output_file = E2E_TEST_DATA_DIR / "get_devices.json"
-    with open(output_file, 'w') as f:
+    with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(combined_data, f, indent=2)
     
     print(f"\nCreated {output_file} with {len(combined_devices)} devices")
@@ -97,7 +97,7 @@ def main():
         print(f"  Copied {file_path.name}")
     
     print(f"\nDone! Generated E2E test data in {E2E_TEST_DATA_DIR}")
-    print(f"  - 1 combined get_devices.json file")
+    print("  - 1 combined get_devices.json file")
     print(f"  - {len(state_files)} get_device_state files")
     print(f"  - {len(setting_files)} get_device_setting files")
 
