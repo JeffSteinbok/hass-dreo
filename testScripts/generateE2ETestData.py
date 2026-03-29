@@ -59,7 +59,7 @@ def main():
     with open(output_file, 'w') as f:
         json.dump(combined_data, f, indent=2)
     
-    print(f"\n✓ Created {output_file} with {len(combined_devices)} devices")
+    print(f"\nCreated {output_file} with {len(combined_devices)} devices")
     
     # Clean existing state files in destination
     existing_state_files = list(E2E_TEST_DATA_DIR.glob("get_device_state_*.json"))
@@ -67,7 +67,7 @@ def main():
         print(f"\nCleaning {len(existing_state_files)} existing state files:")
         for file_path in existing_state_files:
             file_path.unlink()
-            print(f"  ✓ Deleted {file_path.name}")
+            print(f"  Deleted {file_path.name}")
     
     # Clean existing settings files in destination
     existing_setting_files = list(E2E_TEST_DATA_DIR.glob("get_device_setting_*.json"))
@@ -75,7 +75,7 @@ def main():
         print(f"\nCleaning {len(existing_setting_files)} existing setting files:")
         for file_path in existing_setting_files:
             file_path.unlink()
-            print(f"  ✓ Deleted {file_path.name}")
+            print(f"  Deleted {file_path.name}")
 
     # Copy all get_device_state files
     state_files = list(API_RESPONSES_DIR.glob("get_device_state_*.json"))
@@ -85,7 +85,7 @@ def main():
     for file_path in state_files:
         dest_path = E2E_TEST_DATA_DIR / file_path.name
         shutil.copy2(file_path, dest_path)
-        print(f"  ✓ Copied {file_path.name}")
+        print(f"  Copied {file_path.name}")
 
     # Copy all get_device_settings files
     setting_files = list(API_RESPONSES_DIR.glob("get_device_setting_*.json"))
@@ -95,9 +95,9 @@ def main():
     for file_path in setting_files:
         dest_path = E2E_TEST_DATA_DIR / file_path.name
         shutil.copy2(file_path, dest_path)
-        print(f"  ✓ Copied {file_path.name}")
+        print(f"  Copied {file_path.name}")
     
-    print(f"\n✓ Done! Generated E2E test data in {E2E_TEST_DATA_DIR}")
+    print(f"\nDone! Generated E2E test data in {E2E_TEST_DATA_DIR}")
     print(f"  - 1 combined get_devices.json file")
     print(f"  - {len(state_files)} get_device_state files")
     print(f"  - {len(setting_files)} get_device_setting files")
