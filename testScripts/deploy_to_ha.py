@@ -48,7 +48,7 @@ def enable_debug_mode():
     with open(CONST_DEBUG_FILE, 'w') as f:
         f.write(modified_content)
     
-    print("✓ DEBUG_TEST_MODE enabled")
+    print("DEBUG_TEST_MODE enabled")
 
 
 def disable_debug_mode():
@@ -77,7 +77,7 @@ def disable_debug_mode():
     with open(CONST_DEBUG_FILE, 'w') as f:
         f.write(modified_content)
     
-    print("✓ DEBUG_TEST_MODE disabled")
+    print("DEBUG_TEST_MODE disabled")
 
 
 def generate_e2e_test_data():
@@ -106,7 +106,7 @@ def generate_e2e_test_data():
     shutil.copytree(TEMP_E2E_DATA_DIR, TARGET_E2E_DATA_DIR)
     
     file_count = len(list(TARGET_E2E_DATA_DIR.glob("*.json")))
-    print(f"✓ Copied {file_count} files to target directory")
+    print(f"Copied {file_count} files to target directory")
     
     return True
 
@@ -134,7 +134,7 @@ def deploy_mac(ha_path, debug_mode):
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
         print(result.stdout)
-        print("✓ Deployment successful")
+        print("Deployment successful")
         return True
     except subprocess.CalledProcessError as e:
         print(f"Error during rsync: {e.stderr}")
@@ -144,11 +144,31 @@ def deploy_mac(ha_path, debug_mode):
 def deploy_windows(ha_path):
     """Deploy to HA instance on Windows using robocopy."""
     print(f"\nDeploying to {ha_path}...")
-    print("⚠ Windows deployment with robocopy is not yet implemented (TBD)")
-    print("You can manually copy the files from:")
-    print(f"  {CUSTOM_COMPONENTS_SRC}")
-    print(f"To: {ha_path}")
-    return False
+
+    cmd = [
+        "robocopy",
+        str(CUSTOM_COMPONENTS_SRC),
+        ha_path,
+        "/MIR",
+        "/XD", "__pycache__",
+        "/XF", ".*",
+        "/NFL", "/NDL", "/NJH", "/NJS"
+    ]
+
+    print(f"Running: {' '.join(cmd)}")
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        # robocopy returns 0-7 for success, 8+ for errors
+        if result.returncode >= 8:
+            print(f"Error during robocopy (exit code {result.returncode}): {result.stderr}")
+            return False
+        print(result.stdout)
+        print("Deployment successful")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error during robocopy: {e.stderr}")
+        return False
 
 
 def main():
@@ -225,10 +245,10 @@ def main():
             disable_debug_mode()
     
     if success:
-        print("\n✓ All deployment steps completed successfully")
+        print("\nAll deployment steps completed successfully")
         return 0
     else:
-        print("\n⚠ Deployment completed with warnings or errors")
+        print("\nDeployment completed with warnings or errors")
         return 1
 
 
