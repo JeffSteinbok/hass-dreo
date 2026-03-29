@@ -192,6 +192,80 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert mocked_pydreo_heater.ecolevel == 80
         assert test_heater.target_temperature == 80
 
+    def test_set_temperature_in_off_mode(self):
+        """Test that set_temperature sends a command to the device even when in OFF mode.
+
+        Regression test: previously the else branch hardcoded _attr_target_temperature=4
+        and never called self.device.ecolevel, so no command reached the device.
+        """
+        mocked_pydreo_heater : PyDreoDeviceMock = self.create_mock_device(
+            name="WH517S Test Heater OFF",
+            serial_number="123456",
+            features={
+                "poweron": False,
+                "temperature": 67,
+                "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+                "htalevel": 3,
+                "ecolevel": 72,
+                "mode": DreoHeaterMode.OFF,
+            },
+            modes=[
+                DreoHeaterMode.COOLAIR,
+                DreoHeaterMode.HOTAIR,
+                DreoHeaterMode.ECO,
+                DreoHeaterMode.OFF,
+            ],
+            swing_modes=None
+        )
+
+        test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
+
+        assert test_heater.hvac_mode == HVACMode.OFF
+
+        from homeassistant.components.climate import ATTR_TEMPERATURE
+        test_heater.set_temperature(**{ATTR_TEMPERATURE: 80})
+
+        # The command must reach the device (ecolevel updated), not silently dropped
+        assert mocked_pydreo_heater.ecolevel == 80
+        assert test_heater.target_temperature == 80
+
+    def test_set_temperature_in_fan_only_mode(self):
+        """Test that set_temperature sends a command to the device when in FAN_ONLY mode.
+
+        Regression test: previously the else branch hardcoded _attr_target_temperature=4
+        and never called self.device.ecolevel, so no command reached the device.
+        """
+        mocked_pydreo_heater : PyDreoDeviceMock = self.create_mock_device(
+            name="WH517S Test Heater FAN_ONLY",
+            serial_number="123456",
+            features={
+                "poweron": True,
+                "temperature": 67,
+                "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+                "htalevel": None,
+                "ecolevel": 72,
+                "mode": DreoHeaterMode.COOLAIR,
+            },
+            modes=[
+                DreoHeaterMode.COOLAIR,
+                DreoHeaterMode.HOTAIR,
+                DreoHeaterMode.ECO,
+                DreoHeaterMode.OFF,
+            ],
+            swing_modes=None
+        )
+
+        test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
+
+        assert test_heater.hvac_mode == HVACMode.FAN_ONLY
+
+        from homeassistant.components.climate import ATTR_TEMPERATURE
+        test_heater.set_temperature(**{ATTR_TEMPERATURE: 78})
+
+        # The command must reach the device (ecolevel updated), not silently dropped
+        assert mocked_pydreo_heater.ecolevel == 78
+        assert test_heater.target_temperature == 78
+
     def test_set_temperature_rounds_instead_of_truncating(self):
         """Test that set_temperature rounds fractional Fahrenheit values instead of truncating.
 
