@@ -281,9 +281,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.model == "DR-HAF003S"
             assert pydreo_fan.speed_range == (1, 8)
             assert pydreo_fan.horizontal_angle_range == (-60, 60)
-            assert pydreo_fan.vertical_angle_range == (-15, 90)
-            
-            # Verify it has cruise_conf and fixed_conf
+            assert pydreo_fan.vertical_angle_range == (0, 90)
             assert pydreo_fan._cruise_conf is not None
             assert pydreo_fan._fixed_conf is not None
             assert pydreo_fan._horizontal_oscillation_angle is None
@@ -316,7 +314,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.model == "DR-HAF003S"
             assert pydreo_fan.speed_range == (1, 8)
             assert pydreo_fan.horizontal_angle_range == (-60, 60)
-            assert pydreo_fan.vertical_angle_range == (-15, 90)
+            assert pydreo_fan.vertical_angle_range == (0, 90)
             
             # Verify it does NOT have cruise_conf or fixed_conf
             assert pydreo_fan._cruise_conf is None

@@ -184,9 +184,16 @@ SUPPORTED_DEVICES = {
 
     # Air Circulators
     "DR-HAF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
+    "DR-HAF003S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        device_ranges={
+            # API reports -15 to 90 degrees but physical fan cannot go below 0
+            VERTICAL_ANGLE_RANGE: (0, 90)
+        }),
     "DR-HAF004S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         device_ranges={
+            # API reports -30 to 90 degrees but physical fan cannot go below 0
             VERTICAL_ANGLE_RANGE: (0, 90)
         }),
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
