@@ -1,11 +1,21 @@
 """BaseDevice utilities for Dreo Component."""
 
+from datetime import timedelta
+
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .haimports import * # pylint: disable=W0401,W0614
 
 from .const import (
     DOMAIN
 )
+
+SCAN_INTERVAL = timedelta(minutes=5)
+"""How often HA polls each entity to refresh device state from the REST API.
+
+Push notifications (WebSocket) handle real-time state changes, but the poll
+provides a safety net to detect devices that go offline without sending a
+WebSocket disconnect notification (e.g. a device that is abruptly unplugged).
+"""
 
 class DreoBaseDeviceHA(Entity):
     """Base class for Dreo Entity Representations."""
@@ -40,7 +50,17 @@ class DreoBaseDeviceHA(Entity):
 
     @property
     def should_poll(self):
-        return False
+        return True
+
+    def update(self) -> None:
+        """Fetch the latest device state from the REST API.
+
+        Called by HA at the SCAN_INTERVAL cadence.  Multiple entities may share
+        a single PyDreo device object; PyDreoBaseDevice.refresh_state() is
+        internally throttled so only one REST API call is made per device per
+        poll cycle regardless of how many entities request an update.
+        """
+        self.pydreo_device.refresh_state()
 
     async def async_added_to_hass(self):
         """Register callbacks."""

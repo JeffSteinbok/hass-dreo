@@ -1,7 +1,8 @@
 """Tests for the Dreo Base Device HA class."""
+from datetime import timedelta
 from unittest.mock import patch, MagicMock
 
-from custom_components.dreo.dreobasedevice import DreoBaseDeviceHA
+from custom_components.dreo.dreobasedevice import DreoBaseDeviceHA, SCAN_INTERVAL
 from custom_components.dreo.const import DOMAIN
 
 from .testdevicebase import TestDeviceBase
@@ -77,7 +78,7 @@ class TestDreoBaseDeviceHA(TestDeviceBase):
             assert base.available is False
 
     def test_base_device_should_poll(self):
-        """Test should_poll returns False (push-based via WebSocket)."""
+        """Test should_poll returns True (periodic polling supplements WebSocket push)."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
                 name="Test Device",
@@ -85,4 +86,21 @@ class TestDreoBaseDeviceHA(TestDeviceBase):
             )
 
             base = DreoBaseDeviceHA(device)
-            assert base.should_poll is False
+            assert base.should_poll is True
+
+    def test_scan_interval_is_set(self):
+        """Test that SCAN_INTERVAL is defined for periodic availability checks."""
+        assert SCAN_INTERVAL is not None
+        assert isinstance(SCAN_INTERVAL, timedelta)
+        assert SCAN_INTERVAL.total_seconds() > 0
+
+    def test_base_device_update_calls_refresh_state(self):
+        """Test update() delegates to pydreo_device.refresh_state()."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self.create_mock_device(
+                name="Test Device",
+                serial_number="DEV001",
+            )
+            base = DreoBaseDeviceHA(device)
+            base.update()
+            device.refresh_state.assert_called_once()

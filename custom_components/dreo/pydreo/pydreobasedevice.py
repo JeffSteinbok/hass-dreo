@@ -1,6 +1,7 @@
 """Base class for all Dreo devices."""
 import threading
 import logging
+from datetime import datetime
 from typing import Dict
 from typing import TYPE_CHECKING
 
@@ -11,6 +12,13 @@ if TYPE_CHECKING:
     from pydreo import PyDreo
 
 _LOGGER = logging.getLogger(__name__)
+
+STATE_REFRESH_THROTTLE_SECONDS = 30
+"""Minimum seconds between consecutive REST API state refreshes for the same device.
+
+Multiple HA entities (fan, switches, sensors) may share one PyDreo device object.
+The throttle ensures all of them calling refresh_state() in the same poll cycle
+result in only a single API call per device."""
 
 class UnknownProductError(Exception):
     """Exception thrown when we don't recognize a product of a device."""
@@ -48,6 +56,7 @@ class PyDreoBaseDevice:
         self._dreo = dreo
         self._is_on = False
         self._connected = None
+        self._last_state_refresh: datetime | None = None
 
         self._feature_key_names: Dict[str, str] = {}
 
@@ -187,6 +196,25 @@ class PyDreoBaseDevice:
         connected_val = self.get_state_update_value(state, CONNECTED_KEY)
         if connected_val is not None:
             self._connected = connected_val
+
+    def refresh_state(self) -> bool:
+        """Refresh device state from the REST API.
+
+        Throttled by STATE_REFRESH_THROTTLE_SECONDS so that multiple HA entities
+        sharing the same device object only trigger a single API call per poll cycle.
+
+        Returns True if an API call was made, False if throttled.
+        """
+        with self._lock:
+            now = datetime.now()
+            elapsed = (now - self._last_state_refresh).total_seconds() if self._last_state_refresh else None
+            if elapsed is not None and elapsed < STATE_REFRESH_THROTTLE_SECONDS:
+                _LOGGER.debug("refresh_state: %s - throttled, skipping", self.name)
+                return False
+            self._last_state_refresh = now
+
+        _LOGGER.debug("refresh_state: %s - refreshing state from API", self.name)
+        return self._dreo.load_device_state(self)
 
     def add_attr_callback(self, cb):
         """Add a callback to be called by _do_callbacks."""
