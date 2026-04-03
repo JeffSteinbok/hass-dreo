@@ -53,12 +53,12 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
         return HumidifierDeviceClass.DEHUMIDIFIER
 
     @property
-    def supported_features(self) -> int:
+    def supported_features(self) -> HumidifierEntityFeature:
         """Return the list of supported features."""
-        supported_features = 0
+        supported_features = HumidifierEntityFeature(0)
         if self.device.modes is not None:
             supported_features |= HumidifierEntityFeature.MODES
-        
+
         return supported_features
     
     @property
