@@ -163,3 +163,79 @@ class TestDreoTowerFan(IntegrationTestBase):
             fan.oscillating = False
             mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: False})
         fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: False}})
+
+    def test_HTF024S(self):  # pylint: disable=invalid-name
+        """Load HTF024S fan and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HTF024S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+
+        # Test initial state values - speed_range and preset_modes come from SUPPORTED_DEVICES
+        # since controlsConf only has a template reference
+        assert fan.speed_range == (1, 9)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+        assert fan.model == "DR-HTF024S"
+        assert fan.serial_number is not None
+        assert fan.is_on is True
+        assert fan.oscillating is False
+
+        # Test power commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+        # Test all preset modes
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "natural"
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 2}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "sleep"
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 3}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 4}})
+
+        with pytest.raises(ValueError):
+            fan.preset_mode = "not_a_mode"
+
+        # Test speed commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 5
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 5})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 5}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 9
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 9})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 9}})
+
+        # Test speed boundaries
+        with pytest.raises(ValueError):
+            fan.fan_speed = 0
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 10
+
+        # Test oscillation
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.oscillating = True
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.oscillating = False
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: False})
+        fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: False}})
