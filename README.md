@@ -1,13 +1,13 @@
 # Dreo Smart Device Integration for Home Assistant (Unofficial)
 
-<p align="center">
-  <img src="custom_components/dreo/brand/logo@2x.png" alt="Dreo" width="300">
-</p>
-
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 [![CI Validation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml)
 [![Release Automation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml)
+
+<p align="center">
+  <img src="custom_components/dreo/brand/logo@2x.png" alt="Dreo" width="300">
+</p>
 
 
 Unofficial HomeAssistant integration for Dreo brand smart devices. Currently supports most models of Fans, Air Conditioners, Humidifiers, Dehumidifiers and Space Heaters as well as ChefMaker. I do not work for Dreo; just something I'm doing for fun.
