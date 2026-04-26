@@ -64,16 +64,16 @@ class TestDreoCeilingFanHA(TestDeviceBase):
 
         # Test all preset modes
         test_fan.set_preset_mode("normal")
-        assert mocked_pydreo_ceilingfan.preset_mode is "normal"
+        assert mocked_pydreo_ceilingfan.preset_mode == "normal"
 
         test_fan.set_preset_mode("natural")
-        assert mocked_pydreo_ceilingfan.preset_mode is "natural"
+        assert mocked_pydreo_ceilingfan.preset_mode == "natural"
         
         test_fan.set_preset_mode("sleep")
-        assert mocked_pydreo_ceilingfan.preset_mode is "sleep"
+        assert mocked_pydreo_ceilingfan.preset_mode == "sleep"
         
         test_fan.set_preset_mode("auto")
-        assert mocked_pydreo_ceilingfan.preset_mode is "auto"
+        assert mocked_pydreo_ceilingfan.preset_mode == "auto"
 
         # Check to see what switches are added to ceiling fans
         self.verify_expected_entities(switch.get_entries([mocked_pydreo_ceilingfan]), [])

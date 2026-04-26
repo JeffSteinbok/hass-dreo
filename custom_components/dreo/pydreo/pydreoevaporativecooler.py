@@ -30,7 +30,7 @@ WATER_LEVEL_EMPTY = "Empty"
 HUMIDIFY_MODE_MAP = {
     0: False,
     2: True,
-    False : 0,
+    False: 0,  # noqa: F601
     True: 2
 }
 

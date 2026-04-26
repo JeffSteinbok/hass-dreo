@@ -25,12 +25,12 @@ This is an unofficial Home Assistant custom integration for Dreo brand smart dev
 ### Python Style
 
 - **Python Version**: Target Python 3.13 (as per CI configuration)
-- **Line Length**: Maximum 150 characters (configured in pylintrc)
-- **Linting**: Use pylint with the provided `pylintrc` configuration
+- **Line Length**: Maximum 150 characters (configured in `ruff.toml`)
+- **Linting**: Use Ruff with the provided `ruff.toml` configuration
 - **Imports**: Follow Home Assistant conventions:
   - Use `from .haimports import *` for HA-specific imports
   - Place third-party imports at the top
-  - Use `# pylint: disable=C0415` for conditional imports
+  - Use `# noqa` comments to suppress specific Ruff warnings when needed
 
 ### Code Conventions
 
@@ -71,11 +71,11 @@ pytest --cov=custom_components/dreo
 ### Linting
 
 ```bash
-# Run pylint (errors only, as in CI)
-pylint --recursive=yes --reports=yes --disable=W,C,R .
+# Run Ruff (as in CI)
+ruff check .
 
-# Run pylint with full checks
-pylint --recursive=yes custom_components/dreo
+# Run Ruff with auto-fix
+ruff check --fix .
 ```
 
 ### Test Structure
@@ -141,7 +141,7 @@ The integration includes a special debug mode for testing without live devices:
 
 1. Add test that reproduces the bug
 2. Fix the issue with minimal changes
-3. **Run pylint (errors only) before committing**: `pylint --recursive=yes --disable=W,C,R .`
+3. **Run Ruff before committing**: `ruff check .`
 4. Ensure all tests pass
 5. Update relevant documentation if needed
 
@@ -156,7 +156,7 @@ The integration includes a special debug mode for testing without live devices:
 
 - **CI Validation** (`ci.yaml`) - Runs on PRs and pushes to main/beta
   - Executes pytest suite
-  - Runs pylint (errors only)
+  - Runs Ruff linting
 - **HACS Validation** (`hacs_validate.yaml`) - Validates HACS compatibility
 - **Hassfest** (`hassfest.yaml`) - Validates Home Assistant integration
 - **Release** (`release.yaml`) - Automated release process
@@ -196,11 +196,11 @@ The integration includes a special debug mode for testing without live devices:
 
 ## Best Practices for Copilot
 
-> **Always run pylint before pushing**: `pylint --recursive=yes --disable=W,C,R .` must report 0 errors before any commit is pushed.
+> **Always run Ruff before pushing**: `ruff check .` must report 0 errors before any commit is pushed.
 
 - Focus on minimal, surgical changes
 - Follow existing patterns in the codebase
-- **Run pylint (errors only) before pushing** — `pylint --recursive=yes --disable=W,C,R .` must pass with 0 errors
+- **Run Ruff before pushing** — `ruff check .` must pass with 0 errors
 - Run tests after changes
 - Update documentation when adding features
 - Use existing device classes as templates for new devices

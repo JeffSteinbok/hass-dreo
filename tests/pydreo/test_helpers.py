@@ -16,15 +16,15 @@ class TestHelpers:
     def test_name_from_value(self):
         """Test name_from_value() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.name_from_value(name_value_collection, False) is "off" # pylint: disable=E0601
-        assert Helpers.name_from_value(name_value_collection, True) is "on"
+        assert Helpers.name_from_value(name_value_collection, False) == "off" # pylint: disable=E0601
+        assert Helpers.name_from_value(name_value_collection, True) == "on"
         assert Helpers.name_from_value(name_value_collection, "oxx") is None
 
     def test_get_name_list(self):
         """Test get_name_list() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.get_name_list(name_value_collection)[0] is "on" # pylint: disable=E0601
-        assert Helpers.get_name_list(name_value_collection)[1] is "off"
+        assert Helpers.get_name_list(name_value_collection)[0] == "on" # pylint: disable=E0601
+        assert Helpers.get_name_list(name_value_collection)[1] == "off"
 
     def test_value_from_name_with_integers(self):
         """Test value_from_name() with integer values."""

@@ -214,4 +214,4 @@ class TestOptionsFlowHandler:
         # Check that it's a boolean type
         for key, value in schema_dict.items():
             if "auto_reconnect" in str(key):
-                assert value == bool
+                assert value is bool

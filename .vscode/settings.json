@@ -1,7 +1,9 @@
 {
-    "pylint.args": [
-    ],
     "python.testing.pytestEnabled": true,
     "python.terminal.activateEnvInCurrentTerminal": true,
-    "python.defaultInterpreterPath": "~/venv/bin/python"
+    "python.defaultInterpreterPath": "~/venv/bin/python",
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true
+    }
 }
