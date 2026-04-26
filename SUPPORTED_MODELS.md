@@ -42,7 +42,6 @@ This document lists all Dreo device models that have been tested and confirmed t
 
 ### Air Purifiers (DR-HAP Series)
 
-All DR-HAP models should be supported. Tested models include:
 - DR-HAP001S
 - DR-HAP002S
 - DR-HAP003S
@@ -57,9 +56,7 @@ All DR-HAP models should be supported. Tested models include:
 - DR-HHM014S (HM774S)
 - DR-HHM015S (HM755S)
 
-All DR-HHM* models should have basic support.
-
-## Dehumidifiers (DR-HDH Series)
+## Dehumidifiers(DR-HDH Series)
 
 - DR-HDH001S
 - DR-HDH002S
