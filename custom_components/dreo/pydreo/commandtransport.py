@@ -12,22 +12,22 @@ from collections.abc import Callable
 
 import websockets
 
-from .constant import * # pylint: disable=W0401,W0614
+from .constant import *  # pylint: disable=W0401,W0614
 from .helpers import Helpers
-from .models import * # pylint: disable=W0401,W0614
+from .models import *  # pylint: disable=W0401,W0614
 
 _LOGGER = logging.getLogger(__name__)
 
 WEBSOCKET_PING_INTERVAL = 15  # seconds between keepalive pings
-WEBSOCKET_PING_MESSAGE = '2'  # Dreo WebSocket keepalive message
+WEBSOCKET_PING_MESSAGE = "2"  # Dreo WebSocket keepalive message
 MAX_RETRY_COUNT = 3
 RETRY_DELAY = 5  # seconds between send retries
 
-class CommandTransport: 
+
+class CommandTransport:
     """Command transport class for Dreo API."""
 
-    def __init__(self, 
-                 recv_callback: Callable[[dict], None] ):
+    def __init__(self, recv_callback: Callable[[dict], None]):
 
         self._event_thread = None
         self._ws = None
@@ -41,7 +41,7 @@ class CommandTransport:
         self._api_server_region = None
         self._token = None
         self._recv_callback = recv_callback
-   
+
     @property
     def auto_reconnect(self) -> bool:
         """Return auto_reconnect option."""
@@ -53,12 +53,9 @@ class CommandTransport:
         _LOGGER.debug("auto_reconnect.setter: Setting auto_reconnect to %s", value)
         self._auto_reconnect = value
 
-
-    def start_transport(self,
-                        api_server_region: str,
-                        token: str) -> None:
+    def start_transport(self, api_server_region: str, token: str) -> None:
         """Initialize the websocket and start monitoring"""
-        
+
         if self._event_thread is not None and self._event_thread.is_alive():
             _LOGGER.warning("start_transport: Transport already started")
             return
@@ -71,20 +68,18 @@ class CommandTransport:
         def start_ws_wrapper():
             asyncio.run(self._start_websocket())
 
-        self._event_thread = threading.Thread(
-            name="DreoWebSocketStream", target=start_ws_wrapper, args=()
-        )
+        self._event_thread = threading.Thread(name="DreoWebSocketStream", target=start_ws_wrapper, args=())
         self._event_thread.daemon = True
         self._event_thread.start()
 
     def stop_transport(self) -> None:
-        '''Close down the monitoring socket'''
+        """Close down the monitoring socket"""
         _LOGGER.info("stop_transport: Stopping Transport - May take up to 15s")
         self._signal_close = True
         self._transport_enabled = False
 
         # Close WebSocket from the WS thread's event loop if available
-        if self._loop and self._ws and not getattr(self._ws, 'closed', False):
+        if self._loop and self._ws and not getattr(self._ws, "closed", False):
             try:
                 asyncio.run_coroutine_threadsafe(self._ws.close(), self._loop)
             except Exception:  # pylint: disable=broad-except
@@ -101,7 +96,7 @@ class CommandTransport:
         self._token = token
 
     def testonly_interrupt_transport(self) -> None:
-        '''Close down the monitoring socket'''
+        """Close down the monitoring socket"""
         _LOGGER.info("testonly_interrupt_transport: Interrupting Transport - May take up to 15s")
         self._testonly_signal_interrupt = True
 
@@ -142,10 +137,7 @@ class CommandTransport:
     async def _ws_handler(self, ws):
         consumer_task = asyncio.create_task(self._ws_consumer_handler(ws))
         ping_task = asyncio.create_task(self._ws_ping_handler(ws))
-        done, pending = await asyncio.wait(
-            [consumer_task, ping_task],
-            return_when=asyncio.FIRST_COMPLETED
-        )
+        done, pending = await asyncio.wait([consumer_task, ping_task], return_when=asyncio.FIRST_COMPLETED)
         _LOGGER.debug("_ws_handler: WebSocket appears closed.")
         for task in pending:
             task.cancel()
@@ -157,7 +149,7 @@ class CommandTransport:
             exc = task.exception()
             if exc:
                 _LOGGER.error("_ws_handler: Task failed with exception: %s", exc)
-        
+
     async def _ws_consumer_handler(self, ws):
         _LOGGER.debug("_ws_consumer_handler: Starting")
         try:
@@ -171,13 +163,13 @@ class CommandTransport:
                     _LOGGER.exception("_ws_consumer_handler: Unexpected error processing message")
         except websockets.exceptions.ConnectionClosedError:
             _LOGGER.debug("_ws_consumer_handler: WebSocket appears closed.")
-        
+
     async def _ws_ping_handler(self, ws):
         _LOGGER.debug("_ws_ping_handler: Starting")
         while True:
             try:
                 # Were we told to kill the connection?
-                if (self._signal_close):
+                if self._signal_close:
                     _LOGGER.debug("_ws_ping_handler: Closing WebSocket")
                     await ws.close()
 
@@ -191,12 +183,12 @@ class CommandTransport:
                 async with self._ws_send_lock:
                     await ws.send(WEBSOCKET_PING_MESSAGE)
                 await asyncio.sleep(WEBSOCKET_PING_INTERVAL)
-               
+
             except websockets.exceptions.ConnectionClosedError:
-                _LOGGER.info('_ws_ping_handler: Dreo WebSocket Closed - Unless intended, will reconnect')
+                _LOGGER.info("_ws_ping_handler: Dreo WebSocket Closed - Unless intended, will reconnect")
                 break
             except CancelledError:
-                _LOGGER.info('_ws_ping_handler: Dreo WebSocket Cancelled - Unless intended, will reconnect')
+                _LOGGER.info("_ws_ping_handler: Dreo WebSocket Cancelled - Unless intended, will reconnect")
                 break
 
     def _ws_consume_message(self, message):
@@ -210,7 +202,7 @@ class CommandTransport:
         if not self._transport_enabled:
             _LOGGER.error("send_message: Command transport disabled. Run start_transport first.")
             raise RuntimeError("Command transport disabled. Run start_transport first.")
-        
+
         if self._loop is None or self._loop.is_closed():
             _LOGGER.error("send_message: WebSocket event loop not available.")
             raise RuntimeError("WebSocket event loop not available.")
@@ -219,19 +211,16 @@ class CommandTransport:
             retry_count = 0
             while retry_count < MAX_RETRY_COUNT:
                 try:
-                    if self._ws is None or getattr(self._ws, 'closed', False):
+                    if self._ws is None or getattr(self._ws, "closed", False):
                         raise RuntimeError("WebSocket not connected")
-                    async with self._ws_send_lock: 
+                    async with self._ws_send_lock:
                         await self._ws.send(content)
                     return
                 except Exception:  # pylint: disable=broad-except
                     retry_count += 1
-                    _LOGGER.error("send_message: Error sending command. Retrying in %s seconds. Retry count: %s", 
-                                  RETRY_DELAY, 
-                                  retry_count)
+                    _LOGGER.error("send_message: Error sending command. Retrying in %s seconds. Retry count: %s", RETRY_DELAY, retry_count)
                     await asyncio.sleep(RETRY_DELAY)
             raise RuntimeError(f"send_message: Failed to send command after {MAX_RETRY_COUNT} retries")
 
         future = asyncio.run_coroutine_threadsafe(send_internal(), self._loop)
         future.result(timeout=MAX_RETRY_COUNT * RETRY_DELAY + 5)
-        

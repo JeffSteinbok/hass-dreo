@@ -1,13 +1,15 @@
 """Tests for Dreo Fans"""
+
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
 import pytest
-from  .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestDreoTowerFan(IntegrationTestBase):
     """Test PyDreoFan class."""
@@ -19,10 +21,10 @@ class TestDreoTowerFan(IntegrationTestBase):
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
         fan = self.pydreo_manager.devices[0]
-        
+
         # Test initial state values
         assert fan.speed_range == (1, 12)
-        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
         assert fan.oscillating is True
         assert fan.model == "DR-HTF005S"
         assert fan.serial_number is not None
@@ -37,22 +39,22 @@ class TestDreoTowerFan(IntegrationTestBase):
 
         # Test all preset modes
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'natural'
+            fan.preset_mode = "natural"
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 2}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'sleep'
+            fan.preset_mode = "sleep"
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 3}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'auto'
+            fan.preset_mode = "auto"
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 4}})
 
         with pytest.raises(ValueError):
-            fan.preset_mode = 'not_a_mode'
+            fan.preset_mode = "not_a_mode"
 
         # Test speed commands at various levels
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -99,7 +101,7 @@ class TestDreoTowerFan(IntegrationTestBase):
         # Test initial state values - speed_range and preset_modes come from SUPPORTED_DEVICES
         # since controlsConf only has a template reference
         assert fan.speed_range == (1, 9)
-        assert fan.preset_modes == ['normal', 'natural', 'sleep', 'auto']
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
         assert fan.model == "DR-HTF018S"
         assert fan.serial_number is not None
         assert fan.is_on is True
@@ -118,22 +120,22 @@ class TestDreoTowerFan(IntegrationTestBase):
 
         # Test all preset modes
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'natural'
+            fan.preset_mode = "natural"
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 2})
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 2}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'sleep'
+            fan.preset_mode = "sleep"
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 3})
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 3}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'auto'
+            fan.preset_mode = "auto"
             mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 4}})
 
         with pytest.raises(ValueError):
-            fan.preset_mode = 'not_a_mode'
+            fan.preset_mode = "not_a_mode"
 
         # Test speed commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:

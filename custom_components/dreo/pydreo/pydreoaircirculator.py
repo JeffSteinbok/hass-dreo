@@ -79,19 +79,19 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
-        
+
         # Oscillation angle for older firmware (single angle value, not min/max range)
         self._horizontal_oscillation_angle = None
         self._vertical_oscillation_angle = None
-        
+
         # Horizontal angle adjustment (simpler angle control, similar to Tower Fan)
         self._horizontal_angle_adj = None
 
         # Atmosphere (RGB) light support
-        self._atm_light_on : bool = None
-        self._atm_brightness : int = None
-        self._atm_color : int = None
-        self._atm_mode : int = None
+        self._atm_light_on: bool = None
+        self._atm_brightness: int = None
+        self._atm_color: int = None
+        self._atm_mode: int = None
 
     def _uses_hangleadj_for_horizontal(self) -> bool:
         """Check if device uses hangleadj (simpler angle control) instead of hoscangle."""
@@ -131,17 +131,17 @@ class PyDreoAirCirculator(PyDreoFanBase):
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             control = controls_conf.get("control", None)
-            if (control is not None):
+            if control is not None:
                 for control_item in control:
-                    if (control_item.get("type", None) == "Mode"):
+                    if control_item.get("type", None) == "Mode":
                         for mode_item in control_item.get("items", None):
                             text = self.get_mode_string(mode_item.get("text", None))
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
-            if (schedule is not None):
+            if schedule is not None:
                 modes = schedule.get("modes", None)
-                if (modes is not None):
+                if modes is not None:
                     for mode_item in modes:
                         text = self.get_mode_string(mode_item.get("title", None))
                         value = mode_item.get("value", None)
@@ -149,7 +149,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                             preset_modes.append((text, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (len(preset_modes) == 0):
+        if len(preset_modes) == 0:
             _LOGGER.debug("parse_preset_modes: No preset modes detected")
             preset_modes = None
         _LOGGER.debug("parse_preset_modes: Detected preset modes - %s", preset_modes)
@@ -178,7 +178,6 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
-
         """Enable or disable oscillation"""
         _LOGGER.debug("oscillating.setter: Setting oscillation")
 
@@ -285,7 +284,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         _LOGGER.debug("set_horizontal_oscillation_angle: Setting angle to %s", angle)
         if self._horizontally_oscillating is None:
             raise NotImplementedError("This device does not support horizontal oscillation")
-            
+
         self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, angle)
 
     def set_vertical_oscillation_angle(self, angle: int) -> None:
@@ -310,7 +309,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Set the top vertical oscillation angle."""
         _LOGGER.debug("vertical_osc_angle_top.setter: Setting top angle")
         if self._cruise_conf is not None:
-            cruise_conf_values = self._cruise_conf.split(',')
+            cruise_conf_values = self._cruise_conf.split(",")
             if len(cruise_conf_values) < 4:
                 _LOGGER.warning("vertical_osc_angle_top: cruise_conf has unexpected format: %s", self._cruise_conf)
                 return
@@ -324,7 +323,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 _LOGGER.debug("vertical_osc_angle_top: vertical_osc_angle_top - value already %s, skipping command", new_value)
                 return
             cruise_conf_values[0] = new_value
-            self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
+            self._send_command(CRUISECONF_KEY, ",".join(map(str, cruise_conf_values)))
 
     @property
     def vertical_osc_angle_bottom(self) -> int:
@@ -340,7 +339,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Set the bottom vertical oscillation angle."""
         _LOGGER.debug("vertical_osc_angle_bottom: vertical_osc_angle_bottom.setter: Setting bottom angle")
         if self._cruise_conf is not None:
-            cruise_conf_values = self._cruise_conf.split(',')
+            cruise_conf_values = self._cruise_conf.split(",")
             if len(cruise_conf_values) < 4:
                 _LOGGER.warning("vertical_osc_angle_bottom: cruise_conf has unexpected format: %s", self._cruise_conf)
                 return
@@ -354,7 +353,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 _LOGGER.debug("vertical_osc_angle_bottom: vertical_osc_angle_bottom - value already %s, skipping command", new_value)
                 return
             cruise_conf_values[2] = new_value
-            self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
+            self._send_command(CRUISECONF_KEY, ",".join(map(str, cruise_conf_values)))
 
     @property
     def horizontal_osc_angle_right(self) -> int:
@@ -370,7 +369,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Set the right horizontal oscillation angle."""
         _LOGGER.debug("horizontal_osc_angle_right: horizontal_osc_angle_right.setter: Setting right angle")
         if self._cruise_conf is not None:
-            cruise_conf_values = self._cruise_conf.split(',')
+            cruise_conf_values = self._cruise_conf.split(",")
             if len(cruise_conf_values) < 4:
                 _LOGGER.warning("horizontal_osc_angle_right: cruise_conf has unexpected format: %s", self._cruise_conf)
                 return
@@ -384,7 +383,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 _LOGGER.debug("horizontal_osc_angle_right: horizontal_osc_angle_right - value already %s, skipping command", new_value)
                 return
             cruise_conf_values[1] = new_value
-            self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
+            self._send_command(CRUISECONF_KEY, ",".join(map(str, cruise_conf_values)))
 
     @property
     def horizontal_osc_angle_left(self) -> int:
@@ -400,7 +399,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Set the left horizontal oscillation angle."""
         _LOGGER.debug("horizontal_osc_angle_left: horizontal_osc_angle_left.setter: Setting left angle")
         if self._cruise_conf is not None:
-            cruise_conf_values = self._cruise_conf.split(',')
+            cruise_conf_values = self._cruise_conf.split(",")
             if len(cruise_conf_values) < 4:
                 _LOGGER.warning("horizontal_osc_angle_left: cruise_conf has unexpected format: %s", self._cruise_conf)
                 return
@@ -414,7 +413,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 _LOGGER.debug("horizontal_osc_angle_left: horizontal_osc_angle_left.setter: value already %s, skipping command", new_value)
                 return
             cruise_conf_values[3] = new_value
-            self._send_command(CRUISECONF_KEY, ','.join(map(str, cruise_conf_values)))
+            self._send_command(CRUISECONF_KEY, ",".join(map(str, cruise_conf_values)))
 
     @property
     def horizontal_angle(self) -> int:
@@ -423,7 +422,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self._horizontal_angle_adj is not None:
             return self._horizontal_angle_adj
         # Otherwise use fixedconf (more complex angle control)
-        if (self._fixed_conf is not None):
+        if self._fixed_conf is not None:
             return int(self._fixed_conf.split(",")[1])
         return None
 
@@ -440,10 +439,10 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 return
             self._send_command(HORIZONTAL_ANGLE_ADJ_KEY, new_value)
         # Otherwise use fixedconf (more complex angle control)
-        elif (self._fixed_conf is not None):
+        elif self._fixed_conf is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
             new_value = int(value)
-            current_value = int(self._fixed_conf.split(',')[1])
+            current_value = int(self._fixed_conf.split(",")[1])
             if current_value == new_value:
                 _LOGGER.debug("horizontal_angle: horizontal_angle - value already %s, skipping command", new_value)
                 return
@@ -463,7 +462,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self._fixed_conf is not None:
             # Note that HA seems to send this in as a float, we need to convert to int just in case
             new_value = int(value)
-            current_value = int(self._fixed_conf.split(',')[0])
+            current_value = int(self._fixed_conf.split(",")[0])
             if current_value == new_value:
                 _LOGGER.debug("vertical_angle: vertical_angle - value already %s, skipping command", new_value)
                 return
@@ -472,14 +471,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
     @property
     def horizontal_oscillation_angle(self) -> int:
         """Get the current horizontal oscillation angle (for older firmware).
-        
+
         Note: This is only used for devices that have hoscangle as an integer value
         and do NOT have hangleadj (newer simpler angle control).
         """
         # If hangleadj is available, this device doesn't use horizontal_oscillation_angle
         if self._uses_hangleadj_for_horizontal():
             return None
-        
+
         if self._horizontal_oscillation_angle is not None:
             return self._horizontal_oscillation_angle
         return None
@@ -491,7 +490,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         # If hangleadj is available, this device doesn't use horizontal_oscillation_angle
         if self._uses_hangleadj_for_horizontal():
             raise NotImplementedError("This device uses horizontal_angle instead")
-        
+
         if self._horizontal_oscillation_angle is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
             new_value = int(value)
@@ -511,14 +510,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
     @property
     def vertical_oscillation_angle(self) -> int:
         """Get the current vertical oscillation angle (for older firmware).
-        
+
         Note: This is only used for devices that have voscangle as a non-zero integer value.
         If the device has hangleadj and voscangle is 0, it likely doesn't support vertical angle.
         """
         # If voscangle is 0 and hangleadj is present, the device likely doesn't support vertical angle
         if self._has_vertical_osc_angle_disabled():
             return None
-        
+
         if self._vertical_oscillation_angle is not None:
             return self._vertical_oscillation_angle
         return None
@@ -530,7 +529,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         # If voscangle is 0 and hangleadj is present, the device likely doesn't support vertical angle
         if self._has_vertical_osc_angle_disabled():
             raise NotImplementedError("This device does not support vertical oscillation angle")
-        
+
         if self._vertical_oscillation_angle is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
             new_value = int(value)
@@ -624,17 +623,17 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._cruise_conf = self.get_state_update_value(state, CRUISECONF_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
-        
+
         # Parse hoscangle - only use if it's an integer, not a string like "0,0"
         hoscangle_val = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
         if isinstance(hoscangle_val, int):
             self._horizontal_oscillation_angle = hoscangle_val
-        
+
         # Parse voscangle - only use if it's an integer
         voscangle_val = self.get_state_update_value(state, VERTICAL_OSCILLATION_ANGLE_KEY)
         if isinstance(voscangle_val, int):
             self._vertical_oscillation_angle = voscangle_val
-        
+
         self._horizontal_angle_adj = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
 
         self._atm_light_on = self.get_state_update_value(state, ATMON_KEY)

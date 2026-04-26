@@ -1,4 +1,5 @@
 """Tests for the Dreo Number entity."""
+
 # pylint: disable=E1123
 from unittest.mock import patch, MagicMock
 
@@ -8,8 +9,8 @@ from custom_components.dreo.number import DreoNumberHA, DreoNumberEntityDescript
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
 class TestDreoNumberHA(TestDeviceBase):
@@ -17,12 +18,7 @@ class TestDreoNumberHA(TestDeviceBase):
 
     def test_number_get_entries_target_humidity(self):
         """Test number entity creation for target_humidity."""
-        device = self.create_mock_device(
-            name="Test Dehumidifier",
-            serial_number="DH001",
-            type="Dehumidifier",
-            features={"target_humidity": 50}
-        )
+        device = self.create_mock_device(name="Test Dehumidifier", serial_number="DH001", type="Dehumidifier", features={"target_humidity": 50})
 
         entities = number.get_entries([device])
         keys = [e.entity_description.key for e in entities]
@@ -30,12 +26,7 @@ class TestDreoNumberHA(TestDeviceBase):
 
     def test_number_get_entries_humidifier_excluded(self):
         """Test that Humidifier type devices are excluded from target_humidity number."""
-        device = self.create_mock_device(
-            name="Test Humidifier",
-            serial_number="HUM001",
-            type="Humidifier",
-            features={"target_humidity": 60}
-        )
+        device = self.create_mock_device(name="Test Humidifier", serial_number="HUM001", type="Humidifier", features={"target_humidity": 60})
 
         entities = number.get_entries([device])
         keys = [e.entity_description.key for e in entities]
@@ -44,11 +35,7 @@ class TestDreoNumberHA(TestDeviceBase):
 
     def test_number_get_entries_horizontal_angle(self):
         """Test number entity creation for horizontal_angle."""
-        device = self.create_mock_device(
-            name="Test Circulator",
-            serial_number="AC001",
-            features={"horizontal_angle": 30}
-        )
+        device = self.create_mock_device(name="Test Circulator", serial_number="AC001", features={"horizontal_angle": 30})
 
         entities = number.get_entries([device])
         keys = [e.entity_description.key for e in entities]
@@ -56,11 +43,7 @@ class TestDreoNumberHA(TestDeviceBase):
 
     def test_number_get_entries_vertical_angle(self):
         """Test number entity creation for vertical_angle."""
-        device = self.create_mock_device(
-            name="Test Circulator",
-            serial_number="AC001",
-            features={"vertical_angle": 45}
-        )
+        device = self.create_mock_device(name="Test Circulator", serial_number="AC001", features={"vertical_angle": 45})
 
         entities = number.get_entries([device])
         keys = [e.entity_description.key for e in entities]
@@ -68,11 +51,7 @@ class TestDreoNumberHA(TestDeviceBase):
 
     def test_number_get_entries_empty(self):
         """Test that devices without number features get no number entities."""
-        device = self.create_mock_device(
-            name="Simple Fan",
-            serial_number="FAN001",
-            features={"is_on": True, "fan_speed": 3}
-        )
+        device = self.create_mock_device(name="Simple Fan", serial_number="FAN001", features={"is_on": True, "fan_speed": 3})
 
         entities = number.get_entries([device])
         assert len(entities) == 0
@@ -80,11 +59,7 @@ class TestDreoNumberHA(TestDeviceBase):
     def test_number_entity_properties(self):
         """Test number entity basic properties."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Circulator",
-                serial_number="AC001",
-                features={"horizontal_angle": 30}
-            )
+            device = self.create_mock_device(name="Test Circulator", serial_number="AC001", features={"horizontal_angle": 30})
 
             entities = number.get_entries([device])
             angle_number = next(e for e in entities if e.entity_description.key == "Horizontal Angle")
@@ -97,11 +72,7 @@ class TestDreoNumberHA(TestDeviceBase):
     def test_number_native_value(self):
         """Test the native_value property."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Circulator",
-                serial_number="AC001",
-                features={"horizontal_angle": 30}
-            )
+            device = self.create_mock_device(name="Test Circulator", serial_number="AC001", features={"horizontal_angle": 30})
 
             entities = number.get_entries([device])
             angle_number = next(e for e in entities if e.entity_description.key == "Horizontal Angle")
@@ -110,11 +81,7 @@ class TestDreoNumberHA(TestDeviceBase):
     def test_number_set_native_value(self):
         """Test the set_native_value method."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Circulator",
-                serial_number="AC001",
-                features={"horizontal_angle": 30}
-            )
+            device = self.create_mock_device(name="Test Circulator", serial_number="AC001", features={"horizontal_angle": 30})
 
             entities = number.get_entries([device])
             angle_number = next(e for e in entities if e.entity_description.key == "Horizontal Angle")
@@ -125,11 +92,7 @@ class TestDreoNumberHA(TestDeviceBase):
     def test_number_repr(self):
         """Test the repr method of DreoNumberHA."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Device",
-                serial_number="DEV001",
-                features={"horizontal_angle": 0}
-            )
+            device = self.create_mock_device(name="Test Device", serial_number="DEV001", features={"horizontal_angle": 0})
 
             entities = number.get_entries([device])
             repr_str = repr(entities[0])
@@ -145,7 +108,7 @@ class TestDreoNumberHA(TestDeviceBase):
                 "horizontal_osc_angle_right": 30,
                 "vertical_osc_angle_top": 60,
                 "vertical_osc_angle_bottom": 10,
-            }
+            },
         )
 
         entities = number.get_entries([device])
@@ -158,11 +121,7 @@ class TestDreoNumberHA(TestDeviceBase):
 
     def test_number_shakehorizonangle(self):
         """Test shakehorizonangle number entity."""
-        device = self.create_mock_device(
-            name="Tower Fan",
-            serial_number="TF001",
-            features={"shakehorizonangle": 60}
-        )
+        device = self.create_mock_device(name="Tower Fan", serial_number="TF001", features={"shakehorizonangle": 60})
 
         entities = number.get_entries([device])
         keys = [e.entity_description.key for e in entities]
@@ -170,16 +129,8 @@ class TestDreoNumberHA(TestDeviceBase):
 
     def test_number_multiple_devices(self):
         """Test get_entries with multiple devices."""
-        device1 = self.create_mock_device(
-            name="Circulator",
-            serial_number="AC001",
-            features={"horizontal_angle": 0, "vertical_angle": 45}
-        )
-        device2 = self.create_mock_device(
-            name="Fan",
-            serial_number="FAN001",
-            features={"shakehorizonangle": 90}
-        )
+        device1 = self.create_mock_device(name="Circulator", serial_number="AC001", features={"horizontal_angle": 0, "vertical_angle": 45})
+        device2 = self.create_mock_device(name="Fan", serial_number="FAN001", features={"shakehorizonangle": 90})
 
         entities = number.get_entries([device1, device2])
         assert len(entities) == 3

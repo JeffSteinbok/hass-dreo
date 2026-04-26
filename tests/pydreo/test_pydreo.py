@@ -1,9 +1,10 @@
 """Tests for the PyDreo class."""
+
 import logging
 import pytest
 from unittest.mock import patch, MagicMock
 
-from .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 
@@ -103,20 +104,20 @@ class TestPyDreoSetDevId:
 class TestPyDreoProcessDevices(TestBase):
     """Test _process_devices method."""
 
-    @pytest.fixture(autouse=True, scope='function')
+    @pytest.fixture(autouse=True, scope="function")
     def setup(self, caplog):
         """Override setup to use get_devices_all.json."""
         self._get_devices_file_name = "get_devices_all.json"
-        self.mock_api_call = patch('custom_components.dreo.pydreo.PyDreo.call_dreo_api')
+        self.mock_api_call = patch("custom_components.dreo.pydreo.PyDreo.call_dreo_api")
         self.caplog = caplog
         self.mock_api = self.mock_api_call.start()
         self.mock_api.side_effect = self.call_dreo_api
         self.mock_api.create_autospect()
         self.mock_api.return_value.ok = True
-        self.pydreo_manager = PyDreo('EMAIL', 'PASSWORD', redact=True)
+        self.pydreo_manager = PyDreo("EMAIL", "PASSWORD", redact=True)
         self.pydreo_manager.enabled = True
-        self.pydreo_manager.token = 'sample_tk'
-        self.pydreo_manager.account_id = 'sample_id'
+        self.pydreo_manager.token = "sample_tk"
+        self.pydreo_manager.account_id = "sample_id"
         caplog.set_level(logging.DEBUG)
         yield
         self.mock_api_call.stop()
@@ -133,12 +134,14 @@ class TestPyDreoProcessDevices(TestBase):
 
     def test_unknown_model_creates_unknown_device(self):
         """Test unknown model creates PyDreoUnknownDevice."""
-        devices = [{
-            "deviceId": "test123",
-            "sn": "SN123",
-            "deviceName": "Unknown Device",
-            "model": "UNKNOWN-MODEL-XYZ",
-        }]
+        devices = [
+            {
+                "deviceId": "test123",
+                "sn": "SN123",
+                "deviceName": "Unknown Device",
+                "model": "UNKNOWN-MODEL-XYZ",
+            }
+        ]
         result = self.pydreo_manager._process_devices(devices)
         assert result is True
         assert len(self.pydreo_manager.devices) == 1
@@ -146,12 +149,14 @@ class TestPyDreoProcessDevices(TestBase):
 
     def test_known_model_prefix_match(self):
         """Test known model prefix creates correct device type."""
-        devices = [{
-            "deviceId": "test123",
-            "sn": "SN123",
-            "deviceName": "Tower Fan",
-            "model": "DR-HTF001S",
-        }]
+        devices = [
+            {
+                "deviceId": "test123",
+                "sn": "SN123",
+                "deviceName": "Tower Fan",
+                "model": "DR-HTF001S",
+            }
+        ]
         result = self.pydreo_manager._process_devices(devices)
         assert result is True
         assert len(self.pydreo_manager.devices) == 1
@@ -173,13 +178,15 @@ class TestPyDreoLoadDevices(TestBase):
             "get_devices": {
                 "code": 0,
                 "data": {
-                    "list": [{
-                        "deviceId": "test123",
-                        "sn": "SN_DEBUG",
-                        "deviceName": "Debug Fan",
-                        "model": "DR-HTF001S",
-                    }]
-                }
+                    "list": [
+                        {
+                            "deviceId": "test123",
+                            "sn": "SN_DEBUG",
+                            "deviceName": "Debug Fan",
+                            "model": "DR-HTF001S",
+                        }
+                    ]
+                },
             },
             "SN_DEBUG": {
                 "code": 0,
@@ -188,8 +195,8 @@ class TestPyDreoLoadDevices(TestBase):
                         "poweron": True,
                         "windlevel": 1,
                     }
-                }
-            }
+                },
+            },
         }
         self.pydreo_manager.debug_test_mode = True
         self.pydreo_manager.debug_test_mode_payload = payload
@@ -256,7 +263,7 @@ class TestPyDreoLogin:
         assert result is False
         assert "Password invalid" in caplog.text
 
-    @patch('custom_components.dreo.pydreo.PyDreo.call_dreo_api')
+    @patch("custom_components.dreo.pydreo.PyDreo.call_dreo_api")
     def test_no_response_from_api(self, mock_api, caplog):
         """Test login with no response from API."""
         caplog.set_level(logging.DEBUG)
@@ -266,7 +273,7 @@ class TestPyDreoLogin:
         assert result is False
         assert "No response from Dreo API" in caplog.text
 
-    @patch('custom_components.dreo.pydreo.PyDreo.call_dreo_api')
+    @patch("custom_components.dreo.pydreo.PyDreo.call_dreo_api")
     def test_failed_auth_non_zero_code(self, mock_api, caplog):
         """Test login with non-zero code in response."""
         caplog.set_level(logging.DEBUG)

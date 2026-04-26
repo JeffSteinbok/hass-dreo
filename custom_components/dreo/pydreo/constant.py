@@ -1,4 +1,5 @@
 """Constants for the PyDreo library."""
+
 from enum import Enum, IntEnum, StrEnum
 
 # Various keys read from server JSON responses.
@@ -51,17 +52,17 @@ TARGET_SLEEP_HUMIDITY_KEY = "rhsleeplevel"
 FOG_LEVEL_KEY = "foglevel"
 TARGET_HUMIDITY_KEY = "rhlevel"
 TARGET_SLEEP_HUMIDITY_KEY = "rhsleeplevel"
-ATMON_KEY = 'atmon'
-ATMCOLOR_KEY = 'atmcolor'
-ATMBRI_KEY = 'atmbri'
-ATMMODE_KEY = 'atmmode'
+ATMON_KEY = "atmon"
+ATMCOLOR_KEY = "atmcolor"
+ATMBRI_KEY = "atmbri"
+ATMMODE_KEY = "atmmode"
 FOGLEVEL_KEY = "foglevel"
 LEDKEPTON_KEY = "ledkepton"
 LEDLEVEL_KEY = "ledlevel"
-RGB_LEVEL = 'rgblevel'
-RGB_TH = 'rgbth'
+RGB_LEVEL = "rgblevel"
+RGB_TH = "rgbth"
 LED_LEVEL_KEY = "ledlevel"
-SCHEDULE_ENABLE = 'scheon'
+SCHEDULE_ENABLE = "scheon"
 
 # Preferences Names
 # It's possible we should switch to IDs instead of names
@@ -75,9 +76,7 @@ SHAKEHORIZONANGLE_KEY = "shakehorizonangle"
 FANON_KEY = "fanon"
 
 
-DREO_API_URL_FORMAT = (
-    "https://app-api-{0}.dreo-tech.com"  # {0} is the 2 letter region code
-)
+DREO_API_URL_FORMAT = "https://app-api-{0}.dreo-tech.com"  # {0} is the 2 letter region code
 
 DREO_API_PATH = "path"
 DREO_API_METHOD = "method"
@@ -111,12 +110,15 @@ DREO_APIS = {
     DREO_API_SETTING_PUT: {
         DREO_API_PATH: "/api/user-device/setting",
         DREO_API_METHOD: "put",
-    }
+    },
 }
+
 
 class DreoDeviceSetting(StrEnum):
     """Dreo device settings"""
+
     FAN_TEMP_OFFSET = "kHafFanTempOffsetKey"
+
 
 DREO_AUTH_REGION_NA = "NA"
 DREO_AUTH_REGION_EU = "EU"
@@ -124,19 +126,9 @@ DREO_AUTH_REGION_EU = "EU"
 DREO_API_REGION_US = "us"
 DREO_API_REGION_EU = "eu"
 
-OSCANGLE_ANGLE_MAP = {
-    "Oscillate" : 0,
-    "60°" : 60,
-    "90°" : 90,
-    "120°" : 120
-}
+OSCANGLE_ANGLE_MAP = {"Oscillate": 0, "60°": 60, "90°": 90, "120°": 120}
 
-ANGLE_OSCANGLE_MAP = {
-    0: "Oscillate",
-    60 : "60°",
-    90 : "90°",
-    120 : "120°"
-}
+ANGLE_OSCANGLE_MAP = {0: "Oscillate", 60: "60°", 90: "90°", 120: "120°"}
 
 HORIZONTAL_OSCILLATION_KEY = "hoscon"
 HORIZONTAL_OSCILLATION_ANGLE_KEY = "hoscangle"
@@ -163,26 +155,33 @@ TARGET_TEMP_RANGE = "target_temp_range"
 TARGET_TEMP_RANGE_ECO = "target_temp_range_eco"
 HUMIDITY_RANGE = "humidity_range"
 
+
 class TemperatureUnit(Enum):
     """Valid possible temperature units."""
+
     CELSIUS = 0
     FAHRENHEIT = 1
+
 
 # Fan oscillation modes
 class OscillationMode(IntEnum):
     """Possible oscillation modes.  These are bitwise flags."""
-    OFF = 0,
-    HORIZONTAL = 1,
-    VERTICAL = 2,
+
+    OFF = (0,)
+    HORIZONTAL = (1,)
+    VERTICAL = (2,)
     BOTH = 3
+
 
 # Heater oscillation modes
 class HeaterOscillationAngles(StrEnum):
     """Possible Heater oscillation angles"""
+
     OSC = "Oscillate"
-    SIXTY = "60°",
-    NINETY = "90°",
+    SIXTY = ("60°",)
+    NINETY = ("90°",)
     ONE_TWENTY = "120°"
+
 
 #
 # The following is copied from homeassistant.components.climate
@@ -242,6 +241,7 @@ PRESET_MODE_STRINGS = {
 
 class DreoDeviceType(StrEnum):
     """Product names for Dreo devices"""
+
     TOWER_FAN = "Tower Fan"
     AIR_CIRCULATOR = "Air Circulator"
     AIR_PURIFIER = "Air Purifier"
@@ -254,6 +254,7 @@ class DreoDeviceType(StrEnum):
     EVAPORATIVE_COOLER = "Evaporative Cooler"
     UNKNOWN = "Unknown"
 
+
 class DreoACMode(IntEnum):
     COOL = 1
     DRY = 2
@@ -261,15 +262,16 @@ class DreoACMode(IntEnum):
     SLEEP = 4
     ECO = 5
 
+
 class DreoACFanMode(IntEnum):
     LOW = 1
     MEDIUM = 2
     HIGH = 3
     AUTO = 4
 
+
 class DreoHeaterMode(StrEnum):
     COOLAIR = "coolair"
     HOTAIR = "hotair"
     ECO = "eco"
     OFF = "off"
-

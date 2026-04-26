@@ -1,4 +1,5 @@
 """Tests for the Dreo Air Conditioner HA class."""
+
 from unittest.mock import patch, MagicMock
 
 from custom_components.dreo.dreoairconditioner import (
@@ -36,8 +37,8 @@ from homeassistant.components.climate import (
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
 class TestDreoAirConditionerHA(TestDeviceBase):
@@ -143,7 +144,7 @@ class TestDreoAirConditionerHA(TestDeviceBase):
             device_definition.swing_modes = [SWING_ON, SWING_OFF]
             device_definition.fan_modes = [FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO]
             device.device_definition = device_definition
-            
+
             ac = DreoAirConditionerHA(device)
             assert ac.hvac_mode == HVACMode.OFF
 

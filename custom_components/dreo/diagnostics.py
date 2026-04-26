@@ -10,11 +10,8 @@ import logging
 from typing import Any
 
 from .pydreo import PyDreo
-from .haimports import * # pylint: disable=W0401,W0614
-from .const import (
-    DOMAIN,
-    PYDREO_MANAGER
-)
+from .haimports import *  # pylint: disable=W0401,W0614
+from .const import DOMAIN, PYDREO_MANAGER
 
 KEYS_TO_REDACT = {
     "sn",
@@ -44,13 +41,12 @@ KEYS_TO_EXCLUDE = {
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, entry: ConfigEntry
-) -> dict[str, Any]:
+async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigEntry) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     return _get_diagnostics(pydreo_manager)
+
 
 def _get_diagnostics(pydreo_manager: PyDreo) -> dict[str, Any]:
     data = {
@@ -63,9 +59,11 @@ def _get_diagnostics(pydreo_manager: PyDreo) -> dict[str, Any]:
 
     return data
 
+
 def _is_json_serializable(value) -> bool:
     """Check if a value is a JSON-safe primitive type."""
     return isinstance(value, (str, int, float, bool, type(None)))
+
 
 def _redact_values(data) -> dict:
     """Rebuild and redact values of a dictionary, recursively."""
@@ -84,9 +82,7 @@ def _redact_values(data) -> dict:
             new_data[key] = _redact_values(item)
         elif isinstance(item, list):
             new_data[key] = [
-                _redact_values(li) if isinstance(li, dict) else li
-                for li in item
-                if _is_json_serializable(li) or isinstance(li, (dict, list))
+                _redact_values(li) if isinstance(li, dict) else li for li in item if _is_json_serializable(li) or isinstance(li, (dict, list))
             ]
         elif _is_json_serializable(item):
             new_data[key] = item

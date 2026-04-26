@@ -1,4 +1,5 @@
 """Tests for the Dreo Climate platform (climate.py get_entries)."""
+
 import asyncio
 from unittest.mock import patch, MagicMock, AsyncMock
 
@@ -17,8 +18,8 @@ from custom_components.dreo.pydreo.constant import (
     DreoACFanMode,
 )
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
 class TestDreoClimatePlatform(TestDeviceBase):

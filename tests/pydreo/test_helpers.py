@@ -1,29 +1,32 @@
 """Test helpers for PyDreo."""
+
 import time
 from unittest.mock import patch, MagicMock
 import requests
-from  .imports import Helpers
+from .imports import Helpers
+
 
 class TestHelpers:
     """Test Helpers class."""
+
     def test_value_from_name(self):
         """Test value_from_name() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.value_from_name(name_value_collection, "on") is True # pylint: disable=E0601
+        assert Helpers.value_from_name(name_value_collection, "on") is True  # pylint: disable=E0601
         assert Helpers.value_from_name(name_value_collection, "off") is False
         assert Helpers.value_from_name(name_value_collection, "oxx") is None
 
     def test_name_from_value(self):
         """Test name_from_value() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.name_from_value(name_value_collection, False) == "off" # pylint: disable=E0601
+        assert Helpers.name_from_value(name_value_collection, False) == "off"  # pylint: disable=E0601
         assert Helpers.name_from_value(name_value_collection, True) == "on"
         assert Helpers.name_from_value(name_value_collection, "oxx") is None
 
     def test_get_name_list(self):
         """Test get_name_list() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.get_name_list(name_value_collection)[0] == "on" # pylint: disable=E0601
+        assert Helpers.get_name_list(name_value_collection)[0] == "on"  # pylint: disable=E0601
         assert Helpers.get_name_list(name_value_collection)[1] == "off"
 
     def test_value_from_name_with_integers(self):
@@ -104,17 +107,17 @@ class TestHelpers:
     def test_realistic_preset_modes(self):
         """Test with realistic preset modes from actual devices."""
         preset_modes = [("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4), ("turbo", 5)]
-        
+
         # Test value_from_name
         assert Helpers.value_from_name(preset_modes, "normal") == 1
         assert Helpers.value_from_name(preset_modes, "turbo") == 5
         assert Helpers.value_from_name(preset_modes, "invalid") is None
-        
+
         # Test name_from_value
         assert Helpers.name_from_value(preset_modes, 1) == "normal"
         assert Helpers.name_from_value(preset_modes, 5) == "turbo"
         assert Helpers.name_from_value(preset_modes, 99) is None
-        
+
         # Test get_name_list
         names = Helpers.get_name_list(preset_modes)
         assert len(names) == 5
@@ -124,12 +127,12 @@ class TestHelpers:
     def test_realistic_hvac_modes(self):
         """Test with realistic HVAC modes."""
         hvac_modes = [("off", 0), ("cool", 1), ("heat", 2), ("fan", 3), ("auto", 4)]
-        
+
         assert Helpers.value_from_name(hvac_modes, "cool") == 1
         assert Helpers.value_from_name(hvac_modes, "heat") == 2
         assert Helpers.name_from_value(hvac_modes, 0) == "off"
         assert Helpers.name_from_value(hvac_modes, 4) == "auto"
-        
+
         names = Helpers.get_name_list(hvac_modes)
         assert len(names) == 5
         assert names[0] == "off"
@@ -167,7 +170,7 @@ class TestHelpers:
             'pass"word',  # double quote
             "pass'word",  # single quote
             "pass\\word",  # backslash
-            'pass"\\\'word',  # mixed quotes and backslash
+            "pass\"\\'word",  # mixed quotes and backslash
         ]
         for password in test_cases:
             hashed = Helpers.hash_password(password)
@@ -241,7 +244,7 @@ class TestHelpers:
         finally:
             Helpers.shouldredact = original
 
-    @patch('custom_components.dreo.pydreo.helpers.requests.get')
+    @patch("custom_components.dreo.pydreo.helpers.requests.get")
     def test_call_api_get(self, mock_get):
         """Test call_api with GET method."""
         mock_response = MagicMock()
@@ -255,7 +258,7 @@ class TestHelpers:
         assert response == {"code": 0}
         mock_get.assert_called_once()
 
-    @patch('custom_components.dreo.pydreo.helpers.requests.post')
+    @patch("custom_components.dreo.pydreo.helpers.requests.post")
     def test_call_api_post(self, mock_post):
         """Test call_api with POST method."""
         mock_response = MagicMock()
@@ -268,7 +271,7 @@ class TestHelpers:
         assert status == 200
         assert response == {"code": 0}
 
-    @patch('custom_components.dreo.pydreo.helpers.requests.put')
+    @patch("custom_components.dreo.pydreo.helpers.requests.put")
     def test_call_api_put(self, mock_put):
         """Test call_api with PUT method."""
         mock_response = MagicMock()
@@ -281,7 +284,7 @@ class TestHelpers:
         assert status == 200
         assert response == {"code": 0}
 
-    @patch('custom_components.dreo.pydreo.helpers.requests.get')
+    @patch("custom_components.dreo.pydreo.helpers.requests.get")
     def test_call_api_request_exception(self, mock_get):
         """Test call_api handles request exceptions."""
         mock_get.side_effect = requests.exceptions.ConnectionError("Connection failed")
@@ -290,7 +293,7 @@ class TestHelpers:
         assert response is None
         assert status is None
 
-    @patch('custom_components.dreo.pydreo.helpers.requests.get')
+    @patch("custom_components.dreo.pydreo.helpers.requests.get")
     def test_call_api_non_200_status(self, mock_get):
         """Test call_api handles non-200 status code."""
         mock_response = MagicMock()

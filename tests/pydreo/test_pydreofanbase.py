@@ -1,17 +1,18 @@
 """Tests for PyDreoFanBase - base class for all Dreo fans."""
+
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
 import pytest
-from .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 from custom_components.dreo.pydreo.pydreofanbase import PyDreoFanBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-PATCH_BASE_PATH = 'custom_components.dreo.pydreo'
-PATCH_SET_SETTING = f'{PATCH_BASE_PATH}.PyDreo.set_device_setting'
+PATCH_BASE_PATH = "custom_components.dreo.pydreo"
+PATCH_SET_SETTING = f"{PATCH_BASE_PATH}.PyDreo.set_device_setting"
 
 
 class TestPyDreoFanBase(TestBase):
@@ -48,17 +49,17 @@ class TestPyDreoFanBase(TestBase):
         """Test preset_mode setter raises ValueError for invalid mode."""
         fan = self._load_htf005s()
         with pytest.raises(ValueError, match="not in the acceptable list"):
-            fan.preset_mode = 'turbo_mode'
+            fan.preset_mode = "turbo_mode"
 
     def test_preset_mode_noop_when_unchanged(self):
         """Test preset_mode setter skips command when value hasn't changed."""
         fan = self._load_htf005s()
         # Set wind_type to 'normal' (value 1) via websocket
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 1}})
-        assert fan.preset_mode == 'normal'
+        assert fan.preset_mode == "normal"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'normal'  # same value
+            fan.preset_mode = "normal"  # same value
             mock_send_command.assert_not_called()
 
     def test_preset_mode_none_when_no_modes(self):
@@ -72,7 +73,7 @@ class TestPyDreoFanBase(TestBase):
         fan = self._load_htf005s()
         fan._preset_modes = None  # pylint: disable=protected-access
         with pytest.raises(NotImplementedError, match="doesn't support modes"):
-            fan.preset_mode = 'normal'
+            fan.preset_mode = "normal"
 
     def test_preset_mode_setter_raises_when_no_wind_type_or_mode(self):
         """Test preset_mode setter raises when neither wind_type nor wind_mode is set."""
@@ -80,17 +81,17 @@ class TestPyDreoFanBase(TestBase):
         fan._wind_type = None  # pylint: disable=protected-access
         fan._wind_mode = None  # pylint: disable=protected-access
         with pytest.raises(NotImplementedError, match="doesn't support"):
-            fan.preset_mode = 'normal'
+            fan.preset_mode = "normal"
 
     def test_preset_mode_uses_wind_mode_key(self):
         """Test preset_mode setter uses WIND_MODE_KEY when wind_mode is set."""
         fan = self._load_htf010s()
         # HTF010S uses WIND_MODE_KEY
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 1}})
-        assert fan.preset_mode == 'normal'
+        assert fan.preset_mode == "normal"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.preset_mode = 'natural'
+            fan.preset_mode = "natural"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 2})
 
     # --- temperature and temperature_offset properties ---
@@ -217,40 +218,21 @@ class TestPyDreoFanBase(TestBase):
     def test_parse_speed_range_extraconfigs_control(self):
         """Test parse_speed_range via extraConfigs/control path."""
         fan = self._load_htf005s()
-        details = {
-            "controlsConf": {
-                "extraConfigs": [
-                    {
-                        "key": "control",
-                        "value": [{"type": "Speed", "items": [{"value": 1}, {"value": 8}]}]
-                    }
-                ]
-            }
-        }
+        details = {"controlsConf": {"extraConfigs": [{"key": "control", "value": [{"type": "Speed", "items": [{"value": 1}, {"value": 8}]}]}]}}
         result = fan.parse_speed_range(details)
         assert result == (1, 8)
 
     def test_parse_speed_range_extraconfigs_no_match(self):
         """Test parse_speed_range falls through extraConfigs when key != control."""
         fan = self._load_htf005s()
-        details = {
-            "controlsConf": {
-                "extraConfigs": [
-                    {"key": "other", "value": []}
-                ]
-            }
-        }
+        details = {"controlsConf": {"extraConfigs": [{"key": "other", "value": []}]}}
         result = fan.parse_speed_range(details)
         assert result is None
 
     def test_parse_speed_range_control_node_path(self):
         """Test parse_speed_range via controlsConf/control path."""
         fan = self._load_htf005s()
-        details = {
-            "controlsConf": {
-                "control": [{"type": "Speed", "items": [{"value": 1}, {"value": 6}]}]
-            }
-        }
+        details = {"controlsConf": {"control": [{"type": "Speed", "items": [{"value": 1}, {"value": 6}]}]}}
         result = fan.parse_speed_range(details)
         assert result == (1, 6)
 

@@ -39,7 +39,6 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         options_list=["low", "medium", "high"],
         raw_values=[1, 2, 3],
     ),
-
 )
 
 

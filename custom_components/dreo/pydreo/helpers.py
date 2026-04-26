@@ -116,19 +116,13 @@ class Helpers:
         """Make API calls by passing endpoint, header and body."""
         response = None
         status_code = None
-        r = None # Response object
+        r = None  # Response object
         try:
             _LOGGER.debug("call_api: =======call_api=============================")
             _LOGGER.debug("call_api: [%s] calling '%s' api", method, api)
             _LOGGER.debug("call_api: API call URL: \n  %s%s", url, api)
-            _LOGGER.debug(
-                "call_api: API call headers: \n  %s", Helpers.redactor(
-                    json.dumps(headers))
-            )
-            _LOGGER.debug(
-                "call_api: API call json: \n  %s", Helpers.redactor(
-                    json.dumps(json_object))
-            )
+            _LOGGER.debug("call_api: API call headers: \n  %s", Helpers.redactor(json.dumps(headers)))
+            _LOGGER.debug("call_api: API call json: \n  %s", Helpers.redactor(json.dumps(json_object)))
             if method.lower() == "get":
                 r = requests.get(
                     url + api,
@@ -145,9 +139,7 @@ class Helpers:
                     timeout=API_TIMEOUT,
                 )
             elif method.lower() == "put":
-                r = requests.put(
-                    url + api, json=json_object, headers=headers, timeout=API_TIMEOUT
-                )
+                r = requests.put(url + api, json=json_object, headers=headers, timeout=API_TIMEOUT)
         except requests.exceptions.RequestException as exception:
             _LOGGER.error("call_api: Request failed - %s", exception)
         else:
@@ -160,8 +152,7 @@ class Helpers:
                         Helpers.redactor(json.dumps(response)),
                     )
             else:
-                _LOGGER.error("call_api: API request failed with status code %s for %s%s",
-                             r.status_code, url, api)
+                _LOGGER.error("call_api: API request failed with status code %s for %s%s", r.status_code, url, api)
         return response, status_code
 
     @staticmethod
@@ -180,7 +171,7 @@ class Helpers:
         return str(int(time.time() * 1000))
 
     @staticmethod
-    def name_from_value(name_value_list : list[tuple], value) -> str | None:
+    def name_from_value(name_value_list: list[tuple], value) -> str | None:
         """Return name from list of tuples."""
         if not name_value_list:
             _LOGGER.error("Helpers::name_from_value - name_value_list is None")
@@ -191,7 +182,7 @@ class Helpers:
         return None
 
     @staticmethod
-    def value_from_name(name_value_list : list[tuple], name) -> any:
+    def value_from_name(name_value_list: list[tuple], name) -> any:
         """Return value from list of tuples."""
         if not name_value_list:
             _LOGGER.error("Helpers::value_from_name - name_value_list is None")
@@ -202,7 +193,7 @@ class Helpers:
         return None
 
     @staticmethod
-    def get_name_list(name_value_list : list[tuple]) -> list[str]:
+    def get_name_list(name_value_list: list[tuple]) -> list[str]:
         """Return list of names from list of tuples."""
         if not name_value_list:
             _LOGGER.error("Helpers::get_name_list - name_value_list is None")

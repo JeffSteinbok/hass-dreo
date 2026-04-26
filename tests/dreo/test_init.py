@@ -7,8 +7,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 
 from custom_components.dreo.const import DEBUG_TEST_MODE
 
+
 class TestInit:
-    
     def test_debug_test_mode(self):
         """Test that DEBUG_TEST_MODE is set to False."""
         assert DEBUG_TEST_MODE is False, "DEBUG_TEST_MODE should be False to merge changes."
@@ -74,20 +74,20 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
         assert "dreo" in mock_hass.data
         assert "pydreo_manager" in mock_hass.data["dreo"]
         assert "platforms" in mock_hass.data["dreo"]
-        
+
         platforms = mock_hass.data["dreo"]["platforms"]
         assert Platform.FAN in platforms
         assert Platform.SENSOR in platforms
         assert Platform.SWITCH in platforms
         assert Platform.NUMBER in platforms
-        
+
         mock_pydreo.start_transport.assert_called_once()
         mock_hass.config_entries.async_forward_entry_setups.assert_called_once()
 
@@ -117,7 +117,7 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -153,7 +153,7 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -190,7 +190,7 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -227,7 +227,7 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -263,7 +263,7 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -300,7 +300,7 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -338,7 +338,7 @@ class TestInit:
         mock_pydreo.start_transport = MagicMock()
         mock_pydreo.auto_reconnect = True
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -372,7 +372,7 @@ class TestInit:
         mock_pydreo.devices = [mock_device]
         mock_pydreo.start_transport = MagicMock()
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -402,7 +402,7 @@ class TestInit:
         mock_pydreo.devices = [mock_device]
         mock_pydreo.start_transport = MagicMock()
 
-        with patch('custom_components.dreo.pydreo.PyDreo', return_value=mock_pydreo):
+        with patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo):
             result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
 
         assert result is True
@@ -416,13 +416,8 @@ class TestInit:
         mock_hass = MagicMock()
         mock_pydreo = MagicMock()
         mock_pydreo.stop_transport = MagicMock()
-        
-        mock_hass.data = {
-            "dreo": {
-                "pydreo_manager": mock_pydreo,
-                "platforms": {Platform.FAN, Platform.SENSOR}
-            }
-        }
+
+        mock_hass.data = {"dreo": {"pydreo_manager": mock_pydreo, "platforms": {Platform.FAN, Platform.SENSOR}}}
         mock_hass.config_entries = MagicMock()
         mock_hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
 

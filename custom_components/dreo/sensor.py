@@ -14,19 +14,9 @@ import logging
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .pydreo.constant import (
-    HUMIDITY_KEY,
-    MODE_KEY,
-    PM25_KEY,
-    DreoDeviceType,
-    RGB_LEVEL
-)
+from .pydreo.constant import HUMIDITY_KEY, MODE_KEY, PM25_KEY, DreoDeviceType, RGB_LEVEL
 
-from .pydreo.pydreoevaporativecooler import (
-    WATER_LEVEL_EMPTY, 
-    WATER_LEVEL_OK, 
-    WATER_LEVEL_STATUS_KEY
-)
+from .pydreo.pydreoevaporativecooler import WATER_LEVEL_EMPTY, WATER_LEVEL_OK, WATER_LEVEL_STATUS_KEY
 
 from .haimports import *  # pylint: disable=W0401,W0614
 
@@ -71,7 +61,9 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
         value_fn=lambda device: device.temperature,
-        exists_fn=lambda device: (device.type not in { DreoDeviceType.HEATER, DreoDeviceType.AIR_CONDITIONER }) and device.is_feature_supported("temperature"),
+        exists_fn=lambda device: (
+            (device.type not in {DreoDeviceType.HEATER, DreoDeviceType.AIR_CONDITIONER}) and device.is_feature_supported("temperature")
+        ),
     ),
     DreoSensorEntityDescription(
         key="Humidity",
@@ -80,7 +72,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "%",
         value_fn=lambda device: device.humidity,
-        exists_fn=lambda device:  device.is_feature_supported("humidity"),
+        exists_fn=lambda device: device.is_feature_supported("humidity"),
     ),
     DreoSensorEntityDescription(
         key="Use since cleaning",
@@ -105,7 +97,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
         value_fn=lambda device: device.mode,
-        exists_fn=lambda device: (device.type in { DreoDeviceType.CHEF_MAKER }) and device.is_feature_supported(MODE_KEY),
+        exists_fn=lambda device: (device.type in {DreoDeviceType.CHEF_MAKER}) and device.is_feature_supported(MODE_KEY),
     ),
     DreoSensorEntityDescription(
         key="pm25",
@@ -130,7 +122,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         options=[LIGHT_ON, LIGHT_OFF],
         value_fn=lambda device: LIGHT_ON if device.rgblevel and int(device.rgblevel) > 0 else LIGHT_OFF,
-        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(RGB_LEVEL),
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(RGB_LEVEL),
     ),
     DreoSensorEntityDescription(
         key="Use since cleaning HM",
@@ -139,23 +131,24 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement_fn=lambda device: "h",
         value_fn=lambda device: device.worktime,
-        exists_fn=lambda device: (device.type in { DreoDeviceType.HUMIDIFIER }) and device.is_feature_supported(WORKTIME_KEY),
-    ) 
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(WORKTIME_KEY),
+    ),
 )
 
-def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoSensorHA]:
+
+def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoSensorHA]:
     """Add Sensor entries for Dreo devices."""
-    sensor_ha_collection : list[DreoSensorHA] = []
+    sensor_ha_collection: list[DreoSensorHA] = []
 
     for pydreo_device in pydreo_devices:
         _LOGGER.debug("get_entries: Adding Sensors for %s", pydreo_device.name)
-        sensor_keys : list[str] = []
-        
+        sensor_keys: list[str] = []
+
         for sensor_definition in SENSORS:
             _LOGGER.debug("get_entries: checking exists fn: %s on %s", sensor_definition.key, pydreo_device.name)
 
             if sensor_definition.exists_fn(pydreo_device):
-                if (sensor_definition.key in sensor_keys):
+                if sensor_definition.key in sensor_keys:
                     _LOGGER.error("get_entries: Duplicate sensor key %s", sensor_definition.key)
                     continue
 
@@ -175,7 +168,7 @@ async def async_setup_entry(
     """Set up the Dreo Sensor platform."""
     _LOGGER.info("get_entries: Starting Dreo Sensor Platform")
 
-    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     async_add_entities(get_entries(pydreo_manager.devices))
 
@@ -183,10 +176,7 @@ async def async_setup_entry(
 class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
     """Representation of a sensor describing a read-only property of a Dreo device."""
 
-
-    def __init__(
-        self, pyDreoDevice: PyDreoBaseDevice, description: DreoSensorEntityDescription
-    ) -> None:
+    def __init__(self, pyDreoDevice: PyDreoBaseDevice, description: DreoSensorEntityDescription) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
 
@@ -195,21 +185,16 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
         self._attr_name = super().name + " " + description.key
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
         if description.native_unit_of_measurement_fn is not None:
-            self._attr_native_unit_of_measurement = (
-                description.native_unit_of_measurement_fn(self.device)
-            )
+            self._attr_native_unit_of_measurement = description.native_unit_of_measurement_fn(self.device)
         if description.options is not None:
             self._attr_options = description.options
 
-        _LOGGER.info(
-            "new DreoSensorHA instance(%s), unique ID %s",
-            self._attr_name,
-            self._attr_unique_id)
+        _LOGGER.info("new DreoSensorHA instance(%s), unique ID %s", self._attr_name, self._attr_unique_id)
 
     def __repr__(self):
         # Representation string of object.
         return f"<{self.__class__.__name__}:{self.entity_description}"
-    
+
     @property
     def native_value(self) -> StateType:
         """Return the state of the sensor."""

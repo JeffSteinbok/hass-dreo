@@ -31,34 +31,20 @@ HUMIDIFY_MODE_MAP = {
     0: False,
     2: True,
     False: 0,  # noqa: F601
-    True: 2
+    True: 2,
 }
 
-WATER_LEVEL_STATUS_MAP = {
-    0: WATER_LEVEL_OK,
-    1: WATER_LEVEL_EMPTY,
-    WATER_LEVEL_OK: 0,
-    WATER_LEVEL_EMPTY: 1
-}
+WATER_LEVEL_STATUS_MAP = {0: WATER_LEVEL_OK, 1: WATER_LEVEL_EMPTY, WATER_LEVEL_OK: 0, WATER_LEVEL_EMPTY: 1}
 
 WINDMODES = [
     "Normal",
     "Natural",
     "Sleep",
-    "Auto",  
+    "Auto",
 ]
 
 # Windmodes for evaporative cooler
-WINDMODE_MAP = {
-    "Normal": 1,
-    "Auto": 2,
-    "Sleep": 3,
-    "Natural": 4,
-    1: "Normal",
-    2: "Auto",
-    3: "Sleep",
-    4: "Natural"
-}
+WINDMODE_MAP = {"Normal": 1, "Auto": 2, "Sleep": 3, "Natural": 4, 1: "Normal", 2: "Auto", 3: "Sleep", 4: "Natural"}
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -72,7 +58,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         super().__init__(device_definition, details, dreo)
 
         self._temperature_offset = None
-        
+
         self._wind_type = None
         self._wind_mode = None
         self._humidity = None
@@ -85,37 +71,34 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._work_time = None
         self._display_auto_off = None
         self._water_level = None
-    
-    
+
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
-        # Not needed atm            
+        # Not needed atm
         return False
-    
-    
+
     @property
     def temperature(self):
         """Get the temperature"""
         temp = self._temperature
-        if (temp is not None and self.temperature_offset is not None):
+        if temp is not None and self.temperature_offset is not None:
             temp += self.temperature_offset
         return temp
-    
-    
+
     @property
     def temperature_offset(self):
         """Get the offset of the temperature"""
         return self._temperature_offset
-                 
+
     @property
     def humidity(self):
         """Get the humidity"""
         return self._humidity
-    
-    @property 
+
+    @property
     def humidify(self) -> bool:
         """Returns `True` if humidifying is on"""
         return self._humidify
-    
+
     @humidify.setter
     def humidify(self, mode: bool) -> None:
         """Enable or disable humidifying"""
@@ -139,12 +122,12 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return
         self._target_humidity = value
         self._send_command(HUMIDITY_TARGET_KEY, value)
-    
+
     @property
     def oscillating(self) -> bool:
-       """Returns `True` if oscillation is on"""
-       return self._oscillating
-    
+        """Returns `True` if oscillation is on"""
+        return self._oscillating
+
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
         """Enable or disable oscillation"""
@@ -158,7 +141,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     def childlockon(self) -> bool:
         """Returns `True` if child lock is on"""
         return self._childlockon
-    
+
     @childlockon.setter
     def childlockon(self, value: bool) -> None:
         """Enable or disable child lock"""
@@ -167,7 +150,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return
         self._childlockon = value
         self._send_command(CHILDLOCKON_KEY, value)
-        
+
     @property
     def preset_mode(self):
         """Return the current preset mode as a string."""
@@ -192,17 +175,17 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         if WINDMODES is None:
             return None
         return self._preset_modes
-    
+
     @property
     def work_time(self) -> int:
-       """Return the working time (used since cleaning)"""
-       return self._work_time 
-   
+        """Return the working time (used since cleaning)"""
+        return self._work_time
+
     @property
     def water_level(self) -> int:
-       """Return the water level status"""
-       return self._water_level
-   
+        """Return the water level status"""
+        return self._water_level
+
     @staticmethod
     def _map_wind_mode_from_rest(index: int) -> Optional[int]:
         """Convert REST API windmode 0-based index to internal int (1-4).
@@ -221,7 +204,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         """Process the state dictionary from the REST API"""
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
-        
+
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, HUMIDITY_TARGET_KEY)
@@ -229,9 +212,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._humidify = (raw_humidify == 2) if raw_humidify is not None else None
         self._oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
-        self._wind_mode = self._map_wind_mode_from_rest(
-            self.get_state_update_value(state, WIND_MODE_KEY)
-        )
+        self._wind_mode = self._map_wind_mode_from_rest(self.get_state_update_value(state, WIND_MODE_KEY))
         self._work_time = self.get_state_update_value(state, WORKTIME_KEY)
         self._water_level = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
 
@@ -239,7 +220,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         """Process a websocket update"""
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
-        
+
         val_temperature_offset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)
         if isinstance(val_temperature_offset, int):
             self._temperature_offset = val_temperature_offset
@@ -254,7 +235,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
 
         val_humidify = self.get_server_update_key_value(message, HUMIDIFY_MODE_KEY)
         if isinstance(val_humidify, int):
-            self._humidify = (val_humidify == 2)
+            self._humidify = val_humidify == 2
 
         val_target_humidity = self.get_server_update_key_value(message, HUMIDITY_TARGET_KEY)
         if isinstance(val_target_humidity, int):
@@ -273,8 +254,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         val_work_time = self.get_server_update_key_value(message, WORKTIME_KEY)
         if isinstance(val_work_time, int):
             self._work_time = val_work_time
-            
+
         val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
         if isinstance(val_water_level, int):
             self._water_level = WATER_LEVEL_STATUS_MAP.get(val_water_level, val_water_level)
-

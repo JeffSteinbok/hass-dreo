@@ -1,9 +1,10 @@
 """Tests for Dreo Dehumidifiers"""
+
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
 import pytest
-from  .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 from custom_components.dreo.pydreo import PyDreoDehumidifier
@@ -32,12 +33,12 @@ class TestPyDreoDehumidifier(TestBase):
         assert dehumidifier.target_humidity == 55
         assert dehumidifier.wind_level == 2
         assert dehumidifier.fan_speed == 2
-        assert dehumidifier.panel_sound is True    # muteon=False → panel_sound=True
+        assert dehumidifier.panel_sound is True  # muteon=False → panel_sound=True
         assert dehumidifier.display_light is True  # lighton=True
         assert dehumidifier.childlockon is False
         assert dehumidifier.auto_mode is False
         assert dehumidifier.temperature == 72
-        assert dehumidifier.mode == "Auto"         # mode=1 → "Auto"
+        assert dehumidifier.mode == "Auto"  # mode=1 → "Auto"
         assert dehumidifier.oscillating is False
 
     def test_HDH005S_speed_range(self):  # pylint: disable=invalid-name

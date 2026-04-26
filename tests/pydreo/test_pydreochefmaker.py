@@ -1,8 +1,9 @@
 """Tests for Dreo Chef Makers"""
+
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
-from  .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
@@ -22,14 +23,14 @@ class TestPyDreoChefMaker(TestBase):
         assert len(self.pydreo_manager.devices) == 1
         return self.pydreo_manager.devices[0]
 
-    def test_KCM001S(self): # pylint: disable=invalid-name
+    def test_KCM001S(self):  # pylint: disable=invalid-name
         """Load ChefMaker and test sending commands."""
 
         self.get_devices_file_name = "get_devices_KCM001S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
         chef_maker = self.pydreo_manager.devices[0]
-        assert chef_maker.is_feature_supported('is_on') is True
+        assert chef_maker.is_feature_supported("is_on") is True
 
     def test_update_state_power_and_mode(self):
         """Test update_state processes power, LED, and mode from REST state."""
@@ -146,11 +147,7 @@ class TestPyDreoChefMaker(TestBase):
     def test_handle_server_update_combined(self):
         """Test handle_server_update processes multiple keys."""
         cm = self._load_chefmaker()
-        cm.handle_server_update({REPORTED_KEY: {
-            POWERON_KEY: True,
-            LIGHT_KEY: 1,
-            CM_MODE_KEY: "cooking"
-        }})
+        cm.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHT_KEY: 1, CM_MODE_KEY: "cooking"}})
         assert cm.is_on is True
         assert cm.ledpotkepton is True
         assert cm.mode == "cooking"

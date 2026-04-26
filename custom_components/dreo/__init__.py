@@ -1,14 +1,9 @@
 """Dreo HomeAssistant Integration."""
+
 import logging
 
 from .haimports import *  # pylint: disable=W0401,W0614
-from .const import (
-    DOMAIN,
-    PYDREO_MANAGER,
-    DREO_PLATFORMS,
-    CONF_AUTO_RECONNECT,
-    DEBUG_TEST_MODE
-)
+from .const import DOMAIN, PYDREO_MANAGER, DREO_PLATFORMS, CONF_AUTO_RECONNECT, DEBUG_TEST_MODE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,20 +23,17 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     region = "us"
 
     from .pydreo import PyDreo  # pylint: disable=C0415
-    from .pydreo.constant import DreoDeviceType # pylint: disable=C0415
+    from .pydreo.constant import DreoDeviceType  # pylint: disable=C0415
 
     if DEBUG_TEST_MODE:
         _LOGGER.error("async_setup_entry: DEBUG_TEST_MODE is True!")
         from .debug_test_mode import get_debug_test_mode_payload  # pylint: disable=C0415
-        debug__test_mode_payload : dict = get_debug_test_mode_payload("custom_components/dreo")
+
+        debug__test_mode_payload: dict = get_debug_test_mode_payload("custom_components/dreo")
         if debug__test_mode_payload is None:
             _LOGGER.error("async_setup_entry: Unable to get debug test mode payload.  Exiting setup.")
             return False
-        pydreo_manager = PyDreo("TEST_EMAIL",
-                             "TEST_PASSWORD", 
-                             redact=True, 
-                             debug_test_mode=True, 
-                             debug_test_mode_payload=debug__test_mode_payload)
+        pydreo_manager = PyDreo("TEST_EMAIL", "TEST_PASSWORD", redact=True, debug_test_mode=True, debug_test_mode_payload=debug__test_mode_payload)
     else:
         pydreo_manager = PyDreo(username, password, region)
         pydreo_manager.auto_reconnect = auto_reconnect
@@ -61,32 +53,32 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     _LOGGER.debug("async_setup_entry: Checking for supported installed device types")
     device_types = set()
     for device in pydreo_manager.devices:
-        device_types.add(device.type)   
+        device_types.add(device.type)
     _LOGGER.debug("async_setup_entry: Device types found are: %s", device_types)
     _LOGGER.info("async_setup_entry: %d Dreo devices found", len(pydreo_manager.devices))
 
     platforms = set()
-    if (DreoDeviceType.TOWER_FAN in device_types or 
-        DreoDeviceType.AIR_CIRCULATOR in device_types or
-        DreoDeviceType.AIR_PURIFIER in device_types or
-        DreoDeviceType.CEILING_FAN in device_types):
+    if (
+        DreoDeviceType.TOWER_FAN in device_types
+        or DreoDeviceType.AIR_CIRCULATOR in device_types
+        or DreoDeviceType.AIR_PURIFIER in device_types
+        or DreoDeviceType.CEILING_FAN in device_types
+    ):
         platforms.add(Platform.FAN)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if (DreoDeviceType.CEILING_FAN in device_types or
-            DreoDeviceType.AIR_CIRCULATOR in device_types):
+    if DreoDeviceType.CEILING_FAN in device_types or DreoDeviceType.AIR_CIRCULATOR in device_types:
         platforms.add(Platform.LIGHT)
 
-    if (DreoDeviceType.HEATER in device_types or 
-        DreoDeviceType.AIR_CONDITIONER in device_types):
+    if DreoDeviceType.HEATER in device_types or DreoDeviceType.AIR_CONDITIONER in device_types:
         platforms.add(Platform.CLIMATE)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if (DreoDeviceType.HUMIDIFIER in device_types):
+    if DreoDeviceType.HUMIDIFIER in device_types:
         platforms.add(Platform.HUMIDIFIER)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
@@ -94,19 +86,19 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SELECT)
         platforms.add(Platform.BINARY_SENSOR)
 
-    if (DreoDeviceType.DEHUMIDIFIER in device_types):
+    if DreoDeviceType.DEHUMIDIFIER in device_types:
         platforms.add(Platform.HUMIDIFIER)
         platforms.add(Platform.FAN)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if (DreoDeviceType.CHEF_MAKER in device_types):
+    if DreoDeviceType.CHEF_MAKER in device_types:
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
 
-    if (DreoDeviceType.EVAPORATIVE_COOLER in device_types):
+    if DreoDeviceType.EVAPORATIVE_COOLER in device_types:
         platforms.add(Platform.FAN)
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
@@ -132,6 +124,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     return True
 
+
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     pydreo_manager = hass.data[DOMAIN][PYDREO_MANAGER]
@@ -144,11 +137,10 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
     pydreo_manager.stop_transport()
     return unload_ok
 
-async def async_remove_config_entry_device(
-    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
-) -> bool:
+
+async def async_remove_config_entry_device(hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry) -> bool:
     """Remove a config entry from a device.
-    
+
     This allows users to delete Dreo devices from the UI.
     Since Dreo devices are cloud-based and managed by the Dreo service,
     we can safely remove them from Home Assistant's device registry.
@@ -159,7 +151,7 @@ async def async_remove_config_entry_device(
         device_entry.identifiers,
         config_entry.entry_id,
     )
-    
+
     # For cloud-based devices, we don't need to do any cleanup on the device itself.
     # The device will still exist in the Dreo cloud and can be re-added by reloading
     # the integration or if the device is discovered again.

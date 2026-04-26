@@ -1,9 +1,10 @@
 """Tests for PyDreo send_command retry logic, ACK handling, and command slot management."""
+
 import logging
 import threading
 from unittest.mock import patch, MagicMock
 import pytest
-from .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND, PATCH_BASE_PATH
 
 from custom_components.dreo.pydreo import PyDreo
@@ -12,7 +13,7 @@ from custom_components.dreo.pydreo.pydreobasedevice import PyDreoBaseDevice
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-PATCH_TRANSPORT_SEND = f'{PATCH_BASE_PATH}.CommandTransport.send_message'
+PATCH_TRANSPORT_SEND = f"{PATCH_BASE_PATH}.CommandTransport.send_message"
 
 
 class TestSendCommand(TestBase):
@@ -31,11 +32,9 @@ class TestSendCommand(TestBase):
 
         def simulate_ack(content):
             """Simulate server sending back a control-report ACK."""
-            self.pydreo_manager._transport_consume_message({
-                "devicesn": fan.serial_number,
-                "method": "control-report",
-                "reported": {POWERON_KEY: True}
-            })
+            self.pydreo_manager._transport_consume_message(
+                {"devicesn": fan.serial_number, "method": "control-report", "reported": {POWERON_KEY: True}}
+            )
 
         with patch(PATCH_TRANSPORT_SEND, side_effect=simulate_ack):
             fan.is_on = True
@@ -44,8 +43,7 @@ class TestSendCommand(TestBase):
         """Test that send_command retries when no ACK is received."""
         fan = self._load_fan()
 
-        with patch(PATCH_TRANSPORT_SEND) as mock_transport, \
-             patch(f'{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT', 0.1):
+        with patch(PATCH_TRANSPORT_SEND) as mock_transport, patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1):
             fan.is_on = True
             # Should have been called 1 (initial) + 2 (retries) = 3 times
             assert mock_transport.call_count == 3
@@ -59,14 +57,11 @@ class TestSendCommand(TestBase):
             nonlocal call_count
             call_count += 1
             if call_count == 2:
-                self.pydreo_manager._transport_consume_message({
-                    "devicesn": fan.serial_number,
-                    "method": "control-report",
-                    "reported": {POWERON_KEY: True}
-                })
+                self.pydreo_manager._transport_consume_message(
+                    {"devicesn": fan.serial_number, "method": "control-report", "reported": {POWERON_KEY: True}}
+                )
 
-        with patch(PATCH_TRANSPORT_SEND, side_effect=ack_on_second_attempt), \
-             patch(f'{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT', 0.1):
+        with patch(PATCH_TRANSPORT_SEND, side_effect=ack_on_second_attempt), patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1):
             fan.is_on = True
             # Should stop after 2nd attempt (got ACK), not retry a 3rd time
             assert call_count == 2
@@ -87,14 +82,11 @@ class TestSendCommand(TestBase):
         fan = self._load_fan()
 
         def ack_wrong_device(content):
-            self.pydreo_manager._transport_consume_message({
-                "devicesn": "WRONG_DEVICE_SN",
-                "method": "control-report",
-                "reported": {POWERON_KEY: True}
-            })
+            self.pydreo_manager._transport_consume_message(
+                {"devicesn": "WRONG_DEVICE_SN", "method": "control-report", "reported": {POWERON_KEY: True}}
+            )
 
-        with patch(PATCH_TRANSPORT_SEND, side_effect=ack_wrong_device), \
-             patch(f'{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT', 0.1):
+        with patch(PATCH_TRANSPORT_SEND, side_effect=ack_wrong_device), patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1):
             fan.is_on = True
             # No valid ACK received - should have exhausted all retries
 
@@ -103,14 +95,9 @@ class TestSendCommand(TestBase):
         fan = self._load_fan()
 
         def ack_wrong_method(content):
-            self.pydreo_manager._transport_consume_message({
-                "devicesn": fan.serial_number,
-                "method": "report",
-                "reported": {POWERON_KEY: True}
-            })
+            self.pydreo_manager._transport_consume_message({"devicesn": fan.serial_number, "method": "report", "reported": {POWERON_KEY: True}})
 
-        with patch(PATCH_TRANSPORT_SEND, side_effect=ack_wrong_method), \
-             patch(f'{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT', 0.1):
+        with patch(PATCH_TRANSPORT_SEND, side_effect=ack_wrong_method), patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1):
             fan.is_on = True
             # No valid ACK (wrong method) - should have exhausted all retries
 
@@ -123,9 +110,11 @@ class TestSendCommand(TestBase):
         def slow_send(content):
             first_command_started.set()
 
-        with patch(PATCH_TRANSPORT_SEND, side_effect=slow_send), \
-             patch(f'{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT', 0.2), \
-             patch(f'{PATCH_BASE_PATH}._MAX_COMMAND_RETRIES', 0):
+        with (
+            patch(PATCH_TRANSPORT_SEND, side_effect=slow_send),
+            patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.2),
+            patch(f"{PATCH_BASE_PATH}._MAX_COMMAND_RETRIES", 0),
+        ):
 
             def send_second_command():
                 first_command_started.wait(timeout=2)

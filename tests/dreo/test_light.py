@@ -1,4 +1,5 @@
 """Tests for the Dreo Light entity."""
+
 import math
 from unittest.mock import patch
 
@@ -14,8 +15,8 @@ from custom_components.dreo.haimports import (
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
 class TestDreoLightHA(TestDeviceBase):
@@ -25,16 +26,10 @@ class TestDreoLightHA(TestDeviceBase):
         """Test that get_entries creates lights only for devices with light features."""
         # Device with light
         device_with_light = self.create_mock_device(
-            name="Ceiling Fan",
-            serial_number="CF001",
-            features={"light_on": True, "brightness": 50, "color_temperature": 25}
+            name="Ceiling Fan", serial_number="CF001", features={"light_on": True, "brightness": 50, "color_temperature": 25}
         )
         # Device without light
-        device_no_light = self.create_mock_device(
-            name="Tower Fan",
-            serial_number="TF001",
-            features={"is_on": True, "fan_speed": 3}
-        )
+        device_no_light = self.create_mock_device(name="Tower Fan", serial_number="TF001", features={"is_on": True, "fan_speed": 3})
 
         entities = light.get_entries([device_with_light, device_no_light])
         assert len(entities) == 1
@@ -52,7 +47,7 @@ class TestDreoLightHA(TestDeviceBase):
                 "atm_light_on": True,
                 "atm_brightness": 3,
                 "atm_color_rgb": (255, 0, 0),
-            }
+            },
         )
 
         entities = light.get_entries([device])
@@ -64,11 +59,7 @@ class TestDreoLightHA(TestDeviceBase):
 
     def test_light_get_entries_empty(self):
         """Test get_entries returns empty for devices without lights."""
-        device = self.create_mock_device(
-            name="Heater",
-            serial_number="HTR001",
-            features={"poweron": True}
-        )
+        device = self.create_mock_device(name="Heater", serial_number="HTR001", features={"poweron": True})
 
         entities = light.get_entries([device])
         assert len(entities) == 0
@@ -77,9 +68,7 @@ class TestDreoLightHA(TestDeviceBase):
         """Test basic light entity properties."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
-                name="Ceiling Fan",
-                serial_number="CF001",
-                features={"light_on": True, "brightness": 75, "color_temperature": 50}
+                name="Ceiling Fan", serial_number="CF001", features={"light_on": True, "brightness": 75, "color_temperature": 50}
             )
 
             light_entity = DreoLightHA(device)
@@ -89,11 +78,7 @@ class TestDreoLightHA(TestDeviceBase):
     def test_light_is_on(self):
         """Test is_on property."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Ceiling Fan",
-                serial_number="CF001",
-                features={"light_on": True}
-            )
+            device = self.create_mock_device(name="Ceiling Fan", serial_number="CF001", features={"light_on": True})
 
             light_entity = DreoLightHA(device)
             assert light_entity.is_on is True
@@ -104,11 +89,7 @@ class TestDreoLightHA(TestDeviceBase):
     def test_light_turn_on_off(self):
         """Test turn_on and turn_off methods."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Ceiling Fan",
-                serial_number="CF001",
-                features={"light_on": False}
-            )
+            device = self.create_mock_device(name="Ceiling Fan", serial_number="CF001", features={"light_on": False})
 
             light_entity = DreoLightHA(device)
             assert light_entity.is_on is False
@@ -122,11 +103,7 @@ class TestDreoLightHA(TestDeviceBase):
     def test_light_color_mode_onoff(self):
         """Test light with only on/off capability."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Display Light",
-                serial_number="DL001",
-                features={"light_on": True}
-            )
+            device = self.create_mock_device(name="Display Light", serial_number="DL001", features={"light_on": True})
 
             light_entity = DreoLightHA(device)
             assert light_entity.color_mode == ColorMode.ONOFF
@@ -135,11 +112,7 @@ class TestDreoLightHA(TestDeviceBase):
     def test_light_color_mode_brightness(self):
         """Test light with brightness capability."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Dimmable Light",
-                serial_number="DIM001",
-                features={"light_on": True, "brightness": 50}
-            )
+            device = self.create_mock_device(name="Dimmable Light", serial_number="DIM001", features={"light_on": True, "brightness": 50})
 
             light_entity = DreoLightHA(device)
             assert light_entity.color_mode == ColorMode.BRIGHTNESS
@@ -149,9 +122,7 @@ class TestDreoLightHA(TestDeviceBase):
         """Test light with color temperature capability."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
-                name="CT Light",
-                serial_number="CT001",
-                features={"light_on": True, "brightness": 50, "color_temperature": 50}
+                name="CT Light", serial_number="CT001", features={"light_on": True, "brightness": 50, "color_temperature": 50}
             )
 
             light_entity = DreoLightHA(device)
@@ -162,9 +133,7 @@ class TestDreoLightHA(TestDeviceBase):
         """Test brightness conversion between device scale and HA scale."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
-                name="Ceiling Fan",
-                serial_number="CF001",
-                features={"light_on": True, "brightness": 50, "color_temperature": 25}
+                name="Ceiling Fan", serial_number="CF001", features={"light_on": True, "brightness": 50, "color_temperature": 25}
             )
 
             light_entity = DreoLightHA(device)
@@ -176,11 +145,7 @@ class TestDreoLightHA(TestDeviceBase):
     def test_light_brightness_none_when_unsupported(self):
         """Test brightness returns None when not supported."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Simple Light",
-                serial_number="SL001",
-                features={"light_on": True}
-            )
+            device = self.create_mock_device(name="Simple Light", serial_number="SL001", features={"light_on": True})
 
             light_entity = DreoLightHA(device)
             assert light_entity.brightness is None
@@ -189,9 +154,7 @@ class TestDreoLightHA(TestDeviceBase):
         """Test color temperature in Kelvin."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
-                name="CT Light",
-                serial_number="CT001",
-                features={"light_on": True, "brightness": 50, "color_temperature": 50}
+                name="CT Light", serial_number="CT001", features={"light_on": True, "brightness": 50, "color_temperature": 50}
             )
 
             light_entity = DreoLightHA(device)
@@ -203,11 +166,7 @@ class TestDreoLightHA(TestDeviceBase):
     def test_light_color_temp_none_when_unsupported(self):
         """Test color temp returns None when not supported."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Bright Only",
-                serial_number="BO001",
-                features={"light_on": True, "brightness": 50}
-            )
+            device = self.create_mock_device(name="Bright Only", serial_number="BO001", features={"light_on": True, "brightness": 50})
 
             light_entity = DreoLightHA(device)
             assert light_entity.color_temp_kelvin is None
@@ -216,9 +175,7 @@ class TestDreoLightHA(TestDeviceBase):
         """Test turning on light with brightness kwarg."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
-                name="Ceiling Fan",
-                serial_number="CF001",
-                features={"light_on": False, "brightness": 50, "color_temperature": 25}
+                name="Ceiling Fan", serial_number="CF001", features={"light_on": False, "brightness": 50, "color_temperature": 25}
             )
 
             light_entity = DreoLightHA(device)
@@ -232,9 +189,7 @@ class TestDreoLightHA(TestDeviceBase):
         """Test turning on light with color temperature kwarg."""
         with patch(PATCH_UPDATE_HA_STATE):
             device = self.create_mock_device(
-                name="Ceiling Fan",
-                serial_number="CF001",
-                features={"light_on": False, "brightness": 50, "color_temperature": 25}
+                name="Ceiling Fan", serial_number="CF001", features={"light_on": False, "brightness": 50, "color_temperature": 25}
             )
 
             light_entity = DreoLightHA(device)
@@ -257,7 +212,7 @@ class TestDreoRGBLightHA(TestDeviceBase):
                     "atm_light_on": True,
                     "atm_brightness": 3,
                     "atm_color_rgb": (255, 100, 0),
-                }
+                },
             )
 
             rgb_light = DreoRGBLightHA(device)
@@ -277,7 +232,7 @@ class TestDreoRGBLightHA(TestDeviceBase):
                     "atm_light_on": True,
                     "atm_brightness": 3,
                     "atm_color_rgb": (255, 100, 0),
-                }
+                },
             )
 
             rgb_light = DreoRGBLightHA(device)
@@ -294,7 +249,7 @@ class TestDreoRGBLightHA(TestDeviceBase):
                     "atm_light_on": False,
                     "atm_brightness": 3,
                     "atm_color_rgb": (0, 0, 0),
-                }
+                },
             )
 
             rgb_light = DreoRGBLightHA(device)
@@ -313,7 +268,7 @@ class TestDreoRGBLightHA(TestDeviceBase):
                     "atm_light_on": False,
                     "atm_brightness": 1,
                     "atm_color_rgb": (255, 0, 0),
-                }
+                },
             )
 
             rgb_light = DreoRGBLightHA(device)
@@ -330,7 +285,7 @@ class TestDreoRGBLightHA(TestDeviceBase):
                     "atm_light": True,
                     "atm_light_on": True,
                     "atm_brightness": 3,
-                }
+                },
             )
 
             rgb_light = DreoRGBLightHA(device)

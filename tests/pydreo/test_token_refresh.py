@@ -1,14 +1,15 @@
 """Tests for PyDreo token refresh and 401 retry logic."""
+
 import logging
 from unittest.mock import patch, MagicMock
-from .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-PATCH_BASE = 'custom_components.dreo.pydreo'
-PATCH_CALL_API = f'{PATCH_BASE}.helpers.Helpers.call_api'
-PATCH_LOGIN = f'{PATCH_BASE}.PyDreo.login'
+PATCH_BASE = "custom_components.dreo.pydreo"
+PATCH_CALL_API = f"{PATCH_BASE}.helpers.Helpers.call_api"
+PATCH_LOGIN = f"{PATCH_BASE}.PyDreo.login"
 
 
 class TestTokenRefresh:
@@ -16,7 +17,7 @@ class TestTokenRefresh:
 
     def _make_manager(self):
         """Create a PyDreo manager for testing."""
-        manager = PyDreo('test@example.com', 'password', redact=True)
+        manager = PyDreo("test@example.com", "password", redact=True)
         manager.enabled = True
         manager.token = "old_token"
         manager.account_id = "test_account"
@@ -78,12 +79,14 @@ class TestTokenRefresh:
         manager.debug_test_mode = False
 
         with patch(PATCH_LOGIN) as mock_login:
+
             def login_side_effect():
                 manager.token = "new_token"
                 return True
+
             mock_login.side_effect = login_side_effect
 
-            with patch.object(manager._transport, 'update_token') as mock_update:
+            with patch.object(manager._transport, "update_token") as mock_update:
                 result = manager._re_login()
 
         assert result is True
@@ -104,12 +107,14 @@ class TestTokenRefresh:
         manager.debug_test_mode = True
 
         with patch(PATCH_LOGIN) as mock_login:
+
             def login_side_effect():
                 manager.token = "new_token"
                 return True
+
             mock_login.side_effect = login_side_effect
 
-            with patch.object(manager._transport, 'update_token') as mock_update:
+            with patch.object(manager._transport, "update_token") as mock_update:
                 result = manager._re_login()
 
         assert result is True

@@ -18,6 +18,7 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
 # Implementation of the Dehumidifier
 class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     """Representation of a Dreo Dehumidifier entity."""
@@ -25,10 +26,7 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     def __init__(self, pyDreoDevice: PyDreoDehumidifier) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
-        _LOGGER.info(
-            "DreoDehumidifierHA:__init__(%s)",
-            pyDreoDevice.name
-        )
+        _LOGGER.info("DreoDehumidifierHA:__init__(%s)", pyDreoDevice.name)
 
         _LOGGER.info(
             "new DreoDehumidifierHA instance(%s), mode %s, available_modes [%s]",
@@ -60,7 +58,7 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
             supported_features |= HumidifierEntityFeature.MODES
 
         return supported_features
-    
+
     @property
     def is_on(self) -> bool:
         """Return True if device is on."""
@@ -80,7 +78,7 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     def current_humidity(self) -> float:
         """Return the current humidity."""
         return self.device.humidity
-    
+
     @property
     def target_humidity(self) -> float:
         """Return the humidity level we try to reach."""
@@ -95,7 +93,7 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
     def max_humidity(self) -> int:
         """Return the maximum humidity."""
         return 85
-    
+
     def turn_on(self, **kwargs: Any) -> None:
         """Turn the device on."""
         _LOGGER.debug("turn_on: turn_on(%s)", self.device.name)
@@ -110,48 +108,41 @@ class DreoDehumidifierHA(DreoBaseDeviceHA, HumidifierEntity):
 
     def set_mode(self, mode: str) -> None:
         """Set the mode of the device."""
-        _LOGGER.debug(
-            "DreoDehumidifierHA:set_mode(%s) --> %s", self.device.name, mode
-        )
-        
+        _LOGGER.debug("DreoDehumidifierHA:set_mode(%s) --> %s", self.device.name, mode)
+
         if not self.device.is_on:
             self.device.is_on = True
 
         if mode not in self.available_modes:
-            raise ValueError(
-                f"{mode} is not one of the valid preset modes: {self.available_modes}"
-            )
+            raise ValueError(f"{mode} is not one of the valid preset modes: {self.available_modes}")
 
         self.device.mode = mode
         self.schedule_update_ha_state()
 
     def set_humidity(self, humidity: float) -> None:
         """Set the target humidity level."""
-        _LOGGER.debug(
-            "DreoDehumidifierHA:set_humidity(%s) --> %s", self.device.name, humidity
-        )
+        _LOGGER.debug("DreoDehumidifierHA:set_humidity(%s) --> %s", self.device.name, humidity)
         self.device.target_humidity = int(humidity)
         self.schedule_update_ha_state()
-
 
     @property
     def extra_state_attributes(self) -> dict:
         """Return additional state attributes."""
         attributes = {}
-        
-        if hasattr(self.device, 'display_light'):
+
+        if hasattr(self.device, "display_light"):
             attributes["display_light"] = self.device.display_light
-        
-        if hasattr(self.device, 'childlockon'):
+
+        if hasattr(self.device, "childlockon"):
             attributes["childlockon"] = self.device.childlockon
-            
-        if hasattr(self.device, 'auto_mode'):
+
+        if hasattr(self.device, "auto_mode"):
             attributes["auto_mode"] = self.device.auto_mode
-            
-        if hasattr(self.device, 'panel_sound'):
+
+        if hasattr(self.device, "panel_sound"):
             attributes["panel_sound"] = self.device.panel_sound
-            
-        if hasattr(self.device, 'temperature'):
+
+        if hasattr(self.device, "temperature"):
             attributes["temperature"] = f"{getattr(self.device, 'temperature', 'N/A')}°F"
-            
+
         return attributes

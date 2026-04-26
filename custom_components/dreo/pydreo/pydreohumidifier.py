@@ -18,7 +18,7 @@ from .constant import (
     LED_LEVEL_KEY,
     RGB_LEVEL,
     RGB_TH,
-    SCHEDULE_ENABLE
+    SCHEDULE_ENABLE,
 )
 
 from .helpers import Helpers
@@ -40,23 +40,13 @@ WATER_LEVEL_EMPTY = "Empty"
 LIGHT_ON = "Enable"
 LIGHT_OFF = "Disabled"
 
-WATER_LEVEL_STATUS_MAP = {
-    0: WATER_LEVEL_OK,
-    1: WATER_LEVEL_EMPTY,
-    WATER_LEVEL_OK: 0,
-    WATER_LEVEL_EMPTY: 1
-}
+WATER_LEVEL_STATUS_MAP = {0: WATER_LEVEL_OK, 1: WATER_LEVEL_EMPTY, WATER_LEVEL_OK: 0, WATER_LEVEL_EMPTY: 1}
 
 RGB_LEVEL_PRESETS = (0, 1, 31, 61)
 
 RGB_MAP = {}
 
-LEDLEVEL_MAP = {
-    0: LIGHT_OFF,
-    2: LIGHT_ON,
-    LIGHT_OFF: 0,
-    LIGHT_ON: 2
-}
+LEDLEVEL_MAP = {0: LIGHT_OFF, 2: LIGHT_ON, LIGHT_OFF: 0, LIGHT_ON: 2}
 
 # Status for mode indicator
 MODE_MANUAL = "manual"
@@ -66,6 +56,7 @@ MODE_SLEEP = "sleep"
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
+
 class PyDreoHumidifier(PyDreoBaseDevice):
     """Base class for Dreo Humidifiers"""
 
@@ -74,7 +65,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         super().__init__(device_definition, details, dreo)
 
         self._modes = device_definition.preset_modes
-        if (self._modes is None):
+        if self._modes is None:
             self._modes = self.parse_modes(details)
 
         self._target_humidity_min = 30
@@ -108,16 +99,16 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             schedule = controls_conf.get("schedule", None)
-            if (schedule is not None):
+            if schedule is not None:
                 modes_node = schedule.get("modes", None)
-                if (modes_node is not None):
+                if modes_node is not None:
                     for mode_item in modes_node:
                         text = self.get_mode_string(mode_item.get("title", None))
                         value = mode_item.get("value", None)
                         modes.append((text, value))
 
         modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (len(modes) == 0):
+        if len(modes) == 0:
             _LOGGER.debug("parse_modes: No preset modes detected")
             modes = None
         _LOGGER.debug("parse_modes: Detected preset modes - %s", modes)
@@ -251,8 +242,8 @@ class PyDreoHumidifier(PyDreoBaseDevice):
             _LOGGER.debug("mode: _modes is None, returning None")
             return None
 
-        str_value : str = Helpers.name_from_value(self._modes, self._mode)
-        if (str_value is None):
+        str_value: str = Helpers.name_from_value(self._modes, self._mode)
+        if str_value is None:
             return None
         return str_value
 

@@ -3,17 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import (
-    MODE_KEY,
-    MUTEON_KEY,
-    POWERON_KEY,
-    HUMIDITY_KEY,
-    WINDLEVEL_KEY,
-    CHILDLOCKON_KEY,
-    LIGHTON_KEY,
-    SPEED_RANGE,
-    TEMPERATURE_KEY
-)
+from .constant import MODE_KEY, MUTEON_KEY, POWERON_KEY, HUMIDITY_KEY, WINDLEVEL_KEY, CHILDLOCKON_KEY, LIGHTON_KEY, SPEED_RANGE, TEMPERATURE_KEY
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
@@ -27,6 +17,7 @@ if TYPE_CHECKING:
 RHAUTOLEVEL_KEY = "rhautolevel"
 AUTOON_KEY = "autoon"
 
+
 class PyDreoDehumidifier(PyDreoBaseDevice):
     """Base class for Dreo Dehumidifiers"""
 
@@ -35,7 +26,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         super().__init__(device_definition, details, dreo)
 
         self._modes = [("Auto", 1), ("Continuous", 2)]
-        
+
         self._mode = None
         self._mute_on = None
         self._humidity = None
@@ -45,9 +36,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         self._light_on = None
         self._auto_on = None
         self._temperature = None
-        
+
         self._speed_range = device_definition.device_ranges.get(SPEED_RANGE, (1, 3)) if device_definition.device_ranges else (1, 3)
-        
+
     @property
     def is_on(self):
         """Returns `True` if the device is on, `False` otherwise."""
@@ -91,7 +82,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         """Get the fan speed level"""
         return self._wind_level
 
-    @wind_level.setter 
+    @wind_level.setter
     def wind_level(self, value: int) -> None:
         """Set the fan speed level (1-3)"""
         _LOGGER.debug("wind_level: wind_level.setter(%s) %s --> %s", self, self._wind_level, value)
@@ -209,11 +200,11 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         """Get oscillating state (dehumidifier doesn't oscillate)"""
         return False
 
-    @property 
+    @property
     def temperature(self):
         """Get the current temperature"""
         return self._temperature
-        
+
     @property
     def mode(self):
         """Return the current operating mode."""
@@ -230,7 +221,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
             if mode_name == value:
                 mode_value = mode_val
                 break
-                
+
         if mode_value is not None:
             _LOGGER.debug("mode: mode.setter(%s) %s --> %s", self, self._mode, mode_value)
             if self._mode == mode_value:
@@ -254,7 +245,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
         self._auto_on = self.get_state_update_value(state, AUTOON_KEY)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
-        
+
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("handle_server_update: handle_server_update(%s): %s", self.name, message)

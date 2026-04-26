@@ -1,4 +1,5 @@
 """Tests for the Dreo Base Device HA class."""
+
 from unittest.mock import patch, MagicMock
 
 from custom_components.dreo.dreobasedevice import DreoBaseDeviceHA
@@ -7,8 +8,8 @@ from custom_components.dreo.const import DOMAIN
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
 class TestDreoBaseDeviceHA(TestDeviceBase):
@@ -30,11 +31,7 @@ class TestDreoBaseDeviceHA(TestDeviceBase):
     def test_base_device_info(self):
         """Test device_info property."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Device",
-                serial_number="DEV001",
-                features={"model": "DR-HTF001S"}
-            )
+            device = self.create_mock_device(name="Test Device", serial_number="DEV001", features={"model": "DR-HTF001S"})
 
             base = DreoBaseDeviceHA(device)
             info = base.device_info

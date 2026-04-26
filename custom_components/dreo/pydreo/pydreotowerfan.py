@@ -3,12 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import (
-    SHAKEHORIZON_KEY,
-    SHAKEHORIZONANGLE_KEY,
-    OSCILLATION_KEY,
-    SPEED_RANGE
-)
+from .constant import SHAKEHORIZON_KEY, SHAKEHORIZONANGLE_KEY, OSCILLATION_KEY, SPEED_RANGE
 
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
@@ -25,14 +20,14 @@ class PyDreoTowerFan(PyDreoFanBase):
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
         """Initialize air devices."""
         super().__init__(device_definition, details, dreo)
-        
+
         self._speed_range = None
-        if (device_definition.device_ranges is not None and SPEED_RANGE in device_definition.device_ranges):
+        if device_definition.device_ranges is not None and SPEED_RANGE in device_definition.device_ranges:
             self._speed_range = device_definition.device_ranges[SPEED_RANGE]
-        if (self._speed_range is None):
+        if self._speed_range is None:
             self._speed_range = self.parse_speed_range(details)
         self._preset_modes = device_definition.preset_modes
-        if (self._preset_modes is None):
+        if self._preset_modes is None:
             self._preset_modes = self.parse_preset_modes(details)
 
         self._shakehorizon = None
@@ -50,24 +45,24 @@ class PyDreoTowerFan(PyDreoFanBase):
                     return (speed_low, speed_high)
                 _LOGGER.warning("parse_speed_range_from_control_node: Speed items missing or too few: %s", items)
         return None
-    
+
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         preset_modes = []
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             control = controls_conf.get("control", None)
-            if (control is not None):
+            if control is not None:
                 for control_item in control:
-                    if (control_item.get("type", None) == "Mode"):
+                    if control_item.get("type", None) == "Mode":
                         for mode_item in control_item.get("items", None):
                             text = self.get_mode_string(mode_item.get("text", None))
                             value = mode_item.get("value", None)
                             preset_modes.append((text, value))
             schedule = controls_conf.get("schedule", None)
-            if (schedule is not None):
+            if schedule is not None:
                 modes = schedule.get("modes", None)
-                if (modes is not None):
+                if modes is not None:
                     for mode_item in modes:
                         text = self.get_mode_string(mode_item.get("title", None))
                         value = mode_item.get("value", None)
@@ -75,7 +70,7 @@ class PyDreoTowerFan(PyDreoFanBase):
                             preset_modes.append((text, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (len(preset_modes) == 0):
+        if len(preset_modes) == 0:
             _LOGGER.debug("parse_preset_modes: No preset modes detected")
             preset_modes = None
         _LOGGER.debug("parse_preset_modes: Detected preset modes - %s", preset_modes)
@@ -92,7 +87,6 @@ class PyDreoTowerFan(PyDreoFanBase):
 
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
-
         """Enable or disable oscillation"""
         _LOGGER.debug("oscillating: oscillating.setter")
 
@@ -124,7 +118,7 @@ class PyDreoTowerFan(PyDreoFanBase):
             if self._shakehorizonangle == new_value:
                 _LOGGER.debug("shakehorizonangle: shakehorizonangle - value already %s, skipping command", new_value)
                 return
-            self._send_command(SHAKEHORIZONANGLE_KEY, new_value)           
+            self._send_command(SHAKEHORIZONANGLE_KEY, new_value)
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""

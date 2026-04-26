@@ -1,7 +1,8 @@
 """Tests for PyDreoBaseDevice callback safety."""
+
 import logging
 from unittest.mock import MagicMock, patch
-from .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase
 
 logger = logging.getLogger(__name__)

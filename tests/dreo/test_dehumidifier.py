@@ -1,4 +1,5 @@
 """Tests for the Dreo Dehumidifier HA class."""
+
 from unittest.mock import patch
 
 from custom_components.dreo.dreodehumidifier import DreoDehumidifierHA
@@ -7,8 +8,8 @@ from custom_components.dreo.haimports import HumidifierDeviceClass, HumidifierEn
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
 class TestDreoDehumidifierHA(TestDeviceBase):
@@ -164,6 +165,7 @@ class TestDreoDehumidifierHA(TestDeviceBase):
             dehumidifier = DreoDehumidifierHA(device)
 
             import pytest
+
             with pytest.raises(ValueError):
                 dehumidifier.set_mode("invalid_mode")
 

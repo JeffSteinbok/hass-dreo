@@ -28,9 +28,7 @@ def get_entries(
 
     for pydreo_device in pydreo_devices:
         if pydreo_device.type == DreoDeviceType.HEATER:
-            _LOGGER.debug(
-                "get_entries: Found a Heater - %s", pydreo_device.name
-            )
+            _LOGGER.debug("get_entries: Found a Heater - %s", pydreo_device.name)
             climate_entities_ha.append(DreoHeaterHA(pydreo_device))
         elif pydreo_device.type == DreoDeviceType.AIR_CONDITIONER:
             _LOGGER.debug(

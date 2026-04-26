@@ -3,7 +3,7 @@
 # Single file for all HA imports so that we can include this in all
 # other files, and disable linting in one specific place.
 
-# This is pretty ugly all things considered, but seems less ugly than 
+# This is pretty ugly all things considered, but seems less ugly than
 # ignoring specific lines all over the place
 
 # pylint: disable=unused-import, wildcard-import, unused-wildcard-import
@@ -17,7 +17,7 @@ from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
 
-from homeassistant.components.diagnostics import REDACTED 
+from homeassistant.components.diagnostics import REDACTED
 from homeassistant.config_entries import ConfigEntry, OptionsFlow, ConfigFlowResult
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -33,22 +33,11 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
-from homeassistant.helpers.entity import (
-    DeviceInfo,
-    Entity,
-    EntityDescription
-)
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
 
-from homeassistant.util.percentage import (
-    int_states_in_range,
-    percentage_to_ranged_value,
-    ranged_value_to_percentage
-) 
+from homeassistant.util.percentage import int_states_in_range, percentage_to_ranged_value, ranged_value_to_percentage
 
-from homeassistant.components.fan import (
-    FanEntity, 
-    FanEntityFeature
-)
+from homeassistant.components.fan import FanEntity, FanEntityFeature
 
 from homeassistant.components.climate import (
     ClimateEntity,
@@ -66,57 +55,24 @@ from homeassistant.components.climate import (
     SWING_HORIZONTAL,
     SWING_BOTH,
     HVACAction,
-    HVACMode
+    HVACMode,
 )
 
-from homeassistant.components.humidifier import (
-    HumidifierEntity,
-    HumidifierEntityFeature,
-    HumidifierDeviceClass
-)
+from homeassistant.components.humidifier import HumidifierEntity, HumidifierEntityFeature, HumidifierDeviceClass
 
-from homeassistant.components.switch import (
-    SwitchEntity,
-    SwitchEntityDescription
-)
+from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-    SensorEntityDescription,
-    SensorStateClass
-)
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription, SensorStateClass
 
-from homeassistant.components.number import (
-    NumberDeviceClass,
-    NumberEntity,
-    NumberEntityDescription
-)
+from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberEntityDescription
 
-from homeassistant.components.select import (
-    SelectEntity,
-    SelectEntityDescription
-)
+from homeassistant.components.select import SelectEntity, SelectEntityDescription
 
-from homeassistant.components.light import (
-    LightEntity,
-    LightEntityFeature,
-    ColorMode,
-    ATTR_COLOR_TEMP_KELVIN,
-    ATTR_BRIGHTNESS,
-    ATTR_RGB_COLOR
-)
+from homeassistant.components.light import LightEntity, LightEntityFeature, ColorMode, ATTR_COLOR_TEMP_KELVIN, ATTR_BRIGHTNESS, ATTR_RGB_COLOR
 
-from homeassistant.components.binary_sensor import (
-    BinarySensorEntity,
-    BinarySensorEntityDescription,
-    BinarySensorDeviceClass
-)
+from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorEntityDescription, BinarySensorDeviceClass
 
-from homeassistant.util.color import (
-    value_to_brightness,
-    brightness_to_value
-)
+from homeassistant.util.color import value_to_brightness, brightness_to_value
 
 from homeassistant.const import (
     TEMPERATURE,
@@ -128,6 +84,7 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
     UnitOfTemperature,
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER)
+    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
+)
 
 from homeassistant.helpers import entity_platform

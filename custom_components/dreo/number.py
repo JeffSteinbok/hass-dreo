@@ -9,22 +9,21 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import logging
 
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import DreoDeviceType
 from .dreobasedevice import DreoBaseDeviceHA
 
-from .const import (
-    DOMAIN,
-    PYDREO_MANAGER
-)
+from .const import DOMAIN, PYDREO_MANAGER
 
 _LOGGER = logging.getLogger(__name__)
+
 
 @dataclass
 class DreoNumberEntityDescription(NumberEntityDescription):
     """Describe Dreo Number entity."""
+
     attr_name: str = None
     icon: str = None
     exists_fn: Callable[[PyDreoBaseDevice], bool] = None
@@ -102,7 +101,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         icon="mdi:angle-acute",
         min_value=30,
         max_value=120,
-        step = 30,
+        step=30,
         exists_fn=lambda device: device.is_feature_supported("shakehorizonangle"),
     ),
     DreoNumberEntityDescription(
@@ -173,22 +172,23 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         max_value=100,
         step=1,
         exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("rgbth"),
-    )
+    ),
 )
 
-def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
+
+def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
     """Add Number entries for Dreo devices."""
-    number_ha_collection : list[DreoNumberHA] = []
-    
+    number_ha_collection: list[DreoNumberHA] = []
+
     for pydreo_device in pydreo_devices:
         _LOGGER.debug("get_entries: Adding Numbers for %s", pydreo_device.name)
-        number_keys : list[str] = []
-        
+        number_keys: list[str] = []
+
         for number_definition in NUMBERS:
             _LOGGER.debug("get_entries: checking exists fn: %s on %s", number_definition.key, pydreo_device.name)
 
             if number_definition.exists_fn(pydreo_device):
-                if (number_definition.key in number_keys):
+                if number_definition.key in number_keys:
                     _LOGGER.error("get_entries: Duplicate number key %s", number_definition.key)
                     continue
 
@@ -212,8 +212,9 @@ def get_entries(pydreo_devices : list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
                     number_ha_collection.append(DreoNumberHA(pydreo_device, dned))
                 else:
                     number_ha_collection.append(DreoNumberHA(pydreo_device, number_definition))
-    
+
     return number_ha_collection
+
 
 def get_device_range(device: PyDreoBaseDevice, number_definition: DreoNumberEntityDescription) -> tuple | None:
     """Returns the device-specific range for a Number."""
@@ -229,11 +230,11 @@ def get_device_range(device: PyDreoBaseDevice, number_definition: DreoNumberEnti
     else:
         range_from_device_definition = None
     if range_from_device_definition is not None:
-        _LOGGER.debug("get_device_range: range %s from device definition is %s", range_name,
-                      range_from_device_definition)
+        _LOGGER.debug("get_device_range: range %s from device definition is %s", range_name, range_from_device_definition)
         return range_from_device_definition
 
     return None
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -243,17 +244,15 @@ async def async_setup_entry(
     """Set up the Dreo Number platform."""
     _LOGGER.info("async_setup_entry: Starting Dreo Number Platform")
 
-    pydreo_manager : PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
+    pydreo_manager: PyDreo = hass.data[DOMAIN][PYDREO_MANAGER]
 
     async_add_entities(get_entries(pydreo_manager.devices))
 
 
-class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-method
+class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):  # pylint: disable=abstract-method
     """Representation of a Number describing a read-only property of a Dreo device."""
 
-    def __init__(self,
-                    pyDreoDevice: PyDreoBaseDevice,
-                    description: DreoNumberEntityDescription) -> None:
+    def __init__(self, pyDreoDevice: PyDreoBaseDevice, description: DreoNumberEntityDescription) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
 
@@ -265,21 +264,18 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity): # pylint: disable=abstract-m
         self._attr_translation_key = description.translation_key
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
 
-        self._attr_native_min_value= description.min_value
+        self._attr_native_min_value = description.min_value
         self._attr_native_max_value = description.max_value
         self._attr_native_step = description.step
         self._attr_native_unit_of_measurement = description.native_unit_of_measurement
         self._device_class_name = description.device_class
 
-        _LOGGER.info(
-            "new DreoNumberHA instance(%s), unique ID %s",
-            description.key,
-            self._attr_unique_id)
+        _LOGGER.info("new DreoNumberHA instance(%s), unique ID %s", description.key, self._attr_unique_id)
 
     def __repr__(self):
         # Representation string of object.
         return f"<{self.__class__.__name__}:{self.entity_description}"
-    
+
     @property
     def native_value(self) -> float:
         """Return the state of the number."""

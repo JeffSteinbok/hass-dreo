@@ -1,4 +1,5 @@
 """Tests for the Dreo Switch entity."""
+
 # pylint: disable=E1123
 from unittest.mock import patch
 
@@ -8,8 +9,8 @@ from custom_components.dreo.switch import DreoSwitchHA, DreoSwitchEntityDescript
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
-PATCH_BASE_PATH = 'homeassistant.helpers.entity.Entity'
-PATCH_UPDATE_HA_STATE = f'{PATCH_BASE_PATH}.schedule_update_ha_state'
+PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
+PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
 class TestDreoSwitchHA(TestDeviceBase):
@@ -24,7 +25,7 @@ class TestDreoSwitchHA(TestDeviceBase):
             features={
                 "childlockon": True,
                 "panel_sound": False,
-            }
+            },
         )
         # Device with no switch features
         device_no_features = self.create_mock_device(
@@ -33,7 +34,7 @@ class TestDreoSwitchHA(TestDeviceBase):
             features={
                 "is_on": True,
                 "fan_speed": 3,
-            }
+            },
         )
 
         entities = switch.get_entries([device_with_features, device_no_features])
@@ -44,11 +45,7 @@ class TestDreoSwitchHA(TestDeviceBase):
 
     def test_switch_get_entries_empty_for_no_devices(self):
         """Test that get_entries returns empty list when no devices support switches."""
-        device = self.create_mock_device(
-            name="Simple Device",
-            serial_number="DEV001",
-            features={"is_on": True}
-        )
+        device = self.create_mock_device(name="Simple Device", serial_number="DEV001", features={"is_on": True})
         entities = switch.get_entries([device])
         assert len(entities) == 0
 
@@ -59,11 +56,7 @@ class TestDreoSwitchHA(TestDeviceBase):
         for sw in SWITCHES:
             features[sw.attr_name] = False
 
-        device = self.create_mock_device(
-            name="Full Feature Device",
-            serial_number="FULL001",
-            features=features
-        )
+        device = self.create_mock_device(name="Full Feature Device", serial_number="FULL001", features=features)
 
         entities = switch.get_entries([device])
         assert len(entities) == len(SWITCHES)
@@ -71,11 +64,7 @@ class TestDreoSwitchHA(TestDeviceBase):
     def test_switch_entity_properties(self):
         """Test the switch entity basic properties."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Fan",
-                serial_number="FAN001",
-                features={"childlockon": True}
-            )
+            device = self.create_mock_device(name="Test Fan", serial_number="FAN001", features={"childlockon": True})
 
             desc = DreoSwitchEntityDescription(
                 key="Child Lock",
@@ -94,11 +83,7 @@ class TestDreoSwitchHA(TestDeviceBase):
     def test_switch_is_on(self):
         """Test the is_on property reads from device attribute."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Fan",
-                serial_number="FAN001",
-                features={"childlockon": True}
-            )
+            device = self.create_mock_device(name="Test Fan", serial_number="FAN001", features={"childlockon": True})
 
             desc = DreoSwitchEntityDescription(
                 key="Child Lock",
@@ -117,11 +102,7 @@ class TestDreoSwitchHA(TestDeviceBase):
     def test_switch_turn_on(self):
         """Test turning a switch on."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Fan",
-                serial_number="FAN001",
-                features={"childlockon": False}
-            )
+            device = self.create_mock_device(name="Test Fan", serial_number="FAN001", features={"childlockon": False})
 
             desc = DreoSwitchEntityDescription(
                 key="Child Lock",
@@ -140,11 +121,7 @@ class TestDreoSwitchHA(TestDeviceBase):
     def test_switch_turn_off(self):
         """Test turning a switch off."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Fan",
-                serial_number="FAN001",
-                features={"childlockon": True}
-            )
+            device = self.create_mock_device(name="Test Fan", serial_number="FAN001", features={"childlockon": True})
 
             desc = DreoSwitchEntityDescription(
                 key="Child Lock",
@@ -169,7 +146,7 @@ class TestDreoSwitchHA(TestDeviceBase):
                 features={
                     "horizontally_oscillating": False,
                     "vertically_oscillating": True,
-                }
+                },
             )
 
             entities = switch.get_entries([device])
@@ -190,11 +167,7 @@ class TestDreoSwitchHA(TestDeviceBase):
     def test_switch_repr(self):
         """Test the repr method of DreoSwitchHA."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self.create_mock_device(
-                name="Test Device",
-                serial_number="DEV001",
-                features={"oscon": True}
-            )
+            device = self.create_mock_device(name="Test Device", serial_number="DEV001", features={"oscon": True})
 
             desc = DreoSwitchEntityDescription(
                 key="Oscillating",
@@ -209,16 +182,8 @@ class TestDreoSwitchHA(TestDeviceBase):
 
     def test_switch_multiple_devices(self):
         """Test get_entries with multiple devices each having different switches."""
-        device1 = self.create_mock_device(
-            name="Fan",
-            serial_number="FAN001",
-            features={"oscon": True, "childlockon": False}
-        )
-        device2 = self.create_mock_device(
-            name="Heater",
-            serial_number="HTR001",
-            features={"ptcon": True, "panel_sound": False}
-        )
+        device1 = self.create_mock_device(name="Fan", serial_number="FAN001", features={"oscon": True, "childlockon": False})
+        device2 = self.create_mock_device(name="Heater", serial_number="HTR001", features={"ptcon": True, "panel_sound": False})
 
         entities = switch.get_entries([device1, device2])
         assert len(entities) == 4
