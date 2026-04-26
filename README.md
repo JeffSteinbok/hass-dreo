@@ -1,5 +1,9 @@
 # Dreo Smart Device Integration for Home Assistant (Unofficial)
 
+<p align="center">
+  <img src="custom_components/dreo/brand/logo@2x.png" alt="Dreo" width="300">
+</p>
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 [![CI Validation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml)
@@ -15,6 +19,8 @@ Dreo also maintains an [official Home Assistant integration](https://github.com/
 | | **hass-dreo** (this project) | **hass-dreoverse** (official) |
 |---|---|---|
 | API used | Mobile app API | Dreo Open API |
+| Device types | Fans, Heaters, ACs, Humidifiers, Dehumidifiers, Air Purifiers, Cookers, Evaporative Coolers | Fans, Ceiling Fans, ACs, Evaporative Coolers |
+| Missing from official | — | Space Heaters, Humidifiers, Dehumidifiers, Air Purifiers, ChefMaker |
 | Device feature coverage | ~61 state fields — more controls exposed | ~36 state fields — fewer controls |
 | Notable extras here | Timers, PTC heater status, PM2.5 sensors, ChefMaker, cruise control, work time, and more | Not available |
 | Support model | Community-maintained | Officially maintained by Dreo |
