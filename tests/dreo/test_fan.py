@@ -228,3 +228,30 @@ class TestDreoFanHA(TestDeviceBase):
             entities = mock_add_entities.call_args[0][0]
             assert len(entities) == 1
             assert type(entities[0]).__name__ == "DreoFanHA"
+
+    def test_fan_percentage_none_when_speed_not_loaded(self):
+        """Test that percentage returns None (not a TypeError) when fan_speed is None.
+
+        This is the root cause of the 'entity unavailable' bug: HA's FanEntity.state_attributes
+        is @final and always calls self.percentage. If percentage throws, _async_write_ha_state
+        never completes and the entity stays at its default 'unavailable' state in the state
+        machine. Returning None is valid and keeps the entity available.
+        """
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan = self.create_mock_device(
+                name="Test Fan",
+                serial_number="TEST001",
+                features={
+                    "is_on": False,
+                    "preset_modes": ["normal", "auto"],
+                    "fan_speed": None,   # state not yet loaded from API
+                    "speed_range": (1, 9),
+                },
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            # Must NOT throw — a TypeError here crashes state_attributes and leaves
+            # the entity permanently unavailable in Home Assistant.
+            assert test_fan.percentage is None
+            # Entity should still report availability normally
+            assert test_fan.is_on is False
