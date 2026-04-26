@@ -1,0 +1,29 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dreo-Kontodaten eingeben",
+        "data": {
+          "username": "E-Mail-Adresse",
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Authentifizierung fehlgeschlagen."
+    },
+    "abort": {
+      "single_instance_allowed": "Es ist nur eine Instanz erlaubt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dreo-Optionen",
+        "data": {
+          "auto_reconnect": "Automatisch neu verbinden, wenn die WebSocket-Verbindung unterbrochen wird."
+        }
+      }
+    }
+  }
+}
