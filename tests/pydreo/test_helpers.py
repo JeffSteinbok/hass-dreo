@@ -1,27 +1,33 @@
 """Test helpers for PyDreo."""
-from  .imports import Helpers
+
+import time
+from unittest.mock import patch, MagicMock
+import requests
+from .imports import Helpers
+
 
 class TestHelpers:
     """Test Helpers class."""
+
     def test_value_from_name(self):
         """Test value_from_name() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.value_from_name(name_value_collection, "on") is True # pylint: disable=E0601
+        assert Helpers.value_from_name(name_value_collection, "on") is True  # pylint: disable=E0601
         assert Helpers.value_from_name(name_value_collection, "off") is False
         assert Helpers.value_from_name(name_value_collection, "oxx") is None
 
     def test_name_from_value(self):
         """Test name_from_value() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.name_from_value(name_value_collection, False) is "off" # pylint: disable=E0601
-        assert Helpers.name_from_value(name_value_collection, True) is "on"
+        assert Helpers.name_from_value(name_value_collection, False) == "off"  # pylint: disable=E0601
+        assert Helpers.name_from_value(name_value_collection, True) == "on"
         assert Helpers.name_from_value(name_value_collection, "oxx") is None
 
     def test_get_name_list(self):
         """Test get_name_list() method."""
         name_value_collection = [("on", True), ("off", False)]
-        assert Helpers.get_name_list(name_value_collection)[0] is "on" # pylint: disable=E0601
-        assert Helpers.get_name_list(name_value_collection)[1] is "off"
+        assert Helpers.get_name_list(name_value_collection)[0] == "on"  # pylint: disable=E0601
+        assert Helpers.get_name_list(name_value_collection)[1] == "off"
 
     def test_value_from_name_with_integers(self):
         """Test value_from_name() with integer values."""
@@ -101,17 +107,17 @@ class TestHelpers:
     def test_realistic_preset_modes(self):
         """Test with realistic preset modes from actual devices."""
         preset_modes = [("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4), ("turbo", 5)]
-        
+
         # Test value_from_name
         assert Helpers.value_from_name(preset_modes, "normal") == 1
         assert Helpers.value_from_name(preset_modes, "turbo") == 5
         assert Helpers.value_from_name(preset_modes, "invalid") is None
-        
+
         # Test name_from_value
         assert Helpers.name_from_value(preset_modes, 1) == "normal"
         assert Helpers.name_from_value(preset_modes, 5) == "turbo"
         assert Helpers.name_from_value(preset_modes, 99) is None
-        
+
         # Test get_name_list
         names = Helpers.get_name_list(preset_modes)
         assert len(names) == 5
@@ -121,12 +127,12 @@ class TestHelpers:
     def test_realistic_hvac_modes(self):
         """Test with realistic HVAC modes."""
         hvac_modes = [("off", 0), ("cool", 1), ("heat", 2), ("fan", 3), ("auto", 4)]
-        
+
         assert Helpers.value_from_name(hvac_modes, "cool") == 1
         assert Helpers.value_from_name(hvac_modes, "heat") == 2
         assert Helpers.name_from_value(hvac_modes, 0) == "off"
         assert Helpers.name_from_value(hvac_modes, 4) == "auto"
-        
+
         names = Helpers.get_name_list(hvac_modes)
         assert len(names) == 5
         assert names[0] == "off"
@@ -164,7 +170,7 @@ class TestHelpers:
             'pass"word',  # double quote
             "pass'word",  # single quote
             "pass\\word",  # backslash
-            'pass"\\\'word',  # mixed quotes and backslash
+            "pass\"\\'word",  # mixed quotes and backslash
         ]
         for password in test_cases:
             hashed = Helpers.hash_password(password)
@@ -201,4 +207,164 @@ class TestHelpers:
         hash1 = Helpers.hash_password(password)
         hash2 = Helpers.hash_password(password)
         assert hash1 == hash2
-    
+
+    def test_calculate_hex(self):
+        """Test calculate_hex() with valid hex string."""
+        result = Helpers.calculate_hex("1A:2B")
+        expected = (0x1A + 0x2B) / 8192
+        assert result == expected
+
+    def test_calculate_hex_zero(self):
+        """Test calculate_hex() with zero values."""
+        result = Helpers.calculate_hex("00:00")
+        assert result == 0.0
+
+    def test_redactor_with_redact_enabled(self):
+        """Test redactor redacts sensitive values when shouldredact=True."""
+        original = Helpers.shouldredact
+        try:
+            Helpers.shouldredact = True
+            test_str = '{"token": "secret123", "password": "mypass", "email": "user@example.com"}'
+            result = Helpers.redactor(test_str)
+            assert "secret123" not in result
+            assert "mypass" not in result
+            assert "user@example.com" not in result
+            assert "##_REDACTED_##" in result
+        finally:
+            Helpers.shouldredact = original
+
+    def test_redactor_with_redact_disabled(self):
+        """Test redactor returns string unchanged when shouldredact=False."""
+        original = Helpers.shouldredact
+        try:
+            Helpers.shouldredact = False
+            test_str = '{"token": "secret123", "password": "mypass"}'
+            result = Helpers.redactor(test_str)
+            assert result == test_str
+        finally:
+            Helpers.shouldredact = original
+
+    @patch("custom_components.dreo.pydreo.helpers.requests.get")
+    def test_call_api_get(self, mock_get):
+        """Test call_api with GET method."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = b'{"code": 0}'
+        mock_response.json.return_value = {"code": 0}
+        mock_get.return_value = mock_response
+
+        response, status = Helpers.call_api("https://api.test.com", "/path", "get", {}, {})
+        assert status == 200
+        assert response == {"code": 0}
+        mock_get.assert_called_once()
+
+    @patch("custom_components.dreo.pydreo.helpers.requests.post")
+    def test_call_api_post(self, mock_post):
+        """Test call_api with POST method."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = b'{"code": 0}'
+        mock_response.json.return_value = {"code": 0}
+        mock_post.return_value = mock_response
+
+        response, status = Helpers.call_api("https://api.test.com", "/path", "post", {"key": "val"}, {})
+        assert status == 200
+        assert response == {"code": 0}
+
+    @patch("custom_components.dreo.pydreo.helpers.requests.put")
+    def test_call_api_put(self, mock_put):
+        """Test call_api with PUT method."""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = b'{"code": 0}'
+        mock_response.json.return_value = {"code": 0}
+        mock_put.return_value = mock_response
+
+        response, status = Helpers.call_api("https://api.test.com", "/path", "put", {"key": "val"}, {})
+        assert status == 200
+        assert response == {"code": 0}
+
+    @patch("custom_components.dreo.pydreo.helpers.requests.get")
+    def test_call_api_request_exception(self, mock_get):
+        """Test call_api handles request exceptions."""
+        mock_get.side_effect = requests.exceptions.ConnectionError("Connection failed")
+
+        response, status = Helpers.call_api("https://api.test.com", "/path", "get", {}, {})
+        assert response is None
+        assert status is None
+
+    @patch("custom_components.dreo.pydreo.helpers.requests.get")
+    def test_call_api_non_200_status(self, mock_get):
+        """Test call_api handles non-200 status code."""
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        mock_get.return_value = mock_response
+
+        response, status = Helpers.call_api("https://api.test.com", "/path", "get", {}, {})
+        assert response is None
+        assert status is None  # status_code is only set for 200 responses
+
+    def test_code_check_none_input(self):
+        """Test code_check with None input."""
+        assert Helpers.code_check(None) is False
+
+    def test_code_check_non_dict(self):
+        """Test code_check with non-dict input."""
+        assert Helpers.code_check("not a dict") is False
+
+    def test_code_check_non_zero_code(self):
+        """Test code_check with non-zero code."""
+        assert Helpers.code_check({"code": 1}) is False
+
+    def test_code_check_zero_code(self):
+        """Test code_check with zero code."""
+        assert Helpers.code_check({"code": 0}) is True
+
+    def test_api_timestamp(self):
+        """Test api_timestamp returns string of millisecond timestamp."""
+        before = int(time.time() * 1000)
+        result = Helpers.api_timestamp()
+        after = int(time.time() * 1000)
+        assert isinstance(result, str)
+        ts = int(result)
+        assert before <= ts <= after
+
+    def test_req_headers_without_token(self):
+        """Test req_headers without token."""
+        manager = MagicMock()
+        manager.token = None
+        headers = Helpers.req_headers(manager)
+        assert "authorization" not in headers
+        assert headers["content-type"] == "application/json; charset=UTF-8"
+
+    def test_req_headers_with_token(self):
+        """Test req_headers with token."""
+        manager = MagicMock()
+        manager.token = "test_token"
+        headers = Helpers.req_headers(manager)
+        assert headers["authorization"] == "Bearer test_token"
+
+    def test_req_body_login(self):
+        """Test req_body for login type."""
+        manager = MagicMock()
+        manager.username = "user@test.com"
+        manager.password = "pass123"
+        body = Helpers.req_body(manager, "login")
+        assert body["email"] == "user@test.com"
+        assert body["grant_type"] == "email-password"
+        assert "password" in body
+        assert "client_id" in body
+
+    def test_req_body_devicelist(self):
+        """Test req_body for devicelist type."""
+        manager = MagicMock()
+        body = Helpers.req_body(manager, "devicelist")
+        assert body["method"] == "devices"
+        assert body["pageNo"] == "1"
+        assert body["pageSize"] == "100"
+
+    def test_req_body_unknown_type(self):
+        """Test req_body for unknown type returns empty dict."""
+        manager = MagicMock()
+        body = Helpers.req_body(manager, "unknown_type")
+        assert body == {}

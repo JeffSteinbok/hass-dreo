@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "poweron": {"state": false, "timestamp": 1775266902},
+      "windlevel": {"state": 3, "timestamp": 1775266360},
+      "mode": {"state": 4, "timestamp": 1775266380},
+      "temperature": {"state": 79, "timestamp": 1775267293},
+      "oscmode": {"state": 0, "timestamp": 1775266728},
+      "cruiseconf": {"state": "30,15,0,-15", "timestamp": 1775266634},
+      "fixedconf": {"state": "-10,-5", "timestamp": 1775266745},
+      "customconf": {"state": "temp:23333334444446666668888889", "timestamp": 1775262958},
+      "muteon": {"state": false, "timestamp": 1775266380},
+      "lighton": {"state": true, "timestamp": 1775266380},
+      "childlockon": {"state": false, "timestamp": 1775262958},
+      "alignon": {"state": true, "timestamp": 1775262958},
+      "tempoffset": {"state": 0, "timestamp": 1775262958},
+      "wifi_rssi": {"state": -44, "timestamp": 1775262958},
+      "network_latency": {"state": 878, "timestamp": 1775262958},
+      "module_hardware_model": {"state": "HeFi", "timestamp": 1775262958},
+      "module_hardware_mac": {"state": "REDACTED", "timestamp": 1775262958},
+      "mcu_firmware_version": {"state": "0.3.3", "timestamp": 1775262958},
+      "module_firmware_version": {"state": "3.8.3", "timestamp": 1775262958},
+      "wifi_ssid": {"state": "REDACTED", "timestamp": 1775262958},
+      "connected": {"state": true, "timestamp": 1775262958},
+      "mcuon": {"state": true, "timestamp": 1775262958},
+      "wrong": {"state": 0, "timestamp": 1775262958},
+      "scheid": {"state": 0, "timestamp": 1775262958},
+      "scheon": {"state": false, "timestamp": 1775262958},
+      "timeron": {"state": {"du": 0, "ts": 1775262388}, "timestamp": null},
+      "timeroff": {"state": {"du": 0, "ts": 1775262388}, "timestamp": null},
+      "_ota": {"state": 0, "timestamp": 1775262958}
+    },
+    "sn": "HPF020S_1",
+    "productId": "1914861046110695425",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}

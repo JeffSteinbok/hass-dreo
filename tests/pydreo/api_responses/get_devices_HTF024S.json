@@ -1,0 +1,65 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2044924297905967106",
+        "sn": "HTF024S_1",
+        "brand": "Dreo",
+        "model": "DR-HTF024S",
+        "productId": "**REDACTED**",
+        "productName": "Tower Fan",
+        "deviceName": "DEBUGTEST - Tower Fan - DR-HTF024S",
+        "shared": false,
+        "series": null,
+        "seriesName": "TF554S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202512/31a83a64fd779e4860bb3a0a0996cb0d58.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202512/311032ffa8e5e94fc68da491e9ab1cbfb5.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202512/31ffb8a097ed61438da52d0e82c7a769c8.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202512/318e4c8286721d47a29de311af035cd7a2.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202601/28af49b43c3a704d3eb397aecd32d55090.pdf",
+            "icon": null,
+            "desc": "DR-HTF024S User Manual",
+            "lang": "en"
+          },
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202604/1596e2954ab3d64abbb9b7aafac55d76ea.pdf",
+            "icon": null,
+            "desc": "DR-HTF024S_User-Manual_V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

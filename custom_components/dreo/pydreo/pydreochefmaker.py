@@ -1,4 +1,5 @@
 """Support for Dreo ChefMaker devices."""
+
 import logging
 from typing import Dict, TYPE_CHECKING
 
@@ -77,9 +78,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
     def set_mode_from_is_on(self) -> None:
         """Set the mode based on the power state."""
         val = MODE_STANDBY if self._is_on else MODE_OFF
-        _LOGGER.debug(
-            "set_mode_from_is_on: %s --> %s", self.mode, val
-        )
+        _LOGGER.debug("set_mode_from_is_on: %s --> %s", self.mode, val)
         self.mode = val
 
     def update_state(self, state: dict) -> None:
@@ -97,9 +96,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug(
-            "handle_server_update: %s", message
-        )
+        _LOGGER.debug("handle_server_update: %s", message)
 
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_poweron, bool):

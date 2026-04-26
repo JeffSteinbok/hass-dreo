@@ -1,9 +1,10 @@
 """Tests for Dreo Air Conditioners"""
+
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
 import pytest
-from  .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 from custom_components.dreo.pydreo import PyDreoAC
@@ -16,32 +17,32 @@ logger.setLevel(logging.DEBUG)
 class TestPyDreoAirConditioner(TestBase):
     """Test TestPyDreoAirConditioner class."""
 
-    def test_HAC006S(self): # pylint: disable=invalid-name
+    def test_HAC006S(self):  # pylint: disable=invalid-name
         """Load air conditioner and test sending commands."""
         self.get_devices_file_name = "get_devices_HAC006S.json"
         self.pydreo_manager.load_devices()
 
         assert len(self.pydreo_manager.devices) == 1
 
-        ac : PyDreoAC = self.pydreo_manager.devices[0]
+        ac: PyDreoAC = self.pydreo_manager.devices[0]
 
         assert sorted(ac.modes) == sorted([DreoACMode.COOL, DreoACMode.DRY, DreoACMode.FAN, DreoACMode.ECO, DreoACMode.SLEEP])
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.poweron = True
             mock_send_command.assert_called_once_with(ac, {POWERON_KEY: True})
-        ac.handle_server_update({ REPORTED_KEY: {POWERON_KEY: True} })
+        ac.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.mode = DreoACMode.ECO
             mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 5})
-        ac.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 5} })
+        ac.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
 
         # Test sleep preset mode
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.mode = DreoACMode.SLEEP
             mock_send_command.assert_called_once_with(ac, {WIND_MODE_KEY: 4})
-        ac.handle_server_update({ REPORTED_KEY: {WIND_MODE_KEY: 4} })
+        ac.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
 
     def test_HAC006S_initial_state(self):  # pylint: disable=invalid-name
         """Verify initial state loaded from REST API."""
@@ -56,8 +57,8 @@ class TestPyDreoAirConditioner(TestBase):
         assert ac.target_humidity == 50
         assert ac.childlockon is False
         assert ac.ptcon is False
-        assert ac.display_auto_off is False   # lighton=True → display_auto_off=False
-        assert ac.oscon is False              # oscmode=0 → off
+        assert ac.display_auto_off is False  # lighton=True → display_auto_off=False
+        assert ac.oscon is False  # oscmode=0 → off
 
     def test_HAC006S_fan_mode_setter(self):  # pylint: disable=invalid-name
         """Test that fan_mode setter sends the correct command."""
@@ -268,18 +269,18 @@ class TestPyDreoAirConditioner(TestBase):
         # with pytest.raises(ValueError):
         #    ac.preset_mode = 'not_a_mode'
 
-    def test_HAC006S_temperature_offset(self): # pylint: disable=invalid-name
+    def test_HAC006S_temperature_offset(self):  # pylint: disable=invalid-name
         """Test that temperature offset is applied to air conditioner temperature."""
         self.get_devices_file_name = "get_devices_HAC006S.json"
         self.pydreo_manager.load_devices()
 
-        ac : PyDreoAC = self.pydreo_manager.devices[0]
+        ac: PyDreoAC = self.pydreo_manager.devices[0]
 
         # Initial state: raw temp 74, offset 0 -> calibrated 74
         assert ac.temperature_offset == 0
         assert ac.temperature == 74
 
         # Simulate a WebSocket update with new temperature and offset
-        ac.handle_server_update({ REPORTED_KEY: {TEMPERATURE_KEY: 80, TEMPOFFSET_KEY: -5} })
+        ac.handle_server_update({REPORTED_KEY: {TEMPERATURE_KEY: 80, TEMPOFFSET_KEY: -5}})
         assert ac.temperature_offset == -5
         assert ac.temperature == 75  # raw 80 + offset -5

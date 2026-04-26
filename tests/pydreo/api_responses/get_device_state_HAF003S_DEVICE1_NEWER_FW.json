@@ -109,7 +109,7 @@
         "timestamp": 1765507391
       },
       "connected": {
-        "state": false,
+        "state": true,
         "timestamp": 1765510043
       },
       "timeroff": {

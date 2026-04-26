@@ -1,0 +1,87 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Introduce las credenciales de tu cuenta Dreo",
+        "data": {
+          "username": "Correo electrónico",
+          "password": "Contraseña"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Error de autenticación."
+    },
+    "abort": {
+      "single_instance_allowed": "Solo se permite una instancia."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Dreo",
+        "data": {
+          "auto_reconnect": "Reconectar automáticamente si se pierde la conexión WebSocket."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "water_empty": { "name": "Agua vacía" }
+    },
+    "switch": {
+      "horizontally_oscillating": { "name": "Oscilación horizontal" },
+      "vertically_oscillating":   { "name": "Oscilación vertical" },
+      "display_auto_off":         { "name": "Apagado automático de pantalla" },
+      "panel_sound":              { "name": "Sonido del panel" },
+      "adaptive_brightness":      { "name": "Brillo adaptativo" },
+      "mute_on":                  { "name": "Silenciar panel" },
+      "oscon":                    { "name": "Oscilación" },
+      "ptcon":                    { "name": "PTC" },
+      "childlockon":              { "name": "Bloqueo infantil" },
+      "light":                    { "name": "Luz" },
+      "humidify":                 { "name": "Humidificar" },
+      "display_light":            { "name": "Luz de pantalla" },
+      "ambient_light":            { "name": "Luz ambiental" },
+      "auto_mode":                { "name": "Encendido automático" },
+      "scheon":                   { "name": "Programación" }
+    },
+    "sensor": {
+      "temperature":       { "name": "Temperatura" },
+      "humidity":          { "name": "Humedad" },
+      "use_hours":         { "name": "Uso desde la limpieza" },
+      "reach_target_temp": { "name": "Temperatura objetivo alcanzada" },
+      "status":            { "name": "Estado" },
+      "pm25":              { "name": "PM2.5" },
+      "water":             { "name": "Nivel de agua" },
+      "use_hours_hm":      { "name": "Uso desde la limpieza" },
+      "light_hm":          { "name": "Luz ambiental" }
+    },
+    "number": {
+      "horizontal_angle":             { "name": "Ángulo horizontal" },
+      "vertical_angle":               { "name": "Ángulo vertical" },
+      "horizontal_osc_angle_left":    { "name": "Ángulo de oscilación horizontal izquierdo" },
+      "horizontal_osc_angle_right":   { "name": "Ángulo de oscilación horizontal derecho" },
+      "vertical_osc_angle_top":       { "name": "Ángulo de oscilación vertical superior" },
+      "vertical_osc_angle_bottom":    { "name": "Ángulo de oscilación vertical inferior" },
+      "osc_angle":                    { "name": "Ángulo de oscilación" },
+      "horizontal_oscillation_angle": { "name": "Ángulo de oscilación horizontal" },
+      "vertical_oscillation_angle":   { "name": "Ángulo de oscilación vertical" },
+      "target_humidity":              { "name": "Humedad objetivo" },
+      "ambient_light_threshold_low":  { "name": "Umbral de luz ambiental bajo" },
+      "ambient_light_threshold_high": { "name": "Umbral de luz ambiental alto" },
+      "ambient_light_level":          { "name": "Nivel de luz ambiental" }
+    },
+    "select": {
+      "mist_level": {
+        "name": "Nivel de vapor",
+        "state": {
+          "low": "Bajo",
+          "medium": "Medio",
+          "high": "Alto"
+        }
+      }
+    }
+  }
+}

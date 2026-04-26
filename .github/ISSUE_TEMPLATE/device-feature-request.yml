@@ -1,0 +1,47 @@
+name: Device Feature Request
+description: Request additional support for an existing supported device.
+labels: ["enhancement"]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Device Model
+      description: Which model is this feature request for?
+      placeholder: DR-XXXNNNS
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem description
+      description: A clear and concise description of the problem or missing feature.
+      placeholder: "I'm always frustrated when [...]"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: >
+        Add any other context or screenshots about the feature request here.
+        If possible, attach [diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging).
+    validations:
+      required: false

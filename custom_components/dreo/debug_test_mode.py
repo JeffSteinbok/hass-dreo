@@ -1,13 +1,11 @@
 """Support for Dreo Debug Test Mode."""
+
 import json
 import logging
 import os
 import glob
 
-from .const import (
-    DEBUG_TEST_MODE_DIRECTORY_NAME,
-    DEBUG_TEST_MODE_DEVICES_FILE_NAME
-)
+from .const import DEBUG_TEST_MODE_DIRECTORY_NAME, DEBUG_TEST_MODE_DEVICES_FILE_NAME
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -19,9 +17,9 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
 
     _LOGGER.debug("DEBUG_TEST_MODE: get_debug_test_mode_payload called")
     get_devices_payload = load_test_file(base_dir, DEBUG_TEST_MODE_DEVICES_FILE_NAME)
-    if get_devices_payload is None: 
+    if get_devices_payload is None:
         _LOGGER.error("DEBUG_TEST_MODE: Failed to load devices payload from file.")
-        return None 
+        return None
     debug_test_mode_payload["get_devices"] = get_devices_payload
     _LOGGER.debug("DEBUG_TEST_MODE: GetDevices Payload: %s", get_devices_payload)
 
@@ -33,7 +31,7 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
     if data is None:
         _LOGGER.error("DEBUG_TEST_MODE: No data found in get_devices payload")
         return None
-    
+
     for device in data.get("list", []):
         serial_number = device.get("sn")
         device_id = device.get("deviceId")
@@ -44,7 +42,7 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
 
         if not device_id:
             _LOGGER.error("DEBUG_TEST_MODE: Device missing device id")
-            continue                
+            continue
 
         if serial_number in seen_serial_numbers:
             _LOGGER.error("DEBUG_TEST_MODE: Duplicate serial number found: %s", serial_number)
@@ -58,11 +56,10 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
         seen_device_ids.add(device_id)
 
         # Load a file specific to the serial number
-        device_state : dict = load_test_file(base_dir, "get_device_state_" + serial_number + ".json")
+        device_state: dict = load_test_file(base_dir, "get_device_state_" + serial_number + ".json")
         if device_state is None:
             _LOGGER.error("DEBUG_TEST_MODE: Failed to load device state for serial number %s", serial_number)
             continue
-
 
         _LOGGER.debug("get_debug_test_mode_payload: Loaded data for serial number %s: %s", serial_number, device_state)
         debug_test_mode_payload[serial_number] = device_state
@@ -71,7 +68,7 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
         # Pattern: get_device_setting_{serial_number}_*.json
         setting_pattern = f"{base_dir}/{DEBUG_TEST_MODE_DIRECTORY_NAME}/get_device_setting_{serial_number}_*.json"
         setting_files = glob.glob(setting_pattern)
-        
+
         for setting_file in setting_files:
             # Extract the setting name from the filename
             # Format: get_device_setting_{serial_number}_{settingName}.json
@@ -79,8 +76,8 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
             # Remove the prefix and suffix to get the setting name
             prefix = f"get_device_setting_{serial_number}_"
             if filename.startswith(prefix) and filename.endswith(".json"):
-                setting_name = filename[len(prefix):-5]  # Remove prefix and ".json"
-                
+                setting_name = filename[len(prefix) : -5]  # Remove prefix and ".json"
+
                 setting_data = load_test_file(base_dir, filename)
                 if setting_data is not None:
                     # Store with key format: {serial_number}_{settingName}
@@ -92,15 +89,16 @@ def get_debug_test_mode_payload(base_dir: str) -> dict:
 
     return debug_test_mode_payload
 
+
 def load_test_file(base_dir, filename: str) -> dict:
     """Load a JSON response from a file in the debug test mode directory."""
-    
+
     returned_data: dict = None
 
     _LOGGER.debug("DEBUG_TEST_MODE: Attempting to load response from file: %s", filename)
     full_path = f"{base_dir}/{DEBUG_TEST_MODE_DIRECTORY_NAME}/{filename}"
     try:
-        with open(full_path, 'r', encoding="utf-8") as file:
+        with open(full_path, "r", encoding="utf-8") as file:
             _LOGGER.debug("DEBUG_TEST_MODE: Successfully loaded file: %s", full_path)
             returned_data = json.load(file)
     except FileNotFoundError:

@@ -1,0 +1,41 @@
+name: New Device Request
+description: Submit to request support for a new device.
+title: "Add support for model(s): "
+labels: ["new device request"]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Device Model
+      description: The model number in the format used in the README (e.g. DR-HTF001S).
+      placeholder: DR-XXXNNNS
+    validations:
+      required: true
+
+  - type: input
+    id: product-link
+    attributes:
+      label: Product Page Link
+      description: A link to the product page so we can see what this device is.
+      placeholder: https://www.dreo.com/products/...
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: >
+        Attach your diagnostics JSON file here.
+        See [how to download diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging)
+        for instructions.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: diagnostics-confirm
+    attributes:
+      label: Diagnostics attached
+      options:
+        - label: I have attached [diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging).
+          required: true

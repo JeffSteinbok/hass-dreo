@@ -1,15 +1,17 @@
 """Tests for Dreo Fans"""
+
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
 from custom_components.dreo import diagnostics
 
 import pytest
-from  .imports import * # pylint: disable=W0401,W0614
+from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 class TestDiagnostics(IntegrationTestBase):
     """Test Diagnostics functionality{"""
@@ -19,9 +21,9 @@ class TestDiagnostics(IntegrationTestBase):
 
         self.get_devices_file_name = "get_devices_multiple_1.json"
         self.pydreo_manager.load_devices()
-        diag = diagnostics._get_diagnostics(self.pydreo_manager) # pylint: disable=protected-access
+        diag = diagnostics._get_diagnostics(self.pydreo_manager)  # pylint: disable=protected-access
         dreo = diag.get("dreo")
-        assert(dreo.get("device_count") == 2)
+        assert dreo.get("device_count") == 2
         raw_device_list = dreo.get("raw_devicelist").get("data")
         assert raw_device_list.get("totalNum") == 2
         assert raw_device_list.get("list")[0].get("deviceName") == "DEBUGTEST - Tower Fan - DR-HTF005S"
@@ -29,4 +31,3 @@ class TestDiagnostics(IntegrationTestBase):
         assert raw_device_list.get("list")[0].get("productId") == "**REDACTED**"
 
         assert raw_device_list.get("list")[1].get("deviceName") == "DEBUGTEST - Air Conditioner - DR-HAC005S"
-

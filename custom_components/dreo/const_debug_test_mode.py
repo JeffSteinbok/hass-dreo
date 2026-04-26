@@ -1,4 +1,4 @@
-DEBUG_TEST_MODE : bool = False
+DEBUG_TEST_MODE: bool = False
 # Uncomment to enable test mode.
 # Tests will not pass if this is set to True to prevent accidental commits.
 # DEBUG_TEST_MODE = True

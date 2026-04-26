@@ -1,0 +1,77 @@
+name: Bug Report
+description: Create a report to help us improve
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: >
+        Attach your diagnostics JSON file here.
+        See [how to download diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging)
+        for instructions.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: diagnostics-confirm
+    attributes:
+      label: Diagnostics attached
+      options:
+        - label: I have attached [diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging).
+          required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: >
+        Paste any relevant log output.
+        See [debugging instructions](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging).
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+    validations:
+      required: false

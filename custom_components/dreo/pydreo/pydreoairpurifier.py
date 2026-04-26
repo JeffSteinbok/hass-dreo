@@ -37,18 +37,18 @@ class PyDreoAirPurifier(PyDreoFanBase):
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             control = controls_conf.get("control", None)
-            if (control is not None):
+            if control is not None:
                 for control_item in control:
-                    if (control_item.get("type", None) == "Mode"):
+                    if control_item.get("type", None) == "Mode":
                         for mode_item in control_item.get("items", None):
                             value = mode_item.get("value", None)
                             preset_modes.append((value, value))
-                    elif (control_item.get("type", None) == "Manual"):
+                    elif control_item.get("type", None) == "Manual":
                         value = control_item.get("value", None)
                         preset_modes.append((value, value))
 
         preset_modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if (len(preset_modes) == 0):
+        if len(preset_modes) == 0:
             _LOGGER.debug("parse_preset_modes: No preset modes detected")
             preset_modes = None
         _LOGGER.debug("parse_preset_modes: Detected preset modes - %s", preset_modes)
@@ -57,11 +57,11 @@ class PyDreoAirPurifier(PyDreoFanBase):
     @property
     def oscillating(self) -> bool:
         return None
-    
+
     @oscillating.setter
     def oscillating(self, value: bool) -> None:
         raise NotImplementedError(f"Attempting to set oscillating on a device that doesn't support ({value})")
-    
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")

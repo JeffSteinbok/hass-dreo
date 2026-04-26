@@ -3,11 +3,10 @@
 from datetime import timedelta
 
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .haimports import * # pylint: disable=W0401,W0614
+from .haimports import *  # pylint: disable=W0401,W0614
 
-from .const import (
-    DOMAIN
-)
+from .const import DOMAIN
+
 
 SCAN_INTERVAL = timedelta(minutes=5)
 """How often HA polls each entity to refresh device state from the REST API.
@@ -37,7 +36,7 @@ class DreoBaseDeviceHA(Entity):
             },
             name=self.pydreo_device.name,
             manufacturer="Dreo",
-            model=self.pydreo_device.model
+            model=self.pydreo_device.model,
         )
 
     @property

@@ -1,27 +1,22 @@
 """Config (and Options) flow for Dreo integration."""
+
 import logging
 from typing import Any, Dict
 from collections import OrderedDict
 import voluptuous as vol
 
-from .haimports import * # pylint: disable=W0401,W0614
-from .const import (
-    DOMAIN,
-    CONF_AUTO_RECONNECT
-)
+from .haimports import *  # pylint: disable=W0401,W0614
+from .const import DOMAIN, CONF_AUTO_RECONNECT
 from .pydreo import PyDreo
 
 _LOGGER = logging.getLogger(__name__)
 
-OPTIONS_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_AUTO_RECONNECT): bool
-    }
-)
+OPTIONS_SCHEMA = vol.Schema({vol.Required(CONF_AUTO_RECONNECT): bool})
+
 
 class OptionsFlowHandler(OptionsFlow):
     """Handles options flow for the component.
-    
+
     Note: This class follows Home Assistant 2025.12 best practices:
     - Does not explicitly set self.config_entry (provided by parent class)
     - Access config_entry via self.config_entry property
@@ -30,18 +25,17 @@ class OptionsFlowHandler(OptionsFlow):
 
     async def async_step_init(self, user_input: Dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options for the custom component."""
-        
+
         _LOGGER.debug("async_step_init: Options Flow Step Init")
         if user_input is not None:
             _LOGGER.debug("async_step_init: UserInput is not none")
             return self.async_create_entry(data=user_input)
 
         return self.async_show_form(
-            step_id="init", 
-            data_schema=self.add_suggested_values_to_schema(
-                OPTIONS_SCHEMA, self.config_entry.options
-            ),
+            step_id="init",
+            data_schema=self.add_suggested_values_to_schema(OPTIONS_SCHEMA, self.config_entry.options),
         )
+
 
 class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     """Dreo Custom config flow."""
@@ -92,10 +86,9 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowHandler:
         """Get the options flow for this handler.
-        
+
         Note: Following Home Assistant 2025.12 pattern:
         - Returns OptionsFlowHandler() without passing config_entry
         - config_entry is automatically provided by Home Assistant
         """
         return OptionsFlowHandler()
-

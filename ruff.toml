@@ -1,0 +1,23 @@
+# Ruff configuration for hass-dreo
+# Replaces pylintrc — see https://docs.astral.sh/ruff/
+
+target-version = "py313"
+line-length = 150
+
+exclude = ["testScripts", "ignore"]
+
+[lint]
+# E = pycodestyle errors, F = pyflakes — matches prior pylint errors-only CI
+select = ["E", "F"]
+
+# Ignore rules that the prior pylint errors-only config also ignored:
+# F403/F405: wildcard imports are used intentionally (e.g., from .haimports import *)
+# F401: unused imports — many are re-exports; clean up incrementally
+# F841: unused variables — clean up incrementally
+# F811: redefined-while-unused — clean up incrementally
+# E501: line-too-long — not enforced by prior config at lint level
+ignore = ["F403", "F405", "F401", "F841", "F811", "E501"]
+
+[lint.per-file-ignores]
+# Test files use model names as method names (e.g., test_HAF004S)
+"tests/**" = ["E501"]

@@ -1,4 +1,5 @@
 """Base class for all Dreo devices."""
+
 import threading
 import logging
 from datetime import datetime
@@ -23,8 +24,10 @@ result in only a single API call per device."""
 class UnknownProductError(Exception):
     """Exception thrown when we don't recognize a product of a device."""
 
+
 class UnknownModelError(Exception):
     """Exception thrown when we don't recognize a model of a device."""
+
 
 class PyDreoBaseDevice:
     """Base class for all Dreo devices.
@@ -70,12 +73,7 @@ class PyDreoBaseDevice:
 
     def get_server_update_key_value(self, message: dict, key: str):
         """Helper method to get values from a WebSocket update in a safe way."""
-        if (
-            (message is not None)
-            and (isinstance(message, dict))
-            and (REPORTED_KEY in message)
-            and (isinstance(message[REPORTED_KEY], dict))
-        ):
+        if (message is not None) and (isinstance(message, dict)) and (REPORTED_KEY in message) and (isinstance(message[REPORTED_KEY], dict)):
             reported: dict = message[REPORTED_KEY]
 
             if (reported is not None) and (key in reported):
@@ -85,23 +83,22 @@ class PyDreoBaseDevice:
 
         return None
 
-
     def is_preference_supported(self, preference_type: str, details: dict) -> bool:
         """Check if a preference type is supported."""
         _LOGGER.debug("is_preference_supported: Checking for preference type %s", preference_type)
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
             preferences = controls_conf.get("preference", None)
-            if (preferences is not None):
+            if preferences is not None:
                 for preference in preferences:
                     if preference.get("type", None) == preference_type:
                         _LOGGER.debug("is_preference_supported: Found preference type %s", preference_type)
                         return True
-                    
+
         _LOGGER.debug("is_preference_supported: Preference type %s not found", preference_type)
         return False
-    
-    def get_setting(self, dreo : "PyDreo", setting_name: str, default_value : any) -> any:
+
+    def get_setting(self, dreo: "PyDreo", setting_name: str, default_value: any) -> any:
         """Get the value of a preference."""
         _LOGGER.debug("get_setting: %s", setting_name)
         setting_val = dreo.get_device_setting(self, setting_name)
@@ -111,16 +108,16 @@ class PyDreoBaseDevice:
 
         _LOGGER.debug("get_setting: %s -> %s", setting_name, setting_val)
         return setting_val
-    
+
     def get_mode_string(self, mode_id: str) -> str:
         """Get the mode string from the device definition."""
-        if (mode_id in PRESET_MODE_STRINGS):
+        if mode_id in PRESET_MODE_STRINGS:
             text = PRESET_MODE_STRINGS[mode_id]
         else:
             text = mode_id
 
         return text
-    
+
     def handle_server_update_base(self, message):
         """Initial method called when we get a WebSocket message."""
         _LOGGER.debug("handle_server_update_base: {%s}: got {%s} message **", self.name, message)
@@ -140,18 +137,14 @@ class PyDreoBaseDevice:
 
     def _send_command(self, command_key: str, value):
         """Send a command to the Dreo servers via WebSocket."""
-        _LOGGER.debug(
-            "_send_command: %s-> %s", command_key, value
-        )
+        _LOGGER.debug("_send_command: %s-> %s", command_key, value)
 
         params: dict = {command_key: value}
         self._dreo.send_command(self, params)
 
     def _set_setting(self, setting_key: str, value):
         """Set a setting on the device."""
-        _LOGGER.debug(
-            "_set_setting: %s-> %s", setting_key, value
-        )
+        _LOGGER.debug("_set_setting: %s-> %s", setting_key, value)
         self._dreo.set_device_setting(self, setting_key, value)
 
     def get_state_update_value(self, state: dict, key: str):
@@ -171,7 +164,7 @@ class PyDreoBaseDevice:
 
         _LOGGER.debug("get_state_update_value: State value (%s) not present.  Device: %s", key, self.name)
         return None
-    
+
     def get_state_update_value_mapped(self, state: dict, key: str, mapping: dict):
         """Get a value from the state update in a safe manner, and map it to something."""
         raw_value = self.get_state_update_value(state, key)
@@ -184,7 +177,7 @@ class PyDreoBaseDevice:
         else:
             _LOGGER.debug("get_state_update_value_mapped: State value (%s) not present.  Device: %s", key, self.name)
 
-        return None    
+        return None
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -315,9 +308,7 @@ class PyDreoBaseDevice:
         if hasattr(self, property_name):
             val = getattr(self, property_name)
             if val is not None:
-                _LOGGER.debug(
-                    "is_feature_supported: %s found attribute for %s --> %s", self, property_name, val
-                )
+                _LOGGER.debug("is_feature_supported: %s found attribute for %s --> %s", self, property_name, val)
                 return True
 
         return False

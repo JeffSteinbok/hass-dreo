@@ -15,6 +15,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HTF009S
 - DR-HTF010S
 - DR-HTF018S
+- DR-HTF024S
 
 ### Air Circulators
 
