@@ -246,6 +246,82 @@ class TestPyDreoAirCirculator(TestBase):
             with pytest.raises(ValueError):
                 fan.preset_mode = "invalid_mode_xyz"
 
+    def test_HPF002S(self):  # pylint: disable=invalid-name
+        """Test HPF002S fan."""
+        self.get_devices_file_name = "get_devices_HPF002S.json"
+        self.pydreo_manager.load_devices()
+
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        # Test initial state values
+        assert fan.is_on is False
+        assert fan.speed_range == (1, 8)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+        assert fan.preset_mode == "sleep"  # Initial mode is 3 which is "sleep"
+        assert fan.temperature == 82
+        assert fan.model == "DR-HPF002S"
+        assert fan.device_name is not None
+        assert fan.serial_number is not None
+        assert fan.fan_speed == 1
+
+        # Test power commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+
+        # Test fan speed commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 4
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 4}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 8
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 8})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 8}})
+
+        # Test speed boundaries
+        with pytest.raises(ValueError):
+            fan.fan_speed = 0
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 9
+
+        # Test oscillation commands (HPF002S uses oscmode, initial state is 1/on)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.oscillating = False
+            assert mock_send_command.call_count == 1
+        fan.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 0}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.oscillating = True
+            assert mock_send_command.call_count == 1
+        fan.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 1}})
+
+        # Test preset mode commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "normal"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 1})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 1}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "turbo"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 5})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "custom"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 6})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+
     def test_HPF008S(self):  # pylint: disable=invalid-name
         """Test HPF008S fan."""
         self.get_devices_file_name = "get_devices_HPF008S.json"

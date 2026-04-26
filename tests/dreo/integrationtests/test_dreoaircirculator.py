@@ -439,6 +439,71 @@ class TestDreoAirCirculator(IntegrationTestBase):
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(switches, ["Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
 
+    def test_HPF002S(self):  # pylint: disable=invalid-name
+        """Test HPF002S fan."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+            self.get_devices_file_name = "get_devices_HPF002S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.is_on is False
+            assert ha_fan.speed_count == 8
+            assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
+            assert pydreo_fan.model == "DR-HPF002S"
+            assert pydreo_fan.speed_range == (1, 8)
+
+            # Verify preset modes (auto-detected from controlsConf)
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+            assert pydreo_fan.preset_mode == "sleep"  # Initial mode is 3
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+            assert ha_fan.preset_mode == "sleep"
+
+            # Verify temperature sensor
+            assert pydreo_fan.temperature is not None
+            assert isinstance(pydreo_fan.temperature, (int, float))
+
+            # Test power commands
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+
+            # Test oscillation (HPF002S uses oscmode, initial state is 1/on)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.oscillate(False)
+                mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: 0})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 0}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.oscillate(True)
+                mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: 1})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 1}})
+
+            # Test preset modes (device is off after turn_off, so set_preset_mode also powers on)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                assert mock_send_command.call_count == 2
+                calls = [call[0][1] for call in mock_send_command.call_args_list]
+                assert {POWERON_KEY: True} in calls
+                assert {WIND_MODE_KEY: 5} in calls
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, WIND_MODE_KEY: 5}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("custom")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 6})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+
+            # Check entities
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(switches, ["Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
+
     def test_HPF005S(self):  # pylint: disable=invalid-name
         """Test HPF005S fan with hangleadj support."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:

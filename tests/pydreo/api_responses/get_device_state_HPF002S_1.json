@@ -1,0 +1,121 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -44,
+        "timestamp": 1777076324
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1777076324
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1777076324
+      },
+      "cruiseconf": {
+        "state": "20,10,-10,-20",
+        "timestamp": 1777076324
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1776589737
+        },
+        "timestamp": null
+      },
+      "fixedconf": {
+        "state": "0,0",
+        "timestamp": 1777076324
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1777076324
+      },
+      "mode": {
+        "state": 3,
+        "timestamp": 1777076324
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1777076324
+      },
+      "network_latency": {
+        "state": 69,
+        "timestamp": 1777076324
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1777076324
+      },
+      "mcu_firmware_version": {
+        "state": "0.1.3",
+        "timestamp": 1777076324
+      },
+      "oscmode": {
+        "state": 1,
+        "timestamp": 1777076324
+      },
+      "customconf": {
+        "state": "temp:12222223333334444447777778",
+        "timestamp": 1777076324
+      },
+      "temperature": {
+        "state": 82,
+        "timestamp": 1777127842
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "alignon": {
+        "state": true,
+        "timestamp": 1777076324
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1777076324
+      },
+      "lighton": {
+        "state": false,
+        "timestamp": 1777076324
+      },
+      "wifi_ssid": "**REDACTED**",
+      "mcu_hardware_model": {
+        "state": "SC95F8615B/EU",
+        "timestamp": 1777076324
+      },
+      "windlevel": {
+        "state": 1,
+        "timestamp": 1777076324
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1777076324
+      },
+      "module_firmware_version": {
+        "state": "3.8.4",
+        "timestamp": 1777076324
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1777076324
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1776589737
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 2,
+        "timestamp": 1777076324
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1777076324
+      }
+    },
+    "sn": "HPF002S_1"
+  }
+}
