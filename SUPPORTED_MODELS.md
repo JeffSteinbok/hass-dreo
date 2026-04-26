@@ -31,6 +31,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HPF005S
 - DR-HPF007S
 - DR-HPF008S
+- DR-HPF020S
 - DR-HPF025S
 
 ### Ceiling Fans (DR-HCF Series)
@@ -52,14 +53,13 @@ All DR-HAP models should be supported. Tested models include:
 - DR-HHM001S
 - DR-HHM003S (HM713S/813S)
 - DR-HHM004S
+- DR-HHM006S
 - DR-HHM014S (HM774S)
 - DR-HHM015S (HM755S)
 
 All DR-HHM* models should have basic support.
 
 ## Dehumidifiers (DR-HDH Series)
-
-*Beta-level support*
 
 - DR-HDH001S
 - DR-HDH002S
@@ -95,8 +95,6 @@ All DR-HHM* models should have basic support.
 - DR-KCM001S
 
 ## Evaporative Coolers (DR-HEC Series)
-
-*Beta-level support*
 
 - DR-HEC002S
 
