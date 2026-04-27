@@ -30,7 +30,7 @@ from .pydreoevaporativecooler import PyDreoEvaporativeCooler
 
 _LOGGER = logging.getLogger(__name__)
 
-_COMMAND_ACK_TIMEOUT = 8  # seconds to wait for server to confirm command
+_COMMAND_ACK_TIMEOUT = 2  # seconds to wait for server to confirm command
 _ACK_METHOD_NAME = "control-report"  # wait for device confirmation
 _MAX_COMMAND_RETRIES = 2  # retry failed commands up to this many times
 

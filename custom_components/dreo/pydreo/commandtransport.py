@@ -123,13 +123,21 @@ class CommandTransport:
                     except websockets.exceptions.ConnectionClosed:
                         pass
 
-                    break  # Exit inner loop; outer while handles reconnect with fresh URL
+                    if not self._auto_reconnect:
+                        _LOGGER.error("_start_websocket: WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
+                        self._loop = None
+                        _LOGGER.info("_start_websocket: Transport has been stopped and thread done")
+                        return
+
+                    # Break out of async for to rebuild URL with potentially refreshed token
+                    _LOGGER.info("_start_websocket: Reconnecting with current token")
+                    break
+
             except Exception as ex:  # pylint: disable=broad-except
                 _LOGGER.error("_start_websocket: WebSocket connection failed: %s", ex)
-
-            if not self._auto_reconnect:
-                _LOGGER.error("_start_websocket: WebSocket appears closed.  Not Reconnecting.  Restart HA to reconnect.")
-                break
+                if not self._auto_reconnect or self._signal_close:
+                    break
+                await asyncio.sleep(RETRY_DELAY)
 
         self._loop = None
         _LOGGER.info("_start_websocket: Transport has been stopped and thread done")
