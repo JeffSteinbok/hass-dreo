@@ -4,6 +4,8 @@
 import logging
 from unittest.mock import patch
 from custom_components.dreo import number, sensor
+from custom_components.dreo import dreoairconditioner
+from homeassistant.components.climate import FAN_AUTO, FAN_LOW, FAN_MEDIUM, FAN_HIGH
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
 
@@ -32,6 +34,16 @@ class TestDreoAirConditioner(IntegrationTestBase):
 
             sensors = sensor.get_entries([pydreo_ac])
             self.verify_expected_entities(sensors, ["Humidity", "Target temp reached", "Use since cleaning"])
+
+            # Test fan_modes returns strings (regression test for DreoACFanMode enum bug)
+            ac_ha = dreoairconditioner.DreoAirConditionerHA(pydreo_ac)
+            assert ac_ha.fan_modes is not None
+            for mode in ac_ha.fan_modes:
+                assert isinstance(mode, str), f"fan_modes must contain strings, got {type(mode)}: {mode!r}"
+            assert FAN_AUTO in ac_ha.fan_modes
+            assert FAN_LOW in ac_ha.fan_modes
+            assert FAN_MEDIUM in ac_ha.fan_modes
+            assert FAN_HIGH in ac_ha.fan_modes
 
     def test_HAC006S(self):  # pylint: disable=invalid-name
         """Load air conditioner and test sending commands."""

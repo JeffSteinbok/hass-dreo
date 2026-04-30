@@ -140,7 +140,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
         # Map device fan modes to HA fan mode strings
         if self.device.device_definition.fan_modes:
-            self._attr_fan_modes = self.device.device_definition.fan_modes
+            self._attr_fan_modes = [DREO_FAN_MODE_TO_HA[mode] for mode in self.device.device_definition.fan_modes if mode in DREO_FAN_MODE_TO_HA]
         else:
             self._attr_fan_modes = [FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO]
 

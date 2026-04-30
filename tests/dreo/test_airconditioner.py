@@ -204,6 +204,26 @@ class TestDreoAirConditionerHA(TestDeviceBase):
             ac.turn_off()
             assert device.poweron is False
 
+    def test_ac_fan_modes_are_strings(self):
+        """Test that fan_modes list contains strings, not DreoACFanMode enums.
+
+        Regression test for: TypeError: sequence item 0: expected str instance,
+        DreoACFanMode found - caused by assigning raw enum values to _attr_fan_modes.
+        """
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self._create_ac_device()
+            # Simulate device definition with DreoACFanMode enum values (as stored in models.py)
+            device.device_definition.fan_modes = [DreoACFanMode.AUTO, DreoACFanMode.LOW, DreoACFanMode.MEDIUM, DreoACFanMode.HIGH]
+            ac = DreoAirConditionerHA(device)
+
+            assert ac.fan_modes is not None
+            for mode in ac.fan_modes:
+                assert isinstance(mode, str), f"fan_modes must contain strings, got {type(mode)}: {mode!r}"
+            assert FAN_AUTO in ac.fan_modes
+            assert FAN_LOW in ac.fan_modes
+            assert FAN_MEDIUM in ac.fan_modes
+            assert FAN_HIGH in ac.fan_modes
+
     def test_ac_fan_mode_property(self):
         """Test fan_mode property."""
         with patch(PATCH_UPDATE_HA_STATE):
