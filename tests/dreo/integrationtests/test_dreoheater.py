@@ -106,6 +106,10 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.hvac_mode == HVACMode.HEAT
             assert heater_ha.unique_id is not None
 
+            # Verify ecolevel range uses the correct 41-95°F range (not the old 41-85°F)
+            assert heater_ha.max_temp == 95
+            assert heater_ha.min_temp == 41
+
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, [])
 
@@ -120,10 +124,39 @@ class TestDreoHeater(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_hvac_mode(HVACMode.OFF)
                 mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: False})
+                # Turning off must NOT send a mode="off" command - "off" is not a real
+                # device mode and causes state sync problems when powering back on.
+                for call_args in mock_send_command.call_args_list:
+                    params = call_args[0][1]
+                    assert not (MODE_KEY in params and params[MODE_KEY] == "off"), (
+                        "set_hvac_mode(OFF) must not send {mode: 'off'} to the device"
+                    )
 
+            # Simulate server ACK: only poweron=false, no mode (common real-world pattern).
+            # hvac_mode must be OFF.
+            pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+            assert heater_ha.hvac_mode == HVACMode.OFF
+
+            # Simulate server turning the device back on with only poweron=true and no mode.
+            # This is the key automation bug scenario: if the ACK for the turn-on command
+            # doesn't include the mode, hvac_mode must still correctly show HEAT (not OFF).
             pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
-            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "eco"}})
-            assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert heater_ha.hvac_mode == HVACMode.HEAT, (
+                "hvac_mode must be HEAT when device is on, even if the WebSocket "
+                "power-on update does not include the mode"
+            )
+
+            # Simulate server sending an empty mode string (happens when heater is off).
+            # The last known active mode must be preserved.
+            pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: ""}})
+            assert heater_ha.hvac_mode == HVACMode.OFF
+            # Powering back on - hvac_mode must still be HEAT (not OFF).
+            pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+            assert heater_ha.hvac_mode == HVACMode.HEAT, (
+                "hvac_mode must be HEAT after power-on even when the server sent an "
+                "empty mode string while the device was off"
+            )
 
     def test_HSH034S(self):  # pylint: disable=invalid-name
         """Load heater and test sending commands."""

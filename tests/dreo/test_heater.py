@@ -63,9 +63,15 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert test_heater.current_temperature == 75
         assert test_heater.hvac_mode == HVACMode.HEAT
 
-        # Test HVAC mode changes
+        # Test HVAC mode changes: turning off must NOT change the mode to "off".
+        # The last known active mode is preserved so that when the device powers
+        # back on, hvac_mode can correctly reflect the active mode.
         test_heater.set_hvac_mode(HVACMode.OFF)
-        assert mocked_pydreo_heater.mode == DreoHeaterMode.OFF
+        assert mocked_pydreo_heater.poweron is False
+        assert mocked_pydreo_heater.mode != DreoHeaterMode.OFF, (
+            "set_hvac_mode(OFF) must not set mode to 'off'; "
+            "the last known active mode must be preserved"
+        )
 
         test_heater.set_hvac_mode(HVACMode.HEAT)
         assert mocked_pydreo_heater.mode == DreoHeaterMode.HOTAIR

@@ -383,17 +383,20 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_power_on = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_power_on, bool):
             self._is_on = val_power_on
-            if not self._is_on:
-                self._mode = DreoHeaterMode.OFF
+            # Do NOT reset _mode to OFF here. The hvac_mode property already returns
+            # HVACMode.OFF when _is_on is False, regardless of _mode. Resetting _mode
+            # to OFF causes hvac_mode to show OFF after the device powers on if the
+            # power-on WebSocket ACK doesn't include the mode (a common occurrence).
 
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):
             self._temperature = val_temperature
 
-        # Reported mode can be an empty string if the heater is off. Deal with that by
-        # explicitly setting that to off.
+        # Reported mode can be an empty string if the heater is off. Ignore empty
+        # mode strings to preserve the last known active mode so that hvac_mode
+        # correctly reflects the device state when it powers back on.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
-        if isinstance(val_mode, str):
+        if isinstance(val_mode, str) and val_mode:
             self._mode = val_mode if val_mode in self.device_definition.modes else DreoHeaterMode.OFF
 
         val_oscon = self.get_server_update_key_value(message, OSCON_KEY)

@@ -240,11 +240,9 @@ SUPPORTED_DEVICES = {
         device_ranges={ECOLEVEL_RANGE: (41, 85)},
     ),
     "DR-HSH003S": DreoHeaterDeviceDetails(
-        device_ranges={ECOLEVEL_RANGE: (41, 85)},
         swing_modes=[SWING_OFF, SWING_ON],
     ),
     "DR-HSH004S": DreoHeaterDeviceDetails(
-        device_ranges={ECOLEVEL_RANGE: (41, 85)},
         swing_modes=[SWING_OFF, SWING_ON],
     ),
     "DR-HSH006S": DreoHeaterDeviceDetails(

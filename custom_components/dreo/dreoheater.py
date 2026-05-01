@@ -335,7 +335,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         # Unsure if both of these are needed to be honest.
         if hvac_mode == HVACMode.OFF:
             self.device.poweron = False
-            self.device.mode = DreoHeaterMode.OFF
+            # Don't send mode="off" - "off" is not a real device mode and sending it
+            # can introduce state-sync issues when the device powers back on.
             self._attr_hvac_mode = HVACMode.OFF
         else:
             # Map HVAC mode to Dreo mode

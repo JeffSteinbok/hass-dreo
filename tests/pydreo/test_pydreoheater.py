@@ -383,8 +383,14 @@ class TestPyDreoHeater(TestBase):
             heater.lighton = True
             mock_send_command.assert_not_called()
 
-    def test_HSH009S_poweron_mode_off(self):  # pylint: disable=invalid-name
-        """Test that poweron=False sets mode to OFF."""
+    def test_HSH009S_poweron_mode_preserved_on_poweroff(self):  # pylint: disable=invalid-name
+        """Test that a poweron=False WebSocket update does NOT reset the mode.
+
+        The hvac_mode property already returns HVACMode.OFF when the device is
+        powered off, regardless of the stored mode value.  Resetting _mode to OFF
+        on every power-off event caused hvac_mode to show OFF even after the
+        device powered back on, when the power-on ACK didn't include the mode.
+        """
         self.get_devices_file_name = "get_devices_HSH009S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
@@ -393,7 +399,12 @@ class TestPyDreoHeater(TestBase):
         heater._mode = DreoHeaterMode.HOTAIR
         heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
         assert heater.poweron is False
-        assert heater.mode == DreoHeaterMode.OFF
+        # Mode must NOT be reset to OFF — it must keep the last active mode so
+        # that hvac_mode correctly shows HEAT when the device powers back on.
+        assert heater.mode == DreoHeaterMode.HOTAIR, (
+            "handle_server_update with poweron=False must preserve the last "
+            "active mode instead of resetting it to 'off'"
+        )
 
     def test_HSH009S_htalevel_range_validation(self):  # pylint: disable=invalid-name
         """Test that htalevel rejects values outside the valid range."""
