@@ -398,3 +398,99 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.poweron is True, "Heater should be on when PTC is on"
             assert heater_ha.is_on is True, "HA entity should show heater as on"
             assert heater_ha.hvac_mode != HVACMode.OFF, "HVAC mode should not be OFF when PTC is on"
+
+    def test_HSH010S(self):  # pylint: disable=invalid-name
+        """Load DR-HSH010S oil panel heater and test HA entity."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH010S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.type == "Heater"
+            assert pydreo_heater.model == "DR-HSH010S"
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.unique_id is not None
+            assert heater_ha.name is not None
+            assert heater_ha.hvac_mode in [HVACMode.HEAT, HVACMode.FAN_ONLY, HVACMode.OFF]
+
+            # HSH010S has no swing modes
+            from homeassistant.components.climate import ClimateEntityFeature
+            assert not (heater_ha.supported_features & ClimateEntityFeature.SWING_MODE)
+
+            # Test HVAC mode changes
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.OFF)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: False})
+
+            # Test preset modes (H1, H2, H3)
+            assert "H1" in heater_ha.preset_modes
+            assert "H2" in heater_ha.preset_modes
+            assert "H3" in heater_ha.preset_modes
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H1")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 1})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 1}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H3")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 3})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 3}})
+
+            numbers = number.get_entries([pydreo_heater])
+            self.verify_expected_entities(numbers, [])
+
+            sensors = sensor.get_entries([pydreo_heater])
+            self.verify_expected_entities(sensors, [])
+
+    def test_HSH011S(self):  # pylint: disable=invalid-name
+        """Load DR-HSH011S (OH521S) oil radiator heater and test HA entity."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH011S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.type == "Heater"
+            assert pydreo_heater.model == "DR-HSH011S"
+            assert pydreo_heater.series_name == "OH521S"
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.unique_id is not None
+            assert heater_ha.name is not None
+            assert heater_ha.hvac_mode in [HVACMode.HEAT, HVACMode.FAN_ONLY, HVACMode.OFF]
+
+            # HSH011S has no swing modes
+            from homeassistant.components.climate import ClimateEntityFeature
+            assert not (heater_ha.supported_features & ClimateEntityFeature.SWING_MODE)
+
+            # Test HVAC mode changes
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.OFF)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: False})
+
+            # Test preset modes (H1, H2, H3)
+            assert "H1" in heater_ha.preset_modes
+            assert "H2" in heater_ha.preset_modes
+            assert "H3" in heater_ha.preset_modes
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H1")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 1})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 1}})
+
+            numbers = number.get_entries([pydreo_heater])
+            self.verify_expected_entities(numbers, [])
+
+            sensors = sensor.get_entries([pydreo_heater])
+            self.verify_expected_entities(sensors, [])

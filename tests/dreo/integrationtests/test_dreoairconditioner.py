@@ -60,3 +60,22 @@ class TestDreoAirConditioner(IntegrationTestBase):
 
             sensors = sensor.get_entries([pydreo_ac])
             self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning", "Target temp reached"])
+
+            # Test climate entity - fan_modes must be strings (regression for DreoACFanMode enum bug)
+            ac_ha = dreoairconditioner.DreoAirConditionerHA(pydreo_ac)
+            assert ac_ha.fan_modes is not None
+            for mode in ac_ha.fan_modes:
+                assert isinstance(mode, str), f"fan_modes must contain strings, got {type(mode)}: {mode!r}"
+            assert FAN_AUTO in ac_ha.fan_modes
+            assert FAN_LOW in ac_ha.fan_modes
+            assert FAN_MEDIUM in ac_ha.fan_modes
+            assert FAN_HIGH in ac_ha.fan_modes
+
+            # Test set_fan_mode round-trip
+            from custom_components.dreo.pydreo.constant import DreoACFanMode
+            from .integrationtestbase import PATCH_SEND_COMMAND
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac_ha.set_fan_mode(FAN_LOW)
+                mock_send_command.assert_called_once_with(pydreo_ac, {WINDLEVEL_KEY: DreoACFanMode.LOW})
+            pydreo_ac.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: DreoACFanMode.LOW}})
+            assert ac_ha.fan_mode == FAN_LOW
