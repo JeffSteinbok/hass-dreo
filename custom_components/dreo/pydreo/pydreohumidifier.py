@@ -49,7 +49,7 @@ RGB_MAP = {}
 LEDLEVEL_MAP = {0: LIGHT_OFF, 2: LIGHT_ON, LIGHT_OFF: 0, LIGHT_ON: 2}
 
 # Status for mode indicator
-MODE_MANUAL = "manual"
+MODE_NORMAL = "normal"
 MODE_AUTO = "auto"
 MODE_SLEEP = "sleep"
 

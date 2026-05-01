@@ -232,7 +232,7 @@ PRESET_MODE_STRINGS = {
     "base_reverse": "reverse",
     "device_control_custom": "custom",
     "fan_2in1_breeze": "2-in-1 Breeze Mode",
-    "device_control_mode_manual": "manual",
+    "device_control_mode_manual": "normal",
     "device_heater_mode_heat": "Heat",
     "device_heater_mode_eco": "Eco",
     "device_heater_mode_fan_only": "Cool Air",

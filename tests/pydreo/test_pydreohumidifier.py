@@ -20,7 +20,7 @@ class TestPyDreoHumidifier(TestBase):
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
         humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
-        assert humidifier.modes == ["manual", "auto", "sleep"]
+        assert humidifier.modes == ["normal", "auto", "sleep"]
         assert humidifier.is_feature_supported("is_on") is True
         assert humidifier.is_feature_supported("humidity") is True
         assert humidifier.is_feature_supported("target_humidity") is True
@@ -28,7 +28,7 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.target_humidity == 60
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            humidifier.mode = "manual"
+            humidifier.mode = "normal"
             mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 0})
         humidifier.handle_server_update({REPORTED_KEY: {MODE_KEY: 0}})
 
@@ -73,7 +73,7 @@ class TestPyDreoHumidifier(TestBase):
         humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
         assert humidifier.model == "DR-HHM003S"
         assert humidifier.series_name == "HM713S/813S"
-        assert humidifier.modes == ["manual", "auto", "sleep"]
+        assert humidifier.modes == ["normal", "auto", "sleep"]
         assert humidifier.is_feature_supported("is_on") is True
         assert humidifier.is_feature_supported("humidity") is True
         assert humidifier.is_feature_supported("target_humidity") is True
@@ -83,7 +83,7 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.worktime == 10
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            humidifier.mode = "manual"
+            humidifier.mode = "normal"
             mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 0})
         humidifier.handle_server_update({REPORTED_KEY: {MODE_KEY: 0}})
 
@@ -96,7 +96,7 @@ class TestPyDreoHumidifier(TestBase):
         humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
         assert humidifier.model == "DR-HHM014S"
         assert humidifier.series_name == "HM774S"
-        assert humidifier.modes == ["manual", "auto", "sleep"]
+        assert humidifier.modes == ["normal", "auto", "sleep"]
         assert humidifier.is_feature_supported("is_on") is True
         assert humidifier.is_feature_supported("humidity") is True
         assert humidifier.is_feature_supported("target_humidity") is True
@@ -105,7 +105,7 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.mode == "auto"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            humidifier.mode = "manual"
+            humidifier.mode = "normal"
             mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 0})
         humidifier.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
         assert humidifier.mode == "sleep"
@@ -330,7 +330,7 @@ class TestPyDreoHumidifier(TestBase):
         # Set mode via websocket first
         humidifier.handle_server_update({REPORTED_KEY: {MODE_KEY: 0}})
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            humidifier.mode = "manual"  # value 0, same as current
+            humidifier.mode = "normal"  # value 0, same as current
             mock_send_command.assert_not_called()
 
     def test_mode_setter_raises_for_invalid(self):
@@ -351,7 +351,7 @@ class TestPyDreoHumidifier(TestBase):
         import pytest
 
         with pytest.raises(NotImplementedError, match="doesn't support modes"):
-            humidifier.mode = "manual"
+            humidifier.mode = "normal"
 
     # --- wrong property ---
 

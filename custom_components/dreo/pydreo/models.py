@@ -325,7 +325,7 @@ SUPPORTED_DEVICES = {
     "DR-HHM014S": DreoDeviceDetails(
         device_type=DreoDeviceType.HUMIDIFIER,
         preset_modes=[
-            ("manual", 0),
+            ("normal", 0),
             ("auto", 1),
             ("sleep", 2),
         ],
@@ -334,14 +334,14 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.HUMIDIFIER,
         preset_modes=[
             ("auto", 1),
-            ("manual", 0),
+            ("normal", 0),
             ("sleep", 2),
         ],
     ),
     "DR-HHM006S": DreoDeviceDetails(
         device_type=DreoDeviceType.HUMIDIFIER,
         preset_modes=[
-            ("manual", 0),
+            ("normal", 0),
             ("auto", 1),
             ("sleep", 2),
         ],

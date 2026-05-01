@@ -38,12 +38,12 @@ class TestDreoHumidifier(TestDeviceBase):
             mocked_pydreo_humidifier: PyDreoDeviceMock = self.create_mock_device(
                 name="Test Humidifier",
                 serial_number="123456",
-                features={"is_on": True, "mode": "sleep", "modes": ["manual", "auto", "sleep"], "humidity": 55, "target_humidity": 60},
+                features={"is_on": True, "mode": "sleep", "modes": ["normal", "auto", "sleep"], "humidity": 55, "target_humidity": 60},
             )
 
         test_humidifier = humidifier.DreoHumidifierHA(mocked_pydreo_humidifier)
         assert test_humidifier.is_on is True
-        assert test_humidifier.available_modes == ["manual", "auto", "sleep"]
+        assert test_humidifier.available_modes == ["normal", "auto", "sleep"]
         assert test_humidifier.mode == "sleep"
         assert test_humidifier.name == "Test Humidifier"
         assert test_humidifier.unique_id is not None  # Unique ID format varies by implementation
@@ -52,8 +52,8 @@ class TestDreoHumidifier(TestDeviceBase):
         test_humidifier.set_mode("auto")
         assert mocked_pydreo_humidifier.mode == "auto"
 
-        test_humidifier.set_mode("manual")
-        assert mocked_pydreo_humidifier.mode == "manual"
+        test_humidifier.set_mode("normal")
+        assert mocked_pydreo_humidifier.mode == "normal"
 
         test_humidifier.set_mode("sleep")
         assert mocked_pydreo_humidifier.mode == "sleep"

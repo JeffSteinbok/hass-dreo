@@ -34,7 +34,7 @@ from .pydreo.pydreochefmaker import (
 
 from .pydreo.pydreohumidifier import (
     WORKTIME_KEY,
-    MODE_MANUAL,
+    MODE_NORMAL,
     MODE_AUTO,
     MODE_SLEEP,
     LIGHT_ON,
