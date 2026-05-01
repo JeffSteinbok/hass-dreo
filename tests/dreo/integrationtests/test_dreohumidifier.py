@@ -69,6 +69,8 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert pydreo_humidifier.model == "DR-HHM014S"
             assert pydreo_humidifier.series_name == "HM774S"
 
+            assert pydreo_humidifier.modes == ["manual", "auto", "sleep"]
+
             ha_humidifier = humidifier.DreoHumidifierHA(pydreo_humidifier)
             assert ha_humidifier.is_on is True
             assert ha_humidifier.current_humidity == 52
@@ -76,11 +78,9 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert ha_humidifier.unique_id is not None
             assert ha_humidifier.name is not None
 
-            # Test mode if available
-            if ha_humidifier.available_modes:
-                assert len(ha_humidifier.available_modes) > 0
-                current_mode = ha_humidifier.mode
-                assert current_mode is not None or current_mode in ha_humidifier.available_modes
+            # Test mode support - HHM014S supports Manual, Auto, Sleep modes
+            assert ha_humidifier.available_modes == ["manual", "auto", "sleep"]
+            assert ha_humidifier.mode == "auto"
 
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])

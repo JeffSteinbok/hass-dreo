@@ -87,6 +87,31 @@ class TestPyDreoHumidifier(TestBase):
             mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 0})
         humidifier.handle_server_update({REPORTED_KEY: {MODE_KEY: 0}})
 
+    def test_HHM014S(self):  # pylint: disable=invalid-name
+        """Load HHM014S (HM774S) and test mode properties."""
+
+        self.get_devices_file_name = "get_devices_HHM014S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        assert humidifier.model == "DR-HHM014S"
+        assert humidifier.series_name == "HM774S"
+        assert humidifier.modes == ["manual", "auto", "sleep"]
+        assert humidifier.is_feature_supported("is_on") is True
+        assert humidifier.is_feature_supported("humidity") is True
+        assert humidifier.is_feature_supported("target_humidity") is True
+        assert humidifier.humidity == 52
+        assert humidifier.target_humidity == 55
+        assert humidifier.mode == "auto"
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.mode = "manual"
+            mock_send_command.assert_called_once_with(humidifier, {MODE_KEY: 0})
+        humidifier.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+        assert humidifier.mode == "sleep"
+
+
+
     def test_HHM003S_websocket_updates(self):  # pylint: disable=invalid-name
         """Test that humidity values are updated from websocket messages for HHM003S."""
         self.get_devices_file_name = "get_devices_HHM003S.json"
