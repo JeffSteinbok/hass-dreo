@@ -5,7 +5,11 @@
         "title": "Inserisci username e password Dreo",
         "data": {
           "username": "Indirizzo email",
-          "password": "Password"
+          "password": "Password",
+          "region": "Regione"
+        },
+        "data_description": {
+          "region": "Seleziona la regione cloud di Dreo per il tuo account. Il rilevamento automatico funziona per la maggior parte degli utenti."
         }
       }
     },

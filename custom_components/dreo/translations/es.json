@@ -5,7 +5,11 @@
         "title": "Introduce las credenciales de tu cuenta Dreo",
         "data": {
           "username": "Correo electrónico",
-          "password": "Contraseña"
+          "password": "Contraseña",
+          "region": "Región"
+        },
+        "data_description": {
+          "region": "Selecciona la región de la nube de Dreo para tu cuenta. La detección automática funciona para la mayoría de usuarios."
         }
       }
     },

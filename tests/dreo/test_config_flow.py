@@ -18,12 +18,13 @@ class TestDreoFlowHandler:
         assert flow._username is None
         assert flow._password is None
         assert isinstance(flow.data_schema, OrderedDict)
-        assert len(flow.data_schema) == 2
+        assert len(flow.data_schema) == 3
 
-        # Check that username and password fields are in the schema
+        # Check that username, password, and region fields are in the schema
         keys = list(flow.data_schema.keys())
         assert any("username" in str(key) for key in keys)
         assert any("password" in str(key) for key in keys)
+        assert any("region" in str(key) for key in keys)
 
     def test_show_form_no_errors(self):
         """Test _show_form with no errors returns form with empty errors dict."""
@@ -99,13 +100,41 @@ class TestDreoFlowHandler:
         assert flow._password == "testpass123"
 
         # Verify PyDreo was instantiated correctly
-        mock_pydreo.assert_called_once_with("test@example.com", "testpass123", "us")
+        mock_pydreo.assert_called_once_with("test@example.com", "testpass123", region=None)
 
         # Verify login was called
         mock_hass.async_add_executor_job.assert_called_once_with(mock_manager.login)
 
         # Verify entry was created
-        flow.async_create_entry.assert_called_once_with(title="test@example.com", data={"username": "test@example.com", "password": "testpass123"})
+        flow.async_create_entry.assert_called_once_with(
+            title="test@example.com",
+            data={"username": "test@example.com", "password": "testpass123", "region": "auto"},
+        )
+
+    def test_async_step_user_login_success_with_eu_region(self):
+        """Test async_step_user stores and passes an explicit EU region."""
+        flow = DreoFlowHandler()
+        flow._async_current_entries = MagicMock(return_value=[])
+        flow.async_create_entry = MagicMock(return_value="entry_result")
+
+        mock_hass = MagicMock()
+        mock_hass.async_add_executor_job = AsyncMock(return_value=True)
+        flow.hass = mock_hass
+
+        user_input = {"username": "test@example.com", "password": "testpass123", "region": "EU"}
+
+        with patch("custom_components.dreo.config_flow.PyDreo") as mock_pydreo:
+            mock_manager = MagicMock()
+            mock_pydreo.return_value = mock_manager
+
+            result = asyncio.run(flow.async_step_user(user_input=user_input))
+
+        assert result == "entry_result"
+        mock_pydreo.assert_called_once_with("test@example.com", "testpass123", region="EU")
+        flow.async_create_entry.assert_called_once_with(
+            title="test@example.com",
+            data={"username": "test@example.com", "password": "testpass123", "region": "EU"},
+        )
 
     def test_async_step_user_login_failure(self):
         """Test async_step_user with failed login shows form with invalid_auth error."""
@@ -130,7 +159,7 @@ class TestDreoFlowHandler:
         assert flow._password == "wrongpassword"
 
         # Verify PyDreo was instantiated
-        mock_pydreo.assert_called_once_with("test@example.com", "wrongpassword", "us")
+        mock_pydreo.assert_called_once_with("test@example.com", "wrongpassword", region=None)
 
         # Verify login was attempted
         mock_hass.async_add_executor_job.assert_called_once_with(mock_manager.login)

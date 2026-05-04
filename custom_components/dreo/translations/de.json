@@ -5,7 +5,11 @@
         "title": "Dreo-Kontodaten eingeben",
         "data": {
           "username": "E-Mail-Adresse",
-          "password": "Passwort"
+          "password": "Passwort",
+          "region": "Region"
+        },
+        "data_description": {
+          "region": "Wählen Sie die Dreo-Cloud-Region für Ihr Konto. Automatische Erkennung funktioniert für die meisten Benutzer."
         }
       }
     },
