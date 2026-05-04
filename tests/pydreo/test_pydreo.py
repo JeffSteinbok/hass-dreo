@@ -31,6 +31,32 @@ class TestPyDreoApiServerRegion:
             _ = pydreo.api_server_region
 
 
+class TestPyDreoAuthRegionInit:
+    """Test auth region initialization."""
+
+    def test_region_default_is_na(self):
+        """Test missing region defaults to NA."""
+        pydreo = PyDreo("user", "pass")
+        assert pydreo.auth_region == DREO_AUTH_REGION_NA
+
+    def test_region_explicit_eu(self):
+        """Test explicit EU region is used."""
+        pydreo = PyDreo("user", "pass", region=DREO_AUTH_REGION_EU)
+        assert pydreo.auth_region == DREO_AUTH_REGION_EU
+
+    def test_region_invalid_falls_back_to_na(self, caplog):
+        """Test invalid region falls back to NA."""
+        caplog.set_level(logging.WARNING)
+        pydreo = PyDreo("user", "pass", region="ZZ")
+        assert pydreo.auth_region == DREO_AUTH_REGION_NA
+        assert "Invalid auth region ZZ" in caplog.text
+
+    def test_region_none_uses_default(self):
+        """Test None region defaults to NA."""
+        pydreo = PyDreo("user", "pass", region=None)
+        assert pydreo.auth_region == DREO_AUTH_REGION_NA
+
+
 class TestPyDreoRedact:
     """Test redact property setter."""
 

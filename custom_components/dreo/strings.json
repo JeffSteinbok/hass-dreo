@@ -5,7 +5,11 @@
           "title": "Enter Dreo Username and Password",
           "data": {
             "username": "[%key:common::config_flow::data::email%]",
-            "password": "[%key:common::config_flow::data::password%]"
+            "password": "[%key:common::config_flow::data::password%]",
+            "region": "Region"
+          },
+          "data_description": {
+            "region": "Pick the Dreo cloud region for your account. Auto-detect works for most users."
           }
         }
       },

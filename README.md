@@ -112,6 +112,7 @@ Copy the `dreo` directory into your `/config/custom_components` directory, then 
 3. Click `Add integration` (blue button at the bottom right of the screen)
 4. Search `Dreo` and select it
 5. Enter your `Dreo` username & password (same login you use on the Dreo app)
+6. If your Dreo account is registered in Europe, pick **Europe** from the Region dropdown. Most users can leave this on **Auto-detect**.
 
 Once the Dreo app has been installed,
 

@@ -20,7 +20,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         _LOGGER.debug("async_setup_entry: auto_reconnect is None.  Default to True")
         auto_reconnect = True
 
-    region = "us"
+    region = config_entry.data.get(CONF_REGION)
+    if region == "auto":
+        region = None
 
     from .pydreo import PyDreo  # pylint: disable=C0415
     from .pydreo.constant import DreoDeviceType  # pylint: disable=C0415
@@ -35,7 +37,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
             return False
         pydreo_manager = PyDreo("TEST_EMAIL", "TEST_PASSWORD", redact=True, debug_test_mode=True, debug_test_mode_payload=debug__test_mode_payload)
     else:
-        pydreo_manager = PyDreo(username, password, region)
+        pydreo_manager = PyDreo(username, password, region=region)
         pydreo_manager.auto_reconnect = auto_reconnect
 
     login = await hass.async_add_executor_job(pydreo_manager.login)

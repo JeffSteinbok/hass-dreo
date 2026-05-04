@@ -4,12 +4,20 @@ import logging
 from typing import Any, Dict
 from collections import OrderedDict
 import voluptuous as vol
+from homeassistant.helpers import selector
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .const import DOMAIN, CONF_AUTO_RECONNECT
 from .pydreo import PyDreo
 
 _LOGGER = logging.getLogger(__name__)
+
+CONF_REGION_AUTO = "auto"
+REGION_OPTIONS = [
+    {"value": CONF_REGION_AUTO, "label": "Auto-detect"},
+    {"value": "NA", "label": "North America"},
+    {"value": "EU", "label": "Europe"},
+]
 
 OPTIONS_SCHEMA = vol.Schema({vol.Required(CONF_AUTO_RECONNECT): bool})
 
@@ -51,6 +59,12 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         self.data_schema = OrderedDict()
         self.data_schema[vol.Required(CONF_USERNAME)] = str
         self.data_schema[vol.Required(CONF_PASSWORD)] = str
+        self.data_schema[vol.Optional(CONF_REGION, default=CONF_REGION_AUTO)] = selector.SelectSelector(
+            selector.SelectSelectorConfig(
+                options=REGION_OPTIONS,
+                mode=selector.SelectSelectorMode.DROPDOWN,
+            )
+        )
 
     @callback
     def _show_form(self, errors=None):
@@ -71,15 +85,17 @@ class DreoFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         self._username = user_input[CONF_USERNAME]
         self._password = user_input[CONF_PASSWORD]
+        region = user_input.get(CONF_REGION, CONF_REGION_AUTO)
+        normalized_region = None if region == CONF_REGION_AUTO else region
 
-        pydreo_manager = PyDreo(self._username, self._password, "us")
+        pydreo_manager = PyDreo(self._username, self._password, region=normalized_region)
         login = await self.hass.async_add_executor_job(pydreo_manager.login)
         if not login:
             return self._show_form(errors={"base": "invalid_auth"})
 
         return self.async_create_entry(
             title=self._username,
-            data={CONF_USERNAME: self._username, CONF_PASSWORD: self._password},
+            data={CONF_USERNAME: self._username, CONF_PASSWORD: self._password, CONF_REGION: region},
         )
 
     @staticmethod

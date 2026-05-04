@@ -51,11 +51,25 @@ _DREO_DEVICE_TYPE_TO_CLASS = {
 class PyDreo:  # pylint: disable=function-redefined
     """Dreo API functions."""
 
-    def __init__(self, username, password, redact=True, debug_test_mode=False, debug_test_mode_payload=None, token=None) -> None:
+    def __init__(
+        self,
+        username,
+        password,
+        redact=True,
+        debug_test_mode=False,
+        debug_test_mode_payload=None,
+        token=None,
+        region: str | None = None,
+    ) -> None:
         """Initialize Dreo class with username, password and time zone."""
         self._transport = CommandTransport(self._transport_consume_message)
 
-        self.auth_region = DREO_AUTH_REGION_NA  # Will get the region from the auth call
+        if region in (DREO_AUTH_REGION_NA, DREO_AUTH_REGION_EU):
+            self.auth_region = region
+        else:
+            self.auth_region = DREO_AUTH_REGION_NA
+            if region not in (None, "auto"):
+                _LOGGER.warning("__init__: Invalid auth region %s. Defaulting to %s", region, DREO_AUTH_REGION_NA)
 
         self._redact = redact
         if redact:
