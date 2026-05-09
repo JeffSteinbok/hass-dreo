@@ -657,6 +657,11 @@ class TestDreoHeaterHA(TestDeviceBase):
         mock, heater = self._create_full_heater(features_override={"oscmode": 0})
         assert heater.supported_features & ClimateEntityFeature.SWING_MODE
 
+    def test_supported_features_swing_mode_via_oscangle(self):
+        """Test supported_features includes SWING_MODE when oscangle is set (e.g. DR-HSH009S)."""
+        mock, heater = self._create_full_heater(features_override={"oscon": None, "oscmode": None, "oscangle": 60})
+        assert heater.supported_features & ClimateEntityFeature.SWING_MODE
+
     def test_set_temperature_no_temp_key(self):
         """Test set_temperature with no ATTR_TEMPERATURE key does nothing."""
         mock, heater = self._create_full_heater()
