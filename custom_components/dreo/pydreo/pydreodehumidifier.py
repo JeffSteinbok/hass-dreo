@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 # Dehumidifier-specific constants
 RHAUTOLEVEL_KEY = "rhautolevel"
 AUTOON_KEY = "autoon"
+# The Dreo API uses "wrong" as the key name for the water tank status indicator.
+# A value of 0 means the tank is OK; 1 means the tank is full and needs emptying.
 WATER_LEVEL_STATUS_KEY = "wrong"
 
 # Status for water level / water tank indicator
