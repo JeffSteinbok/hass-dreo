@@ -16,6 +16,13 @@ if TYPE_CHECKING:
 # Dehumidifier-specific constants
 RHAUTOLEVEL_KEY = "rhautolevel"
 AUTOON_KEY = "autoon"
+WATER_LEVEL_STATUS_KEY = "wrong"
+
+# Status for water level / water tank indicator
+WATER_LEVEL_OK = "Ok"
+WATER_LEVEL_EMPTY = "Empty"
+
+WATER_LEVEL_STATUS_MAP = {0: WATER_LEVEL_OK, 1: WATER_LEVEL_EMPTY, WATER_LEVEL_OK: 0, WATER_LEVEL_EMPTY: 1}
 
 
 class PyDreoDehumidifier(PyDreoBaseDevice):
@@ -36,6 +43,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         self._light_on = None
         self._auto_on = None
         self._temperature = None
+        self._wrong = None
 
         self._speed_range = device_definition.device_ranges.get(SPEED_RANGE, (1, 3)) if device_definition.device_ranges else (1, 3)
 
@@ -206,6 +214,16 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         return self._temperature
 
     @property
+    def wrong(self):
+        """Return the raw water level status value."""
+        return self._wrong
+
+    @property
+    def water_level(self) -> str | None:
+        """Return the water level status as a human-readable string."""
+        return self._wrong
+
+    @property
     def mode(self):
         """Return the current operating mode."""
         for mode_name, mode_value in self._modes:
@@ -245,6 +263,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
         self._auto_on = self.get_state_update_value(state, AUTOON_KEY)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
+        wrong_raw = self.get_state_update_value(state, WATER_LEVEL_STATUS_KEY)
+        if wrong_raw is not None:
+            self._wrong = WATER_LEVEL_STATUS_MAP.get(wrong_raw, None)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -290,3 +311,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, (int, float)):
             self._temperature = val_temperature
+
+        val_wrong = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
+        if isinstance(val_wrong, int):
+            self._wrong = WATER_LEVEL_STATUS_MAP.get(val_wrong, None)
