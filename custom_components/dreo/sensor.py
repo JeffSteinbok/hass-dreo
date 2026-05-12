@@ -37,8 +37,6 @@ from .pydreo.pydreohumidifier import (
     MODE_NORMAL,
     MODE_AUTO,
     MODE_SLEEP,
-    LIGHT_ON,
-    LIGHT_OFF,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -107,22 +105,6 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         native_unit_of_measurement=CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
         value_fn=lambda device: device.pm25,
         exists_fn=lambda device: device.is_feature_supported(PM25_KEY),
-    ),
-    DreoSensorEntityDescription(
-        key="Water Level",
-        translation_key="water",
-        device_class=SensorDeviceClass.ENUM,
-        options=[WATER_LEVEL_OK, WATER_LEVEL_EMPTY],
-        value_fn=lambda device: device.water_level,
-        exists_fn=lambda device: device.is_feature_supported(WATER_LEVEL_STATUS_KEY),
-    ),
-    DreoSensorEntityDescription(
-        key="Ambient Light Humidifier",
-        translation_key="light_hm",
-        device_class=SensorDeviceClass.ENUM,
-        options=[LIGHT_ON, LIGHT_OFF],
-        value_fn=lambda device: LIGHT_ON if device.rgblevel and int(device.rgblevel) > 0 else LIGHT_OFF,
-        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(RGB_LEVEL),
     ),
     DreoSensorEntityDescription(
         key="Use since cleaning HM",
