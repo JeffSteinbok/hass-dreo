@@ -87,7 +87,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._worktime = None
         self._foglevel = None
         self._rgblevel = None
-        self._last_rgblevel = 1
+        self._last_rgblevel = 2
         self._rgbth = None
         self._scheon = None
         self._fog_level = None
