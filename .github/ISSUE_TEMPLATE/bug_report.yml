@@ -21,6 +21,17 @@ body:
     validations:
       required: true
 
+  - type: input
+    id: version
+    attributes:
+      label: Integration Version
+      description: >
+        The version of the Dreo integration you are using.
+        You can find this in Settings → Devices & Services → Dreo.
+      placeholder: e.g. 2025.1.0
+    validations:
+      required: true
+
   - type: textarea
     id: reproduce
     attributes:

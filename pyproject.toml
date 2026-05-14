@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydreo-community"
+version = "1.8.7"
+description = "Community Python library for the Dreo cloud API"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+    "requests",
+    "websockets",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Home Automation",
+]
+
+[project.urls]
+Homepage = "https://github.com/jeffsteinbok/hass-dreo"
+"Bug Tracker" = "https://github.com/jeffsteinbok/hass-dreo/issues"
+
+[tool.setuptools.packages.find]
+where = ["custom_components/dreo"]
+include = ["pydreo*"]

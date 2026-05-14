@@ -1,0 +1,60 @@
+name: Enforce Issue Templates
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  check-template:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for template usage
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+
+            // Each template produces specific ### headers in the issue body.
+            // Check for at least one unique required header from each template.
+            const templateMarkers = [
+              '### Describe the bug',        // bug_report
+              '### Problem description',     // device-feature-request
+              '### Product Page Link',       // new-device-request
+            ];
+
+            const usedTemplate = templateMarkers.some(marker => body.includes(marker));
+
+            if (usedTemplate) {
+              core.info('Issue was filed using a template. No action needed.');
+              return;
+            }
+
+            core.info('Issue was not filed using a template. Adding comment and label.');
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['missing-template'],
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                '👋 Thanks for opening an issue!',
+                '',
+                'It looks like this issue was not filed using one of our [issue templates](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new/choose). ' +
+                'Templates help ensure we have the information needed to help you (diagnostics, logs, device model, etc.).',
+                '',
+                'Please **close this issue** and open a new one using the appropriate template:',
+                '- 🐛 **[Bug Report](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new?template=bug_report.yml)**',
+                '- 💡 **[Device Feature Request](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new?template=device-feature-request.yml)**',
+                '- 📱 **[New Device Request](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new?template=new-device-request.yml)**',
+                '',
+                '_This is an automated message._',
+              ].join('\n'),
+            });
