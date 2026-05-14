@@ -1,16 +1,17 @@
-# Dreo Smart Device Integration for Home Assistant (Unofficial)
+# Dreo Smart Device Integration for Home Assistant (Community)
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 [![CI Validation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/ci.yaml)
 [![Release Automation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml)
+[![PyPI](https://img.shields.io/pypi/v/pydreo-community?label=pydreo-community)](https://pypi.org/project/pydreo-community/)
 
 <p align="center">
   <img src="custom_components/dreo/brand/logo@2x.png" alt="Dreo" width="300">
 </p>
 
 
-Unofficial HomeAssistant integration for Dreo brand smart devices. Currently supports most models of Fans, Air Conditioners, Humidifiers, Dehumidifiers and Space Heaters as well as ChefMaker. I do not work for Dreo; just something I'm doing for fun.
+Community HomeAssistant integration for Dreo brand smart devices. Currently supports most models of Fans, Air Conditioners, Humidifiers, Dehumidifiers and Space Heaters as well as ChefMaker. I do not work for Dreo; just something I'm doing for fun.
 
 > [!IMPORTANT]
 > I only personally own 2 Dreo devices; a tower fan and an air circulator. You'll notice that this project supports way more devices than that. The only way I can continue to do that is if people provide logs and diagnostics when they report issues. Please do your best to fill out the issue template so I can debug.
