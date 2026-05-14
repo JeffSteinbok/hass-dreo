@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydreo-community"
-version = "1.8.6"
+version = "1.8.7"
 description = "Unofficial community Python library for the Dreo cloud API"
 readme = "README.md"
 license = { text = "MIT" }
