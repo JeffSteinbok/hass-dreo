@@ -16,6 +16,16 @@ if TYPE_CHECKING:
 # Dehumidifier-specific constants
 RHAUTOLEVEL_KEY = "rhautolevel"
 AUTOON_KEY = "autoon"
+# The Dreo API uses "wrong" as an error code field.
+# Known values: 0 = OK (no error), 1 = water level empty.
+# There may be additional error codes, but their meanings are not yet known.
+ERROR_CODE_KEY = "wrong"
+
+# Human-readable labels for known error code values
+ERROR_CODE_OK = "Ok"
+ERROR_CODE_WATER_EMPTY = "Empty"
+
+ERROR_CODE_MAP = {0: ERROR_CODE_OK, 1: ERROR_CODE_WATER_EMPTY, ERROR_CODE_OK: 0, ERROR_CODE_WATER_EMPTY: 1}
 
 
 class PyDreoDehumidifier(PyDreoBaseDevice):
@@ -36,6 +46,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         self._light_on = None
         self._auto_on = None
         self._temperature = None
+        self._wrong = None
 
         self._speed_range = device_definition.device_ranges.get(SPEED_RANGE, (1, 3)) if device_definition.device_ranges else (1, 3)
 
@@ -206,6 +217,24 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         return self._temperature
 
     @property
+    def wrong(self):
+        """Return the error code as a human-readable string.
+
+        The Dreo API uses "wrong" as an error code field.
+        Known values: 0 = OK, 1 = water level empty.
+        There may be additional error codes not yet mapped.
+        """
+        return self._wrong
+
+    @property
+    def water_level(self) -> str | None:
+        """Return the error code as a human-readable string (water_level alias).
+
+        Derived from the "wrong" error code field.
+        """
+        return self._wrong
+
+    @property
     def mode(self):
         """Return the current operating mode."""
         for mode_name, mode_value in self._modes:
@@ -245,6 +274,9 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
         self._auto_on = self.get_state_update_value(state, AUTOON_KEY)
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
+        wrong_raw = self.get_state_update_value(state, ERROR_CODE_KEY)
+        if wrong_raw is not None:
+            self._wrong = ERROR_CODE_MAP.get(wrong_raw, None)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -290,3 +322,7 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, (int, float)):
             self._temperature = val_temperature
+
+        val_wrong = self.get_server_update_key_value(message, ERROR_CODE_KEY)
+        if isinstance(val_wrong, int):
+            self._wrong = ERROR_CODE_MAP.get(val_wrong, None)

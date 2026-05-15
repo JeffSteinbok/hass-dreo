@@ -217,7 +217,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         # Support target temperature if the device has ecolevel capability
         if self.device.ecolevel is not None:
             supported_features |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if self.device.oscon is not None or self.device.oscmode is not None:
+        if self.device.oscon is not None or self.device.oscmode is not None or self.device.oscangle is not None:
             supported_features |= ClimateEntityFeature.SWING_MODE
         if self.device.poweron is not None:
             supported_features |= ClimateEntityFeature.TURN_OFF

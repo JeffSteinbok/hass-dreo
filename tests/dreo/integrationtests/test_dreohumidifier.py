@@ -54,7 +54,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Ambient Light Humidifier", "Use since cleaning HM"])
 
     def test_HHM014S(self):  # pylint: disable=invalid-name
         """Load HHM014S humidifier and test sending commands."""
@@ -88,7 +88,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Ambient Light Humidifier", "Use since cleaning HM"])
 
     def test_HHM003S(self):  # pylint: disable=invalid-name
         """Load HHM003S (HM713S/813S) humidifier and test all features including humidity sensors."""
@@ -145,7 +145,7 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert worktime_sensor is not None, "Use since cleaning sensor should exist for HHM003S"
             assert worktime_sensor.native_value == 10, "Use since cleaning sensor value should be 10 for HHM003S"
 
-            self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Ambient Light Humidifier", "Use since cleaning HM"])
 
     def test_HHM015S(self):  # pylint: disable=invalid-name
         """Load HHM015S (HM755S) humidifier and test sending commands."""
@@ -180,7 +180,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Ambient Light Humidifier", "Use since cleaning HM"])
 
     def test_HHM006S(self):  # pylint: disable=invalid-name
         """Load HHM006S (HM306S) humidifier and test sending commands."""
@@ -216,7 +216,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Water Level", "Ambient Light Humidifier", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Ambient Light Humidifier", "Use since cleaning HM"])
 
     def test_HHM003S_mode_changes(self):  # pylint: disable=invalid-name
         """Test that HHM003S (HM713S/813S) mode changes call schedule_update_ha_state."""

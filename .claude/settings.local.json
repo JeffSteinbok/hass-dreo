@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Users/jeffs/GitHub/pydreo-cloud/**)",
+      "Read(//d/Users/jeffs/GitHub/pydreo-cloud/.github/**)",
+      "WebFetch(domain:pypi.org)"
+    ]
+  }
+}

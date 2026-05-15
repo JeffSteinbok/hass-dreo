@@ -12,9 +12,15 @@ on:
           - minor
           - major
         default: patch
+      prerelease:
+        description: 'Pre-release suffix (e.g. rc1, b1). Leave empty for stable release.'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   test:
@@ -23,6 +29,9 @@ jobs:
   release:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      is_prerelease: ${{ steps.bump.outputs.is_prerelease }}
     
     steps:
     - uses: actions/checkout@v4
@@ -34,7 +43,7 @@ jobs:
         python-version: "3.13"
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip build
         pip install bump2version
     
     - name: Configure Git
@@ -45,9 +54,9 @@ jobs:
     - name: Bump version
       id: bump
       run: |
-        # Extract current version from manifest.json
         CURRENT_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
         BUMP_TYPE="${{ github.event.inputs.bump_type }}"
+        PRERELEASE="${{ github.event.inputs.prerelease }}"
         
         echo "Current version: $CURRENT_VERSION"
         echo "Bump type: $BUMP_TYPE"
@@ -55,14 +64,40 @@ jobs:
         # Bump the version using bump2version
         bump2version --current-version "$CURRENT_VERSION" "$BUMP_TYPE"
         
-        # Get the new version
+        # Get the new base version
         NEW_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
+        
+        # Append pre-release suffix if provided
+        if [ -n "$PRERELEASE" ]; then
+          FULL_VERSION="${NEW_VERSION}${PRERELEASE}"
+          # Update files with the pre-release version
+          sed -i "s/\"version\": \"$NEW_VERSION\"/\"version\": \"$FULL_VERSION\"/" custom_components/dreo/manifest.json
+          sed -i "s/version = \"$NEW_VERSION\"/version = \"$FULL_VERSION\"/" pyproject.toml
+          sed -i "s/current_version = $NEW_VERSION/current_version = $FULL_VERSION/" .bumpversion.cfg
+          git add -A
+          git commit --amend --no-edit
+          git tag -f "v$FULL_VERSION"
+          git tag -d "v$NEW_VERSION" 2>/dev/null || true
+          echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          NEW_VERSION="$FULL_VERSION"
+        else
+          echo "is_prerelease=false" >> $GITHUB_OUTPUT
+        fi
+        
         echo "New version: $NEW_VERSION"
         echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
     
+    - name: Build Python package
+      run: python -m build
+
+    - name: Upload package artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package
+        path: dist/
+
     - name: Push version bump
       run: |
-        # Push the commit and tag created by bump2version
         git push origin HEAD:${{ github.ref_name }}
         git push origin --tags
     
@@ -72,4 +107,18 @@ jobs:
         tag_name: v${{ steps.bump.outputs.version }}
         name: Release v${{ steps.bump.outputs.version }}
         draft: true
-        prerelease: false
+        prerelease: ${{ steps.bump.outputs.is_prerelease == 'true' }}
+        files: dist/*
+
+  publish-pypi:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download package artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package
+        path: dist/
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

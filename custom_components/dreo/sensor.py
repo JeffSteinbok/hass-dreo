@@ -14,9 +14,8 @@ import logging
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .pydreo.constant import HUMIDITY_KEY, MODE_KEY, PM25_KEY, DreoDeviceType, RGB_LEVEL
+from .pydreo.constant import HUMIDITY_KEY, MODE_KEY, PM25_KEY, DreoDeviceType
 
-from .pydreo.pydreoevaporativecooler import WATER_LEVEL_EMPTY, WATER_LEVEL_OK, WATER_LEVEL_STATUS_KEY
 
 from .haimports import *  # pylint: disable=W0401,W0614
 
