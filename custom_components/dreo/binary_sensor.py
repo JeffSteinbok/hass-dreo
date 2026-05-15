@@ -20,6 +20,10 @@ from .pydreo.pydreoevaporativecooler import (
     WATER_LEVEL_STATUS_KEY as EVAP_WATER_LEVEL_STATUS_KEY,
     WATER_LEVEL_EMPTY as EVAP_WATER_LEVEL_EMPTY,
 )
+from .pydreo.pydreodehumidifier import (
+    ERROR_CODE_KEY as DEHUMIDIFIER_ERROR_CODE_KEY,
+    ERROR_CODE_WATER_EMPTY as DEHUMIDIFIER_WATER_EMPTY,
+)
 from .haimports import *  # pylint: disable=W0401,W0614
 from .const import DOMAIN, PYDREO_MANAGER
 
@@ -39,6 +43,8 @@ def _water_empty_value(device: PyDreoBaseDevice) -> bool | None:
         return device.water_level == WATER_LEVEL_EMPTY
     if device.type == DreoDeviceType.EVAPORATIVE_COOLER:
         return device.water_level == EVAP_WATER_LEVEL_EMPTY
+    if device.type == DreoDeviceType.DEHUMIDIFIER:
+        return device.water_level == DEHUMIDIFIER_WATER_EMPTY
     return None
 
 
@@ -47,6 +53,8 @@ def _water_empty_exists(device: PyDreoBaseDevice) -> bool:
         return device.is_feature_supported(WATER_LEVEL_STATUS_KEY)
     if device.type == DreoDeviceType.EVAPORATIVE_COOLER:
         return device.is_feature_supported(EVAP_WATER_LEVEL_STATUS_KEY)
+    if device.type == DreoDeviceType.DEHUMIDIFIER:
+        return device.is_feature_supported(DEHUMIDIFIER_ERROR_CODE_KEY)
     return False
 
 
