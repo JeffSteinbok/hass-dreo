@@ -71,17 +71,17 @@ class TestDreoDeHumidifier(IntegrationTestBase):
 
             water_level_sensor = self.get_entity_by_key(sensors, "Water Level")
             assert water_level_sensor is not None, "Water Level sensor should exist for dehumidifier"
-            assert water_level_sensor.native_value == "Ok", "Water Level sensor value should be 'Ok' (wrong=0)"
+            assert water_level_sensor.native_value == "Ok", "Water Level sensor value should be 'Ok' (error code wrong=0)"
 
-            # Check water tank full binary sensor
+            # Check water empty binary sensor (derived from error code)
             binary_sensors = binary_sensor.get_entries([pydreo_dehumidifier])
             self.verify_expected_entities(binary_sensors, ["water_empty"])
 
             water_empty_sensor = self.get_entity_by_key(binary_sensors, "water_empty")
             assert water_empty_sensor is not None, "Water Empty binary sensor should exist for dehumidifier"
-            assert water_empty_sensor.is_on is False, "Water Empty should be False when wrong=0 (tank not full)"
+            assert water_empty_sensor.is_on is False, "Water Empty should be False when error code wrong=0"
 
-    def test_HDH005S(self):  # pylint: disable=invalid-name
+    def test_HDH005S(self):# pylint: disable=invalid-name
         """Load DR-HDH005S dehumidifier and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
             self.get_devices_file_name = "get_devices_HDH005S.json"
@@ -128,12 +128,12 @@ class TestDreoDeHumidifier(IntegrationTestBase):
 
             water_level_sensor = self.get_entity_by_key(sensors, "Water Level")
             assert water_level_sensor is not None, "Water Level sensor should exist for dehumidifier"
-            assert water_level_sensor.native_value == "Ok", "Water Level sensor value should be 'Ok' (wrong=0)"
+            assert water_level_sensor.native_value == "Ok", "Water Level sensor value should be 'Ok' (error code wrong=0)"
 
-            # Check water tank full binary sensor
+            # Check water empty binary sensor (derived from error code)
             binary_sensors = binary_sensor.get_entries([pydreo_dehumidifier])
             self.verify_expected_entities(binary_sensors, ["water_empty"])
 
             water_empty_sensor = self.get_entity_by_key(binary_sensors, "water_empty")
             assert water_empty_sensor is not None, "Water Empty binary sensor should exist for dehumidifier"
-            assert water_empty_sensor.is_on is False, "Water Empty should be False when wrong=0 (tank not full)"
+            assert water_empty_sensor.is_on is False, "Water Empty should be False when error code wrong=0"
