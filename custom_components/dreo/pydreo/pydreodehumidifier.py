@@ -21,21 +21,11 @@ AUTOON_KEY = "autoon"
 # There may be additional error codes, but their meanings are not yet known.
 ERROR_CODE_KEY = "wrong"
 
-# Keep old name as alias for backward compatibility
-WATER_LEVEL_STATUS_KEY = ERROR_CODE_KEY
-
 # Human-readable labels for known error code values
 ERROR_CODE_OK = "Ok"
 ERROR_CODE_WATER_EMPTY = "Empty"
 
-# Keep old names as aliases for backward compatibility
-WATER_LEVEL_OK = ERROR_CODE_OK
-WATER_LEVEL_EMPTY = ERROR_CODE_WATER_EMPTY
-
 ERROR_CODE_MAP = {0: ERROR_CODE_OK, 1: ERROR_CODE_WATER_EMPTY, ERROR_CODE_OK: 0, ERROR_CODE_WATER_EMPTY: 1}
-
-# Keep old name as alias for backward compatibility
-WATER_LEVEL_STATUS_MAP = ERROR_CODE_MAP
 
 
 class PyDreoDehumidifier(PyDreoBaseDevice):
