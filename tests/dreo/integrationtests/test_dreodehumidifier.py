@@ -65,13 +65,9 @@ class TestDreoDeHumidifier(IntegrationTestBase):
             assert target_humidity_number is not None, "Target Humidity number should exist"
             assert target_humidity_number.native_value == 50, "Target Humidity number value should be 50"
 
-            # Check water level sensor
+            # Check sensors (no Water Level enum sensor; water status exposed via binary sensor)
             sensors = sensor.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Temperature", "Water Level"])
-
-            water_level_sensor = self.get_entity_by_key(sensors, "Water Level")
-            assert water_level_sensor is not None, "Water Level sensor should exist for dehumidifier"
-            assert water_level_sensor.native_value == "Ok", "Water Level sensor value should be 'Ok' (error code wrong=0)"
+            self.verify_expected_entities(sensors, ["Humidity", "Temperature"])
 
             # Check water empty binary sensor (derived from error code)
             binary_sensors = binary_sensor.get_entries([pydreo_dehumidifier])
@@ -122,13 +118,9 @@ class TestDreoDeHumidifier(IntegrationTestBase):
             assert target_humidity_number is not None, "Target Humidity number should exist"
             assert target_humidity_number.native_value == 55, "Target Humidity number value should be 55"
 
-            # Check water level sensor
+            # Check sensors (no Water Level enum sensor; water status exposed via binary sensor)
             sensors = sensor.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Temperature", "Water Level"])
-
-            water_level_sensor = self.get_entity_by_key(sensors, "Water Level")
-            assert water_level_sensor is not None, "Water Level sensor should exist for dehumidifier"
-            assert water_level_sensor.native_value == "Ok", "Water Level sensor value should be 'Ok' (error code wrong=0)"
+            self.verify_expected_entities(sensors, ["Humidity", "Temperature"])
 
             # Check water empty binary sensor (derived from error code)
             binary_sensors = binary_sensor.get_entries([pydreo_dehumidifier])
