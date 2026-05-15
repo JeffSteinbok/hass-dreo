@@ -101,9 +101,9 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
                 with patch(PATCH_SEND_COMMAND) as mock_send_command:
                     # Brightness is converted from HA's 0-255 scale to device's 1-100 scale
-                    # 128/255 * 100 = ~50.2, which gets ceil'd to 51
+                    # 128/255 * 100 = ~50.2, which gets rounded to 50
                     light_switch.turn_on(brightness=128)
-                    mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 51})
+                    mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
 
     def test_HCF002S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
@@ -249,9 +249,9 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 # Brightness is converted from HA's 0-255 scale to device's 1-100 scale
-                # 128/255 * 100 = ~50.2, which gets ceil'd to 51
+                # 128/255 * 100 = ~50.2, which gets rounded to 50
                 light_switch.turn_on(brightness=128)
-                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 51})
+                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
             pydreo_fan.handle_server_update({REPORTED_KEY: {BRIGHTNESS_KEY: 51}})
 
             # Test color temperature if supported
