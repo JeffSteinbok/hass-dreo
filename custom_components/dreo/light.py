@@ -169,7 +169,7 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
         if ATTR_BRIGHTNESS in kwargs:
             brightness = kwargs[ATTR_BRIGHTNESS]
             _LOGGER.debug("turn_on: Setting brightness to %s", brightness)
-            setattr(self.pydreo_device, self._brightness_attr, math.ceil(brightness_to_value(self._brightness_scale, brightness)))
+            setattr(self.pydreo_device, self._brightness_attr, round(brightness_to_value(self._brightness_scale, brightness)))
 
         # Handle color temperature adjustment (part of turn_on action, not a separate method)
         if ATTR_COLOR_TEMP_KELVIN in kwargs:
@@ -197,7 +197,7 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
             return None
 
         # Convert device's brightness scale (e.g., 1-100) to HA's 0-255 scale
-        return math.ceil(value_to_brightness(self._brightness_scale, getattr(self.pydreo_device, self._brightness_attr, 0)))
+        return round(value_to_brightness(self._brightness_scale, getattr(self.pydreo_device, self._brightness_attr, 0)))
 
     @property
     def color_temp_kelvin(self) -> int | None:
