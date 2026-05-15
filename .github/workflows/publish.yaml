@@ -1,0 +1,47 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish-pypi:
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+
+    - name: Install twine
+      run: python -m pip install --upgrade twine
+
+    - name: Download release assets
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        mkdir -p dist
+        gh release download "${{ github.event.release.tag_name }}" \
+          --repo "${{ github.repository }}" \
+          --pattern "*.whl" \
+          --pattern "*.tar.gz" \
+          --dir dist
+
+    - name: Verify package artifacts
+      run: |
+        echo "Contents of dist/:"
+        ls -la dist/
+        WHL_COUNT=$(find dist -name '*.whl' | wc -l)
+        SDIST_COUNT=$(find dist -name '*.tar.gz' | wc -l)
+        echo "Found $WHL_COUNT wheel(s) and $SDIST_COUNT sdist(s)"
+        test "$WHL_COUNT" -eq 1 || { echo "::error::Expected exactly 1 wheel, found $WHL_COUNT"; exit 1; }
+        test "$SDIST_COUNT" -eq 1 || { echo "::error::Expected exactly 1 sdist, found $SDIST_COUNT"; exit 1; }
+        twine check dist/*
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

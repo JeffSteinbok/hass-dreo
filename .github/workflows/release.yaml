@@ -20,7 +20,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
 
 jobs:
   test:
@@ -110,15 +109,4 @@ jobs:
         prerelease: ${{ steps.bump.outputs.is_prerelease == 'true' }}
         files: dist/*
 
-  publish-pypi:
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-    - name: Download package artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package
-        path: dist/
-
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+  # PyPI publishing is now handled by publish.yaml, triggered when the draft release is published
