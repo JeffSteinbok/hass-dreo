@@ -442,6 +442,7 @@ class TestPyDreoHumidifier(TestBase):
 
         self.caplog.clear()
         humidifier.handle_server_update({REPORTED_KEY: {"rgblevel": "Enable"}})
+        assert humidifier.rgblevel == "Enable"
 
         trace_logs = [record.message for record in self.caplog.records if "rgblevel_trace:" in record.message]
         assert any(
