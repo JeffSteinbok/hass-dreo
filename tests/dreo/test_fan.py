@@ -123,6 +123,23 @@ class TestDreoFanHA(TestDeviceBase):
             test_fan.oscillate(True)
             assert mocked_pydreo_fan.oscillating is True
 
+    def test_fan_extra_attributes_excludes_temperature(self):
+        """Test fan extra attributes include identifiers but not temperature."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan: PyDreoDeviceMock = self.create_mock_device(
+                name="Test Tower Fan",
+                serial_number="TEMP123",
+                type="Tower Fan",
+                features={"model": "DR-HAF003S", "temperature": 75},
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            attrs = test_fan.extra_state_attributes
+
+            assert attrs["model"] == "DR-HAF003S"
+            assert attrs["sn"] == "TEMP123"
+            assert "temperature" not in attrs
+
     def test_turn_on_with_percentage(self):
         """Test turn_on applies percentage when provided."""
         with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:

@@ -71,7 +71,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the fan."""
-        attr = {"temperature": self.device.temperature, "model": self.device.model, "sn": self.device.serial_number}
+        attr = {"model": self.device.model, "sn": self.device.serial_number}
         return attr
 
     @property
