@@ -7,6 +7,7 @@ from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo.pydreo.constant import TemperatureUnit
 from homeassistant.const import UnitOfTemperature
+from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
@@ -142,8 +143,8 @@ class TestDreoFanHA(TestDeviceBase):
 
             assert attrs["model"] == "DR-HAF003S"
             assert attrs["sn"] == "TEMP123"
-            # 75°F converted to °C and rounded to one decimal place.
-            assert attrs["temperature"] == round((75 - 32) * 5 / 9, 1)
+            expected_temp = round(TemperatureConverter.convert(75, UnitOfTemperature.FAHRENHEIT, UnitOfTemperature.CELSIUS), 1)
+            assert attrs["temperature"] == expected_temp
 
     def test_fan_extra_attributes_temperature_defaults_to_celsius_when_unit_missing(self):
         """Test fan temperature defaults to Celsius conversion source when unit is missing."""
@@ -160,8 +161,8 @@ class TestDreoFanHA(TestDeviceBase):
             test_fan.hass.config.units.temperature_unit = UnitOfTemperature.FAHRENHEIT
             attrs = test_fan.extra_state_attributes
 
-            # 25°C converted to °F and rounded to one decimal place.
-            assert attrs["temperature"] == round((25 * 9 / 5) + 32, 1)
+            expected_temp = round(TemperatureConverter.convert(25, UnitOfTemperature.CELSIUS, UnitOfTemperature.FAHRENHEIT), 1)
+            assert attrs["temperature"] == expected_temp
 
     def test_fan_extra_attributes_temperature_when_units_match(self):
         """Test fan temperature conversion preserves value when units already match."""
