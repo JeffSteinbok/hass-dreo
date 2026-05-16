@@ -145,6 +145,41 @@ class TestDreoFanHA(TestDeviceBase):
             # 75°F converted to °C and rounded to one decimal place.
             assert attrs["temperature"] == 23.9
 
+    def test_fan_extra_attributes_temperature_defaults_to_celsius_when_unit_missing(self):
+        """Test fan temperature defaults to Celsius conversion source when unit is missing."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan: PyDreoDeviceMock = self.create_mock_device(
+                name="Test Tower Fan",
+                serial_number="TEMP124",
+                type="Tower Fan",
+                features={"model": "DR-HAF003S", "temperature": 25, "temperature_units": None},
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.hass = MagicMock()
+            test_fan.hass.config.units.temperature_unit = UnitOfTemperature.FAHRENHEIT
+            attrs = test_fan.extra_state_attributes
+
+            # 25°C converted to °F and rounded to one decimal place.
+            assert attrs["temperature"] == 77.0
+
+    def test_fan_extra_attributes_temperature_when_units_match(self):
+        """Test fan temperature conversion preserves value when units already match."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan: PyDreoDeviceMock = self.create_mock_device(
+                name="Test Tower Fan",
+                serial_number="TEMP125",
+                type="Tower Fan",
+                features={"model": "DR-HAF003S", "temperature": 72, "temperature_units": TemperatureUnit.FAHRENHEIT},
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.hass = MagicMock()
+            test_fan.hass.config.units.temperature_unit = UnitOfTemperature.FAHRENHEIT
+            attrs = test_fan.extra_state_attributes
+
+            assert attrs["temperature"] == 72.0
+
     def test_turn_on_with_percentage(self):
         """Test turn_on applies percentage when provided."""
         with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
