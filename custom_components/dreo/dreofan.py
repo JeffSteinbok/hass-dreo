@@ -9,7 +9,7 @@ from typing import Any
 from .haimports import *  # pylint: disable=W0401,W0614
 
 from .dreobasedevice import DreoBaseDeviceHA
-from .pydreo.constant import DreoDeviceType  # pylint: disable=C0415
+from .pydreo.constant import DreoDeviceType, TemperatureUnit  # pylint: disable=C0415
 
 from .pydreo.pydreofanbase import PyDreoFanBase
 
@@ -71,7 +71,21 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes of the fan."""
-        attr = {"temperature": self.device.temperature, "model": self.device.model, "sn": self.device.serial_number}
+        attr = {"model": self.device.model, "sn": self.device.serial_number}
+        temp = self.device.temperature
+        if temp is not None:
+            device_temp_unit = self.device.temperature_units
+            if device_temp_unit is None:
+                device_temp_unit = TemperatureUnit.CELSIUS
+            source_unit = UnitOfTemperature.CELSIUS if device_temp_unit == TemperatureUnit.CELSIUS else UnitOfTemperature.FAHRENHEIT
+            attr["temperature"] = round(
+                TemperatureConverter.convert(
+                    temp,
+                    source_unit,
+                    self.hass.config.units.temperature_unit,
+                ),
+                1,
+            )
         return attr
 
     @property

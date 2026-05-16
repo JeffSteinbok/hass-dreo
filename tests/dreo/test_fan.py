@@ -1,10 +1,13 @@
 """Tests for the Dreo Fan entity."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
+from custom_components.dreo.pydreo.constant import TemperatureUnit
+from homeassistant.const import UnitOfTemperature
+from homeassistant.util.unit_conversion import TemperatureConverter
 
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
@@ -122,6 +125,61 @@ class TestDreoFanHA(TestDeviceBase):
             # Test oscillation toggle
             test_fan.oscillate(True)
             assert mocked_pydreo_fan.oscillating is True
+
+    def test_fan_extra_attributes_includes_converted_temperature(self):
+        """Test fan extra attributes include temperature converted to HA units."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan: PyDreoDeviceMock = self.create_mock_device(
+                name="Test Tower Fan",
+                serial_number="TEMP123",
+                type="Tower Fan",
+                features={"model": "DR-HAF003S", "temperature": 75, "temperature_units": TemperatureUnit.FAHRENHEIT},
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.hass = MagicMock()
+            test_fan.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
+            attrs = test_fan.extra_state_attributes
+
+            assert attrs["model"] == "DR-HAF003S"
+            assert attrs["sn"] == "TEMP123"
+            expected_temp = round(TemperatureConverter.convert(75, UnitOfTemperature.FAHRENHEIT, UnitOfTemperature.CELSIUS), 1)
+            assert attrs["temperature"] == expected_temp
+
+    def test_fan_extra_attributes_temperature_defaults_to_celsius_when_unit_missing(self):
+        """Test fan temperature defaults to Celsius conversion source when unit is missing."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan: PyDreoDeviceMock = self.create_mock_device(
+                name="Test Tower Fan",
+                serial_number="TEMP124",
+                type="Tower Fan",
+                features={"model": "DR-HAF003S", "temperature": 25, "temperature_units": None},
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.hass = MagicMock()
+            test_fan.hass.config.units.temperature_unit = UnitOfTemperature.FAHRENHEIT
+            attrs = test_fan.extra_state_attributes
+
+            expected_temp = round(TemperatureConverter.convert(25, UnitOfTemperature.CELSIUS, UnitOfTemperature.FAHRENHEIT), 1)
+            assert attrs["temperature"] == expected_temp
+
+    def test_fan_extra_attributes_temperature_when_units_match(self):
+        """Test fan temperature conversion preserves value when units already match."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan: PyDreoDeviceMock = self.create_mock_device(
+                name="Test Tower Fan",
+                serial_number="TEMP125",
+                type="Tower Fan",
+                features={"model": "DR-HAF003S", "temperature": 72, "temperature_units": TemperatureUnit.FAHRENHEIT},
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.hass = MagicMock()
+            test_fan.hass.config.units.temperature_unit = UnitOfTemperature.FAHRENHEIT
+            attrs = test_fan.extra_state_attributes
+
+            assert attrs["temperature"] == 72.0
 
     def test_turn_on_with_percentage(self):
         """Test turn_on applies percentage when provided."""
