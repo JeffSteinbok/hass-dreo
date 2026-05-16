@@ -428,8 +428,11 @@ class TestPyDreoHumidifier(TestBase):
         self.caplog.clear()
         humidifier.handle_server_update({REPORTED_KEY: {"rgblevel": 2}})
 
-        assert "rgblevel_trace:" in self.caplog.text
-        assert "source=websocket raw=2(raw_type=int) mapped=2(mapped_type=int)" in self.caplog.text
+        trace_logs = [record.message for record in self.caplog.records if "rgblevel_trace:" in record.message]
+        assert any(
+            "source=websocket" in message and "raw=2(raw_type=int)" in message and "mapped=2(mapped_type=int)" in message
+            for message in trace_logs
+        )
 
     def test_handle_server_update_rgblevel_logs_trace_for_string(self):
         """Test rgblevel websocket updates produce trace logs for string payloads."""
@@ -440,8 +443,13 @@ class TestPyDreoHumidifier(TestBase):
         self.caplog.clear()
         humidifier.handle_server_update({REPORTED_KEY: {"rgblevel": "Enable"}})
 
-        assert "rgblevel_trace:" in self.caplog.text
-        assert "source=websocket raw='Enable'(raw_type=str) mapped='Enable'(mapped_type=str)" in self.caplog.text
+        trace_logs = [record.message for record in self.caplog.records if "rgblevel_trace:" in record.message]
+        assert any(
+            "source=websocket" in message
+            and "raw='Enable'(raw_type=str)" in message
+            and "mapped='Enable'(mapped_type=str)" in message
+            for message in trace_logs
+        )
 
     def test_handle_server_update_scheon(self):
         """Test handle_server_update processes scheon."""
