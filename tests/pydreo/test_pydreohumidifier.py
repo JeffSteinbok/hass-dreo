@@ -2,6 +2,7 @@
 
 # pylint: disable=used-before-assignment
 import logging
+import re
 from unittest.mock import patch
 from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
@@ -429,10 +430,8 @@ class TestPyDreoHumidifier(TestBase):
         humidifier.handle_server_update({REPORTED_KEY: {"rgblevel": 2}})
 
         trace_logs = [record.message for record in self.caplog.records if "rgblevel_trace:" in record.message]
-        assert any(
-            "source=websocket" in message and "raw=2(raw_type=int)" in message and "mapped=2(mapped_type=int)" in message
-            for message in trace_logs
-        )
+        assert trace_logs
+        assert any(re.search(r"source=websocket .*raw=2\(raw_type=int\).*mapped=2\(mapped_type=int\)", message) for message in trace_logs)
 
     def test_handle_server_update_rgblevel_logs_trace_for_string(self):
         """Test rgblevel websocket updates produce trace logs for string payloads."""
@@ -445,10 +444,9 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.rgblevel == "Enable"
 
         trace_logs = [record.message for record in self.caplog.records if "rgblevel_trace:" in record.message]
+        assert trace_logs
         assert any(
-            "source=websocket" in message
-            and "raw='Enable'(raw_type=str)" in message
-            and "mapped='Enable'(mapped_type=str)" in message
+            re.search(r"source=websocket .*raw='Enable'\(raw_type=str\).*mapped='Enable'\(mapped_type=str\)", message)
             for message in trace_logs
         )
 

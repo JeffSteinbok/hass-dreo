@@ -524,17 +524,17 @@ class PyDreoHumidifier(PyDreoBaseDevice):
             self._foglevel = val_foglevel
 
         raw_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
-        val_rgblevel = raw_rgblevel
         previous_rgblevel = self._rgblevel
-        if val_rgblevel is not None:
-            if isinstance(val_rgblevel, int):
-                if val_rgblevel > 0:
-                    self._last_rgblevel = val_rgblevel
-                val_rgblevel = self._map_rgblevel_value(val_rgblevel)
-            elif isinstance(val_rgblevel, str):
-                val_rgblevel = self._map_rgblevel_value(val_rgblevel)
-            self._rgblevel = val_rgblevel
-            self._log_rgblevel_trace("websocket", raw_rgblevel, val_rgblevel, previous_rgblevel)
+        if raw_rgblevel is not None:
+            mapped_rgblevel = raw_rgblevel
+            if isinstance(raw_rgblevel, int):
+                if raw_rgblevel > 0:
+                    self._last_rgblevel = raw_rgblevel
+                mapped_rgblevel = self._map_rgblevel_value(raw_rgblevel)
+            elif isinstance(raw_rgblevel, str):
+                mapped_rgblevel = self._map_rgblevel_value(raw_rgblevel)
+            self._rgblevel = mapped_rgblevel
+            self._log_rgblevel_trace("websocket", raw_rgblevel, mapped_rgblevel, previous_rgblevel)
 
         val_rgbth = self.get_server_update_key_value(message, RGB_TH)
         if isinstance(val_rgbth, str):
