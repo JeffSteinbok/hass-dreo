@@ -419,6 +419,30 @@ class TestPyDreoHumidifier(TestBase):
         humidifier.handle_server_update({REPORTED_KEY: {"rgblevel": 2}})
         assert humidifier.rgblevel == 2  # RGB_MAP is empty, so raw int is stored
 
+    def test_handle_server_update_rgblevel_logs_trace_for_int(self):
+        """Test rgblevel websocket updates produce trace logs for integer payloads."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        self.caplog.clear()
+        humidifier.handle_server_update({REPORTED_KEY: {"rgblevel": 2}})
+
+        assert "rgblevel_trace:" in self.caplog.text
+        assert "source=websocket raw=2(raw_type=int) mapped=2(mapped_type=int)" in self.caplog.text
+
+    def test_handle_server_update_rgblevel_logs_trace_for_string(self):
+        """Test rgblevel websocket updates produce trace logs for string payloads."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        self.caplog.clear()
+        humidifier.handle_server_update({REPORTED_KEY: {"rgblevel": "Enable"}})
+
+        assert "rgblevel_trace:" in self.caplog.text
+        assert "source=websocket raw='Enable'(raw_type=str) mapped='Enable'(mapped_type=str)" in self.caplog.text
+
     def test_handle_server_update_scheon(self):
         """Test handle_server_update processes scheon."""
         self.get_devices_file_name = "get_devices_HHM001S.json"

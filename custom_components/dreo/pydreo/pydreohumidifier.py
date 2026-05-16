@@ -93,6 +93,20 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._fog_level = None
         self._ledlevel = None
 
+    def _log_rgblevel_trace(self, source: str, raw_value, mapped_value, previous_value) -> None:
+        """Log rgblevel diagnostics for model-specific debugging."""
+        _LOGGER.debug(
+            "rgblevel_trace: %s source=%s raw=%r(raw_type=%s) mapped=%r(mapped_type=%s) previous=%r last_nonzero=%r",
+            self.name,
+            source,
+            raw_value,
+            type(raw_value).__name__,
+            mapped_value,
+            type(mapped_value).__name__,
+            previous_value,
+            self._last_rgblevel,
+        )
+
     def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         modes = []
@@ -470,7 +484,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._wrong = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
         self._worktime = self.get_state_update_value(state, WORKTIME_KEY)
         self._foglevel = self.get_state_update_value(state, FOGLEVEL_INTERNAL_KEY)
+        previous_rgblevel = self._rgblevel
         self._rgblevel = self.get_state_update_value(state, RGB_LEVEL)
+        self._log_rgblevel_trace("state", self._rgblevel, self._rgblevel, previous_rgblevel)
         self._rgbth = self.get_state_update_value(state, RGB_TH)
         self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
         self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
@@ -501,12 +517,16 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         if isinstance(val_foglevel, int):
             self._foglevel = val_foglevel
 
-        val_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
+        raw_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
+        val_rgblevel = raw_rgblevel
+        previous_rgblevel = self._rgblevel
         if isinstance(val_rgblevel, int):
             if val_rgblevel > 0:
                 self._last_rgblevel = val_rgblevel
             val_rgblevel = RGB_MAP.get(val_rgblevel, val_rgblevel)
             self._rgblevel = val_rgblevel
+        if val_rgblevel is not None:
+            self._log_rgblevel_trace("websocket", raw_rgblevel, val_rgblevel, previous_rgblevel)
 
         val_rgbth = self.get_server_update_key_value(message, RGB_TH)
         if isinstance(val_rgbth, str):
