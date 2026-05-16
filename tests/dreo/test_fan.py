@@ -143,7 +143,7 @@ class TestDreoFanHA(TestDeviceBase):
             assert attrs["model"] == "DR-HAF003S"
             assert attrs["sn"] == "TEMP123"
             # 75°F converted to °C and rounded to one decimal place.
-            assert attrs["temperature"] == 23.9
+            assert attrs["temperature"] == round((75 - 32) * 5 / 9, 1)
 
     def test_fan_extra_attributes_temperature_defaults_to_celsius_when_unit_missing(self):
         """Test fan temperature defaults to Celsius conversion source when unit is missing."""
@@ -161,7 +161,7 @@ class TestDreoFanHA(TestDeviceBase):
             attrs = test_fan.extra_state_attributes
 
             # 25°C converted to °F and rounded to one decimal place.
-            assert attrs["temperature"] == 77.0
+            assert attrs["temperature"] == round((25 * 9 / 5) + 32, 1)
 
     def test_fan_extra_attributes_temperature_when_units_match(self):
         """Test fan temperature conversion preserves value when units already match."""
