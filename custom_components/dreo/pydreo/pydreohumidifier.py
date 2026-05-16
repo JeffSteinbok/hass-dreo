@@ -486,8 +486,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._foglevel = self.get_state_update_value(state, FOGLEVEL_INTERNAL_KEY)
         previous_rgblevel = self._rgblevel
         raw_rgblevel = self.get_state_update_value(state, RGB_LEVEL)
+        mapped_rgblevel = RGB_MAP.get(raw_rgblevel, raw_rgblevel) if raw_rgblevel is not None else None
         self._rgblevel = raw_rgblevel
-        self._log_rgblevel_trace("state", raw_rgblevel, self._rgblevel, previous_rgblevel)
+        self._log_rgblevel_trace("state", raw_rgblevel, mapped_rgblevel, previous_rgblevel)
         self._rgbth = self.get_state_update_value(state, RGB_TH)
         self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
         self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
