@@ -1,10 +1,12 @@
 """Tests for the Dreo Fan entity."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
+from custom_components.dreo.pydreo.constant import TemperatureUnit
+from homeassistant.const import UnitOfTemperature
 
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
@@ -123,22 +125,24 @@ class TestDreoFanHA(TestDeviceBase):
             test_fan.oscillate(True)
             assert mocked_pydreo_fan.oscillating is True
 
-    def test_fan_extra_attributes_excludes_temperature(self):
-        """Test fan extra attributes include identifiers but not temperature."""
+    def test_fan_extra_attributes_includes_converted_temperature(self):
+        """Test fan extra attributes include temperature converted to HA units."""
         with patch(PATCH_UPDATE_HA_STATE):
             mocked_pydreo_fan: PyDreoDeviceMock = self.create_mock_device(
                 name="Test Tower Fan",
                 serial_number="TEMP123",
                 type="Tower Fan",
-                features={"model": "DR-HAF003S", "temperature": 75},
+                features={"model": "DR-HAF003S", "temperature": 75, "temperature_units": TemperatureUnit.FAHRENHEIT},
             )
 
             test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.hass = MagicMock()
+            test_fan.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
             attrs = test_fan.extra_state_attributes
 
             assert attrs["model"] == "DR-HAF003S"
             assert attrs["sn"] == "TEMP123"
-            assert "temperature" not in attrs
+            assert attrs["temperature"] == 23.9
 
     def test_turn_on_with_percentage(self):
         """Test turn_on applies percentage when provided."""
