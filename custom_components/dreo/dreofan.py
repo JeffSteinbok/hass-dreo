@@ -73,7 +73,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         """Return the state attributes of the fan."""
         attr = {"model": self.device.model, "sn": self.device.serial_number}
         temp = self.device.temperature
-        if temp is not None and self.hass is not None:
+        if temp is not None:
             device_temp_unit = self.device.temperature_units if self.device.temperature_units is not None else TemperatureUnit.CELSIUS
             source_unit = UnitOfTemperature.CELSIUS if device_temp_unit == TemperatureUnit.CELSIUS else UnitOfTemperature.FAHRENHEIT
             attr["temperature"] = round(

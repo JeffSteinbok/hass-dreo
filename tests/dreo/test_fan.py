@@ -142,6 +142,7 @@ class TestDreoFanHA(TestDeviceBase):
 
             assert attrs["model"] == "DR-HAF003S"
             assert attrs["sn"] == "TEMP123"
+            # 75°F converted to °C and rounded to one decimal place.
             assert attrs["temperature"] == 23.9
 
     def test_turn_on_with_percentage(self):
