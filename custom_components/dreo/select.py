@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 import logging
 
@@ -28,6 +29,7 @@ class DreoSelectEntityDescription(SelectEntityDescription):
     attr_name: str | None = None
     options_list: list[str] = field(default_factory=list)
     raw_values: list[int] = field(default_factory=list)
+    exists_fn: Callable[[PyDreoBaseDevice], bool] | None = None
 
 
 SELECTS: tuple[DreoSelectEntityDescription, ...] = (
@@ -38,6 +40,17 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         icon="mdi:weather-windy",
         options_list=["low", "medium", "high"],
         raw_values=[1, 2, 3],
+        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("mist_level"),
+    ),
+    DreoSelectEntityDescription(
+        key="Ambient Light Mode",
+        translation_key="ambient_light_mode",
+        attr_name="rgbmode",
+        icon="mdi:lightbulb-cog",
+        options_list=["humidity", "color"],
+        raw_values=[0, 1],
+        exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
+        and device.is_feature_supported("rgbmode"),
     ),
 )
 
@@ -48,7 +61,7 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list["DreoSelectHA"]:
 
     for device in pydreo_devices:
         for sel in SELECTS:
-            if device.type != DreoDeviceType.HUMIDIFIER:
+            if sel.exists_fn is not None and not sel.exists_fn(device):
                 continue
             if not device.is_feature_supported(sel.attr_name):
                 continue

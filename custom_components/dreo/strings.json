@@ -47,8 +47,6 @@
         "light":                    { "name": "Light" },
         "humidify":                 { "name": "Humidify" },
         "display_light":            { "name": "Display Light" },
-        "ambient_light":            { "name": "Ambient Light" },
-        "rgb_indicator":            { "name": "Water Level Indicator" },
         "auto_mode":                { "name": "Auto Turn On" },
         "scheon":                   { "name": "Schedule" }
       },
@@ -60,8 +58,7 @@
         "status":            { "name": "Status" },
         "pm25":              { "name": "PM2.5" },
         "water":             { "name": "Water Level" },
-        "use_hours_hm":      { "name": "Use Since Cleaning" },
-        "light_hm":          { "name": "Ambient Light" }
+        "use_hours_hm":      { "name": "Use Since Cleaning" }
       },
       "number": {
         "horizontal_angle":             { "name": "Horizontal Angle" },
@@ -76,8 +73,8 @@
         "target_humidity":              { "name": "Target Humidity" },
         "fog_level":                    { "name": "Fog Level" },
         "sleep_target_humidity":        { "name": "Sleep Target Humidity" },
-        "ambient_light_threshold_low":  { "name": "Ambient Light Threshold Low" },
-        "ambient_light_threshold_high": { "name": "Ambient Light Threshold High" },
+        "ambient_light_threshold_low":  { "name": "Ambient Light Humidity Low Threshold" },
+        "ambient_light_threshold_high": { "name": "Ambient Light Humidity High Threshold" },
         "ambient_light_level":          { "name": "Ambient Light Level" }
       },
       "select": {
@@ -87,6 +84,13 @@
             "low": "Low",
             "medium": "Medium",
             "high": "High"
+          }
+        },
+        "ambient_light_mode": {
+          "name": "Ambient Light Mode",
+          "state": {
+            "humidity": "Humidity",
+            "color": "Color"
           }
         }
       }

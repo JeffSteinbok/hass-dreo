@@ -73,6 +73,10 @@ class DreoDeviceDetails:
     override_fn: Callable | None
     """Optional function called once after initial state load to apply hardware-specific overrides."""
 
+    ambient_light_levels: tuple | None
+    """Valid rgblevel values for the ambient light ring. None = not set (use default).
+    Examples: (0, 2) = off/full only, (0, 1, 2) = off/low/full."""
+
     def __init__(
         self,
         device_type: DreoDeviceType = None,
@@ -84,6 +88,7 @@ class DreoDeviceDetails:
         cooking_modes: list[str] = None,
         cooking_range: dict = None,
         override_fn: Callable | None = None,
+        ambient_light_levels: tuple | None = None,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -99,6 +104,7 @@ class DreoDeviceDetails:
         self.cooking_modes = cooking_modes
         self.cooking_range = cooking_range
         self.override_fn = override_fn
+        self.ambient_light_levels = ambient_light_levels
 
 
 @dataclass
@@ -331,7 +337,11 @@ SUPPORTED_DEVICES = {
         cooking_modes=COOKING_MODES,
         cooking_range=COOKING_RANGES,
     ),
-    "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER),
+    "DR-HHM": DreoDeviceDetails(device_type=DreoDeviceType.HUMIDIFIER, ambient_light_levels=(0, 2)),
+    "DR-HHM003S": DreoDeviceDetails(
+        device_type=DreoDeviceType.HUMIDIFIER,
+        ambient_light_levels=(0, 1, 2),
+    ),
     "DR-HHM014S": DreoDeviceDetails(
         device_type=DreoDeviceType.HUMIDIFIER,
         preset_modes=[

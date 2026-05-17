@@ -61,6 +61,8 @@ LEDKEPTON_KEY = "ledkepton"
 LEDLEVEL_KEY = "ledlevel"
 RGB_LEVEL = "rgblevel"
 RGB_TH = "rgbth"
+RGB_MODE = "rgbmode"
+RGB_COLOR = "rgbcolor"
 LED_LEVEL_KEY = "ledlevel"
 SCHEDULE_ENABLE = "scheon"
 

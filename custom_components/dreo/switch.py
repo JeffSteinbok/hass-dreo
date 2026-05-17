@@ -99,18 +99,6 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         icon="mdi:led-on",
     ),
     DreoSwitchEntityDescription(
-        key="Ambient Light Mode",
-        translation_key="ambient_light",
-        attr_name="ambient_light",
-        icon="mdi:lightbulb",
-    ),
-    DreoSwitchEntityDescription(
-        key="Water Level Indicator",
-        translation_key="rgb_indicator",
-        attr_name="rgb_indicator",
-        icon="mdi:led-outline",
-    ),
-    DreoSwitchEntityDescription(
         key="Auto Turn On",
         translation_key="auto_mode",
         attr_name="auto_mode",

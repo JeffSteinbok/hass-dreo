@@ -48,6 +48,11 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
             _LOGGER.debug("get_entries: Adding RGB Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoRGBLightHA(pydreo_device))
 
+        # Check if device has an ambient light ring (humidifiers, evaporative coolers)
+        if pydreo_device.is_feature_supported("rgblevel"):
+            _LOGGER.debug("get_entries: Adding Ambient Light for %s", pydreo_device.name)
+            light_ha_collection.append(DreoHumidifierLightHA(pydreo_device))
+
     return light_ha_collection
 
 
@@ -274,3 +279,120 @@ class DreoRGBLightHA(DreoLightHA):
             rgb = kwargs[ATTR_RGB_COLOR]
             _LOGGER.debug("turn_on: Setting RGB color to %s", rgb)
             setattr(self.pydreo_device, "atm_color_rgb", rgb)
+
+
+class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-method
+    """Ambient light ring for Dreo humidifiers and evaporative coolers.
+
+    Controls the colored LED ring via the rgblevel API field.
+    - On/off: rgblevel 0=off, >0=on
+    - Brightness (if model supports 3 levels): rgblevel 0=off, 1=low, 2=full
+    - RGB color (if model supports rgbcolor): direct color picker
+    """
+
+    def __init__(self, pyDreoDevice: PyDreoBaseDevice) -> None:
+        """Initialize the ambient light entity."""
+        super().__init__(pyDreoDevice)
+        self.device = pyDreoDevice
+
+        self.entity_description = EntityDescription("Ambient Light")
+        self._attr_name = self.pydreo_device.name + " Ambient Light"
+        self._attr_unique_id = f"{self.pydreo_device.serial_number}-ambient-light"
+        self._attr_icon = "mdi:lightbulb"
+
+        # Determine brightness levels from model details
+        details = getattr(pyDreoDevice, "device_definition", None)
+        self._levels = getattr(details, "ambient_light_levels", None) if details else None
+        if self._levels is None:
+            self._levels = (0, 2)  # default: off/full only
+
+        # Determine supported color modes
+        self._has_rgb = pyDreoDevice.is_feature_supported("rgbcolor")
+        self._has_brightness = len(self._levels) > 2  # more than just off/on
+
+        modes: set[ColorMode] = set()
+        if self._has_rgb:
+            modes.add(ColorMode.RGB)
+        if self._has_brightness:
+            modes.add(ColorMode.BRIGHTNESS)
+        if not modes:
+            modes.add(ColorMode.ONOFF)
+        self._supported_modes = modes
+
+        _LOGGER.info("new DreoHumidifierLightHA instance(%s), unique ID %s, levels=%s, rgb=%s",
+                     self._attr_name, self._attr_unique_id, self._levels, self._has_rgb)
+
+    @property
+    def supported_color_modes(self) -> set[ColorMode]:
+        """Return the set of supported color modes."""
+        return self._supported_modes
+
+    @property
+    def color_mode(self) -> ColorMode:
+        """Return the active color mode."""
+        if self._has_rgb and getattr(self.device, "rgbmode", None) == 1:
+            return ColorMode.RGB
+        if self._has_brightness:
+            return ColorMode.BRIGHTNESS
+        return ColorMode.ONOFF
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if the ambient light is on."""
+        rgblevel = getattr(self.device, "rgblevel", None)
+        return rgblevel is not None and int(rgblevel) > 0
+
+    @property
+    def brightness(self) -> int | None:
+        """Return brightness on HA's 0-255 scale."""
+        if not self._has_brightness:
+            return None
+        rgblevel = getattr(self.device, "rgblevel", None)
+        if rgblevel is None or int(rgblevel) == 0:
+            return 0
+        # Map: 1 (low) -> 128, 2 (full) -> 255
+        return 128 if int(rgblevel) == 1 else 255
+
+    @property
+    def rgb_color(self) -> tuple[int, int, int] | None:
+        """Return the current RGB color."""
+        if not self._has_rgb:
+            return None
+        rgbcolor = getattr(self.device, "rgbcolor", None)
+        if rgbcolor is None:
+            return None
+        # Unpack 24-bit integer to (r, g, b)
+        r = (rgbcolor >> 16) & 0xFF
+        g = (rgbcolor >> 8) & 0xFF
+        b = rgbcolor & 0xFF
+        return (r, g, b)
+
+    def turn_on(self, **kwargs: Any) -> None:
+        """Turn on the ambient light, optionally setting brightness or color."""
+        _LOGGER.debug("turn_on: Turning on ambient light %s, kwargs=%s", self.pydreo_device.name, kwargs)
+
+        # Determine desired rgblevel
+        if ATTR_BRIGHTNESS in kwargs and self._has_brightness:
+            brightness = kwargs[ATTR_BRIGHTNESS]
+            # Map HA brightness (1-255) to rgblevel: 1-127 -> 1 (low), 128-255 -> 2 (full)
+            desired_level = 1 if brightness < 128 else 2
+        else:
+            # Default to full brightness
+            desired_level = max(self._levels)
+
+        self.device.rgblevel = desired_level
+
+        # Handle RGB color
+        if ATTR_RGB_COLOR in kwargs and self._has_rgb:
+            r, g, b = kwargs[ATTR_RGB_COLOR]
+            color_value = (r << 16) | (g << 8) | b
+            _LOGGER.debug("turn_on: Setting RGB color to (%d,%d,%d) -> %d", r, g, b, color_value)
+            # Auto-switch to color mode
+            if getattr(self.device, "rgbmode", None) != 1:
+                self.device.rgbmode = 1
+            self.device.rgbcolor = color_value
+
+    def turn_off(self, **kwargs: Any) -> None:
+        """Turn off the ambient light."""
+        _LOGGER.debug("turn_off: Turning off ambient light %s", self.pydreo_device.name)
+        self.device.rgblevel = 0

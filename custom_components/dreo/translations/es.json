@@ -47,7 +47,6 @@
       "light":                    { "name": "Luz" },
       "humidify":                 { "name": "Humidificar" },
       "display_light":            { "name": "Luz de pantalla" },
-      "ambient_light":            { "name": "Luz ambiental" },
       "auto_mode":                { "name": "Encendido automático" },
       "scheon":                   { "name": "Programación" }
     },
@@ -59,8 +58,7 @@
       "status":            { "name": "Estado" },
       "pm25":              { "name": "PM2.5" },
       "water":             { "name": "Nivel de agua" },
-      "use_hours_hm":      { "name": "Uso desde la limpieza" },
-      "light_hm":          { "name": "Luz ambiental" }
+      "use_hours_hm":      { "name": "Uso desde la limpieza" }
     },
     "number": {
       "horizontal_angle":             { "name": "Ángulo horizontal" },
@@ -73,8 +71,8 @@
       "horizontal_oscillation_angle": { "name": "Ángulo de oscilación horizontal" },
       "vertical_oscillation_angle":   { "name": "Ángulo de oscilación vertical" },
       "target_humidity":              { "name": "Humedad objetivo" },
-      "ambient_light_threshold_low":  { "name": "Umbral de luz ambiental bajo" },
-      "ambient_light_threshold_high": { "name": "Umbral de luz ambiental alto" },
+      "ambient_light_threshold_low":  { "name": "Umbral de humedad de luz ambiental bajo" },
+      "ambient_light_threshold_high": { "name": "Umbral de humedad de luz ambiental alto" },
       "ambient_light_level":          { "name": "Nivel de luz ambiental" }
     },
     "select": {
@@ -84,6 +82,13 @@
           "low": "Bajo",
           "medium": "Medio",
           "high": "Alto"
+        }
+      },
+      "ambient_light_mode": {
+        "name": "Modo de luz ambiental",
+        "state": {
+          "humidity": "Humedad",
+          "color": "Color"
         }
       }
     }
