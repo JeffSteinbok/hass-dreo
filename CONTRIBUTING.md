@@ -2,6 +2,8 @@
 
 This section is very much a work in progress.
 
+See [DEVICE_OWNERS.md](DEVICE_OWNERS.md) for a list of community members and which Dreo devices they own — useful for finding testers and getting diagnostics for specific models. This list was auto-generated from filed GitHub issues and PRs.
+
 # Tests
 There are three buckets of tests, please feel free to add as appropriate.
 * [PyDreo Unit Tests](tests/pydreo/README.md)
