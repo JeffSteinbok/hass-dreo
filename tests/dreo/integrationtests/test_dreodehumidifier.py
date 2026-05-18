@@ -65,9 +65,9 @@ class TestDreoDeHumidifier(IntegrationTestBase):
             assert target_humidity_number is not None, "Target Humidity number should exist"
             assert target_humidity_number.native_value == 50, "Target Humidity number value should be 50"
 
-            # Check sensors (no Water Level enum sensor; water status exposed via binary sensor)
+            # Check sensors
             sensors = sensor.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Temperature"])
+            self.verify_expected_entities(sensors, ["Humidity", "Temperature", "Water Level"])
 
             # Check water empty binary sensor (derived from error code)
             binary_sensors = binary_sensor.get_entries([pydreo_dehumidifier])
@@ -118,9 +118,9 @@ class TestDreoDeHumidifier(IntegrationTestBase):
             assert target_humidity_number is not None, "Target Humidity number should exist"
             assert target_humidity_number.native_value == 55, "Target Humidity number value should be 55"
 
-            # Check sensors (no Water Level enum sensor; water status exposed via binary sensor)
+            # Check sensors
             sensors = sensor.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Temperature"])
+            self.verify_expected_entities(sensors, ["Humidity", "Temperature", "Water Level"])
 
             # Check water empty binary sensor (derived from error code)
             binary_sensors = binary_sensor.get_entries([pydreo_dehumidifier])

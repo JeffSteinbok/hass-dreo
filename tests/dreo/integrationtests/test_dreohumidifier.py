@@ -8,6 +8,7 @@ from custom_components.dreo import number
 from custom_components.dreo import humidifier
 from custom_components.dreo import sensor
 from custom_components.dreo import switch
+from custom_components.dreo import light
 from homeassistant.components.humidifier import HumidifierEntityFeature
 
 from .imports import *  # pylint: disable=W0401,W0614
@@ -56,13 +57,17 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM", "Water Level"])
 
-            # Check to see what switches are added - ambient light, display, sound, schedule, water indicator
+            # Check to see what switches are added - display, sound, schedule
             switches = switch.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                switches, ["Ambient Light Mode", "Display Light", "Panel Sound", "Schedule", "Water Level Indicator"]
+                switches, ["Display Light", "Panel Sound", "Schedule"]
             )
+
+            # Check to see what lights are added - ambient light entity
+            lights = light.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(lights, ["Ambient Light"])
 
             # Check to see what binary sensors are added - water empty
             binary_sensors = binary_sensor.get_entries([pydreo_humidifier])
@@ -100,12 +105,16 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM", "Water Level"])
+
+            # Check to see what lights are added
+            lights = light.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(lights, ["Ambient Light"])
 
             # Check to see what switches are added - HHM014S has no Display Light
             switches = switch.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                switches, ["Ambient Light Mode", "Panel Sound", "Schedule", "Water Level Indicator"]
+                switches, ["Panel Sound", "Schedule"]
             )
 
             # Check to see what binary sensors are added - water empty
@@ -167,13 +176,17 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert worktime_sensor is not None, "Use since cleaning sensor should exist for HHM003S"
             assert worktime_sensor.native_value == 10, "Use since cleaning sensor value should be 10 for HHM003S"
 
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM", "Water Level"])
 
             # Check to see what switches are added
             switches = switch.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                switches, ["Ambient Light Mode", "Display Light", "Panel Sound", "Schedule", "Water Level Indicator"]
+                switches, ["Display Light", "Panel Sound", "Schedule"]
             )
+
+            # Check to see what lights are added
+            lights = light.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(lights, ["Ambient Light"])
 
             # Check to see what binary sensors are added - water empty
             binary_sensors = binary_sensor.get_entries([pydreo_humidifier])
@@ -212,12 +225,16 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM", "Water Level"])
+
+            # Check to see what lights are added
+            lights = light.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(lights, ["Ambient Light"])
 
             # Check to see what switches are added
             switches = switch.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                switches, ["Ambient Light Mode", "Display Light", "Panel Sound", "Schedule", "Water Level Indicator"]
+                switches, ["Display Light", "Panel Sound", "Schedule"]
             )
 
             # Check to see what binary sensors are added - water empty
@@ -258,12 +275,16 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM", "Water Level"])
+
+            # Check to see what lights are added
+            lights = light.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(lights, ["Ambient Light"])
 
             # Check to see what switches are added
             switches = switch.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                switches, ["Ambient Light Mode", "Display Light", "Panel Sound", "Schedule", "Water Level Indicator"]
+                switches, ["Display Light", "Panel Sound", "Schedule"]
             )
 
             # Check to see what binary sensors are added - water empty

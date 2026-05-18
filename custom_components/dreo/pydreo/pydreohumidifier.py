@@ -18,6 +18,8 @@ from .constant import (
     LED_LEVEL_KEY,
     RGB_LEVEL,
     RGB_TH,
+    RGB_MODE,
+    RGB_COLOR,
     SCHEDULE_ENABLE,
 )
 
@@ -41,10 +43,6 @@ LIGHT_ON = "Enable"
 LIGHT_OFF = "Disabled"
 
 WATER_LEVEL_STATUS_MAP = {0: WATER_LEVEL_OK, 1: WATER_LEVEL_EMPTY, WATER_LEVEL_OK: 0, WATER_LEVEL_EMPTY: 1}
-
-RGB_LEVEL_PRESETS = (0, 1, 31, 61)
-
-RGB_MAP = {}
 
 LEDLEVEL_MAP = {0: LIGHT_OFF, 2: LIGHT_ON, LIGHT_OFF: 0, LIGHT_ON: 2}
 
@@ -87,8 +85,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._worktime = None
         self._foglevel = None
         self._rgblevel = None
-        self._last_rgblevel = 2
         self._rgbth = None
+        self._rgbmode = None
+        self._rgbcolor = None
         self._scheon = None
         self._fog_level = None
         self._ledlevel = None
@@ -320,8 +319,18 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
     @property
     def rgblevel(self) -> int | None:
-        """Return raw ambient light level reported by the API."""
+        """Return raw ambient light level reported by the API (0=off, 1=low, 2=full)."""
         return self._rgblevel
+
+    @rgblevel.setter
+    def rgblevel(self, value: int) -> None:
+        """Set the raw rgblevel value (0=off, 1=low, 2=full)."""
+        _LOGGER.debug("rgblevel: rgblevel.setter(%s) --> %s", self.name, value)
+        if self._rgblevel == value:
+            _LOGGER.debug("rgblevel: value already %s, skipping command", value)
+            return
+        self._rgblevel = value  # optimistic update
+        self._send_command(RGB_LEVEL, value)
 
     @property
     def ambient_light(self) -> bool | None:
@@ -332,36 +341,44 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
     @ambient_light.setter
     def ambient_light(self, value: bool) -> None:
-        """Set ambient light on/off using the raw rgblevel values."""
+        """Set ambient light on/off. Sends rgblevel=2 for on, 0 for off."""
         _LOGGER.debug("ambient_light: ambient_light.setter(%s) --> %s", self.name, value)
-        desired = self._last_rgblevel if value else 0
+        desired = 2 if value else 0
         if self._rgblevel == desired:
             _LOGGER.debug("ambient_light: value already %s, skipping command", value)
             return
-        self._rgblevel = desired  # optimistic update so HA reflects state immediately
+        self._rgblevel = desired  # optimistic update
         self._send_command(RGB_LEVEL, desired)
 
     @property
-    def ambient_light_level(self) -> int | None:
-        """Return the raw ambient light slider value."""
-        return self._rgblevel
+    def rgbmode(self) -> int | None:
+        """Return the ambient light mode (0=humidity indicator, 1=fixed color)."""
+        return self._rgbmode
 
-    @ambient_light_level.setter
-    def ambient_light_level(self, value: int) -> None:
-        """Set the ambient light slider value."""
-        try:
-            requested = int(value)
-        except (TypeError, ValueError) as ex:
-            raise ValueError(f"ambient_light_level must be an integer, got {value!r}") from ex
-
-        desired = min(RGB_LEVEL_PRESETS, key=lambda preset: abs(preset - requested))
-        if self._rgblevel == desired:
-            _LOGGER.debug("ambient_light_level: value already %s, skipping command", desired)
+    @rgbmode.setter
+    def rgbmode(self, value: int) -> None:
+        """Set the ambient light mode."""
+        _LOGGER.debug("rgbmode: rgbmode.setter(%s) --> %s", self.name, value)
+        if self._rgbmode == value:
+            _LOGGER.debug("rgbmode: value already %s, skipping command", value)
             return
-        if desired > 0:
-            self._last_rgblevel = desired
-        self._rgblevel = desired
-        self._send_command(RGB_LEVEL, desired)
+        self._rgbmode = value  # optimistic update
+        self._send_command(RGB_MODE, value)
+
+    @property
+    def rgbcolor(self) -> int | None:
+        """Return the ambient light RGB color as a packed 24-bit integer."""
+        return self._rgbcolor
+
+    @rgbcolor.setter
+    def rgbcolor(self, value: int) -> None:
+        """Set the ambient light RGB color (packed 24-bit integer)."""
+        _LOGGER.debug("rgbcolor: rgbcolor.setter(%s) --> %s", self.name, value)
+        if self._rgbcolor == value:
+            _LOGGER.debug("rgbcolor: value already %s, skipping command", value)
+            return
+        self._rgbcolor = value  # optimistic update
+        self._send_command(RGB_COLOR, value)
 
     @property
     def rgbth(self):
@@ -411,24 +428,6 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._send_command(RGB_TH, payload)
 
     @property
-    def rgb_indicator(self) -> bool | None:
-        """Return True if the water level RGB indicator is enabled."""
-        if self._rgblevel is None:
-            return None
-        return self._rgblevel == LIGHT_ON
-
-    @rgb_indicator.setter
-    def rgb_indicator(self, value: bool) -> None:
-        """Set the water level RGB indicator on/off."""
-        _LOGGER.debug("rgb_indicator: rgb_indicator.setter(%s) --> %s", self.name, value)
-        new_level = LIGHT_ON if value else LIGHT_OFF
-        if self._rgblevel == new_level:
-            _LOGGER.debug("rgb_indicator: rgb_indicator - value already %s, skipping command", value)
-            return
-        self._rgblevel = new_level
-        self._send_command(RGB_LEVEL, RGB_MAP[new_level])
-
-    @property
     def scheon(self):
         """Returns `True` if the device is on, `False` otherwise."""
         return self._scheon
@@ -472,6 +471,8 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._foglevel = self.get_state_update_value(state, FOGLEVEL_INTERNAL_KEY)
         self._rgblevel = self.get_state_update_value(state, RGB_LEVEL)
         self._rgbth = self.get_state_update_value(state, RGB_TH)
+        self._rgbmode = self.get_state_update_value(state, RGB_MODE)
+        self._rgbcolor = self.get_state_update_value(state, RGB_COLOR)
         self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
         self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
 
@@ -503,14 +504,19 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
         val_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
         if isinstance(val_rgblevel, int):
-            if val_rgblevel > 0:
-                self._last_rgblevel = val_rgblevel
-            val_rgblevel = RGB_MAP.get(val_rgblevel, val_rgblevel)
             self._rgblevel = val_rgblevel
 
         val_rgbth = self.get_server_update_key_value(message, RGB_TH)
         if isinstance(val_rgbth, str):
             self._rgbth = val_rgbth
+
+        val_rgbmode = self.get_server_update_key_value(message, RGB_MODE)
+        if isinstance(val_rgbmode, int):
+            self._rgbmode = val_rgbmode
+
+        val_rgbcolor = self.get_server_update_key_value(message, RGB_COLOR)
+        if isinstance(val_rgbcolor, int):
+            self._rgbcolor = val_rgbcolor
 
         val_ledlevel = self.get_server_update_key_value(message, LED_LEVEL_KEY)
         if isinstance(val_ledlevel, int):
