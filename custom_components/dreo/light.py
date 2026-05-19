@@ -329,8 +329,12 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
 
     @property
     def color_mode(self) -> ColorMode:
-        """Return the active color mode."""
-        if self._has_rgb and getattr(self.device, "rgbmode", None) == 1:
+        """Return the active color mode.
+
+        Must always return a value in supported_color_modes, or HA will raise
+        HomeAssistantError during state_attributes validation.
+        """
+        if self._has_rgb:
             return ColorMode.RGB
         if self._has_brightness:
             return ColorMode.BRIGHTNESS
