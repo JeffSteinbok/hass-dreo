@@ -87,6 +87,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.NUMBER)
         platforms.add(Platform.SELECT)
         platforms.add(Platform.BINARY_SENSOR)
+        platforms.add(Platform.LIGHT)
 
     if DreoDeviceType.DEHUMIDIFIER in device_types:
         platforms.add(Platform.HUMIDIFIER)
@@ -106,6 +107,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
         platforms.add(Platform.BINARY_SENSOR)
+        platforms.add(Platform.LIGHT)
 
     pydreo_manager.start_transport()
 
