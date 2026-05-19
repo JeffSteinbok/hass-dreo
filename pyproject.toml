@@ -31,3 +31,42 @@ Homepage = "https://github.com/jeffsteinbok/hass-dreo"
 [tool.setuptools.packages.find]
 where = ["custom_components/dreo"]
 include = ["pydreo*"]
+
+[tool.bumpversion]
+current_version = "1.9.0b2"
+commit = true
+tag = true
+tag_name = "v{new_version}"
+message = "Bump version: {current_version} → {new_version}"
+parse = """(?x)
+    ^(?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:
+        (?P<pre_l>a|b|rc)
+        (?P<pre_n>0|[1-9]\\d*)
+    )?$
+"""
+serialize = [
+    "{major}.{minor}.{patch}{pre_l}{pre_n}",
+    "{major}.{minor}.{patch}",
+]
+
+[tool.bumpversion.parts.pre_l]
+values = ["b", "rc", ""]
+optional_value = ""
+first_value = "b"
+
+[tool.bumpversion.parts.pre_n]
+first_value = "1"
+
+[[tool.bumpversion.files]]
+filename = "custom_components/dreo/manifest.json"
+search = '"version": "{current_version}"'
+replace = '"version": "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+regex = true
+search = '^version = "{current_version}"'
+replace = 'version = "{new_version}"'

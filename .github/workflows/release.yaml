@@ -3,17 +3,25 @@ name: Release Automation
 on:
   workflow_dispatch:
     inputs:
-      bump_type:
-        description: 'Version bump type'
+      bump_part:
+        description: |
+          Version part to bump:
+            minor  → new minor beta (1.8.8 → 1.9.0b1)
+            patch  → new patch beta (1.9.0 → 1.9.1b1)
+            major  → new major beta (1.9.0 → 2.0.0b1)
+            pre_n  → next pre-release (1.9.0b1 → 1.9.0b2)
+            pre_l  → promote (b→rc→stable)
         required: true
         type: choice
         options:
-          - patch
           - minor
+          - patch
           - major
-        default: patch
-      prerelease:
-        description: 'Pre-release suffix (e.g. rc1, b1). Leave empty for stable release.'
+          - pre_n
+          - pre_l
+        default: minor
+      override_version:
+        description: 'Override: set exact version (e.g. 1.9.1 for direct stable patch). Ignores bump_part.'
         required: false
         type: string
         default: ''
@@ -24,14 +32,14 @@ permissions:
 jobs:
   test:
     uses: ./.github/workflows/common-tests.yaml
-  
+
   release:
     needs: test
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.bump.outputs.version }}
       is_prerelease: ${{ steps.bump.outputs.is_prerelease }}
-    
+
     steps:
     - uses: actions/checkout@v4
       with:
@@ -43,49 +51,40 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip build
-        pip install bump2version
-    
+        pip install "bump-my-version>=1.3,<2"
+
     - name: Configure Git
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-    
+
     - name: Bump version
       id: bump
       run: |
-        CURRENT_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
-        BUMP_TYPE="${{ github.event.inputs.bump_type }}"
-        PRERELEASE="${{ github.event.inputs.prerelease }}"
-        
+        OVERRIDE="${{ github.event.inputs.override_version }}"
+        BUMP_PART="${{ github.event.inputs.bump_part }}"
+
+        CURRENT_VERSION=$(bump-my-version show current_version)
         echo "Current version: $CURRENT_VERSION"
-        echo "Bump type: $BUMP_TYPE"
-        
-        # Bump the version using bump2version
-        bump2version --current-version "$CURRENT_VERSION" "$BUMP_TYPE"
-        
-        # Get the new base version
-        NEW_VERSION=$(grep -Po '"version": "\K[^"]*' custom_components/dreo/manifest.json)
-        
-        # Append pre-release suffix if provided
-        if [ -n "$PRERELEASE" ]; then
-          FULL_VERSION="${NEW_VERSION}${PRERELEASE}"
-          # Update files with the pre-release version
-          sed -i "s/\"version\": \"$NEW_VERSION\"/\"version\": \"$FULL_VERSION\"/" custom_components/dreo/manifest.json
-          sed -i "s/version = \"$NEW_VERSION\"/version = \"$FULL_VERSION\"/" pyproject.toml
-          sed -i "s/current_version = $NEW_VERSION/current_version = $FULL_VERSION/" .bumpversion.cfg
-          git add -A
-          git commit --amend --no-edit
-          git tag -f "v$FULL_VERSION"
-          git tag -d "v$NEW_VERSION" 2>/dev/null || true
+
+        if [ -n "$OVERRIDE" ]; then
+          echo "Overriding version to: $OVERRIDE"
+          bump-my-version bump --new-version "$OVERRIDE" patch
+        else
+          echo "Bumping part: $BUMP_PART"
+          bump-my-version bump "$BUMP_PART"
+        fi
+
+        NEW_VERSION=$(bump-my-version show current_version)
+        echo "New version: $NEW_VERSION"
+        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+        if echo "$NEW_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$'; then
           echo "is_prerelease=true" >> $GITHUB_OUTPUT
-          NEW_VERSION="$FULL_VERSION"
         else
           echo "is_prerelease=false" >> $GITHUB_OUTPUT
         fi
-        
-        echo "New version: $NEW_VERSION"
-        echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-    
+
     - name: Build Python package
       run: python -m build
 
@@ -99,7 +98,7 @@ jobs:
       run: |
         git push origin HEAD:${{ github.ref_name }}
         git push origin --tags
-    
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
@@ -109,4 +108,4 @@ jobs:
         prerelease: ${{ steps.bump.outputs.is_prerelease == 'true' }}
         files: dist/*
 
-  # PyPI publishing is now handled by publish.yaml, triggered when the draft release is published
+  # PyPI publishing is handled by publish.yaml, triggered when the draft release is published
