@@ -54,8 +54,7 @@ I'm always happy to have people add features via Pull Request. More info on how 
 - [Installation](#installation)
 - [Options](#options)
 - [Debugging](#debugging)
-- [Adding New Devices](#adding-new-devices)
-- [To Do](#to-do)
+- [Adding Support for New Devices](#adding-support-for-new-devices)
 
 ## Compatibility
 
