@@ -1,0 +1,127 @@
+name: Check for Logs and Diagnostics
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  check-logs:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Check for logs and diagnostics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const author = context.payload.issue.user.login;
+
+            // Only check bug reports (filed via the bug_report template)
+            if (!body.includes('### Describe the bug')) {
+              core.info('Not a bug report. Skipping.');
+              return;
+            }
+
+            // Skip collaborators with write/admin access
+            try {
+              const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: author,
+              });
+              if (permLevel.permission === 'admin' || permLevel.permission === 'write') {
+                core.info(`Bug report by collaborator ${author}. Skipping.`);
+                return;
+              }
+            } catch (e) {
+              core.info(`Could not check permissions for ${author}: ${e.message}. Proceeding.`);
+            }
+
+            // Extract content under a ### heading (everything until the next ### or end of body)
+            function getSectionContent(heading) {
+              const pattern = new RegExp(
+                `###\\s*${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n([\\s\\S]*?)(?=\\n###\\s|$)`
+              );
+              const match = body.match(pattern);
+              return match ? match[1].trim() : '';
+            }
+
+            // Check if content is meaningfully present (not just placeholder/empty)
+            function isMissing(content) {
+              if (!content) return true;
+              const stripped = content
+                .replace(/<!--[\s\S]*?-->/g, '')  // remove HTML comments
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+              if (stripped.length < 5) return true;
+              const placeholders = [
+                'n/a', 'na', 'none', 'no', 'tbd', 'todo', 'will add later',
+                'see above', 'same as above', '_no response_',
+              ];
+              return placeholders.includes(stripped);
+            }
+
+            const diagnostics = getSectionContent('Diagnostics');
+            const logs = getSectionContent('Debug Logs');
+
+            const missingDiagnostics = isMissing(diagnostics);
+            const missingLogs = isMissing(logs);
+
+            if (!missingDiagnostics && !missingLogs) {
+              core.info('Diagnostics and logs are present. No action needed.');
+
+              // If this is an edit that fixed the issue, remove the label
+              if (context.payload.action === 'edited') {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    name: 'question',
+                  });
+                } catch (e) {
+                  // Label may not exist; ignore
+                }
+              }
+              return;
+            }
+
+            // Don't re-comment on edits that still lack info
+            if (context.payload.action === 'edited') {
+              core.info('Issue was edited but still missing info. No new comment.');
+              return;
+            }
+
+            // Build the comment
+            const missing = [];
+            if (missingDiagnostics) missing.push('**Diagnostics JSON** — download from Settings → Devices → Dreo → ⋮ → Download diagnostics');
+            if (missingLogs) missing.push('**Debug logs** — enable debug logging, reproduce the issue, then download full logs');
+
+            const comment = [
+              `👋 Hey @${author}, thanks for filing this bug report!`,
+              '',
+              'It looks like the following information is missing:',
+              ...missing.map(item => `- ${item}`),
+              '',
+              'I only personally own 2 Dreo devices, so logs and diagnostics are **essential** for me to debug issues with devices I don\'t own.',
+              '',
+              'Please update your issue with the missing information. See the [debugging instructions](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) for help collecting this data.',
+              '',
+              '_This is an automated message._',
+            ].join('\n');
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['question'],
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment,
+            });
