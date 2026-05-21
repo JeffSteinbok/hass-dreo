@@ -13,6 +13,8 @@ on:
   schedule:
     - cron: "0 2 * * *"
 
+permissions: {}
+
 jobs:
   hacs:
     name: HACS Validation
