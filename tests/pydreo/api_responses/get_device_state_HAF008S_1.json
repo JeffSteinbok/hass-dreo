@@ -1,0 +1,115 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -58,
+        "timestamp": 1779308283
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1779310641
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1779308283
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1779308282
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1779308283
+      },
+      "mode": {
+        "state": 1,
+        "timestamp": 1779308554
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1779308283
+      },
+      "network_latency": {
+        "state": 12,
+        "timestamp": 1779308284
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1779308283
+      },
+      "mcu_firmware_version": {
+        "state": "0.3.8",
+        "timestamp": 1779308283
+      },
+      "oscmode": {
+        "state": 0,
+        "timestamp": 1779310898
+      },
+      "customconf": {
+        "state": "temp:23333334444446666668888889",
+        "timestamp": 1779308542
+      },
+      "temperature": {
+        "state": 69,
+        "timestamp": 1779310497
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "muteon": {
+        "state": true,
+        "timestamp": 1779308283
+      },
+      "wifi_ssid": "**REDACTED**",
+      "mcu_hardware_model": {
+        "state": "SC95F8613B/US",
+        "timestamp": 1779308283
+      },
+      "windlevel": {
+        "state": 3,
+        "timestamp": 1779308556
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1779308283
+      },
+      "module_firmware_version": {
+        "state": "3.7.11",
+        "timestamp": 1779308283
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1779308283
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1779308282
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1779308283
+      },
+      "ledkepton": {
+        "state": false,
+        "timestamp": 1779308283
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1779308283
+      },
+      "tempoffset": {
+        "state": 0,
+        "timestamp": 1779308283
+      }
+    },
+    "sn": "HAF008S_1",
+    "productId": "1899715254844731393",
+    "region": "eu-central-1/emq"
+  }
+}

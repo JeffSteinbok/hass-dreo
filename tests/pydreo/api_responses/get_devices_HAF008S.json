@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2057194130473824257",
+        "sn": "HAF008S_1",
+        "brand": "Dreo",
+        "model": "DR-HAF008S",
+        "productId": "1899715254844731393",
+        "productName": "Air Circulator",
+        "deviceName": "Air Circulator - DR-HAF008S",
+        "shared": false,
+        "series": null,
+        "seriesName": "565S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": true,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {},
+        "servicesConf": [],
+        "userManuals": []
+      }
+    ]
+  }
+}

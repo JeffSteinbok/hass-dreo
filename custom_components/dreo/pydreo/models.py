@@ -215,6 +215,11 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         override_fn=_haf004s_mcu_override,
     ),
+    "DR-HAF008S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4)],
+        device_ranges={SPEED_RANGE: (1, 9)},
+    ),
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
     # HPF-series devices: The API returns controlsConf with only a template reference
     # (e.g. {"template": "DR-HPF002S"}) and no control/schedule.modes data, so
