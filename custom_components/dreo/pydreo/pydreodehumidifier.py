@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import MODE_KEY, MUTEON_KEY, POWERON_KEY, HUMIDITY_KEY, WINDLEVEL_KEY, CHILDLOCKON_KEY, LIGHTON_KEY, SPEED_RANGE, TEMPERATURE_KEY
+from .constant import MODE_KEY, MUTEON_KEY, POWERON_KEY, HUMIDITY_KEY, WINDLEVEL_KEY, CHILDLOCKON_KEY, LIGHTON_KEY, SPEED_RANGE, TEMPERATURE_KEY, TemperatureUnit
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
@@ -215,6 +215,13 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     def temperature(self):
         """Get the current temperature"""
         return self._temperature
+
+    @property
+    def temperature_units(self) -> TemperatureUnit:
+        """Auto-detect the temperature unit from the reported value."""
+        if self._temperature is not None and self._temperature > 50:
+            return TemperatureUnit.FAHRENHEIT
+        return TemperatureUnit.CELSIUS
 
     @property
     def wrong(self):
