@@ -1,0 +1,60 @@
+name: AI Code Review Gate
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+  pull_request_review:
+    types:
+      - submitted
+      - edited
+      - dismissed
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  ai_review_present:
+    name: AI review present
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify AI review exists
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner,
+              repo,
+              pull_number,
+              per_page: 100
+            });
+
+            const aiReviewerLogins = new Set([
+              "github-copilot[bot]",
+              "copilot-pull-request-reviewer[bot]",
+              "coderabbitai[bot]"
+            ].map((login) => login.toLowerCase()));
+
+            const acceptedReviewStates = new Set(["APPROVED", "CHANGES_REQUESTED", "COMMENTED"]);
+            const aiReviews = reviews.filter((review) => {
+              const reviewer = review.user?.login?.toLowerCase();
+              return reviewer && aiReviewerLogins.has(reviewer) && acceptedReviewStates.has(review.state);
+            });
+
+            if (aiReviews.length === 0) {
+              core.setFailed(
+                "No AI review found. Request AI review (for example, GitHub Copilot review) and then re-run this check."
+              );
+            } else {
+              const reviewers = [...new Set(aiReviews.map((review) => review.user.login))].join(", ");
+              core.info(`AI review detected from: ${reviewers}`);
+            }
