@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -31,
+        "timestamp": 1779482566
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1779483926
+      },
+      "mode": {
+        "state": 4,
+        "timestamp": 1779482877
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1779482566
+      },
+      "oscmode": {
+        "state": 1,
+        "timestamp": 1779482796
+      },
+      "temperature": {
+        "state": 79,
+        "timestamp": 1779483985
+      },
+      "muteon": {
+        "state": false,
+        "timestamp": 1779483512
+      },
+      "windlevel": {
+        "state": 6,
+        "timestamp": 1779482874
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1779482566
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1779482566
+      }
+    },
+    "sn": "HPF015S_1",
+    "productId": "1952968879364452354",
+    "region": "us-east-2/emq"
+  }
+}

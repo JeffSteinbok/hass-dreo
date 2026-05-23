@@ -372,6 +372,31 @@ class TestDreoAirCirculator(IntegrationTestBase):
             pydreo_fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 5}})
             assert rgb_light.brightness == 255
 
+    def test_HPF015S(self):  # pylint: disable=invalid-name
+        """Test HPF015S fan with empty controlsConf."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HPF015S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+
+            assert pydreo_fan.model == "DR-HPF015S"
+            assert pydreo_fan.speed_range == (1, 12)
+            assert ha_fan.speed_count == 12
+            assert ha_fan.percentage == 50
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(100)
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 12})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
     def test_HAF003S_newer_firmware(self):  # pylint: disable=invalid-name
         """Test HAF003S fan with newer firmware (Device 1 - with cruiseconf/fixedconf)."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:

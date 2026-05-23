@@ -1,0 +1,51 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2057925139352317954",
+        "sn": "HPF015S_1",
+        "brand": "Dreo",
+        "model": "DR-HPF015S",
+        "productId": "1952968879364452354",
+        "productName": "Air Circulator",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HPF015S",
+        "shared": false,
+        "series": null,
+        "seriesName": "765S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202603/3189242ccce00340a2986590a9c28a69f6.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202603/3178caca13255a42309c528ff327393228.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202603/31aa02272755304919a8b3fdfa28f89baa.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202603/3147e15ff82daa4ca5b1cb93e4e7849832.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": []
+      }
+    ]
+  }
+}

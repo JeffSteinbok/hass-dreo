@@ -537,6 +537,29 @@ class TestPyDreoAirCirculator(TestBase):
         fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
         assert fan.atm_color_rgb == (255, 0, 0)
 
+    def test_HPF015S(self):  # pylint: disable=invalid-name
+        """Test HPF015S fan with empty controlsConf."""
+        self.get_devices_file_name = "get_devices_HPF015S.json"
+        self.pydreo_manager.load_devices()
+
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        assert fan.model == "DR-HPF015S"
+        assert fan.speed_range == (1, 12)
+        assert fan.fan_speed == 6
+        assert fan.is_on is False
+        assert fan.oscillating is True
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 12
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 13
+
     def test_HPF025S(self):  # pylint: disable=invalid-name
         """Test HPF025S tall air circulator fan."""
         self.get_devices_file_name = "get_devices_HPF025S.json"
