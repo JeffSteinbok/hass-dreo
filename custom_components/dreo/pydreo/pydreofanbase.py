@@ -410,7 +410,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
             self._voice_on = val_panel_sound
 
         val_wind_mode = self.get_server_update_key_value(message, WIND_MODE_KEY)
-        if isinstance(val_wind_mode, int | str):
+        if isinstance(val_wind_mode, (int, str)):
             self._wind_mode = val_wind_mode
 
         val_wind_type = self.get_server_update_key_value(message, WINDTYPE_KEY)
