@@ -1,6 +1,4 @@
 """Focused tests for device fixtures that lacked direct functional coverage."""
-
-import logging
 from unittest.mock import patch
 
 import pytest
@@ -8,12 +6,9 @@ import pytest
 from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import PATCH_SEND_COMMAND, TestBase
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
 
 def _pick_alternative(current_value, values):
-    """Pick a value different from current_value."""
+    """Return a value from values that differs from current_value."""
     for value in values or []:
         if value != current_value:
             return value
@@ -21,7 +16,7 @@ def _pick_alternative(current_value, values):
 
 
 def _assert_command_sent(mock_send_command, device):
-    """Assert one command was sent for a specific device."""
+    """Assert a single command call was made for the provided device."""
     mock_send_command.assert_called_once()
     call_args = mock_send_command.call_args[0]
     assert call_args[0] is device
@@ -149,7 +144,7 @@ class TestUncoveredDeviceModels(TestBase):
                 _assert_command_sent(mock_send_command, humidifier)
 
     @pytest.mark.parametrize("devices_file", ["get_devices_HSH003S.json", "get_devices_HSH034S.json"])
-    def test_heater_models(self, devices_file: str):  # pylint: disable=invalid-name
+    def test_heater_models(self, devices_file: str):
         """Test uncovered heater models exercise core heater controls."""
         self.get_devices_file_name = devices_file
         self.pydreo_manager.load_devices()
