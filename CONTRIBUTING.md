@@ -13,6 +13,15 @@ There are three buckets of tests, please feel free to add as appropriate.
 * [Dreo Integration Tests](tests/dreo/integrationtests/README.md) - That do talk to PyDreo
     * These integration tests ensure that the Dreo HA code gets what we expect from the device JSON files.
 
+# AI Code Review Check on PRs
+
+This repository includes a workflow named **AI Code Review Gate** with a job named **AI review present**.
+
+To enforce it on every PR, add this check as **required** in your branch protection/ruleset:
+- Required check name: `AI Code Review Gate / AI review present`
+
+The check passes when at least one AI review is present on the PR (for example from `github-copilot[bot]`).
+
 # Deploying to Home Assistant
 
 ## Quick Deployment Script
@@ -131,4 +140,3 @@ As of a recent release, Dreo seems to have removed certificate pinning, at least
 
 ### Setup Fiddler Classic as a Proxy
 1. Use Fiddler Classic (http://www.fiddlertool.com) to get a network trace to see what the Dreo app is doing. I won't document here how to setup Fiddler as a proxy or do SSL decryption; Fiddler documentation is pretty good.
-
