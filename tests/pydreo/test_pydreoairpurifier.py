@@ -2,8 +2,9 @@
 
 # pylint: disable=used-before-assignment
 import logging
+from unittest.mock import patch
 from .imports import *  # pylint: disable=W0401,W0614
-from .testbase import TestBase
+from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -47,3 +48,22 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.series_name == "Macro AP505S"
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["manual"]
+
+    def test_air_purifier_preset_mode_variant_mapping(self):
+        """Mode variants like auto-regular should still map to the base preset mode."""
+        self.get_devices_file_name = "get_devices_HAP003S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+        assert air_purifier.preset_mode == "auto"
+
+    def test_air_purifier_set_preset_mode_uses_mode_key(self):
+        """Air purifier preset mode changes should send the mode command."""
+        self.get_devices_file_name = "get_devices_HAP003S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "sleep"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "sleep"})
