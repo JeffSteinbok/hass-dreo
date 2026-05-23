@@ -58,6 +58,12 @@ class TestPyDreoAirPurifier(TestBase):
         air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
         assert air_purifier.preset_mode == "auto"
 
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep-regular"}})
+        assert air_purifier.preset_mode == "sleep"
+
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "manual"}})
+        assert air_purifier.preset_mode == "manual"
+
     def test_air_purifier_set_preset_mode_uses_mode_key(self):
         """Air purifier preset mode changes should send the mode command."""
         self.get_devices_file_name = "get_devices_HAP003S.json"

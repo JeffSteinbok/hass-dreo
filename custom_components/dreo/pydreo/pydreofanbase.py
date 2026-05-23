@@ -172,8 +172,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
             # Some devices report a mode variant (e.g. "auto-regular") while commands
             # and controlsConf expose the base mode value ("auto").
             base_mode = mode.split("-", 1)[0]
-            if base_mode != mode:
-                str_value = Helpers.name_from_value(self._preset_modes, base_mode)
+            str_value = Helpers.name_from_value(self._preset_modes, base_mode)
         if str_value is None:
             return None
 
