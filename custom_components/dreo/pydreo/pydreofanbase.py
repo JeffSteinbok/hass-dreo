@@ -168,6 +168,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
             return None
 
         str_value: str = Helpers.name_from_value(self._preset_modes, mode)
+        if str_value is None and isinstance(mode, str):
+            # Some devices report a mode variant (e.g. "auto-regular") while commands
+            # and controlsConf expose the base mode value ("auto").
+            base_mode = mode.split("-", 1)[0]
+            str_value = Helpers.name_from_value(self._preset_modes, base_mode)
         if str_value is None:
             return None
 
@@ -405,7 +410,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
             self._voice_on = val_panel_sound
 
         val_wind_mode = self.get_server_update_key_value(message, WIND_MODE_KEY)
-        if isinstance(val_wind_mode, int):
+        if isinstance(val_wind_mode, (int, str)):
             self._wind_mode = val_wind_mode
 
         val_wind_type = self.get_server_update_key_value(message, WINDTYPE_KEY)
