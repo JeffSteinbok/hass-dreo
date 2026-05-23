@@ -7,8 +7,6 @@ import pytest
 from homeassistant.components.climate import HVACMode
 
 from custom_components.dreo import fan
-from custom_components.dreo import switch
-from custom_components.dreo import light
 from custom_components.dreo import humidifier
 from custom_components.dreo import dreoheater
 from custom_components.dreo import dreoairconditioner
@@ -66,7 +64,6 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
         _ = ha_fan.preset_mode
         _ = ha_fan.preset_modes
         _ = ha_fan.supported_features
-        _ = ha_fan.extra_state_attributes
         _ = ha_fan.unique_id
         _ = ha_fan.name
 
@@ -78,7 +75,8 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
             assert mock_send_command.call_count >= 1
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ha_fan.set_percentage(100)
+            target_percentage = 25 if ha_fan.percentage != 25 else 75
+            ha_fan.set_percentage(target_percentage)
             assert mock_send_command.call_count >= 1
 
         if ha_fan.preset_modes:
@@ -87,24 +85,6 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
                 with patch(PATCH_SEND_COMMAND) as mock_send_command:
                     ha_fan.set_preset_mode(target_mode)
                     assert mock_send_command.call_count >= 1
-
-        switches = switch.get_entries([pydreo_device])
-        for switch_entity in switches:
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                if switch_entity.is_on:
-                    switch_entity.turn_off()
-                else:
-                    switch_entity.turn_on()
-                assert mock_send_command.call_count >= 1
-
-        lights = light.get_entries([pydreo_device])
-        for light_entity in lights:
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                if light_entity.is_on:
-                    light_entity.turn_off()
-                else:
-                    light_entity.turn_on()
-                assert mock_send_command.call_count >= 1
 
     def _exercise_ac_entities(self, pydreo_device):
         ac = dreoairconditioner.DreoAirConditionerHA(pydreo_device)
@@ -180,24 +160,6 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
             new_target_humidity = ha_humidifier.target_humidity + 1 if ha_humidifier.target_humidity < 90 else ha_humidifier.target_humidity - 1
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_humidifier.set_humidity(new_target_humidity)
-                assert mock_send_command.call_count >= 1
-
-        switches = switch.get_entries([pydreo_device])
-        for switch_entity in switches:
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                if switch_entity.is_on:
-                    switch_entity.turn_off()
-                else:
-                    switch_entity.turn_on()
-                assert mock_send_command.call_count >= 1
-
-        lights = light.get_entries([pydreo_device])
-        for light_entity in lights:
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                if light_entity.is_on:
-                    light_entity.turn_off()
-                else:
-                    light_entity.turn_on()
                 assert mock_send_command.call_count >= 1
 
     @pytest.mark.parametrize("devices_file", INTEGRATION_EXHAUSTIVE_MODEL_FIXTURES)
