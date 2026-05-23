@@ -171,11 +171,13 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
             assert len(self.pydreo_manager.devices) >= 1
 
             for device in self.pydreo_manager.devices:
-                if device.type in ("Air Circulator", "Ceiling Fan"):
+                device_type = device.type.value if hasattr(device.type, "value") else device.type
+
+                if device_type in ("Air Circulator", "Ceiling Fan"):
                     self._exercise_fan_like_entities(device)
-                elif device.type == "Air Conditioner":
+                elif device_type == "Air Conditioner":
                     self._exercise_ac_entities(device)
-                elif device.type == "Heater":
+                elif device_type == "Heater":
                     self._exercise_heater_entities(device)
-                elif device.type == "Humidifier":
+                elif device_type == "Humidifier":
                     self._exercise_humidifier_entities(device)
