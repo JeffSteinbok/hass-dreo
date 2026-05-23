@@ -24,6 +24,7 @@ AIRCIRCULATOR_EXHAUSTIVE_MODELS = [
     "get_devices_HPF008S.json",
     "get_devices_HPF015S.json",
     "get_devices_HPF020S.json",
+    "get_devices_HPF022S.json",
     "get_devices_HPF025S.json",
 ]
 

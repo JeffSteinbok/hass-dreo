@@ -129,8 +129,17 @@ This script will:
 2. Run the deployment script with `--debug` flag
 3. Test your changes in Home Assistant with the debug mode enabled
 4. When satisfied, deploy without `--debug` flag for normal operation
+5. Update [DEVICE_OWNERS.md](DEVICE_OWNERS.md) with the GitHub username of the person who owns/contributed the device data, following the existing table format
 
 Make sure you have Debug logging enabled in Home Assistant so you can confirm your files are loading correctly.
+
+### Devices with Empty controlsConf
+
+Some devices have an empty `controlsConf` in their API response, which means speed ranges, preset modes, and other capabilities must be declared explicitly in `pydreo/models.py`. When this happens:
+
+1. Check the GitHub issue for a **Product Page Link** — the Dreo product page often lists specs like number of speeds, available modes, and oscillation angles.
+2. Use that information to populate the `SUPPORTED_DEVICES` entry with the correct `speed_range`, `preset_modes`, etc.
+3. If the product page doesn't have enough detail or you have follow-up questions, reply to the issue filer to ask for clarification (e.g., "How many speed levels does the fan have?" or "What modes are shown in the Dreo app?").
 
 ## Status Updates
 TODO
