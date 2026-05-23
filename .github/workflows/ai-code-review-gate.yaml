@@ -42,7 +42,7 @@ jobs:
               "github-copilot[bot]",
               "copilot-pull-request-reviewer[bot]",
               "coderabbitai[bot]"
-            ]);
+            ].map((login) => login.toLowerCase()));
 
             const acceptedReviewStates = new Set(["APPROVED", "CHANGES_REQUESTED", "COMMENTED"]);
             const aiReviews = reviews.filter((review) => {
