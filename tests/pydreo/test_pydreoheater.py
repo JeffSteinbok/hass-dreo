@@ -482,3 +482,28 @@ class TestPyDreoHeater(TestBase):
         heater.update_state({TIMERON_KEY: {"state": {"other": 1}}, TIMEROFF_KEY: {"state": {"other": 2}}})
         assert heater._timer_on is None
         assert heater._timer_off is None
+
+    @pytest.mark.parametrize("devices_file", ["get_devices_HSH003S.json", "get_devices_HSH034S.json"])
+    def test_additional_heater_models(self, devices_file: str):  # pylint: disable=invalid-name
+        """Load additional heater models and test core command paths."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.poweron = not bool(heater.poweron)
+            mock_send_command.assert_called_once()
+
+        low, high = heater.htalevel_range
+        target_heat_level = low if heater.htalevel != low else high
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = target_heat_level
+            mock_send_command.assert_called_once()
+
+        for mode in heater.modes:
+            if mode != heater.mode:
+                with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                    heater.mode = mode
+                    mock_send_command.assert_called_once()
+                break

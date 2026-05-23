@@ -434,3 +434,34 @@ class TestPyDreoHumidifier(TestBase):
         humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
         humidifier.handle_server_update({REPORTED_KEY: {MUTEON_KEY: False}})
         assert humidifier._mute_on is False  # pylint: disable=protected-access
+
+    def test_HHM006S(self):  # pylint: disable=invalid-name
+        """Load HHM006S and test core humidifier command paths."""
+        self.get_devices_file_name = "get_devices_HHM006S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.is_on = not bool(humidifier.is_on)
+            mock_send_command.assert_called_once()
+
+        min_humidity, max_humidity = humidifier.target_humidity_range
+        target_humidity = min_humidity if humidifier.target_humidity != min_humidity else max_humidity
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.target_humidity = target_humidity
+            mock_send_command.assert_called_once()
+
+        if humidifier.modes:
+            for mode in humidifier.modes:
+                if mode != humidifier.mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        humidifier.mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+        if humidifier.mist_level is not None:
+            target_mist_level = 1 if humidifier.mist_level != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.mist_level = target_mist_level
+                mock_send_command.assert_called_once()

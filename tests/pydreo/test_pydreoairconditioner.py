@@ -284,3 +284,29 @@ class TestPyDreoAirConditioner(TestBase):
         ac.handle_server_update({REPORTED_KEY: {TEMPERATURE_KEY: 80, TEMPOFFSET_KEY: -5}})
         assert ac.temperature_offset == -5
         assert ac.temperature == 75  # raw 80 + offset -5
+
+    def test_HAC005S(self):  # pylint: disable=invalid-name
+        """Load HAC005S and test core command paths."""
+        self.get_devices_file_name = "get_devices_HAC005S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        ac: PyDreoAC = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ac.poweron = not bool(ac.poweron)
+            mock_send_command.assert_called_once()
+
+        target_mode = None
+        for mode in ac.modes:
+            if mode != ac.mode:
+                target_mode = mode
+                break
+        if target_mode is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.mode = target_mode
+                mock_send_command.assert_called_once()
+
+        if ac.target_humidity is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.target_humidity = ac.target_humidity + 1
+                mock_send_command.assert_called_once()

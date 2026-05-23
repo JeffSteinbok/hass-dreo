@@ -112,3 +112,33 @@ class TestPyDreoCeilingFan(TestBase):
             fan.atm_color_rgb = (255, 0, 0)  # Red
             mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
         fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
+
+    def test_HCF003S(self):  # pylint: disable=invalid-name
+        """Load HCF003S and test core fan/light command paths."""
+        self.get_devices_file_name = "get_devices_HCF003S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = not bool(fan.is_on)
+            mock_send_command.assert_called_once()
+
+        low, high = fan.speed_range
+        target_speed = low if fan.fan_speed != low else high
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = target_speed
+            mock_send_command.assert_called_once()
+
+        if fan.preset_modes:
+            for mode in fan.preset_modes:
+                if mode != fan.preset_mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        fan.preset_mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+        if fan.light_on is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.light_on = not fan.light_on
+                mock_send_command.assert_called_once()

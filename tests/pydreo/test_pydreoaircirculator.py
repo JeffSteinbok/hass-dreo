@@ -651,6 +651,82 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.temperature is not None
         assert isinstance(fan.temperature, (int, float))
 
+    @pytest.mark.parametrize("devices_file", ["get_devices_HPF005S.json", "get_devices_HPF007S.json", "get_devices_HPF020S.json"])
+    def test_additional_hpf_models(self, devices_file: str):  # pylint: disable=invalid-name
+        """Load additional HPF models and test core command paths."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = not bool(fan.is_on)
+            mock_send_command.assert_called_once()
+
+        low, high = fan.speed_range
+        target_speed = low if fan.fan_speed != low else high
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = target_speed
+            mock_send_command.assert_called_once()
+
+        if fan.preset_modes:
+            for mode in fan.preset_modes:
+                if mode != fan.preset_mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        fan.preset_mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+    def test_HAF003S(self):  # pylint: disable=invalid-name
+        """Load HAF003S (two fixtures) and test core command paths."""
+        self.get_devices_file_name = "get_devices_HAF003S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 2
+
+        for fan in self.pydreo_manager.devices:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.is_on = not bool(fan.is_on)
+                mock_send_command.assert_called_once()
+
+            low, high = fan.speed_range
+            target_speed = low if fan.fan_speed != low else high
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.fan_speed = target_speed
+                mock_send_command.assert_called_once()
+
+            if fan.preset_modes:
+                for mode in fan.preset_modes:
+                    if mode != fan.preset_mode:
+                        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                            fan.preset_mode = mode
+                            mock_send_command.assert_called_once()
+                        break
+
+    def test_HAF004S_2REVS(self):  # pylint: disable=invalid-name
+        """Load HAF004S_2REVS fixtures and test core command paths for both revisions."""
+        self.get_devices_file_name = "get_devices_HAF004S_2REVS.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 2
+
+        for fan in self.pydreo_manager.devices:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.is_on = not bool(fan.is_on)
+                mock_send_command.assert_called_once()
+
+            low, high = fan.speed_range
+            target_speed = low if fan.fan_speed != low else high
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.fan_speed = target_speed
+                mock_send_command.assert_called_once()
+
+            if fan.preset_modes:
+                for mode in fan.preset_modes:
+                    if mode != fan.preset_mode:
+                        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                            fan.preset_mode = mode
+                            mock_send_command.assert_called_once()
+                        break
+
     # ---- Coverage tests below ----
 
     def test_static_rgb_helpers(self):  # pylint: disable=invalid-name
