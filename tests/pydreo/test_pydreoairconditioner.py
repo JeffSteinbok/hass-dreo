@@ -13,9 +13,97 @@ from custom_components.dreo.pydreo.pydreoairconditioner import DreoACMode, AC_OS
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+AC_EXHAUSTIVE_MODELS = [
+    "get_devices_HAC005S.json",
+    "get_devices_HAC006S.json",
+]
+
 
 class TestPyDreoAirConditioner(TestBase):
     """Test TestPyDreoAirConditioner class."""
+
+    def _exercise_all_settable_properties(self, ac: PyDreoAC):
+        """Exercise all writable AC properties that the model reports as supported."""
+        _ = ac.poweron
+        _ = ac.devon
+        _ = ac.modes
+        _ = ac.mode
+        _ = ac.fan_mode
+        _ = ac.temperature
+        _ = ac.temperature_offset
+        _ = ac.temperature_units
+        _ = ac.target_temperature
+        _ = ac.humidity
+        _ = ac.target_humidity
+        _ = ac.oscon
+        _ = ac.ptcon
+        _ = ac.display_auto_off
+        _ = ac.ctlstatus
+        _ = ac.childlockon
+        _ = ac.panel_sound
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ac.poweron = not bool(ac.poweron)
+            mock_send_command.assert_called_once()
+
+        if ac.devon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.devon = not bool(ac.devon)
+                mock_send_command.assert_called_once()
+
+        different_mode = next((mode for mode in ac.modes if mode != ac.mode), None)
+        if different_mode is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.mode = different_mode
+                mock_send_command.assert_called_once()
+
+        if ac.fan_mode is not None:
+            new_fan_mode = 1 if int(ac.fan_mode) != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.fan_mode = new_fan_mode
+                mock_send_command.assert_called_once()
+
+        if ac.target_temperature is not None:
+            ac.set_ha_temperature_unit_is_celsius(False)
+            new_target_temperature = ac.target_temperature + 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.target_temperature = new_target_temperature
+                mock_send_command.assert_called_once()
+
+        if ac.target_humidity is not None:
+            new_target_humidity = ac.target_humidity + 1 if ac.target_humidity < 100 else ac.target_humidity - 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.target_humidity = new_target_humidity
+                mock_send_command.assert_called_once()
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ac.oscon = not ac.oscon
+            mock_send_command.assert_called_once()
+
+        if ac.ptcon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.ptcon = not bool(ac.ptcon)
+                mock_send_command.assert_called_once()
+
+        if ac.display_auto_off is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.display_auto_off = not bool(ac.display_auto_off)
+                mock_send_command.assert_called_once()
+
+        if ac.ctlstatus is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.ctlstatus = not bool(ac.ctlstatus)
+                mock_send_command.assert_called_once()
+
+        if ac.childlockon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.childlockon = not bool(ac.childlockon)
+                mock_send_command.assert_called_once()
+
+        if ac.panel_sound is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ac.panel_sound = not bool(ac.panel_sound)
+                mock_send_command.assert_called_once()
 
     def test_HAC006S(self):  # pylint: disable=invalid-name
         """Load air conditioner and test sending commands."""
@@ -307,3 +395,13 @@ class TestPyDreoAirConditioner(TestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ac.target_humidity = new_target_humidity
                 mock_send_command.assert_called_once()
+
+    @pytest.mark.parametrize("devices_file", AC_EXHAUSTIVE_MODELS)
+    def test_all_settable_properties_for_each_model(self, devices_file: str):
+        """Exercise all writable properties for each AC model fixture in this file."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) >= 1
+        for device in self.pydreo_manager.devices:
+            ac: PyDreoAC = device
+            self._exercise_all_settable_properties(ac)

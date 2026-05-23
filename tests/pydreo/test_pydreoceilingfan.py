@@ -10,9 +10,113 @@ from .testbase import TestBase, PATCH_SEND_COMMAND
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+CEILING_FAN_EXHAUSTIVE_MODELS = [
+    "get_devices_HCF001S.json",
+    "get_devices_HCF002S.json",
+    "get_devices_HCF003S.json",
+]
+
 
 class TestPyDreoCeilingFan(TestBase):
     """Test PyDreoFan class."""
+
+    def _exercise_all_settable_properties(self, fan: PyDreoCeilingFan):
+        """Exercise all writable ceiling-fan properties that are supported by a model."""
+        _ = fan.speed_range
+        _ = fan.preset_modes
+        _ = fan.is_on
+        _ = fan.fan_speed
+        _ = fan.preset_mode
+        _ = fan.temperature
+        _ = fan.temperature_units
+        _ = fan.temperature_offset
+        _ = fan.light_on
+        _ = fan.brightness
+        _ = fan.color_temperature
+        _ = fan.atm_light_on
+        _ = fan.atm_brightness
+        _ = fan.atm_color_rgb
+        _ = fan.atm_mode
+        _ = fan.display_auto_off
+        _ = fan.adaptive_brightness
+        _ = fan.panel_sound
+        _ = fan.pm25
+        _ = fan.oscillating
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = not bool(fan.is_on)
+            mock_send_command.assert_called_once()
+
+        low, high = fan.speed_range
+        new_speed = low if fan.fan_speed != low else high
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = new_speed
+            mock_send_command.assert_called_once()
+
+        if fan.preset_modes:
+            for mode in fan.preset_modes:
+                if mode != fan.preset_mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        fan.preset_mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+        if fan.light_on is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.light_on = not fan.light_on
+                mock_send_command.assert_called_once()
+
+        if fan.brightness is not None:
+            new_brightness = 1 if fan.brightness != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.brightness = new_brightness
+                mock_send_command.assert_called_once()
+
+        if fan.color_temperature is not None:
+            new_color_temperature = 1 if fan.color_temperature != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.color_temperature = new_color_temperature
+                mock_send_command.assert_called_once()
+
+        if fan.atm_light_on is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.atm_light_on = not fan.atm_light_on
+                mock_send_command.assert_called_once()
+
+        if fan.atm_brightness is not None:
+            new_atm_brightness = 1 if fan.atm_brightness != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.atm_brightness = new_atm_brightness
+                mock_send_command.assert_called_once()
+
+        if fan.atm_color_rgb is not None:
+            new_color = (255, 0, 0) if fan.atm_color_rgb != (255, 0, 0) else (0, 255, 0)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.atm_color_rgb = new_color
+                mock_send_command.assert_called_once()
+
+        if fan.display_auto_off is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.display_auto_off = not bool(fan.display_auto_off)
+                mock_send_command.assert_called_once()
+
+        if fan.adaptive_brightness is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.adaptive_brightness = not bool(fan.adaptive_brightness)
+                mock_send_command.assert_called_once()
+
+        if fan.panel_sound is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.panel_sound = not bool(fan.panel_sound)
+                mock_send_command.assert_called_once()
+
+        if fan.pm25 is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.pm25 = fan.pm25 + 1
+                mock_send_command.assert_called_once()
+
+        with pytest.raises(NotImplementedError):
+            fan.oscillating = True
 
     def test_HCF001S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
@@ -142,3 +246,13 @@ class TestPyDreoCeilingFan(TestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 fan.light_on = not fan.light_on
                 mock_send_command.assert_called_once()
+
+    @pytest.mark.parametrize("devices_file", CEILING_FAN_EXHAUSTIVE_MODELS)
+    def test_all_settable_properties_for_each_model(self, devices_file: str):
+        """Exercise all writable properties for each ceiling fan model fixture in this file."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) >= 1
+        for device in self.pydreo_manager.devices:
+            fan: PyDreoCeilingFan = device
+            self._exercise_all_settable_properties(fan)
