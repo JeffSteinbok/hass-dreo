@@ -664,9 +664,9 @@ class TestPyDreoAirCirculator(TestBase):
             mock_send_command.assert_called_once()
 
         low, high = fan.speed_range
-        target_speed = low if fan.fan_speed != low else high
+        new_speed = low if fan.fan_speed != low else high
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.fan_speed = target_speed
+            fan.fan_speed = new_speed
             mock_send_command.assert_called_once()
 
         if fan.preset_modes:
@@ -689,9 +689,9 @@ class TestPyDreoAirCirculator(TestBase):
                 mock_send_command.assert_called_once()
 
             low, high = fan.speed_range
-            target_speed = low if fan.fan_speed != low else high
+            new_speed = low if fan.fan_speed != low else high
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                fan.fan_speed = target_speed
+                fan.fan_speed = new_speed
                 mock_send_command.assert_called_once()
 
             if fan.preset_modes:
@@ -714,9 +714,9 @@ class TestPyDreoAirCirculator(TestBase):
                 mock_send_command.assert_called_once()
 
             low, high = fan.speed_range
-            target_speed = low if fan.fan_speed != low else high
+            new_speed = low if fan.fan_speed != low else high
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                fan.fan_speed = target_speed
+                fan.fan_speed = new_speed
                 mock_send_command.assert_called_once()
 
             if fan.preset_modes:

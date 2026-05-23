@@ -496,9 +496,9 @@ class TestPyDreoHeater(TestBase):
             mock_send_command.assert_called_once()
 
         low, high = heater.htalevel_range
-        target_heat_level = low if heater.htalevel != low else high
+        new_heat_level = low if heater.htalevel != low else high
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.htalevel = target_heat_level
+            heater.htalevel = new_heat_level
             mock_send_command.assert_called_once()
 
         for mode in heater.modes:

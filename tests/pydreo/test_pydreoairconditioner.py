@@ -296,17 +296,14 @@ class TestPyDreoAirConditioner(TestBase):
             ac.poweron = not bool(ac.poweron)
             mock_send_command.assert_called_once()
 
-        target_mode = None
-        for mode in ac.modes:
-            if mode != ac.mode:
-                target_mode = mode
-                break
-        if target_mode is not None:
+        different_mode = next((mode for mode in ac.modes if mode != ac.mode), None)
+        if different_mode is not None:
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                ac.mode = target_mode
+                ac.mode = different_mode
                 mock_send_command.assert_called_once()
 
         if ac.target_humidity is not None:
+            new_target_humidity = ac.target_humidity + 1 if ac.target_humidity < 100 else ac.target_humidity - 1
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                ac.target_humidity = ac.target_humidity + 1
+                ac.target_humidity = new_target_humidity
                 mock_send_command.assert_called_once()

@@ -447,9 +447,9 @@ class TestPyDreoHumidifier(TestBase):
             mock_send_command.assert_called_once()
 
         min_humidity, max_humidity = humidifier.target_humidity_range
-        target_humidity = min_humidity if humidifier.target_humidity != min_humidity else max_humidity
+        new_target_humidity = min_humidity if humidifier.target_humidity != min_humidity else max_humidity
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            humidifier.target_humidity = target_humidity
+            humidifier.target_humidity = new_target_humidity
             mock_send_command.assert_called_once()
 
         if humidifier.modes:
