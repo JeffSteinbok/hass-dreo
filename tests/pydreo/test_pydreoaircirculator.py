@@ -12,9 +12,178 @@ from custom_components.dreo.pydreo import PyDreoAirCirculator
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+AIRCIRCULATOR_EXHAUSTIVE_MODELS = [
+    "get_devices_HAF001S.json",
+    "get_devices_HAF003S.json",
+    "get_devices_HAF004S.json",
+    "get_devices_HAF004S_2REVS.json",
+    "get_devices_HAF008S.json",
+    "get_devices_HPF002S.json",
+    "get_devices_HPF005S.json",
+    "get_devices_HPF007S.json",
+    "get_devices_HPF008S.json",
+    "get_devices_HPF015S.json",
+    "get_devices_HPF020S.json",
+    "get_devices_HPF025S.json",
+]
+
 
 class TestPyDreoAirCirculator(TestBase):
     """Test PyDreoAirCirculator class."""
+
+    def _exercise_all_settable_properties(self, fan: PyDreoAirCirculator):
+        """Exercise all writable air-circulator properties supported by a model."""
+        _ = fan.speed_range
+        _ = fan.preset_modes
+        _ = fan.is_on
+        _ = fan.fan_speed
+        _ = fan.preset_mode
+        _ = fan.temperature
+        _ = fan.temperature_units
+        _ = fan.temperature_offset
+        _ = fan.oscillating
+        _ = fan.horizontally_oscillating
+        _ = fan.vertically_oscillating
+        _ = fan.horizontal_angle
+        _ = fan.vertical_angle
+        _ = fan.horizontal_oscillation_angle
+        _ = fan.vertical_oscillation_angle
+        _ = fan.horizontal_osc_angle_left
+        _ = fan.horizontal_osc_angle_right
+        _ = fan.vertical_osc_angle_top
+        _ = fan.vertical_osc_angle_bottom
+        _ = fan.display_auto_off
+        _ = fan.adaptive_brightness
+        _ = fan.panel_sound
+        _ = fan.pm25
+        _ = fan.atm_light_on
+        _ = fan.atm_brightness
+        _ = fan.atm_color_rgb
+        _ = fan.atm_mode
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = not bool(fan.is_on)
+            mock_send_command.assert_called_once()
+
+        low, high = fan.speed_range
+        new_speed = low if fan.fan_speed != low else high
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = new_speed
+            mock_send_command.assert_called_once()
+
+        if fan.preset_modes:
+            for mode in fan.preset_modes:
+                if mode != fan.preset_mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        fan.preset_mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+        if fan.oscillating is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.oscillating = not bool(fan.oscillating)
+                assert mock_send_command.call_count >= 1
+
+        if fan.horizontally_oscillating is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.horizontally_oscillating = not bool(fan.horizontally_oscillating)
+                mock_send_command.assert_called_once()
+
+        if fan.vertically_oscillating is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.vertically_oscillating = not bool(fan.vertically_oscillating)
+                mock_send_command.assert_called_once()
+
+        if fan.horizontal_angle is not None:
+            new_horizontal_angle = fan.horizontal_angle + 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.horizontal_angle = new_horizontal_angle
+                mock_send_command.assert_called_once()
+
+        if fan.vertical_angle is not None:
+            new_vertical_angle = fan.vertical_angle + 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.vertical_angle = new_vertical_angle
+                mock_send_command.assert_called_once()
+
+        if fan.horizontal_oscillation_angle is not None:
+            new_horizontal_oscillation_angle = fan.horizontal_oscillation_angle + 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.horizontal_oscillation_angle = new_horizontal_oscillation_angle
+                mock_send_command.assert_called_once()
+
+        if fan.vertical_oscillation_angle is not None:
+            new_vertical_oscillation_angle = fan.vertical_oscillation_angle + 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.vertical_oscillation_angle = new_vertical_oscillation_angle
+                mock_send_command.assert_called_once()
+
+        if fan.vertical_osc_angle_top is not None and fan.vertical_osc_angle_bottom is not None:
+            new_top = fan.vertical_osc_angle_bottom + 30
+            if new_top == fan.vertical_osc_angle_top:
+                new_top += 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.vertical_osc_angle_top = new_top
+                mock_send_command.assert_called_once()
+
+            new_bottom = fan.vertical_osc_angle_top - 30
+            if new_bottom == fan.vertical_osc_angle_bottom:
+                new_bottom -= 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.vertical_osc_angle_bottom = new_bottom
+                mock_send_command.assert_called_once()
+
+        if fan.horizontal_osc_angle_right is not None and fan.horizontal_osc_angle_left is not None:
+            new_right = fan.horizontal_osc_angle_left + 30
+            if new_right == fan.horizontal_osc_angle_right:
+                new_right += 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.horizontal_osc_angle_right = new_right
+                mock_send_command.assert_called_once()
+
+            new_left = fan.horizontal_osc_angle_right - 30
+            if new_left == fan.horizontal_osc_angle_left:
+                new_left -= 1
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.horizontal_osc_angle_left = new_left
+                mock_send_command.assert_called_once()
+
+        if fan.display_auto_off is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.display_auto_off = not bool(fan.display_auto_off)
+                mock_send_command.assert_called_once()
+
+        if fan.adaptive_brightness is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.adaptive_brightness = not bool(fan.adaptive_brightness)
+                mock_send_command.assert_called_once()
+
+        if fan.panel_sound is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.panel_sound = not bool(fan.panel_sound)
+                mock_send_command.assert_called_once()
+
+        if fan.pm25 is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.pm25 = fan.pm25 + 1
+                mock_send_command.assert_called_once()
+
+        if fan.atm_light_on is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.atm_light_on = not fan.atm_light_on
+                mock_send_command.assert_called_once()
+
+        if fan.atm_brightness is not None:
+            new_atm_brightness = 1 if fan.atm_brightness != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.atm_brightness = new_atm_brightness
+                mock_send_command.assert_called_once()
+
+        if fan.atm_color_rgb is not None:
+            new_color = (255, 0, 0) if fan.atm_color_rgb != (255, 0, 0) else (0, 255, 0)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.atm_color_rgb = new_color
+                mock_send_command.assert_called_once()
 
     def test_HAF004S(self):  # pylint: disable=invalid-name
         """Load circulator fan and test sending commands."""
@@ -651,6 +820,82 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.temperature is not None
         assert isinstance(fan.temperature, (int, float))
 
+    @pytest.mark.parametrize("devices_file", ["get_devices_HPF005S.json", "get_devices_HPF007S.json", "get_devices_HPF020S.json"])
+    def test_additional_hpf_models(self, devices_file: str):  # pylint: disable=invalid-name
+        """Load additional HPF models and test core command paths."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = not bool(fan.is_on)
+            mock_send_command.assert_called_once()
+
+        low, high = fan.speed_range
+        new_speed = low if fan.fan_speed != low else high
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = new_speed
+            mock_send_command.assert_called_once()
+
+        if fan.preset_modes:
+            for mode in fan.preset_modes:
+                if mode != fan.preset_mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        fan.preset_mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+    def test_HAF003S(self):  # pylint: disable=invalid-name
+        """Load HAF003S (two fixtures) and test core command paths."""
+        self.get_devices_file_name = "get_devices_HAF003S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 2
+
+        for fan in self.pydreo_manager.devices:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.is_on = not bool(fan.is_on)
+                mock_send_command.assert_called_once()
+
+            low, high = fan.speed_range
+            new_speed = low if fan.fan_speed != low else high
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.fan_speed = new_speed
+                mock_send_command.assert_called_once()
+
+            if fan.preset_modes:
+                for mode in fan.preset_modes:
+                    if mode != fan.preset_mode:
+                        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                            fan.preset_mode = mode
+                            mock_send_command.assert_called_once()
+                        break
+
+    def test_HAF004S_2REVS(self):  # pylint: disable=invalid-name
+        """Load HAF004S_2REVS fixtures and test core command paths for both revisions."""
+        self.get_devices_file_name = "get_devices_HAF004S_2REVS.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 2
+
+        for fan in self.pydreo_manager.devices:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.is_on = not bool(fan.is_on)
+                mock_send_command.assert_called_once()
+
+            low, high = fan.speed_range
+            new_speed = low if fan.fan_speed != low else high
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.fan_speed = new_speed
+                mock_send_command.assert_called_once()
+
+            if fan.preset_modes:
+                for mode in fan.preset_modes:
+                    if mode != fan.preset_mode:
+                        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                            fan.preset_mode = mode
+                            mock_send_command.assert_called_once()
+                        break
+
     # ---- Coverage tests below ----
 
     def test_static_rgb_helpers(self):  # pylint: disable=invalid-name
@@ -1144,3 +1389,13 @@ class TestPyDreoAirCirculator(TestBase):
         # Simulate a string value for hoscangle (some devices report "0,0")
         fan.update_state({HORIZONTAL_OSCILLATION_ANGLE_KEY: {"state": "0,0", "timestamp": 123}})
         assert fan._horizontal_oscillation_angle is None
+
+    @pytest.mark.parametrize("devices_file", AIRCIRCULATOR_EXHAUSTIVE_MODELS)
+    def test_all_settable_properties_for_each_model(self, devices_file: str):
+        """Exercise all writable properties for each air circulator model fixture in this file."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) >= 1
+        for device in self.pydreo_manager.devices:
+            fan: PyDreoAirCirculator = device
+            self._exercise_all_settable_properties(fan)

@@ -3,15 +3,134 @@
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
+import pytest
 from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+HUMIDIFIER_EXHAUSTIVE_MODELS = [
+    "get_devices_HHM001S.json",
+    "get_devices_HHM003S.json",
+    "get_devices_HHM006S.json",
+    "get_devices_HHM014S.json",
+    "get_devices_HHM015S.json",
+]
+
 
 class TestPyDreoHumidifier(TestBase):
     """Test PyDreoHumidifier class."""
+
+    def _exercise_all_settable_properties(self, humidifier: PyDreoHumidifier):
+        """Exercise all writable humidifier properties that are supported by a model."""
+        _ = humidifier.is_on
+        _ = humidifier.modes
+        _ = humidifier.target_humidity_range
+        _ = humidifier.humidity
+        _ = humidifier.target_humidity
+        _ = humidifier.sleep_target_humidity
+        _ = humidifier.fog_level
+        _ = humidifier.panel_sound
+        _ = humidifier.mode
+        _ = humidifier.wrong
+        _ = humidifier.water_level
+        _ = humidifier.worktime
+        _ = humidifier.display_light
+        _ = humidifier.foglevel
+        _ = humidifier.mist_level
+        _ = humidifier.rgblevel
+        _ = humidifier.ambient_light
+        _ = humidifier.rgbmode
+        _ = humidifier.rgbcolor
+        _ = humidifier.rgbth
+        _ = humidifier.rgbth_low
+        _ = humidifier.rgbth_high
+        _ = humidifier.scheon
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.is_on = not bool(humidifier.is_on)
+            mock_send_command.assert_called_once()
+
+        min_humidity, max_humidity = humidifier.target_humidity_range
+        new_target_humidity = min_humidity if humidifier.target_humidity != min_humidity else max_humidity
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.target_humidity = new_target_humidity
+            mock_send_command.assert_called_once()
+
+        if humidifier.sleep_target_humidity is not None:
+            new_sleep_target = 40 if humidifier.sleep_target_humidity != 40 else 45
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.sleep_target_humidity = new_sleep_target
+                mock_send_command.assert_called_once()
+
+        if humidifier.fog_level is not None:
+            new_fog_level = 1 if humidifier.fog_level != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.fog_level = new_fog_level
+                mock_send_command.assert_called_once()
+
+        if humidifier.panel_sound is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.panel_sound = not bool(humidifier.panel_sound)
+                mock_send_command.assert_called_once()
+
+        if humidifier.modes:
+            for mode in humidifier.modes:
+                if mode != humidifier.mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        humidifier.mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+        if humidifier.display_light is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.display_light = not humidifier.display_light
+                mock_send_command.assert_called_once()
+
+        if humidifier.mist_level is not None:
+            new_mist_level = 1 if humidifier.mist_level != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.mist_level = new_mist_level
+                mock_send_command.assert_called_once()
+
+        if humidifier.rgblevel is not None:
+            new_rgblevel = 0 if int(humidifier.rgblevel) != 0 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.rgblevel = new_rgblevel
+                mock_send_command.assert_called_once()
+
+        if humidifier.ambient_light is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.ambient_light = not humidifier.ambient_light
+                mock_send_command.assert_called_once()
+
+        if humidifier.rgbmode is not None:
+            new_rgbmode = 1 if humidifier.rgbmode != 1 else 0
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.rgbmode = new_rgbmode
+                mock_send_command.assert_called_once()
+
+        if humidifier.rgbcolor is not None:
+            new_rgbcolor = 16711680 if humidifier.rgbcolor != 16711680 else 255
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.rgbcolor = new_rgbcolor
+                mock_send_command.assert_called_once()
+
+        if humidifier.rgbth_low is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.rgbth_low = humidifier.rgbth_low + 1
+                mock_send_command.assert_called_once()
+
+        if humidifier.rgbth_high is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.rgbth_high = humidifier.rgbth_high + 1
+                mock_send_command.assert_called_once()
+
+        if humidifier.scheon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.scheon = not bool(humidifier.scheon)
+                mock_send_command.assert_called_once()
 
     def test_HHM001S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
@@ -434,3 +553,44 @@ class TestPyDreoHumidifier(TestBase):
         humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
         humidifier.handle_server_update({REPORTED_KEY: {MUTEON_KEY: False}})
         assert humidifier._mute_on is False  # pylint: disable=protected-access
+
+    def test_HHM006S(self):  # pylint: disable=invalid-name
+        """Load HHM006S and test core humidifier command paths."""
+        self.get_devices_file_name = "get_devices_HHM006S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.is_on = not bool(humidifier.is_on)
+            mock_send_command.assert_called_once()
+
+        min_humidity, max_humidity = humidifier.target_humidity_range
+        new_target_humidity = min_humidity if humidifier.target_humidity != min_humidity else max_humidity
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.target_humidity = new_target_humidity
+            mock_send_command.assert_called_once()
+
+        if humidifier.modes:
+            for mode in humidifier.modes:
+                if mode != humidifier.mode:
+                    with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                        humidifier.mode = mode
+                        mock_send_command.assert_called_once()
+                    break
+
+        if humidifier.mist_level is not None:
+            target_mist_level = 1 if humidifier.mist_level != 1 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                humidifier.mist_level = target_mist_level
+                mock_send_command.assert_called_once()
+
+    @pytest.mark.parametrize("devices_file", HUMIDIFIER_EXHAUSTIVE_MODELS)
+    def test_all_settable_properties_for_each_model(self, devices_file: str):
+        """Exercise all writable properties for each humidifier model fixture in this file."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) >= 1
+        for device in self.pydreo_manager.devices:
+            humidifier: PyDreoHumidifier = device
+            self._exercise_all_settable_properties(humidifier)

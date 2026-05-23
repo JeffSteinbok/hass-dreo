@@ -10,9 +10,113 @@ from .testbase import TestBase, PATCH_SEND_COMMAND
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+HEATER_EXHAUSTIVE_MODELS = [
+    "get_devices_HSH003S.json",
+    "get_devices_HSH004S.json",
+    "get_devices_HSH009S.json",
+    "get_devices_HSH010S.json",
+    "get_devices_HSH011.json",
+    "get_devices_HSH011S.json",
+    "get_devices_HSH034S.json",
+    "get_devices_WH714S.json",
+]
+
 
 class TestPyDreoHeater(TestBase):
     """Test PyDreoHeater class."""
+
+    def _exercise_all_settable_properties(self, heater: PyDreoHeater):
+        """Exercise all writable heater properties that are supported by a model."""
+        _ = heater.poweron
+        _ = heater.htalevel_range
+        _ = heater.modes
+        _ = heater.devon
+        _ = heater.htalevel
+        _ = heater.ecolevel_range
+        _ = heater.ecolevel
+        _ = heater.mode
+        _ = heater.temperature
+        _ = heater.temperature_offset
+        _ = heater.temperature_units
+        _ = heater.oscon
+        _ = heater.oscangle
+        _ = heater.oscmode
+        _ = heater.ptcon
+        _ = heater.lighton
+        _ = heater.ctlstatus
+        _ = heater.childlockon
+        _ = heater.panel_sound
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.poweron = not bool(heater.poweron)
+            mock_send_command.assert_called_once()
+
+        if heater.htalevel is not None and heater.htalevel_range is not None:
+            low, high = heater.htalevel_range
+            new_heat_level = low if heater.htalevel != low else high
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.htalevel = new_heat_level
+                mock_send_command.assert_called_once()
+
+        different_mode = next((mode for mode in heater.modes if mode != heater.mode), None)
+        if different_mode is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.mode = different_mode
+                mock_send_command.assert_called_once()
+
+        if heater.ecolevel is not None:
+            eco_low, eco_high = heater.ecolevel_range
+            new_eco = eco_low if heater.ecolevel != eco_low else eco_high
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.ecolevel = new_eco
+                mock_send_command.assert_called_once()
+
+        if heater.devon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.devon = not bool(heater.devon)
+                mock_send_command.assert_called_once()
+
+        if heater.oscon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.oscon = not bool(heater.oscon)
+                mock_send_command.assert_called_once()
+
+        if heater.oscangle is not None:
+            new_oscangle = 90 if heater.oscangle != 90 else 120
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.oscangle = new_oscangle
+                mock_send_command.assert_called_once()
+
+        if heater.oscmode is not None:
+            new_oscmode = 1 if heater.oscmode != 1 else 0
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.oscmode = new_oscmode
+                mock_send_command.assert_called_once()
+
+        if heater.ptcon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.ptcon = not bool(heater.ptcon)
+                mock_send_command.assert_called_once()
+
+        if heater._light_on is not None:  # pylint: disable=protected-access
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.lighton = not bool(heater.lighton)
+                mock_send_command.assert_called_once()
+
+        if heater.ctlstatus is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.ctlstatus = not bool(heater.ctlstatus)
+                mock_send_command.assert_called_once()
+
+        if heater.childlockon is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.childlockon = not bool(heater.childlockon)
+                mock_send_command.assert_called_once()
+
+        if heater.panel_sound is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.panel_sound = not bool(heater.panel_sound)
+                mock_send_command.assert_called_once()
 
     def test_HSH009S(self):  # pylint: disable=invalid-name
         """Load heater and test sending commands."""
@@ -482,3 +586,38 @@ class TestPyDreoHeater(TestBase):
         heater.update_state({TIMERON_KEY: {"state": {"other": 1}}, TIMEROFF_KEY: {"state": {"other": 2}}})
         assert heater._timer_on is None
         assert heater._timer_off is None
+
+    @pytest.mark.parametrize("devices_file", ["get_devices_HSH003S.json", "get_devices_HSH034S.json"])
+    def test_additional_heater_models(self, devices_file: str):  # pylint: disable=invalid-name
+        """Load additional heater models and test core command paths."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.poweron = not bool(heater.poweron)
+            mock_send_command.assert_called_once()
+
+        low, high = heater.htalevel_range
+        new_heat_level = low if heater.htalevel != low else high
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = new_heat_level
+            mock_send_command.assert_called_once()
+
+        for mode in heater.modes:
+            if mode != heater.mode:
+                with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                    heater.mode = mode
+                    mock_send_command.assert_called_once()
+                break
+
+    @pytest.mark.parametrize("devices_file", HEATER_EXHAUSTIVE_MODELS)
+    def test_all_settable_properties_for_each_model(self, devices_file: str):
+        """Exercise all writable properties for each heater model fixture in this file."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) >= 1
+        for device in self.pydreo_manager.devices:
+            heater: PyDreoHeater = device
+            self._exercise_all_settable_properties(heater)
