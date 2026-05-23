@@ -5,7 +5,8 @@ from unittest.mock import MagicMock, patch
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
-from custom_components.dreo.pydreo.constant import TemperatureUnit
+from custom_components.dreo.pydreo import DreoDeviceDetails, PyDreoDehumidifier
+from custom_components.dreo.pydreo.constant import DreoDeviceType, TemperatureUnit
 from homeassistant.const import UnitOfTemperature
 from homeassistant.util.unit_conversion import TemperatureConverter
 
@@ -180,6 +181,26 @@ class TestDreoFanHA(TestDeviceBase):
             attrs = test_fan.extra_state_attributes
 
             assert attrs["temperature"] == 72.0
+
+    def test_dehumidifier_fan_extra_attributes_include_temperature(self):
+        """Test dehumidifier fan entity keeps temperature attributes available."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            dehumidifier = object.__new__(PyDreoDehumidifier)
+            dehumidifier._device_definition = DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER)
+            dehumidifier._name = "Test Dehumidifier"
+            dehumidifier._sn = "TEMP126"
+            dehumidifier._model = "DR-HDH001S"
+            dehumidifier._temperature = 70
+
+            test_fan = fan.DreoFanHA(dehumidifier)
+            test_fan.hass = MagicMock()
+            test_fan.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
+            attrs = test_fan.extra_state_attributes
+
+            expected_temp = round(TemperatureConverter.convert(70, UnitOfTemperature.FAHRENHEIT, UnitOfTemperature.CELSIUS), 1)
+            assert attrs["model"] == "DR-HDH001S"
+            assert attrs["sn"] == "TEMP126"
+            assert attrs["temperature"] == expected_temp
 
     def test_turn_on_with_percentage(self):
         """Test turn_on applies percentage when provided."""
