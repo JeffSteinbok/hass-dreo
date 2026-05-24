@@ -33,6 +33,9 @@ from .pydreo.pydreochefmaker import (
 
 from .pydreo.pydreohumidifier import (
     WORKTIME_KEY,
+    FILTERTIME_KEY,
+    FILTERON_KEY,
+    SUSPEND_KEY,
     MODE_NORMAL,
     MODE_AUTO,
     MODE_SLEEP,
@@ -124,6 +127,33 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         native_unit_of_measurement_fn=lambda device: "h",
         value_fn=lambda device: device.worktime,
         exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(WORKTIME_KEY),
+    ),
+DreoSensorEntityDescription(
+        key="Filter Life",
+        translation_key="filter_life",
+        icon="mdi:air-filter",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.filtertime,
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(FILTERTIME_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="Filter Active",
+        translation_key="filter_active",
+        icon="mdi:filter-check",
+        device_class=SensorDeviceClass.ENUM,
+        options=["Active", "Inactive"],
+        value_fn=lambda device: None if device.filteron is None else ("Active" if device.filteron else "Inactive"),
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(FILTERON_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="Target Humidity Reached",
+        translation_key="target_humidity_reached",
+        icon="mdi:water-check",
+        device_class=SensorDeviceClass.ENUM,
+        options=["Yes", "No"],
+        value_fn=lambda device: None if device.suspend is None else ("Yes" if device.suspend else "No"),
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(SUSPEND_KEY),
     ),
 )
 
