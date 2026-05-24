@@ -1,117 +1,126 @@
-"""Dreo API for controlling Humidifiers."""
+"""Dreo API for controling fans."""
 
-# Trigger CI checks
 import logging
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
-    MODE_KEY,
-    MUTEON_KEY,
     POWERON_KEY,
-    HUMIDITY_KEY,
-    TARGET_AUTO_HUMIDITY_KEY,
-    TARGET_SLEEP_HUMIDITY_KEY,
-    FOGLEVEL_KEY,
-    FOG_LEVEL_KEY,
-    LEDKEPTON_KEY,
-    LEDLEVEL_KEY,
-    LED_LEVEL_KEY,
-    RGB_LEVEL,
-    RGB_TH,
-    RGB_MODE,
-    RGB_COLOR,
-    SCHEDULE_ENABLE,
+    FANON_KEY,
+    WINDLEVEL_KEY,
+    TEMPERATURE_KEY,
+    LEDALWAYSON_KEY,
+    VOICEON_KEY,
+    WINDTYPE_KEY,
+    WIND_MODE_KEY,
+    LIGHTSENSORON_KEY,
+    MUTEON_KEY,
+    PM25_KEY,
+    TemperatureUnit,
+    SPEED_RANGE,
+    DreoDeviceSetting,
+    PREFERENCE_TYPE_TEMPERATURE_CALIBRATION,
 )
-
-from .helpers import Helpers
-
 
 from .pydreobasedevice import PyDreoBaseDevice
 from .models import DreoDeviceDetails
+from .helpers import Helpers
 
 _LOGGER = logging.getLogger(__name__)
-
-WATER_LEVEL_STATUS_KEY = "wrong"
-WORKTIME_KEY = "worktime"
-FOGLEVEL_INTERNAL_KEY = "foglevel"
-
-# Status for water level indicator
-WATER_LEVEL_OK = "Ok"
-WATER_LEVEL_EMPTY = "Empty"
-
-LIGHT_ON = "Enable"
-LIGHT_OFF = "Disabled"
-
-WATER_LEVEL_STATUS_MAP = {0: WATER_LEVEL_OK, 1: WATER_LEVEL_EMPTY, 4: WATER_LEVEL_EMPTY, WATER_LEVEL_OK: 0, WATER_LEVEL_EMPTY: 1}
-
-LEDLEVEL_MAP = {0: LIGHT_OFF, 2: LIGHT_ON, LIGHT_OFF: 0, LIGHT_ON: 2}
-
-# Status for mode indicator
-MODE_NORMAL = "normal"
-MODE_AUTO = "auto"
-MODE_SLEEP = "sleep"
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
 
-class PyDreoHumidifier(PyDreoBaseDevice):
-    """Base class for Dreo Humidifiers"""
+class PyDreoFanBase(PyDreoBaseDevice):
+    """Base class for Dreo Fan API Calls."""
 
     def __init__(self, device_definition: DreoDeviceDetails, details: Dict[str, list], dreo: "PyDreo"):
-        """Initialize air conditioner devices."""
+        """Initialize air devices."""
         super().__init__(device_definition, details, dreo)
 
-        self._modes = device_definition.preset_modes
-        if self._modes is None:
-            self._modes = self.parse_modes(details)
+        self._speed_range = None
+        # Check if the device has a speed range defined in the device definition
+        # If not, parse the speed range from the details
+        if device_definition.device_ranges is not None and SPEED_RANGE in device_definition.device_ranges:
+            self._speed_range = device_definition.device_ranges[SPEED_RANGE]
+        if self._speed_range is None:
+            self._speed_range = self.parse_speed_range(details)
+        self._preset_modes = device_definition.preset_modes
+        if self._preset_modes is None:
+            self._preset_modes = self.parse_preset_modes(details)
 
-        self._target_humidity_min = 30
-        self._target_humidity_max = 90
-        controls_conf = details.get("controlsConf", None)
-        if controls_conf:
-            hum_range = controls_conf.get("humRange", None)
-            if hum_range:
-                self._target_humidity_min = hum_range.get("controlMin", 30)
-                self._target_humidity_max = hum_range.get("controlMax", 90)
+        # Check to see if temperature calibration is supported.
+        self._temperature_offset = None
+        if self.is_preference_supported(PREFERENCE_TYPE_TEMPERATURE_CALIBRATION, details):
+            self._temperature_offset = int(self.get_setting(dreo, DreoDeviceSetting.FAN_TEMP_OFFSET, 0))
 
-        self._mode = None
+        self._is_on = False
+        self._power_on_key = None
+        self._fan_speed = None
+
+        self._wind_type = None
+        self._wind_mode = None
+
+        self._temperature = None
+        self._led_always_on = None
+        self._voice_on = None
+        self._light_sensor_on = None
         self._mute_on = None
-        self._humidity = None
-        self._target_humidity = None
-        self._sleep_target_humidity = None
-        self._ledkepton = None
-        self._wrong = None
-        self._worktime = None
-        self._foglevel = None
-        self._rgblevel = None
-        self._rgbth = None
-        self._rgbmode = None
-        self._rgbcolor = None
-        self._scheon = None
-        self._fog_level = None
-        self._ledlevel = None
+        self._pm25 = None
 
-    def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
-        """Parse the preset modes from the details."""
-        modes = []
+    def parse_speed_range(self, details: Dict[str, list]) -> tuple[int, int]:
+        """Parse the speed range from the details."""
+        # There are a bunch of different places this could be, so we're going to look in
+        # multiple places.
+        speed_range: tuple[int, int] = None
         controls_conf = details.get("controlsConf", None)
         if controls_conf is not None:
-            schedule = controls_conf.get("schedule", None)
-            if schedule is not None:
-                modes_node = schedule.get("modes", None)
-                if modes_node is not None:
-                    for mode_item in modes_node:
-                        text = self.get_mode_string(mode_item.get("title", None))
-                        value = mode_item.get("value", None)
-                        modes.append((text, value))
+            extra_configs = controls_conf.get("extraConfigs")
+            if extra_configs is not None:
+                _LOGGER.debug("parse_speed_range: Detected extraConfigs")
+                for extra_config_item in extra_configs:
+                    if extra_config_item.get("key", None) == "control":
+                        _LOGGER.debug("parse_speed_range: Detected extraConfigs/control")
+                        speed_range = self.parse_speed_range_from_control_node(extra_config_item.get("value", None))
+                        if speed_range is not None:
+                            _LOGGER.debug("parse_speed_range: Detected speed range from extraConfig - %s", speed_range)
+                            return speed_range
 
-        modes.sort(key=lambda tup: tup[1])  # sorts in place
-        if len(modes) == 0:
-            _LOGGER.debug("parse_modes: No preset modes detected")
-            modes = None
-        _LOGGER.debug("parse_modes: Detected preset modes - %s", modes)
-        return modes
+            control_node = controls_conf.get("control", None)
+            if control_node is not None:
+                speed_range = self.parse_speed_range_from_control_node(control_node)
+                _LOGGER.debug("parse_speed_range: Detected speed range from controlsConf - %s", speed_range)
+                return speed_range
+        return None
+
+    def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
+        """Parse the speed range from a control node"""
+        for control_item in control_node:
+            if control_item.get("type", None) == "Speed":
+                items = control_item.get("items", None)
+                if items is not None and len(items) >= 2:
+                    speed_low = items[0].get("value", None)
+                    speed_high = items[1].get("value", None)
+                    speed_range = (speed_low, speed_high)
+                    return speed_range
+                _LOGGER.warning("parse_speed_range_from_control_node: Speed items missing or too few: %s", items)
+        return None
+
+    def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
+        """Parse the preset modes from the details."""
+        raise NotImplementedError
+
+    @property
+    def speed_range(self):
+        """Get the speed range"""
+        return self._speed_range
+
+    @property
+    def preset_modes(self) -> list[str]:
+        """Get the list of preset modes"""
+        if self._preset_modes is None:
+            return None
+        return Helpers.get_name_list(self._preset_modes)
 
     @property
     def is_on(self):
@@ -122,104 +131,172 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def is_on(self, value: bool):
         """Set if the fan is on or off"""
         _LOGGER.debug("is_on: is_on.setter - %s", value)
-        self._send_command(POWERON_KEY, value)
+        if self._power_on_key is None:
+            _LOGGER.error("is_on: Cannot set power state — power on key is unknown")
+            return
+        self._send_command(self._power_on_key, value)
 
     @property
-    def modes(self) -> list[str]:
-        """Get the list of modes"""
-        if self._modes is None:
+    def fan_speed(self):
+        """Return the current fan speed"""
+        return self._fan_speed
+
+    @fan_speed.setter
+    def fan_speed(self, fan_speed: int):
+        """Set the fan speed."""
+        if fan_speed < self._speed_range[0] or fan_speed > self._speed_range[1]:
+            _LOGGER.error("fan_speed: Fan speed %s is not in the acceptable range: %s", fan_speed, self._speed_range)
+            raise ValueError(f"fan_speed must be between {self._speed_range[0]} and {self._speed_range[1]}")
+        if self._fan_speed == fan_speed:
+            _LOGGER.debug("fan_speed: fan_speed - value already %s, skipping command", fan_speed)
+            return
+        self._send_command(WINDLEVEL_KEY, fan_speed)
+
+    @property
+    def preset_mode(self):
+        """Return the current preset mode."""
+        """There seems to be a bug in HA fan entity where it does call into preset_mode even if the
+        preset_mode is not supported.  So we need to check if the preset mode is supported before
+        returning the value."""
+        if self._preset_modes is None:
             return None
-        return Helpers.get_name_list(self._modes)
 
-    @property
-    def target_humidity_range(self) -> tuple[int, int]:
-        """Return the (min, max) settable humidity range for this device."""
-        return (self._target_humidity_min, self._target_humidity_max)
+        mode = self._wind_mode
+        if mode is None:
+            mode = self._wind_type
+        if mode is None:
+            return None
 
-    @property
-    def humidity(self):
-        """Get the humidity"""
-        return self._humidity
+        str_value: str = Helpers.name_from_value(self._preset_modes, mode)
+        if str_value is None and isinstance(mode, str):
+            # Some devices report a mode variant (e.g. "auto-regular") while commands
+            # and controlsConf expose the base mode value ("auto").
+            base_mode = mode.split("-", 1)[0]
+            str_value = Helpers.name_from_value(self._preset_modes, base_mode)
+        if str_value is None:
+            return None
 
-    @property
-    def target_humidity(self):
-        """Get the target_humidity. In sleep mode returns sleep target if available."""
-        if self._mode == 2 and self._sleep_target_humidity is not None:
-            return self._sleep_target_humidity
-        return self._target_humidity
+        return str_value
 
-    @target_humidity.setter
-    def target_humidity(self, value: int) -> None:
-        """Set the target humidity. Routes to sleep key when in sleep mode."""
-        _LOGGER.debug("target_humidity: target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
-        if value < 30 or value > 90:
-            raise ValueError(f"Target humidity {value} is out of range (30-90)")
-        if self._mode == 2:
-            if self._sleep_target_humidity == value:
-                _LOGGER.debug("target_humidity: sleep target already %s, skipping command", value)
+    @preset_mode.setter
+    def preset_mode(self, value: str) -> None:
+        if self._preset_modes is None:
+            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support modes.")
+
+        key: str = None
+
+        if self._wind_type is not None:
+            key = WINDTYPE_KEY
+        elif self._wind_mode is not None:
+            key = WIND_MODE_KEY
+        else:
+            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support.")
+
+        numeric_value = Helpers.value_from_name(self._preset_modes, value)
+        if numeric_value is not None:
+            # Check current value
+            current_value = self._wind_mode if self._wind_mode is not None else self._wind_type
+            if current_value == numeric_value:
+                _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
                 return
-            self._sleep_target_humidity = value
-            self._send_command(TARGET_SLEEP_HUMIDITY_KEY, value)
-            return
-        if self._target_humidity == value:
-            _LOGGER.debug("target_humidity: target_humidity - value already %s, skipping command", value)
-            return
-        self._target_humidity = value
-        self._send_command(TARGET_AUTO_HUMIDITY_KEY, value)
+            self._send_command(key, numeric_value)
+        else:
+            raise ValueError(f"Preset mode {value} is not in the acceptable list: {self.preset_modes}")
 
     @property
-    def sleep_target_humidity(self):
-        """Get the sleep target humidity."""
-        return self._sleep_target_humidity
-
-    @sleep_target_humidity.setter
-    def sleep_target_humidity(self, value: int) -> None:
-        """Set the sleep target humidity."""
-        _LOGGER.debug(
-            "sleep_target_humidity: sleep_target_humidity.setter(%s) %s --> %s",
-            self,
-            self._sleep_target_humidity,
-            value,
-        )
-        if value < 30 or value > 90:
-            raise ValueError(f"Sleep target humidity {value} is out of range (30-90)")
-        if self._sleep_target_humidity == value:
-            _LOGGER.debug(
-                "sleep_target_humidity: sleep_target_humidity - value already %s, skipping command",
-                value,
-            )
-            return
-        self._sleep_target_humidity = value
-        self._send_command(TARGET_SLEEP_HUMIDITY_KEY, value)
+    def temperature(self):
+        """Get the temperature"""
+        temp = self._temperature
+        if temp is not None and self.temperature_offset is not None:
+            temp += self.temperature_offset
+        return temp
 
     @property
-    def fog_level(self):
-        """Get the manual fog level (mist intensity)."""
-        return self._fog_level
+    def temperature_units(self) -> TemperatureUnit:
+        """Get the temperature units."""
+        # I'm not sure how the API returns in other regions, so I'm just auto-detecting
+        # based on some reasonable range.
 
-    @fog_level.setter
-    def fog_level(self, value: int) -> None:
-        """Set the manual fog level (mist intensity)."""
-        _LOGGER.debug(
-            "fog_level: fog_level.setter(%s) %s --> %s",
-            self,
-            self._fog_level,
-            value,
-        )
-        if value < 0 or value > 6:
-            raise ValueError(f"Fog level {value} is out of range (0-6)")
-        if self._fog_level == value:
-            _LOGGER.debug(
-                "fog_level: fog_level - value already %s, skipping command",
-                value,
-            )
-            return
-        self._fog_level = value
-        self._send_command(FOG_LEVEL_KEY, value)
+        # Going to return Celsius as the default.  None of this matters if there is no
+        # temperature returned anyway
+        if self._temperature is not None:
+            if self._temperature > 50:
+                return TemperatureUnit.FAHRENHEIT
+
+        return TemperatureUnit.CELSIUS
+
+    @property
+    def temperature_offset(self) -> bool:
+        """Get the temperature calibration value"""
+        return self._temperature_offset
+
+    @temperature_offset.setter
+    def temperature_offset(self, value: int) -> None:
+        """Set the temperature calibration value"""
+        _LOGGER.debug("temperature_offset: temperature_calibration.setter")
+        if self.temperature_offset is not None:
+            self._set_setting(DreoDeviceSetting.FAN_TEMP_OFFSET, value)
+        else:
+            raise NotImplementedError(f"PyDreoFanBase: Attempting to set temperature calibration on a device that doesn't support ({value})")
+
+    @property
+    def oscillating(self) -> bool:
+        """Returns None if oscillation if either horizontal or vertical oscillation is on."""
+        raise NotImplementedError
+
+    @oscillating.setter
+    def oscillating(self, value: bool) -> None:
+        """Enable or disable oscillation"""
+        _LOGGER.debug("oscillating: oscillating.setter")
+        raise NotImplementedError(f"PyDreoFanBase: Attempting to set oscillating on a device that doesn't support ({value})")
+
+    @property
+    def display_auto_off(self) -> bool:
+        """Is the display always on?"""
+        if self._led_always_on is not None:
+            return not self._led_always_on
+
+        return None
+
+    @display_auto_off.setter
+    def display_auto_off(self, value: bool) -> None:
+        """Set if the display is always on"""
+        _LOGGER.debug("display_auto_off: display_auto_off.setter")
+
+        if self._led_always_on is not None:
+            if self._led_always_on == (not value):
+                _LOGGER.debug("display_auto_off: display_auto_off - value already %s, skipping command", value)
+                return
+            self._send_command(LEDALWAYSON_KEY, not value)
+        else:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set display always on on a device that doesn't support.")
+
+    @property
+    def adaptive_brightness(self) -> bool:
+        """Is the display always on?"""
+        if self._light_sensor_on is not None:
+            return self._light_sensor_on
+        else:
+            return None
+
+    @adaptive_brightness.setter
+    def adaptive_brightness(self, value: bool) -> None:
+        """Set if the display is always on"""
+        _LOGGER.debug("adaptive_brightness: adaptive_brightness.setter")
+
+        if self._light_sensor_on is not None:
+            if self._light_sensor_on == value:
+                _LOGGER.debug("adaptive_brightness: adaptive_brightness - value already %s, skipping command", value)
+                return
+            self._send_command(LIGHTSENSORON_KEY, value)
+        else:
+            raise NotImplementedError("PyDreoFanBase: ttempting to set adaptive brightness on on a device that doesn't support.")
 
     @property
     def panel_sound(self) -> bool:
         """Is the panel sound on"""
+        if self._voice_on is not None:
+            return self._voice_on
         if self._mute_on is not None:
             return not self._mute_on
         return None
@@ -227,337 +304,127 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     @panel_sound.setter
     def panel_sound(self, value: bool) -> None:
         """Set if the panel sound"""
-        _LOGGER.debug("panel_sound: panel_sound.setter(%s) --> %s", self.name, value)
-        if self._mute_on == (not value):
-            _LOGGER.debug("panel_sound: panel_sound - value already %s, skipping command", value)
-            return
-        self._send_command(MUTEON_KEY, not value)
+        _LOGGER.debug("panel_sound: panel_sound.setter")
 
-    @property
-    def mode(self):
-        """Return the current mode."""
-        # Handle case where modes haven't been initialized
-        if self._modes is None:
-            _LOGGER.debug("mode: _modes is None, returning None")
-            return None
-
-        str_value: str = Helpers.name_from_value(self._modes, self._mode)
-        if str_value is None:
-            return None
-        return str_value
-
-    @property
-    def wrong(self):
-        """Return the water level status"""
-        return self._wrong
-
-    @property
-    def water_level(self):
-        """Return the water level status"""
-        return self._wrong
-
-    @property
-    def worktime(self):
-        """Return the working time (used since cleaning)"""
-        return self._worktime
-
-    @property
-    def display_light(self) -> bool | None:
-        """Return display (LED) on/off state via ledlevel."""
-        if self._ledlevel is None:
-            return None
-        return self._ledlevel == LIGHT_ON
-
-    @display_light.setter
-    def display_light(self, value: bool) -> None:
-        """Set display (LED) on/off via ledlevel (0=off, 2=on)."""
-        _LOGGER.debug("display_light: display_light.setter(%s) --> %s", self.name, value)
-        desired = LIGHT_ON if value else LIGHT_OFF
-        if self._ledlevel == desired:
-            _LOGGER.debug("display_light: value already %s, skipping command", value)
-            return
-        self._ledlevel = desired  # optimistic update so HA reflects state immediately
-        self._send_command(LEDLEVEL_KEY, LEDLEVEL_MAP[desired])
-
-    @property
-    def foglevel(self) -> int | None:
-        """Raw fog level reported by the API (typically 0-6)."""
-        return self._foglevel
-
-    @property
-    def mist_level(self) -> int | None:
-        """Mist speed level (1-3).
-
-        Many Dreo humidifiers report `foglevel` as a 0-6 scale where
-        2,4,6 correspond to Low/Med/High. We expose a clean 1-3 level.
-        """
-        if self._foglevel is None:
-            return None
-        try:
-            lvl = int(self._foglevel)
-        except (TypeError, ValueError):
-            return None
-        if lvl <= 0:
-            return None
-        return max(1, min(3, (lvl + 1) // 2))
-
-    @mist_level.setter
-    def mist_level(self, value: int) -> None:
-        """Set mist speed level (1-3)."""
-        try:
-            level = int(value)
-        except (TypeError, ValueError):
-            raise ValueError(f"mist_level must be an integer 1-3, got {value!r}")
-        if level < 1 or level > 3:
-            raise ValueError(f"mist_level must be between 1 and 3, got {level}")
-        raw = level * 2  # 2,4,6
-        if self._foglevel == raw:
-            _LOGGER.debug("mist_level: value already %s, skipping command", level)
-            return
-        self._foglevel = raw  # optimistic update
-        self._send_command(FOGLEVEL_KEY, raw)
-
-    @property
-    def rgblevel(self) -> int | None:
-        """Return raw ambient light level reported by the API (0=off, 1=low, 2=full)."""
-        return self._rgblevel
-
-    @rgblevel.setter
-    def rgblevel(self, value: int) -> None:
-        """Set the raw rgblevel value (0=off, 1=low, 2=full)."""
-        _LOGGER.debug("rgblevel: rgblevel.setter(%s) --> %s", self.name, value)
-        if self._rgblevel == value:
-            _LOGGER.debug("rgblevel: value already %s, skipping command", value)
-            return
-        self._rgblevel = value  # optimistic update
-        self._send_command(RGB_LEVEL, value)
-
-    @property
-    def ambient_light(self) -> bool | None:
-        """Return ambient light on/off state based on raw rgblevel."""
-        if self._rgblevel is None:
-            return None
-        return int(self._rgblevel) > 0
-
-    @ambient_light.setter
-    def ambient_light(self, value: bool) -> None:
-        """Set ambient light on/off. Sends rgblevel=2 for on, 0 for off."""
-        _LOGGER.debug("ambient_light: ambient_light.setter(%s) --> %s", self.name, value)
-        desired = 2 if value else 0
-        if self._rgblevel == desired:
-            _LOGGER.debug("ambient_light: value already %s, skipping command", value)
-            return
-        self._rgblevel = desired  # optimistic update
-        self._send_command(RGB_LEVEL, desired)
-
-    @property
-    def rgbmode(self) -> int | None:
-        """Return the ambient light mode (0=humidity indicator, 1=fixed color)."""
-        return self._rgbmode
-
-    @rgbmode.setter
-    def rgbmode(self, value: int) -> None:
-        """Set the ambient light mode."""
-        _LOGGER.debug("rgbmode: rgbmode.setter(%s) --> %s", self.name, value)
-        if self._rgbmode == value:
-            _LOGGER.debug("rgbmode: value already %s, skipping command", value)
-            return
-        self._rgbmode = value  # optimistic update
-        self._send_command(RGB_MODE, value)
-
-    @property
-    def rgbcolor(self) -> int | None:
-        """Return the ambient light RGB color as a packed 24-bit integer."""
-        return self._rgbcolor
-
-    @rgbcolor.setter
-    def rgbcolor(self, value: int) -> None:
-        """Set the ambient light RGB color (packed 24-bit integer)."""
-        _LOGGER.debug("rgbcolor: rgbcolor.setter(%s) --> %s", self.name, value)
-        if self._rgbcolor == value:
-            _LOGGER.debug("rgbcolor: value already %s, skipping command", value)
-            return
-        self._rgbcolor = value  # optimistic update
-        self._send_command(RGB_COLOR, value)
-
-    @property
-    def rgbth(self):
-        """Return raw rgbth string (e.g. '30,65') for ambient light thresholds."""
-        return self._rgbth
-
-    @property
-    def rgbth_low(self) -> int | None:
-        """Return low humidity threshold for ambient light."""
-        if not self._rgbth or not isinstance(self._rgbth, str) or "," not in self._rgbth:
-            return None
-        try:
-            low_str, _ = self._rgbth.split(",", 1)
-            return int(low_str.strip())
-        except (ValueError, AttributeError):
-            return None
-
-    @rgbth_low.setter
-    def rgbth_low(self, value: int) -> None:
-        """Set low humidity threshold for ambient light."""
-        high = self.rgbth_high if self.rgbth_high is not None else 0
-        payload = f"{int(value)},{high}"
-        if self._rgbth == payload:
-            return
-        self._rgbth = payload  # optimistic update
-        self._send_command(RGB_TH, payload)
-
-    @property
-    def rgbth_high(self) -> int | None:
-        """Return high humidity threshold for ambient light."""
-        if not self._rgbth or not isinstance(self._rgbth, str) or "," not in self._rgbth:
-            return None
-        try:
-            _, high_str = self._rgbth.split(",", 1)
-            return int(high_str.strip())
-        except (ValueError, AttributeError):
-            return None
-
-    @rgbth_high.setter
-    def rgbth_high(self, value: int) -> None:
-        """Set high humidity threshold for ambient light."""
-        low = self.rgbth_low if self.rgbth_low is not None else 0
-        payload = f"{low},{int(value)}"
-        if self._rgbth == payload:
-            return
-        self._rgbth = payload  # optimistic update
-        self._send_command(RGB_TH, payload)
-
-    @property
-    def scheon(self):
-        """Returns `True` if the device is on, `False` otherwise."""
-        return self._scheon
-
-    @scheon.setter
-    def scheon(self, value: bool):
-        """Set if the fan is on or off"""
-        _LOGGER.debug("scheon: scheon.setter - %s", value)
-        if self._scheon == value:
-            _LOGGER.debug("scheon: scheon - value already %s, skipping command", value)
-            return
-        self._send_command(SCHEDULE_ENABLE, value)
-
-    @mode.setter
-    def mode(self, value: str) -> None:
-        if self._modes is None:
-            raise NotImplementedError("Attempting to set mode on a device that doesn't support modes.")
-        numeric_value = Helpers.value_from_name(self._modes, value)
-        if numeric_value is not None:
-            if self._mode == numeric_value:
-                _LOGGER.debug("mode: mode - value already %s, skipping command", value)
+        if self._voice_on is not None:
+            if self._voice_on == value:
+                _LOGGER.debug("panel_sound: panel_sound - value already %s, skipping command", value)
                 return
-            self._send_command(MODE_KEY, numeric_value)
+            self._send_command(VOICEON_KEY, value)
+        elif self._mute_on is not None:
+            if self._mute_on == (not value):
+                _LOGGER.debug("panel_sound: panel_sound - value already %s, skipping command", value)
+                return
+            self._send_command(MUTEON_KEY, not value)
         else:
-            raise ValueError(f"Preset mode {value} is not in the acceptable list: {self._modes}")
+            raise NotImplementedError("PyDreoFanBase: Attempting to set panel_sound on a device that doesn't support.")
+
+    @property
+    def pm25(self) -> int:
+        """Get the PM2.5 value"""
+        if self._pm25 is not None:
+            return self._pm25
+        return None
+
+    @pm25.setter
+    def pm25(self, value: int) -> None:
+        """Set the PM2.5 value"""
+        _LOGGER.debug("pm25: pm25.setter")
+
+        if self._pm25 is not None:
+            if self._pm25 == value:
+                _LOGGER.debug("pm25: pm25 - value already %s, skipping command", value)
+                return
+            self._send_command(PM25_KEY, value)
+        else:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set pm25 on a device that doesn't support.")
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
-        super().update_state(state)  # handles _is_on
+        _LOGGER.debug("update_state: update_state")
+        super().update_state(state)
 
-        _LOGGER.debug("update_state: %s - %s", self.name, state)
-        self._mode = self.get_state_update_value(state, MODE_KEY)
+        power_on = self.get_state_update_value(state, POWERON_KEY)
+        if power_on is not None:
+            self._is_on = power_on
+            self._power_on_key = POWERON_KEY
+        else:
+            # If power_on is not in the state, we need to check if the fan is on or off.
+            fan_on = self.get_state_update_value(state, FANON_KEY)
+            if fan_on is not None:
+                self._is_on = fan_on
+                self._power_on_key = FANON_KEY
+            else:
+                _LOGGER.error("update_state: Unable to get power on state from state. Check debug logs for more information.")
+                # Default to POWERON_KEY so is_on setter doesn't send None key
+                if self._power_on_key is None:
+                    self._power_on_key = POWERON_KEY
+
+        self._fan_speed = self.get_state_update_value(state, WINDLEVEL_KEY)
+        if self._fan_speed is None:
+            _LOGGER.error("update_state: Unable to get fan speed from state. Check debug logs for more information.")
+
+        self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
+        self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
+        self._voice_on = self.get_state_update_value(state, VOICEON_KEY)
+        self._wind_type = self.get_state_update_value(state, WINDTYPE_KEY)
+        self._wind_mode = self.get_state_update_value(state, WIND_MODE_KEY)
+        self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
-        self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
-        self._target_humidity = self.get_state_update_value(state, TARGET_AUTO_HUMIDITY_KEY)
-        self._sleep_target_humidity = self.get_state_update_value(state, TARGET_SLEEP_HUMIDITY_KEY)
-        self._ledkepton = self.get_state_update_value(state, LEDKEPTON_KEY)
-        self._ledlevel = self.get_state_update_value_mapped(state, LEDLEVEL_KEY, LEDLEVEL_MAP)
-        self._wrong = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
-        self._worktime = self.get_state_update_value(state, WORKTIME_KEY)
-        self._foglevel = self.get_state_update_value(state, FOGLEVEL_INTERNAL_KEY)
-        self._rgblevel = self.get_state_update_value(state, RGB_LEVEL)
-        self._rgbth = self.get_state_update_value(state, RGB_TH)
-        self._rgbmode = self.get_state_update_value(state, RGB_MODE)
-        self._rgbcolor = self.get_state_update_value(state, RGB_COLOR)
-        self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
-        self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
+        self._pm25 = self.get_state_update_value(state, PM25_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
-        _LOGGER.debug("handle_server_update: handle_server_update(%s): %s", self.name, message)
+        _LOGGER.debug("handle_server_update: handle_server_update")
+        super().handle_server_update(message)
 
-        val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        # Handle power state
+        self._handle_power_state_update(message)
+
+        # Handle common fan properties
+        self._handle_fan_properties_update(message)
+
+    def _handle_power_state_update(self, message):
+        """Handle power state updates"""
+        val_poweron = self.get_server_update_key_value(message, self._power_on_key)
         if isinstance(val_poweron, bool):
             self._is_on = val_poweron
-            _LOGGER.debug("handle_server_update: handle_server_update - poweron is %s", self._is_on)
+            _LOGGER.debug("_handle_power_state_update: _handle_power_state_update - %s is %s", self._power_on_key, self._is_on)
 
-        val_mode = self.get_server_update_key_value(message, MODE_KEY)
-        if isinstance(val_mode, int):
-            self._mode = val_mode
+    def _handle_fan_properties_update(self, message):
+        """Handle common fan properties"""
+        val_wind_level = self.get_server_update_key_value(message, WINDLEVEL_KEY)
+        if isinstance(val_wind_level, int):
+            self._fan_speed = val_wind_level
 
-        val_worktime = self.get_server_update_key_value(message, WORKTIME_KEY)
-        if isinstance(val_worktime, int):
-            self._worktime = val_worktime
+        val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
+        if isinstance(val_temperature, int):
+            self._temperature = val_temperature
 
-        val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
-        if isinstance(val_water_level, int):
-            val_water_level = WATER_LEVEL_STATUS_MAP.get(val_water_level, val_water_level)
-            self._wrong = val_water_level
+        val_display_always_on = self.get_server_update_key_value(message, LEDALWAYSON_KEY)
+        if isinstance(val_display_always_on, bool):
+            self._led_always_on = val_display_always_on
 
-        val_foglevel = self.get_server_update_key_value(message, FOGLEVEL_INTERNAL_KEY)
-        if isinstance(val_foglevel, int):
-            self._foglevel = val_foglevel
+        val_panel_sound = self.get_server_update_key_value(message, VOICEON_KEY)
+        if isinstance(val_panel_sound, bool):
+            self._voice_on = val_panel_sound
 
-        val_rgblevel = self.get_server_update_key_value(message, RGB_LEVEL)
-        if isinstance(val_rgblevel, int):
-            self._rgblevel = val_rgblevel
+        val_wind_mode = self.get_server_update_key_value(message, WIND_MODE_KEY)
+        if isinstance(val_wind_mode, (int, str)):
+            self._wind_mode = val_wind_mode
 
-        val_rgbth = self.get_server_update_key_value(message, RGB_TH)
-        if isinstance(val_rgbth, str):
-            self._rgbth = val_rgbth
+        val_wind_type = self.get_server_update_key_value(message, WINDTYPE_KEY)
+        if isinstance(val_wind_type, int):
+            self._wind_type = val_wind_type
 
-        val_rgbmode = self.get_server_update_key_value(message, RGB_MODE)
-        if isinstance(val_rgbmode, int):
-            self._rgbmode = val_rgbmode
+        val_light_sensor = self.get_server_update_key_value(message, LIGHTSENSORON_KEY)
+        if isinstance(val_light_sensor, bool):
+            self._light_sensor_on = val_light_sensor
 
-        val_rgbcolor = self.get_server_update_key_value(message, RGB_COLOR)
-        if isinstance(val_rgbcolor, int):
-            self._rgbcolor = val_rgbcolor
+        val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
+        if isinstance(val_mute, bool):
+            self._mute_on = val_mute
 
-        val_ledlevel = self.get_server_update_key_value(message, LED_LEVEL_KEY)
-        if isinstance(val_ledlevel, int):
-            self._ledlevel = val_ledlevel
-
-        val_ledlevel = self.get_server_update_key_value(message, LED_LEVEL_KEY)
-        if isinstance(val_ledlevel, int):
-            self._ledlevel = val_ledlevel
-
-        val_scheon = self.get_server_update_key_value(message, SCHEDULE_ENABLE)
-        if isinstance(val_scheon, bool):
-            self._scheon = val_scheon
-
-        val_mute_on = self.get_server_update_key_value(message, MUTEON_KEY)
-        if isinstance(val_mute_on, bool):
-            self._mute_on = val_mute_on
-
-        val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
-        if isinstance(val_humidity, int):
-            self._humidity = val_humidity
-            _LOGGER.debug("handle_server_update: handle_server_update - humidity is %s", self._humidity)
-
-        val_target_humidity = self.get_server_update_key_value(message, TARGET_AUTO_HUMIDITY_KEY)
-        if isinstance(val_target_humidity, int):
-            self._target_humidity = val_target_humidity
-            _LOGGER.debug("handle_server_update: handle_server_update - target_humidity is %s", self._target_humidity)
-
-        val_sleep_target_humidity = self.get_server_update_key_value(message, TARGET_SLEEP_HUMIDITY_KEY)
-        if isinstance(val_sleep_target_humidity, int):
-            self._sleep_target_humidity = val_sleep_target_humidity
-            _LOGGER.debug("handle_server_update: handle_server_update - sleep_target_humidity is %s", self._sleep_target_humidity)
-
-        val_ledkepton = self.get_server_update_key_value(message, LEDKEPTON_KEY)
-        if isinstance(val_ledkepton, bool):
-            self._ledkepton = val_ledkepton
-
-        val_ledlevel = self.get_server_update_key_value(message, LEDLEVEL_KEY)
-        if isinstance(val_ledlevel, int):
-            self._ledlevel = LEDLEVEL_MAP.get(val_ledlevel, LIGHT_OFF)
-
-        val_fog_level = self.get_server_update_key_value(message, FOG_LEVEL_KEY)
-        if isinstance(val_fog_level, int):
-            self._fog_level = val_fog_level
-            _LOGGER.debug("handle_server_update: handle_server_update - fog_level is %s", self._fog_level)
+        val_pm25 = self.get_server_update_key_value(message, PM25_KEY)
+        if isinstance(val_pm25, int):
+            self._pm25 = val_pm25
