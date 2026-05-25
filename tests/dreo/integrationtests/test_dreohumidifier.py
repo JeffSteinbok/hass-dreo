@@ -57,7 +57,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Filter Active", "Filter Life", "Humidity", "Target Humidity Reached", "Use since cleaning HM"])
 
             # Check to see what switches are added - display, sound, schedule
             switches = switch.get_entries([pydreo_humidifier])
@@ -105,7 +105,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"]
 
             # Check to see what lights are added
             lights = light.get_entries([pydreo_humidifier])
@@ -176,7 +176,7 @@ class TestDreoHumidifier(IntegrationTestBase):
             assert worktime_sensor is not None, "Use since cleaning sensor should exist for HHM003S"
             assert worktime_sensor.native_value == 10, "Use since cleaning sensor value should be 10 for HHM003S"
 
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Filter Active", "Filter Life", "Humidity", "Target Humidity Reached", "Use since cleaning HM"])
 
             # Check to see what switches are added
             switches = switch.get_entries([pydreo_humidifier])
@@ -225,7 +225,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Filter Active", "Filter Life", "Humidity", "Target Humidity Reached", "Use since cleaning HM"])
 
             # Check to see what lights are added
             lights = light.get_entries([pydreo_humidifier])
@@ -275,7 +275,7 @@ class TestDreoHumidifier(IntegrationTestBase):
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
-            self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning HM"])
+            self.verify_expected_entities(sensors, ["Filter Active", "Filter Life", "Humidity", "Target Humidity Reached", "Use since cleaning HM"])
 
             # Check to see what lights are added
             lights = light.get_entries([pydreo_humidifier])
