@@ -128,7 +128,15 @@
             "worktime": {
                 "state": 0,
                 "timestamp": 1726026575
-            }
+            },
+            "filtertime": {
+                "state": 75,
+                "timestamp": 1726026575
+            },
+            "filteron": {
+                "state": false,
+                "timestamp": 1726026575
+            }            
         },
         "sn": "HHM001S_1",
         "productId": "1513802928134631426",
