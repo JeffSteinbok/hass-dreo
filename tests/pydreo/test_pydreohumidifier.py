@@ -1,4 +1,4 @@
-"""Tests for Dreo Ceiling Fans"""
+"""Tests for Dreo Humidifiers"""
 
 # pylint: disable=used-before-assignment
 import logging
@@ -47,6 +47,9 @@ class TestPyDreoHumidifier(TestBase):
         _ = humidifier.rgbth_low
         _ = humidifier.rgbth_high
         _ = humidifier.scheon
+        _ = humidifier.filtertime
+        _ = humidifier.filteron
+        _ = humidifier.suspend
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             humidifier.is_on = not bool(humidifier.is_on)
@@ -594,3 +597,55 @@ class TestPyDreoHumidifier(TestBase):
         for device in self.pydreo_manager.devices:
             humidifier: PyDreoHumidifier = device
             self._exercise_all_settable_properties(humidifier)
+            
+    # --- filtertime, filteron, suspend properties ---
+
+    def test_filtertime_property(self):
+        """Test filtertime property returns filter life remaining."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        assert humidifier.is_feature_supported("filtertime") is True
+        assert humidifier.filtertime is not None
+
+    def test_filteron_property(self):
+        """Test filteron property returns filter active state."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        assert humidifier.is_feature_supported("filteron") is True
+        assert humidifier.filteron is not None
+
+    def test_suspend_property(self):
+        """Test suspend property returns target humidity reached state."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        assert humidifier.is_feature_supported("suspend") is True
+        assert humidifier.suspend is not None
+
+    def test_handle_server_update_filtertime(self):
+        """Test handle_server_update processes filtertime."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        humidifier.handle_server_update({REPORTED_KEY: {"filtertime": 50}})
+        assert humidifier.filtertime == 50
+
+    def test_handle_server_update_filteron(self):
+        """Test handle_server_update processes filteron."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        humidifier.handle_server_update({REPORTED_KEY: {"filteron": True}})
+        assert humidifier.filteron is True
+
+    def test_handle_server_update_suspend(self):
+        """Test handle_server_update processes suspend (target humidity reached)."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        humidifier.handle_server_update({REPORTED_KEY: {"suspend": True}})
+        assert humidifier.suspend is True
+        humidifier.handle_server_update({REPORTED_KEY: {"suspend": False}})
+        assert humidifier.suspend is False
