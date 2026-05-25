@@ -1,0 +1,108 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_ssid": "**REDACTED**",
+      "mcu_hardware_model": {
+        "state": "SC95F8613B",
+        "timestamp": 1778859210
+      },
+      "windlevel": {
+        "state": 4,
+        "timestamp": 1778867389
+      },
+      "wifi_rssi": {
+        "state": -51,
+        "timestamp": 1778859210
+      },
+      "windtype": {
+        "state": 1,
+        "timestamp": 1778867416
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1778867456
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1778859210
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1777652527
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1778859210
+      },
+      "voiceon": {
+        "state": true,
+        "timestamp": 1778867483
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1778859210
+      },
+      "module_firmware_version": {
+        "state": "3.8.0",
+        "timestamp": 1778859210
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1778859210
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1778859210
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1777652527
+        },
+        "timestamp": null
+      },
+      "shakehorizon": {
+        "state": false,
+        "timestamp": 1778867426
+      },
+      "network_latency": {
+        "state": 49,
+        "timestamp": 1778859210
+      },
+      "_ota": {
+        "state": 2,
+        "timestamp": 1778859210
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1778859210
+      },
+      "mcu_firmware_version": {
+        "state": "0.1.6",
+        "timestamp": 1778859210
+      },
+      "temperature": {
+        "state": 75,
+        "timestamp": 1778867980
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "ledalwayson": {
+        "state": true,
+        "timestamp": 1778867490
+      },
+      "tempoffset": {
+        "state": 0,
+        "timestamp": 1778859210
+      }
+    },
+    "sn": "HTF021S_1",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}

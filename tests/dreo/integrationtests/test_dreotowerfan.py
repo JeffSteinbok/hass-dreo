@@ -321,6 +321,45 @@ class TestDreoTowerFan(IntegrationTestBase):
             mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: False})
         fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: False}})
 
+    def test_HTF021S(self):  # pylint: disable=invalid-name
+        """Load HTF021S fan and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HTF021S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+
+        # controlsConf is empty on this model; values come from SUPPORTED_DEVICES
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+        assert fan.model == "DR-HTF021S"
+        assert fan.serial_number is not None
+        assert fan.is_on is False
+        assert fan.oscillating is False
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 4}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 12
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 13
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.oscillating = True
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: True}})
+
     def test_HTF007S(self):  # pylint: disable=invalid-name
         """Load HTF007S tower fan and test HA entity."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):

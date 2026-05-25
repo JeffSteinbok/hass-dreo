@@ -209,6 +209,16 @@ SUPPORTED_DEVICES = {
         ],
         device_ranges={SPEED_RANGE: (1, 9)},
     ),
+    "DR-HTF021S": DreoDeviceDetails(
+        device_type=DreoDeviceType.TOWER_FAN,
+        preset_modes=[
+            ("normal", 1),
+            ("natural", 2),
+            ("sleep", 3),
+            ("auto", 4),
+        ],
+        device_ranges={SPEED_RANGE: (1, 12)},
+    ),
     # Air Circulators
     "DR-HAF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
     "DR-HAF004S": DreoDeviceDetails(
