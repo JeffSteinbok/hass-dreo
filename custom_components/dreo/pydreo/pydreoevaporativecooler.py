@@ -192,7 +192,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @property
     def preset_modes(self) -> list[str]:
         """Get the list of preset modes"""
-        if self._preset_modes is None:
+        if not self._preset_modes:
             return None
         if isinstance(self._preset_modes[0], tuple):
             return Helpers.get_name_list(self._preset_modes)
