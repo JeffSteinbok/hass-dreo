@@ -159,6 +159,10 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
 # These prefixes will be listed along with the models in the below collections.
 SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "WH", "DR-HAC", "DR-HHM", "DR-HEC"}
 
+# MCU hardware model strings used to identify specific hardware revisions.
+_MCU_HAF004S_OLD_REV = "SC95F8613B"
+_MCU_HTF007S_OLD_REV = "CMS89F7518/EUR"
+
 
 def _haf004s_mcu_override(device) -> None:
     """Restrict vertical angle range to (0, 90) for DR-HAF004S units with the SC95F8613B MCU.
@@ -172,7 +176,7 @@ def _haf004s_mcu_override(device) -> None:
     mixed = device.raw_state.get("data", {}).get("mixed", {})
     mcu_obj = mixed.get("mcu_hardware_model", {})
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
-    if mcu_model == "SC95F8613B":
+    if mcu_model == _MCU_HAF004S_OLD_REV:
         device._vertical_angle_range = (0, 90)  # pylint: disable=protected-access
 
 
@@ -188,7 +192,7 @@ def _htf007s_mcu_override(device) -> None:
     mixed = device.raw_state.get("data", {}).get("mixed", {})
     mcu_obj = mixed.get("mcu_hardware_model", {})
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
-    if mcu_model == "CMS89F7518/EUR":
+    if mcu_model == _MCU_HTF007S_OLD_REV:
         device._speed_range = (1, 4)  # pylint: disable=protected-access
 
 
@@ -204,7 +208,7 @@ SUPPORTED_DEVICES = {
             ("auto", 4),
         ],
         # Newer hardware revision (default): 8 speed steps.
-        # Older revision (CMS89F7518/EUR MCU): restricted to 4 by _htf007s_mcu_override.
+        # Older revision (_MCU_HTF007S_OLD_REV MCU): restricted to 4 by _htf007s_mcu_override.
         device_ranges={SPEED_RANGE: (1, 8)},
         override_fn=_htf007s_mcu_override,
     ),
