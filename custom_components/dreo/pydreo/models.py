@@ -176,9 +176,38 @@ def _haf004s_mcu_override(device) -> None:
         device._vertical_angle_range = (0, 90)  # pylint: disable=protected-access
 
 
+def _htf007s_mcu_override(device) -> None:
+    """Restrict speed range to (1, 4) for DR-HTF007S units with the CMS89F7518/EUR MCU.
+
+    Older hardware revisions of the Nomad One S using this chip only support 4 speed
+    steps.  Newer revisions report a different chip string and support 8 speed steps,
+    so this function intentionally leaves them untouched.
+    """
+    if device.raw_state is None:
+        return
+    mixed = device.raw_state.get("data", {}).get("mixed", {})
+    mcu_obj = mixed.get("mcu_hardware_model", {})
+    mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
+    if mcu_model == "CMS89F7518/EUR":
+        device._speed_range = (1, 4)  # pylint: disable=protected-access
+
+
 SUPPORTED_DEVICES = {
     # Tower Fans
     "DR-HTF": DreoDeviceDetails(device_type=DreoDeviceType.TOWER_FAN),
+    "DR-HTF007S": DreoDeviceDetails(
+        device_type=DreoDeviceType.TOWER_FAN,
+        preset_modes=[
+            ("normal", 1),
+            ("natural", 2),
+            ("sleep", 3),
+            ("auto", 4),
+        ],
+        # Newer hardware revision (default): 8 speed steps.
+        # Older revision (CMS89F7518/EUR MCU): restricted to 4 by _htf007s_mcu_override.
+        device_ranges={SPEED_RANGE: (1, 8)},
+        override_fn=_htf007s_mcu_override,
+    ),
     "DR-HTF018S": DreoDeviceDetails(
         device_type=DreoDeviceType.TOWER_FAN,
         preset_modes=[
