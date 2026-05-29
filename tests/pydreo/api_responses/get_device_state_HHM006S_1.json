@@ -55,10 +55,6 @@
                 "state": 0,
                 "timestamp": 1771446565
             },
-            "filtertime": {
-                "state": 100,
-                "timestamp": 1771446565
-            },
             "filteron": {
                 "state": false,
                 "timestamp": 1771446565
