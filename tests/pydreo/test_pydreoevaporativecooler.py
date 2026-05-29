@@ -15,6 +15,7 @@ from custom_components.dreo.pydreo.pydreoevaporativecooler import (
     WATER_LEVEL_STATUS_KEY,
     WORKTIME_KEY,
 )
+from custom_components.dreo.pydreo.constant import MODE_KEY
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -247,3 +248,115 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan.handle_server_update({REPORTED_KEY: {TEMPERATURE_KEY: 80, TEMPOFFSET_KEY: -4}})
         assert ec_fan.temperature_offset == -4
         assert ec_fan.temperature == 76  # raw 80 + offset -4
+
+    def test_HEC006S(self):  # pylint: disable=invalid-name
+        """Load DR-HEC006S (TurboCool Misting Fan 516S) and verify basic attributes."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+
+        assert len(self.pydreo_manager.devices) == 1
+
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        assert ec_fan.humidity == 41
+        assert ec_fan.speed_range == (1, 6)
+        assert ec_fan.preset_modes == ["Normal", "Turbo"]
+        assert ec_fan.oscillating is True
+        assert ec_fan.childlockon is False
+        assert ec_fan.preset_mode == "Normal"
+        assert ec_fan.work_time == 42
+        assert ec_fan.water_level == "Ok"
+        assert ec_fan.target_humidity == 55
+        assert ec_fan.temperature == 82
+        assert ec_fan.humidify is True
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.is_on = False
+            mock_send_command.assert_called_once_with(ec_fan, {POWERON_KEY: False})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.fan_speed = 4
+            mock_send_command.assert_called_once_with(ec_fan, {WINDLEVEL_KEY: 4})
+
+        with pytest.raises(ValueError):
+            ec_fan.fan_speed = 7
+
+    def test_HEC006S_preset_mode_setter(self):  # pylint: disable=invalid-name
+        """Test that HEC006S preset_mode setter sends the 'mode' command key."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        # "Turbo" -> mode value 2
+        ec_fan._wind_mode = 1  # set to Normal first
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.preset_mode = "Turbo"
+            mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 2})
+
+        # "Normal" -> mode value 1
+        ec_fan._wind_mode = 2
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.preset_mode = "Normal"
+            mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 1})
+
+        # Duplicate value -- no command sent
+        ec_fan._wind_mode = 1
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.preset_mode = "Normal"
+            mock_send_command.assert_not_called()
+
+        # Invalid mode raises ValueError
+        with pytest.raises(ValueError):
+            ec_fan.preset_mode = "Sleep"
+
+    def test_HEC006S_handle_server_update(self):  # pylint: disable=invalid-name
+        """Test handle_server_update processes WebSocket fields correctly for HEC006S."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        # poweron
+        ec_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        assert ec_fan.is_on is False
+
+        # oscillating
+        ec_fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_KEY: False}})
+        assert ec_fan.oscillating is False
+
+        # humidity
+        ec_fan.handle_server_update({REPORTED_KEY: {HUMIDITY_KEY: 60}})
+        assert ec_fan.humidity == 60
+
+        # target humidity
+        ec_fan.handle_server_update({REPORTED_KEY: {HUMIDITY_TARGET_KEY: 70}})
+        assert ec_fan.target_humidity == 70
+
+        # childlockon
+        ec_fan.handle_server_update({REPORTED_KEY: {CHILDLOCKON_KEY: True}})
+        assert ec_fan.childlockon is True
+
+        # mode: HEC006S uses "mode" key via base class; WebSocket sends 1-based int
+        ec_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+        assert ec_fan._wind_mode == 2
+        assert ec_fan.preset_mode == "Turbo"
+
+        # work_time
+        ec_fan.handle_server_update({REPORTED_KEY: {WORKTIME_KEY: 50}})
+        assert ec_fan.work_time == 50
+
+        # water_level
+        ec_fan.handle_server_update({REPORTED_KEY: {WATER_LEVEL_STATUS_KEY: 1}})
+        assert ec_fan.water_level == "Empty"
+
+        ec_fan.handle_server_update({REPORTED_KEY: {WATER_LEVEL_STATUS_KEY: 0}})
+        assert ec_fan.water_level == "Ok"
+
+    def test_HEC006S_wind_mode_from_state(self):  # pylint: disable=invalid-name
+        """Test that HEC006S correctly reads wind mode from 'mode' state key."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        # After update_state, _wind_mode should be set from the "mode" key (value 1)
+        assert ec_fan._wind_mode == 1
+        assert ec_fan.preset_mode == "Normal"

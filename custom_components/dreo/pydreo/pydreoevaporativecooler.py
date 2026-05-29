@@ -8,9 +8,10 @@ from .constant import (
     CHILDLOCKON_KEY,
     HORIZONTAL_OSCILLATION_KEY,
     HUMIDITY_KEY,
+    MODE_KEY,
     TEMPOFFSET_KEY,
 )
-
+from .helpers import Helpers
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,7 +44,7 @@ WINDMODES = [
     "Auto",
 ]
 
-# Windmodes for evaporative cooler
+# Windmodes for evaporative cooler (HEC002S legacy path, 0-indexed REST → 1-based internal)
 WINDMODE_MAP = {"Normal": 1, "Auto": 2, "Sleep": 3, "Natural": 4, 1: "Normal", 2: "Auto", 3: "Sleep", 4: "Natural"}
 
 if TYPE_CHECKING:
@@ -67,7 +68,11 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._oscillating = None
         self._humidify = None
         self._childlockon = None
-        self._preset_modes = WINDMODES
+        # Use model-defined preset_modes (set by super().__init__) when available;
+        # fall back to the legacy WINDMODES list for devices without explicit configuration.
+        # parse_preset_modes() returns False for this class, so guard with truthiness.
+        if not self._preset_modes:
+            self._preset_modes = WINDMODES
         self._work_time = None
         self._display_auto_off = None
         self._water_level = None
@@ -156,24 +161,41 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         """Return the current preset mode as a string."""
         if self._wind_mode is None:
             return None
+        # Model-defined preset_modes are stored as (name, value) tuples.
+        if self._preset_modes and isinstance(self._preset_modes[0], tuple):
+            return Helpers.name_from_value(self._preset_modes, self._wind_mode)
+        # Legacy WINDMODES path (e.g. HEC002S): use WINDMODE_MAP lookup.
         return WINDMODE_MAP.get(self._wind_mode, self._wind_mode)
 
     @preset_mode.setter
     def preset_mode(self, value: str) -> None:
         """Set preset mode"""
-        if value not in WINDMODES:
-            raise ValueError(f"Preset mode {value} is not in the acceptable list: {WINDMODES}")
-        new_value = WINDMODE_MAP[value]
-        if self._wind_mode == new_value:
-            _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
-            return
-        self._send_command(WIND_MODE_KEY, new_value)
+        if self._preset_modes and isinstance(self._preset_modes[0], tuple):
+            # Model-defined path: send using global MODE_KEY ("mode").
+            numeric_value = Helpers.value_from_name(self._preset_modes, value)
+            if numeric_value is None:
+                raise ValueError(f"Preset mode {value} is not in the acceptable list: {self.preset_modes}")
+            if self._wind_mode == numeric_value:
+                _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
+                return
+            self._send_command(MODE_KEY, numeric_value)
+        else:
+            # Legacy WINDMODES path (e.g. HEC002S): send using local WIND_MODE_KEY ("windmode").
+            if value not in WINDMODES:
+                raise ValueError(f"Preset mode {value} is not in the acceptable list: {WINDMODES}")
+            new_value = WINDMODE_MAP[value]
+            if self._wind_mode == new_value:
+                _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
+                return
+            self._send_command(WIND_MODE_KEY, new_value)
 
     @property
     def preset_modes(self) -> list[str]:
         """Get the list of preset modes"""
-        if WINDMODES is None:
+        if self._preset_modes is None:
             return None
+        if isinstance(self._preset_modes[0], tuple):
+            return Helpers.get_name_list(self._preset_modes)
         return self._preset_modes
 
     @property
@@ -212,7 +234,13 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._humidify = (raw_humidify == 2) if raw_humidify is not None else None
         self._oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
-        self._wind_mode = self._map_wind_mode_from_rest(self.get_state_update_value(state, WIND_MODE_KEY))
+        # Only apply the legacy 0-indexed windmode mapping when the "windmode" key is
+        # actually present.  Devices that use the global "mode" key (e.g. DR-HEC006S)
+        # have _wind_mode already set correctly by super().update_state(), so we must
+        # not overwrite it with the None that _map_wind_mode_from_rest() would return.
+        wind_mode_raw = self.get_state_update_value(state, WIND_MODE_KEY)
+        if wind_mode_raw is not None:
+            self._wind_mode = self._map_wind_mode_from_rest(wind_mode_raw)
         self._work_time = self.get_state_update_value(state, WORKTIME_KEY)
         self._water_level = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
 
