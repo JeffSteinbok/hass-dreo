@@ -20,6 +20,7 @@ from .constant import (
     VERTICAL_ANGLE_RANGE,
     DreoACMode,
     DreoACFanMode,
+    POWERON_KEY,
 )
 
 COOKING_MODES = [
@@ -176,6 +177,11 @@ def _haf004s_mcu_override(device) -> None:
         device._vertical_angle_range = (0, 90)  # pylint: disable=protected-access
 
 
+def _hpf017s_power_override(device) -> None:
+    """Use poweron commands for DR-HPF017S even though REST state reports fanon."""
+    device._power_on_key = POWERON_KEY  # pylint: disable=protected-access
+
+
 SUPPORTED_DEVICES = {
     # Tower Fans
     "DR-HTF": DreoDeviceDetails(device_type=DreoDeviceType.TOWER_FAN),
@@ -246,6 +252,10 @@ SUPPORTED_DEVICES = {
     "DR-HPF015S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         device_ranges={SPEED_RANGE: (1, 12)},
+    ),
+    "DR-HPF017S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        override_fn=_hpf017s_power_override,
     ),
     "DR-HPF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,

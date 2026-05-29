@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2058619456379219970",
+        "sn": "HPF017S_1",
+        "brand": "Dreo",
+        "model": "DR-HPF017S",
+        "productId": "**REDACTED**",
+        "productName": "Air Circulator",
+        "deviceName": "DEBUGTEST - Air Circulator - DR-HPF017S",
+        "shared": false,
+        "series": null,
+        "seriesName": "517S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "g",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202603/31f130480ade104186b38c39b2140182bc.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202603/31609355009e264ad4a505cfa939e12283.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202603/3185dfdb35f9cf45f6b0230e6d3d878f69.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202603/318f1522fa42a64031ad74e2a2ed5640d3.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202603/231ecf591630d646aeb122613550cf5ee9.pdf",
+            "icon": null,
+            "desc": "DR-HPF017S User Manual",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}
