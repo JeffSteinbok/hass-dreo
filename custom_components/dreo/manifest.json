@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/jeffsteinbok/hass-dreo/issues",
   "loggers": ["custom_components.dreo"],
   "requirements": ["websockets"],
-  "version": "1.9.2b1"
+  "version": "1.9.3b1"
 }
