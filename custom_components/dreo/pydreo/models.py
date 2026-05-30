@@ -159,6 +159,10 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
 # These prefixes will be listed along with the models in the below collections.
 SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "WH", "DR-HAC", "DR-HHM", "DR-HEC"}
 
+# MCU hardware model strings used to identify specific hardware revisions.
+_MCU_HAF004S_OLD_REV = "SC95F8613B"
+_MCU_HTF007S_OLD_REV = "CMS89F7518/EUR"
+
 
 def _haf004s_mcu_override(device) -> None:
     """Restrict vertical angle range to (0, 90) for DR-HAF004S units with the SC95F8613B MCU.
@@ -172,13 +176,42 @@ def _haf004s_mcu_override(device) -> None:
     mixed = device.raw_state.get("data", {}).get("mixed", {})
     mcu_obj = mixed.get("mcu_hardware_model", {})
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
-    if mcu_model == "SC95F8613B":
+    if mcu_model == _MCU_HAF004S_OLD_REV:
         device._vertical_angle_range = (0, 90)  # pylint: disable=protected-access
+
+
+def _htf007s_mcu_override(device) -> None:
+    """Restrict speed range to (1, 4) for DR-HTF007S units with the CMS89F7518/EUR MCU.
+
+    Older hardware revisions of the Nomad One S using this chip only support 4 speed
+    steps.  Newer revisions report a different chip string and support 8 speed steps,
+    so this function intentionally leaves them untouched.
+    """
+    if device.raw_state is None:
+        return
+    mixed = device.raw_state.get("data", {}).get("mixed", {})
+    mcu_obj = mixed.get("mcu_hardware_model", {})
+    mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
+    if mcu_model == _MCU_HTF007S_OLD_REV:
+        device._speed_range = (1, 4)  # pylint: disable=protected-access
 
 
 SUPPORTED_DEVICES = {
     # Tower Fans
     "DR-HTF": DreoDeviceDetails(device_type=DreoDeviceType.TOWER_FAN),
+    "DR-HTF007S": DreoDeviceDetails(
+        device_type=DreoDeviceType.TOWER_FAN,
+        preset_modes=[
+            ("normal", 1),
+            ("natural", 2),
+            ("sleep", 3),
+            ("auto", 4),
+        ],
+        # Newer hardware revision (default): 8 speed steps.
+        # Older revision (_MCU_HTF007S_OLD_REV MCU): restricted to 4 by _htf007s_mcu_override.
+        device_ranges={SPEED_RANGE: (1, 8)},
+        override_fn=_htf007s_mcu_override,
+    ),
     "DR-HTF018S": DreoDeviceDetails(
         device_type=DreoDeviceType.TOWER_FAN,
         preset_modes=[
