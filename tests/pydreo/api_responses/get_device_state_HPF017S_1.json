@@ -1,0 +1,148 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -47,
+        "timestamp": 1779891686
+      },
+      "atmspeed": {
+        "state": 1,
+        "timestamp": 1779891686
+      },
+      "atmcolor": {
+        "state": 255,
+        "timestamp": 1779891686
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1779891686
+      },
+      "cruiseconf": {
+        "state": "90,45,-30,-45",
+        "timestamp": 1779891686
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1779648106
+        },
+        "timestamp": null
+      },
+      "fixedconf": {
+        "state": "0,0",
+        "timestamp": 1779891686
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1779891686
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1779891686
+      },
+      "mode": {
+        "state": 4,
+        "timestamp": 1779895347
+      },
+      "network_latency": {
+        "state": 109,
+        "timestamp": 1779891686
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1779891686
+      },
+      "mcu_firmware_version": {
+        "state": "0.2.9",
+        "timestamp": 1779891686
+      },
+      "customconf": {
+        "state": "temp:2444444666666888888AAAAAAC",
+        "timestamp": 1779891686
+      },
+      "oscmode": {
+        "state": 1,
+        "timestamp": 1779891686
+      },
+      "temperature": {
+        "state": 73,
+        "timestamp": 1779897791
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "alignon": {
+        "state": true,
+        "timestamp": 1779891686
+      },
+      "atmmode": {
+        "state": 1,
+        "timestamp": 1779891686
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1779891686
+      },
+      "lighton": {
+        "state": false,
+        "timestamp": 1779891686
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8613B/GL",
+        "timestamp": 1779891686
+      },
+      "wifi_ssid": "**REDACTED**",
+      "windlevel": {
+        "state": 3,
+        "timestamp": 1779897448
+      },
+      "atmbri": {
+        "state": 2,
+        "timestamp": 1779891686
+      },
+      "module_firmware_version": {
+        "state": "3.8.3",
+        "timestamp": 1779891686
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1779891686
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1779891686
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1779648106
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1779891686
+      },
+      "atmon": {
+        "state": false,
+        "timestamp": 1779891686
+      },
+      "fanon": {
+        "state": true,
+        "timestamp": 1779895306
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1779891686
+      },
+      "tempoffset": {
+        "state": 0,
+        "timestamp": 1779891686
+      }
+    },
+    "sn": "HPF017S_1",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}

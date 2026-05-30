@@ -730,6 +730,26 @@ class TestPyDreoAirCirculator(TestBase):
         with pytest.raises(ValueError):
             fan.fan_speed = 13
 
+    def test_HPF017S(self):  # pylint: disable=invalid-name
+        """Test HPF017S uses poweron commands despite reporting fanon in REST state."""
+        self.get_devices_file_name = "get_devices_HPF017S.json"
+        self.pydreo_manager.load_devices()
+
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        assert fan.model == "DR-HPF017S"
+        assert fan.is_on is True
+        assert fan._power_on_key == POWERON_KEY  # pylint: disable=protected-access
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        assert fan.is_on is False
+
     def test_HPF025S(self):  # pylint: disable=invalid-name
         """Test HPF025S tall air circulator fan."""
         self.get_devices_file_name = "get_devices_HPF025S.json"
