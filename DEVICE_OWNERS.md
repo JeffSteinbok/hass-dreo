@@ -110,6 +110,7 @@ Sourced from GitHub issues, PRs, and contributed test data.
 | Model | GitHub User(s) | Evidence |
 |---|---|---|
 | DR-HEC002S | [@antz29](https://github.com/antz29), [@obol2](https://github.com/obol2), [@sbR569](https://github.com/sbR569) | [#285](https://github.com/JeffSteinbok/hass-dreo/issues/285), [#290](https://github.com/JeffSteinbok/hass-dreo/issues/290), [#291](https://github.com/JeffSteinbok/hass-dreo/issues/291) |
+| DR-HEC006S | [@stripedew](https://github.com/stripedew) | [#701](https://github.com/JeffSteinbok/hass-dreo/issues/701) |
 
 ## Dehumidifiers (DR-HDH)
 
@@ -127,4 +128,4 @@ Sourced from GitHub issues, PRs, and contributed test data.
 
 ---
 
-*Last updated: 2026-05-16*
+*Last updated: 2026-05-29*
