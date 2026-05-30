@@ -432,4 +432,11 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
         device_ranges={SPEED_RANGE: (1, 4)},
     ),
+    # DR-HEC006S is the TurboCool Misting Fan 516S.
+    # controlsConf is empty so speed range and preset modes must be hardcoded.
+    "DR-HEC006S": DreoDeviceDetails(
+        device_type=DreoDeviceType.EVAPORATIVE_COOLER,
+        preset_modes=[("Normal", 1), ("Turbo", 2)],
+        device_ranges={SPEED_RANGE: (1, 6)},
+    ),
 }

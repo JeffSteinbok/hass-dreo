@@ -1,0 +1,58 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "currentPage": 1,
+  "pageSize": 100,
+  "totalNum": 1,
+  "totalPage": 1,
+  "familyRooms": null,
+  "data": {
+    "list": [
+      {
+        "deviceId": "2058222376120299522",
+        "sn": "HEC006S_1",
+        "brand": "Dreo",
+        "model": "DR-HEC006S",
+        "productId": "1929721128921149442",
+        "productName": "Misting Fan",
+        "deviceName": "DEBUGTEST - Misting Fan - DR-HEC006S",
+        "shared": false,
+        "series": null,
+        "seriesName": "516S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202601/167e86d224872b45b3b9f7d0a2e0aef18e.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202601/165dfb9ac7742c469997a9baccf53ebcb1.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202601/16dd65c2379b824f1186ed5602962882fe.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202601/161c8d0f57c95040199d227823ebb5aad5.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202602/94c5c4e836a74493789bf802a4ebad41b.pdf",
+            "icon": null,
+            "desc": "DR-HEC006S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}
