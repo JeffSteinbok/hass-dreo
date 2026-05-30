@@ -181,11 +181,11 @@ def _haf004s_mcu_override(device) -> None:
         device._vertical_angle_range = (0, 90)  # pylint: disable=protected-access
 
 
-<<<<<<< HEAD
 def _hpf017s_power_override(device) -> None:
     """Use poweron commands for DR-HPF017S even though REST state reports fanon."""
     device._power_on_key = POWERON_KEY  # pylint: disable=protected-access
-=======
+
+
 def _htf007s_mcu_override(device) -> None:
     """Restrict speed range to (1, 4) for DR-HTF007S units with the CMS89F7518/EUR MCU.
 
@@ -200,7 +200,6 @@ def _htf007s_mcu_override(device) -> None:
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
     if mcu_model == _MCU_HTF007S_OLD_REV:
         device._speed_range = (1, 4)  # pylint: disable=protected-access
->>>>>>> origin/main
 
 
 SUPPORTED_DEVICES = {
