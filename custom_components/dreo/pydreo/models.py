@@ -162,7 +162,7 @@ SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "W
 
 # MCU hardware model strings used to identify specific hardware revisions.
 _MCU_HAF004S_OLD_REV = "SC95F8613B"
-_MCU_HTF007S_OLD_REV = ["CMS89F7518/EUR", "CMS89F7518/USA"]
+_MCU_HTF007S_OLD_REV = ("CMS89F7518/EUR", "CMS89F7518/USA")
 
 
 def _haf004s_mcu_override(device) -> None:
@@ -183,9 +183,9 @@ def _haf004s_mcu_override(device) -> None:
 
 def _htf007s_mcu_override(device) -> None:
     """Restrict speed range to (1, 4) for DR-HTF007S units with CMS89F7518 MCU variants.
-
-    Older hardware revisions of the Nomad One S using CMS89F7518/EUR or CMS89F7518/USA 
-    only support 4 speed steps. Newer revisions report a different chip string and support 
+    
+    Older hardware revisions of the Nomad One S using CMS89F7518/EUR or CMS89F7518/USA
+    only support 4 speed steps. Newer revisions report a different chip string and support
     8 speed steps, so this function intentionally leaves them untouched.
     """
     if device.raw_state is None:
