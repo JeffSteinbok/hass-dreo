@@ -266,6 +266,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def worktime(self):
         """Return the working time (used since cleaning)"""
         return self._worktime
+        
     @property
     def filtertime(self):
         """Return the filter life remaining (%)."""
