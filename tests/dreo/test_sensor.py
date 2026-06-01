@@ -144,8 +144,10 @@ class TestDreoSensorHA(TestDeviceBase):
         device = self.create_mock_device(name="Test Humidifier", serial_number="HUM001", type="Humidifier", features={"filtertime": 75})
 
         entities = sensor.get_entries([device])
-        keys = [e.entity_description.key for e in entities]
-        assert "Filter Life" in keys
+        filter_life = next(e for e in entities if e.entity_description.key == "Filter Life")
+        assert filter_life.native_value == 75
+        assert filter_life._attr_native_unit_of_measurement == "%"
+
 
     def test_sensor_filter_active(self):
         """Test Filter Active sensor creation for humidifiers."""
