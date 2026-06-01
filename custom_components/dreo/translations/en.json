@@ -58,7 +58,10 @@
         "status":            { "name": "Status" },
         "pm25":              { "name": "PM2.5" },
         "water":             { "name": "Water Level" },
-        "use_hours_hm":      { "name": "Use Since Cleaning" }
+        "use_hours_hm":      { "name": "Use Since Cleaning" },
+        "filter_life":       {"name": "Filter Life},
+        "filter_active":     {"name": "Filter Active"},
+        "target_humidity_reached": { "name": "Target Humidity Reached"} 
       },
       "number": {
         "horizontal_angle":             { "name": "Horizontal Angle" },
