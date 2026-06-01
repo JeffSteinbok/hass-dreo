@@ -3,28 +3,15 @@ name: Release Automation
 on:
   workflow_dispatch:
     inputs:
-      bump_part:
-        description: |
-          Version part to bump:
-            minor  → new minor beta (1.8.8 → 1.9.0b1)
-            patch  → new patch beta (1.9.0 → 1.9.1b1)
-            major  → new major beta (1.9.0 → 2.0.0b1)
-            pre_n  → next pre-release (1.9.0b1 → 1.9.0b2)
-            pre_l  → promote (b→rc→stable)
+      bump_type:
+        description: 'Version bump type'
         required: true
         type: choice
         options:
-          - minor
           - patch
+          - minor
           - major
-          - pre_n
-          - pre_l
-        default: minor
-      override_version:
-        description: 'Override: set exact version (e.g. 1.9.1 for direct stable patch). Ignores bump_part.'
-        required: false
-        type: string
-        default: ''
+        default: patch
 
 permissions:
   contents: write
@@ -38,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.bump.outputs.version }}
-      is_prerelease: ${{ steps.bump.outputs.is_prerelease }}
 
     steps:
     - uses: actions/checkout@v4
@@ -61,29 +47,17 @@ jobs:
     - name: Bump version
       id: bump
       run: |
-        OVERRIDE="${{ github.event.inputs.override_version }}"
-        BUMP_PART="${{ github.event.inputs.bump_part }}"
+        BUMP_TYPE="${{ github.event.inputs.bump_type }}"
 
         CURRENT_VERSION=$(bump-my-version show current_version)
         echo "Current version: $CURRENT_VERSION"
+        echo "Bumping part: $BUMP_TYPE"
 
-        if [ -n "$OVERRIDE" ]; then
-          echo "Overriding version to: $OVERRIDE"
-          bump-my-version bump --new-version "$OVERRIDE" patch
-        else
-          echo "Bumping part: $BUMP_PART"
-          bump-my-version bump "$BUMP_PART"
-        fi
+        bump-my-version bump "$BUMP_TYPE"
 
         NEW_VERSION=$(bump-my-version show current_version)
         echo "New version: $NEW_VERSION"
         echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
-        if echo "$NEW_VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(a|b|rc)[0-9]+$'; then
-          echo "is_prerelease=true" >> $GITHUB_OUTPUT
-        else
-          echo "is_prerelease=false" >> $GITHUB_OUTPUT
-        fi
 
     - name: Build Python package
       run: python -m build
@@ -105,7 +79,7 @@ jobs:
         tag_name: v${{ steps.bump.outputs.version }}
         name: Release v${{ steps.bump.outputs.version }}
         draft: true
-        prerelease: ${{ steps.bump.outputs.is_prerelease == 'true' }}
+        prerelease: false
         files: dist/*
 
   # PyPI publishing is handled by publish.yaml, triggered when the draft release is published

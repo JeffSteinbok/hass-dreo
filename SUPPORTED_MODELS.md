@@ -16,6 +16,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HTF010S
 - DR-HTF017S
 - DR-HTF018S
+- DR-HTF021S
 - DR-HTF024S
 
 ### Air Circulators
@@ -95,6 +96,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 ## Evaporative Coolers (DR-HEC Series)
 
 - DR-HEC002S
+- DR-HEC006S (DR-HEC516S TurboCool Misting Fan 516S)
 
 ---
 

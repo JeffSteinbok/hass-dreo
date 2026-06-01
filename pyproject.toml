@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydreo-community"
-version = "1.9.1"
+version = "1.9.7"
 description = "Community Python library for the Dreo cloud API"
 readme = "README.md"
 license = { text = "MIT" }
@@ -33,32 +33,12 @@ where = ["custom_components/dreo"]
 include = ["pydreo*"]
 
 [tool.bumpversion]
-current_version = "1.9.1"
+current_version = "1.9.7"
 commit = true
 tag = true
 tag_name = "v{new_version}"
 message = "Bump version: {current_version} → {new_version}"
-parse = """(?x)
-    ^(?P<major>0|[1-9]\\d*)\\.
-    (?P<minor>0|[1-9]\\d*)\\.
-    (?P<patch>0|[1-9]\\d*)
-    (?:
-        (?P<pre_l>a|b|rc)
-        (?P<pre_n>0|[1-9]\\d*)
-    )?$
-"""
-serialize = [
-    "{major}.{minor}.{patch}{pre_l}{pre_n}",
-    "{major}.{minor}.{patch}",
-]
-
-[tool.bumpversion.parts.pre_l]
-values = ["b", "rc", ""]
-optional_value = ""
-first_value = "b"
-
-[tool.bumpversion.parts.pre_n]
-first_value = "1"
+serialize = ["{major}.{minor}.{patch}"]
 
 [[tool.bumpversion.files]]
 filename = "custom_components/dreo/manifest.json"

@@ -190,14 +190,19 @@ class TestPyDreoTowerFan(TestBase):
             mock_send_command.assert_called_once_with(fan, {OSCON_KEY: True})
 
     def test_HTF007S(self):  # pylint: disable=invalid-name
-        """Load HTF007S tower fan and test sending commands."""
+        """Load HTF007S tower fan (old revision, CMS89F7518/EUR MCU) and test sending commands.
+
+        The old hardware revision only supports 4 speed steps.  The override_fn detects the
+        MCU string and restricts speed_range to (1, 4) even though SUPPORTED_DEVICES defaults
+        to (1, 8) for the newer revision.
+        """
 
         self.get_devices_file_name = "get_devices_HTF007S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
         fan = self.pydreo_manager.devices[0]
 
-        # Test initial state values
+        # Old revision: override_fn restricts speed range to 4
         assert fan.speed_range == (1, 4)
         assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
         assert fan.model == "DR-HTF007S"
@@ -255,6 +260,54 @@ class TestPyDreoTowerFan(TestBase):
 
         with pytest.raises(ValueError):
             fan.fan_speed = 5
+
+    def test_HTF007S_old_rev(self):  # pylint: disable=invalid-name
+        """Load HTF007S old hardware revision and verify speed range is restricted to 4.
+
+        The CMS89F7518/EUR MCU identifies the 4-speed variant; the override_fn
+        should clamp the speed range to (1, 4).
+        """
+        self.get_devices_file_name = "get_devices_HTF007S_2REVS.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 2
+
+        fan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HTF007S"
+        assert fan.speed_range == (1, 4)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+
+    def test_HTF007S_new_rev(self):  # pylint: disable=invalid-name
+        """Load HTF007S new hardware revision and verify speed range is 8.
+
+        The newer revision reports a different MCU string; the override_fn should not
+        fire and the full 8-step speed range from SUPPORTED_DEVICES should be used.
+        """
+        self.get_devices_file_name = "get_devices_HTF007S_2REVS.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 2
+
+        fan = self.pydreo_manager.devices[1]
+        assert fan.model == "DR-HTF007S"
+        assert fan.speed_range == (1, 8)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+
+        # Test fan speed commands (1-8 speed range)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 5
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 5})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 5}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 8
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 8})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 8}})
+
+        # Test speed boundaries
+        with pytest.raises(ValueError):
+            fan.fan_speed = 0
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 9
 
     def test_HTF009S(self):  # pylint: disable=invalid-name
         """Load HTF009S tower fan and test sending commands."""
@@ -552,3 +605,43 @@ class TestPyDreoTowerFan(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.oscillating = False
             mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: False})
+
+    def test_HTF021S(self):  # pylint: disable=invalid-name
+        """Load HTF021S tower fan and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HTF021S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+
+        # controlsConf is empty on this model; values come from SUPPORTED_DEVICES
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+        assert fan.model == "DR-HTF021S"
+        assert fan.device_name is not None
+        assert fan.serial_number is not None
+        assert fan.is_on is False
+        assert fan.fan_speed == 4
+        assert fan.oscillating is False
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 4}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 12
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 13
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.oscillating = True
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})

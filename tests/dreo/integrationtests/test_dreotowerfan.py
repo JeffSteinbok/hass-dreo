@@ -321,8 +321,51 @@ class TestDreoTowerFan(IntegrationTestBase):
             mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: False})
         fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: False}})
 
+    def test_HTF021S(self):  # pylint: disable=invalid-name
+        """Load HTF021S fan and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HTF021S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+
+        # controlsConf is empty on this model; values come from SUPPORTED_DEVICES
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+        assert fan.model == "DR-HTF021S"
+        assert fan.serial_number is not None
+        assert fan.is_on is False
+        assert fan.oscillating is False
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 4}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 12
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 13
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.oscillating = True
+            mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: True}})
+
     def test_HTF007S(self):  # pylint: disable=invalid-name
-        """Load HTF007S tower fan and test HA entity."""
+        """Load HTF007S tower fan (old revision, CMS89F7518/EUR MCU) and test HA entity.
+
+        The old hardware revision only supports 4 speed steps.  The override_fn detects
+        the MCU string and restricts speed_range to (1, 4).
+        """
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
             self.get_devices_file_name = "get_devices_HTF007S.json"
             self.pydreo_manager.load_devices()
@@ -358,6 +401,47 @@ class TestDreoTowerFan(IntegrationTestBase):
             self.verify_expected_entities(switches, ["Display Auto Off", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_fan])
             self.verify_expected_entities(sensors, ["Temperature"])
+
+    def test_HTF007S_old_rev(self):  # pylint: disable=invalid-name
+        """Test HTF007S old hardware revision (CMS89F7518/EUR MCU).
+
+        The override_fn should clamp the speed range to (1, 4) since this
+        chip only supports 4 speed steps.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HTF007S_2REVS.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 2
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            assert pydreo_fan.model == "DR-HTF007S"
+            assert pydreo_fan.speed_range == (1, 4)
+
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.speed_count == 4
+
+    def test_HTF007S_new_rev(self):  # pylint: disable=invalid-name
+        """Test HTF007S new hardware revision.
+
+        The override_fn should not fire; the full 8-step speed range from
+        SUPPORTED_DEVICES should be used.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HTF007S_2REVS.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 2
+
+            pydreo_fan = self.pydreo_manager.devices[1]
+            assert pydreo_fan.model == "DR-HTF007S"
+            assert pydreo_fan.speed_range == (1, 8)
+
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.speed_count == 8
+
+            # Test max speed maps to windlevel 8
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(100)
+                mock_send_command.assert_any_call(pydreo_fan, {WINDLEVEL_KEY: 8})
 
     def test_HTF008S(self):  # pylint: disable=invalid-name
         """Load HTF008S tower fan and test HA entity."""
