@@ -51,14 +51,17 @@
       "scheon":                   { "name": "Programmazione" }
     },
     "sensor": {
-      "temperature":       { "name": "Temperatura" },
-      "humidity":          { "name": "Umidità" },
-      "use_hours":         { "name": "Ore dalla pulizia" },
-      "reach_target_temp": { "name": "Temperatura target raggiunta" },
-      "status":            { "name": "Stato" },
-      "pm25":              { "name": "PM2.5" },
-      "water":             { "name": "Livello acqua" },
-      "use_hours_hm":      { "name": "Ore dalla pulizia" }
+      "temperature":             { "name": "Temperatura" },
+      "humidity":                { "name": "Umidità" },
+      "use_hours":               { "name": "Ore dalla pulizia" },
+      "reach_target_temp":       { "name": "Temperatura target raggiunta" },
+      "status":                  { "name": "Stato" },
+      "pm25":                    { "name": "PM2.5" },
+      "water":                   { "name": "Livello acqua" },
+      "use_hours_hm":            { "name": "Ore dalla pulizia" },
+      "filter_life":             { "name": "Vita del filtro"},
+      "filter_active":           { "name": "Filtro attivo"},
+      "target_humidity_reached": { "name": "Umidità target raggiunta"} 
     },
     "number": {
       "horizontal_angle":             { "name": "Angolo orizzontale" },
