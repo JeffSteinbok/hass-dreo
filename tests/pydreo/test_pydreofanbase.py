@@ -160,11 +160,20 @@ class TestPyDreoFanBase(TestBase):
         assert fan.is_on is not None
 
     def test_is_on_setter_sends_command(self):
-        """Test is_on setter sends power command."""
+        """Test is_on setter sends power command when value changes."""
         fan = self._load_htf005s()
+        # Fan starts ON (poweron: true in fixture); turning off should send command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+
+    def test_is_on_setter_no_command_when_same_value(self):
+        """Test is_on setter does NOT send command when value is already set."""
+        fan = self._load_htf005s()
+        # Fan starts ON (poweron: true in fixture); setting True again should be a no-op
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = True
-            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True})
+            mock_send_command.assert_not_called()
 
     def test_is_on_setter_power_on_key_none(self):
         """Test is_on setter returns early when _power_on_key is None."""

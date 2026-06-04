@@ -37,16 +37,16 @@ class TestDreoAirPurifier(IntegrationTestBase):
             assert ha_fan.name is not None
             assert ha_fan.preset_modes == ["manual"]
 
-            # Test turn on/off
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                ha_fan.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_ap, {POWERON_KEY: True})
-            pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
-
+            # Test turn on/off (fan starts ON in fixture, so turn off first)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_off()
                 mock_send_command.assert_called_once_with(pydreo_ap, {POWERON_KEY: False})
             pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_ap, {POWERON_KEY: True})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
 
             # Test speed (1-18 range); fan off so turn_on fires too
             with patch(PATCH_SEND_COMMAND) as mock_send_command:

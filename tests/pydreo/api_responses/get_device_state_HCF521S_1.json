@@ -1,0 +1,117 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {
+                "state": -45,
+                "timestamp": 1724564509
+            },
+            "scheid": {
+                "state": 0,
+                "timestamp": 1724564509
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 1719426564
+                },
+                "timestamp": null
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1724564509
+            },
+            "mode": {
+                "state": 1,
+                "timestamp": 1724564509
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1724564509
+            },
+            "network_latency": {
+                "state": 85,
+                "timestamp": 1724564509
+            },
+            "module_hardware_model": {
+                "state": "HeFi",
+                "timestamp": 1724564509
+            },
+            "mcu_firmware_version": {
+                "state": "2.5.5",
+                "timestamp": 1724564509
+            },
+            "colortemp": {
+                "state": 50,
+                "timestamp": 1724564509
+            },
+            "module_hardware_mac": {
+                "state": "**REDACTED**",
+                "timestamp": 1724564509
+            },
+            "muteon": {
+                "state": false,
+                "timestamp": 1724564509
+            },
+            "lighton": {
+                "state": false,
+                "timestamp": 1724564509
+            },
+            "wifi_ssid": {
+                "state": "**REDACTED**",
+                "timestamp": 1721672047
+            },
+            "mcu_hardware_model": {
+                "state": "FP6063U/US",
+                "timestamp": 1724564509
+            },
+            "windlevel": {
+                "state": 6,
+                "timestamp": 1724564509
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1724564509
+            },
+            "module_firmware_version": {
+                "state": "3.7.11",
+                "timestamp": 1724564509
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1724564509
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 1721672046
+                },
+                "timestamp": null
+            },
+            "predefine": {
+                "state": "0",
+                "timestamp": 1724564509
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1724564509
+            },
+            "brightness": {
+                "state": 75,
+                "timestamp": 1724564509
+            },
+            "scenes": {
+                "state": "{\"mode\":0,\"du\":600,\"minbri\":0,\"maxbri\":0}",
+                "timestamp": 1724564509
+            },
+            "fanon": {
+                "state": false,
+                "timestamp": 1724923407
+            }
+        },
+        "sn": "HCF521S_1",
+        "productId": "**REDACTED**",
+        "region": "us-east-2/emq"
+    }
+}
