@@ -51,14 +51,17 @@
         "scheon":                   { "name": "Schedule" }
       },
       "sensor": {
-        "temperature":       { "name": "Temperature" },
-        "humidity":          { "name": "Humidity" },
-        "use_hours":         { "name": "Use Since Cleaning" },
-        "reach_target_temp": { "name": "Target Temp Reached" },
-        "status":            { "name": "Status" },
-        "pm25":              { "name": "PM2.5" },
-        "water":             { "name": "Water Level" },
-        "use_hours_hm":      { "name": "Use Since Cleaning" }
+        "temperature":             { "name": "Temperature" },
+        "humidity":                { "name": "Humidity" },
+        "use_hours":               { "name": "Use Since Cleaning" },
+        "reach_target_temp":       { "name": "Target Temp Reached" },
+        "status":                  { "name": "Status" },
+        "pm25":                    { "name": "PM2.5" },
+        "water":                   { "name": "Water Level" },
+        "use_hours_hm":            { "name": "Use Since Cleaning" },
+        "filter_life":             { "name": "Filter Life" },
+        "filter_active":           { "name": "Filter Active" },
+        "target_humidity_reached": { "name": "Target Humidity Reached" } 
       },
       "number": {
         "horizontal_angle":             { "name": "Horizontal Angle" },

@@ -138,3 +138,31 @@ class TestDreoSensorHA(TestDeviceBase):
         entities = sensor.get_entries([device])
         keys = [e.entity_description.key for e in entities]
         assert "Status" in keys
+        
+    def test_sensor_filter_life(self):
+        """Test Filter Life sensor creation for humidifiers."""
+        device = self.create_mock_device(name="Test Humidifier", serial_number="HUM001", type="Humidifier", features={"filtertime": 75})
+
+        entities = sensor.get_entries([device])
+        filter_life = next(e for e in entities if e.entity_description.key == "Filter Life")
+        assert filter_life.native_value == 75
+        assert filter_life._attr_native_unit_of_measurement == "%"
+
+
+    def test_sensor_filter_active(self):
+        """Test Filter Active sensor creation for humidifiers."""
+        device = self.create_mock_device(name="Test Humidifier", serial_number="HUM001", type="Humidifier", features={"filteron": False})
+
+        entities = sensor.get_entries([device])
+        filter_active = next(e for e in entities if e.entity_description.key == "Filter Active")
+        assert filter_active.native_value == "Inactive"
+        assert filter_active.native_value in filter_active._attr_options
+
+    def test_sensor_target_humidity_reached(self):
+        """Test Target Humidity Reached sensor creation for humidifiers."""
+        device = self.create_mock_device(name="Test Humidifier", serial_number="HUM001", type="Humidifier", features={"suspend": True})
+
+        entities = sensor.get_entries([device])
+        target_reached = next(e for e in entities if e.entity_description.key == "Target Humidity Reached")
+        assert target_reached.native_value == "Yes"
+        assert target_reached.native_value in target_reached._attr_options

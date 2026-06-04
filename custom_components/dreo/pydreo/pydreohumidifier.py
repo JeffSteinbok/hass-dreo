@@ -34,6 +34,9 @@ _LOGGER = logging.getLogger(__name__)
 WATER_LEVEL_STATUS_KEY = "wrong"
 WORKTIME_KEY = "worktime"
 FOGLEVEL_INTERNAL_KEY = "foglevel"
+FILTERTIME_KEY = "filtertime"
+FILTERON_KEY = "filteron"
+SUSPEND_KEY = "suspend"
 
 # Status for water level indicator
 WATER_LEVEL_OK = "Ok"
@@ -91,6 +94,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._scheon = None
         self._fog_level = None
         self._ledlevel = None
+        self._filtertime = None
+        self._filteron = None
+        self._suspend = None
 
     def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -260,6 +266,21 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def worktime(self):
         """Return the working time (used since cleaning)"""
         return self._worktime
+        
+    @property
+    def filtertime(self):
+        """Return the filter life remaining (%)."""
+        return self._filtertime
+
+    @property
+    def filteron(self) -> bool | None:
+        """Return whether the demineralization filter is active."""
+        return self._filteron
+
+    @property
+    def suspend(self) -> bool | None:
+        """Return True if humidifier is suspended (target humidity reached)."""
+        return self._suspend        
 
     @property
     def display_light(self) -> bool | None:
@@ -475,6 +496,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._rgbcolor = self.get_state_update_value(state, RGB_COLOR)
         self._scheon = self.get_state_update_value(state, SCHEDULE_ENABLE)
         self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
+        self._filtertime = self.get_state_update_value(state, FILTERTIME_KEY)
+        self._filteron = self.get_state_update_value(state, FILTERON_KEY)
+        self._suspend = self.get_state_update_value(state, SUSPEND_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -561,3 +585,15 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         if isinstance(val_fog_level, int):
             self._fog_level = val_fog_level
             _LOGGER.debug("handle_server_update: handle_server_update - fog_level is %s", self._fog_level)
+            
+        val_filtertime = self.get_server_update_key_value(message, FILTERTIME_KEY)
+        if isinstance(val_filtertime, int):
+            self._filtertime = val_filtertime
+
+        val_filteron = self.get_server_update_key_value(message, FILTERON_KEY)
+        if isinstance(val_filteron, bool):
+            self._filteron = val_filteron
+
+        val_suspend = self.get_server_update_key_value(message, SUSPEND_KEY)
+        if isinstance(val_suspend, bool):
+            self._suspend = val_suspend            
