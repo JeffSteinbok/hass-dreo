@@ -230,6 +230,7 @@ PRESET_MODE_STRINGS = {
     "device_fans_mode_sleep": "sleep",
     "device_fans_mode_auto": "auto",
     "device_control_mode_auto": "auto",
+    "base_auto": "auto",
     "device_control_mode_turbo": "turbo",
     "base_reverse": "reverse",
     "device_control_custom": "custom",

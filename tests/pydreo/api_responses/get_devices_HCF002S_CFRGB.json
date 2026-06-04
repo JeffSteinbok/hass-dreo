@@ -1,0 +1,248 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2060364783267950593",
+        "sn": "HCF002S_CFRGB_1",
+        "brand": "Dreo",
+        "model": "DR-HCF002S",
+        "productId": "**REDACTED**",
+        "productName": "Ceiling Fan",
+        "deviceName": "DEBUGTEST - Ceiling Fan - DR-HCF002S RGBIC",
+        "shared": false,
+        "series": null,
+        "seriesName": "CF712S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "controlsConf": {
+          "template": "DR-HCF002S",
+          "lottie": {
+            "key": "poweron",
+            "frames": [
+              {
+                "value": 0,
+                "frame": [
+                  0
+                ]
+              },
+              {
+                "value": 1,
+                "frame": [
+                  2
+                ]
+              }
+            ]
+          },
+          "schedule": {
+            "modes": []
+          },
+          "cards": [
+            {
+              "type": 8,
+              "title": "",
+              "icon": "",
+              "image": "",
+              "url": "dreo://nav/device/schedule?deviceSn={sn}",
+              "show": true,
+              "key": ""
+            },
+            {
+              "type": 6,
+              "title": "home_bedtime_light",
+              "icon": "ic_bedtime_light",
+              "image": "",
+              "url": "dreo://nav/device/bedtimelight?deviceSn=${sn}",
+              "show": true,
+              "key": ""
+            },
+            {
+              "type": 6,
+              "title": "device_settings_title",
+              "icon": "ic_setting",
+              "image": "",
+              "url": "dreo://nav/device/setting?deviceSn=${sn}",
+              "show": true,
+              "key": "setting"
+            }
+          ],
+          "feature": {
+            "schedule": {
+              "enable": "",
+              "localSupport": true,
+              "module": [
+                {
+                  "type": "HeFi",
+                  "version": "0.0.1"
+                }
+              ]
+            }
+          },
+          "preference": [
+            {
+              "id": "200",
+              "type": "Panel Sound",
+              "title": "dev_ctrl_audio_feedback",
+              "image": "ic_mute",
+              "reverse": true,
+              "cmd": "muteon"
+            }
+          ],
+          "control": [
+            {
+              "id": "110",
+              "type": "Speed",
+              "title": "device_control_speed",
+              "items": [
+                {
+                  "text": "1",
+                  "cmd": "windlevel",
+                  "value": 1
+                },
+                {
+                  "text": "12",
+                  "cmd": "windlevel",
+                  "value": 12
+                }
+              ]
+            },
+            {
+              "id": "130",
+              "type": "CFFan",
+              "title": "base_fan",
+              "cmd": "fanon",
+              "items": [
+                {
+                  "text": "device_fans_mode_straight",
+                  "textColors": [
+                    "#D5D6D7",
+                    "#333333"
+                  ],
+                  "image": "ic_normal_wind",
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#25D7E4"
+                  ],
+                  "cmd": "mode",
+                  "value": 1
+                },
+                {
+                  "text": "device_fans_mode_natural",
+                  "textColors": [
+                    "#D5D6D7",
+                    "#333333"
+                  ],
+                  "image": "ic_natural_wind",
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#2CDD96"
+                  ],
+                  "cmd": "mode",
+                  "value": 2
+                },
+                {
+                  "text": "device_control_mode_sleep",
+                  "textColors": [
+                    "#D5D6D7",
+                    "#333333"
+                  ],
+                  "image": "ic_sleep_wind",
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#6249DF"
+                  ],
+                  "cmd": "mode",
+                  "value": 3
+                },
+                {
+                  "text": "base_auto",
+                  "textColors": [
+                    "#D5D6D7",
+                    "#333333"
+                  ],
+                  "image": "ic_auto_wind",
+                  "imageColors": [
+                    "#D5D6D7",
+                    "#397EED"
+                  ],
+                  "cmd": "mode",
+                  "value": 5
+                }
+              ]
+            },
+            {
+              "id": "140",
+              "type": "CFLight",
+              "title": "device_control_light",
+              "cmd": "lighton",
+              "items": [
+                {
+                  "type": "light",
+                  "text": "device_fans_mode_natural",
+                  "image": "ic_cf_light",
+                  "cmd": "brightness",
+                  "maxValue": 100,
+                  "minValue": 1
+                },
+                {
+                  "type": "color",
+                  "text": "device_control_mode_sleep",
+                  "image": "ic_color_bar",
+                  "cmd": "colortemp",
+                  "maxValue": 100,
+                  "minValue": 0
+                }
+              ]
+            },
+            {
+              "id": "150",
+              "type": "CFRGB",
+              "title": "RGB",
+              "cmd": "atmon",
+              "items": []
+            }
+          ],
+          "category": "Ceiling Fan",
+          "version": {
+            "minControlVer": "2.6.8",
+            "minPairingVer": "2.5.12"
+          },
+          "setting": [
+            {
+              "text": "Firmware Version",
+              "image": "image.png",
+              "value": "1.0.0",
+              "url": "dreo://control"
+            }
+          ]
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202409/110ca66a28afea4e619d82606ea5a05f1f.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202404/29/038729e81fbf482e8cae9e2c6e489c45.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": []
+      }
+    ]
+  }
+}
