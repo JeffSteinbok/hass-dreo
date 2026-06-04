@@ -215,10 +215,14 @@ class PyDreoCeilingFan(PyDreoFanBase):
         r_int, g_int, b_int = self._clamp_rgb_tuple(rgb)
         color_value = self._pack_rgb_to_int((r_int, g_int, b_int))
         _LOGGER.debug("atm_color_rgb: atm_color_rgb.setter - RGB(%d,%d,%d) -> %d", r_int, g_int, b_int, color_value)
-        if self._atm_color is None:
-            _LOGGER.error("atm_color_rgb: Atmosphere color not supported by this fan model.")
+        # Guard on atm_light_on (not _atm_color): some device variants track the atmosphere
+        # light via atmon/atmbri but do not echo atmcolor in their state heartbeat.
+        # We still allow sending the atmcolor command as long as the atmosphere light
+        # feature itself is present on the device.
+        if self._atm_light_on is None:
+            _LOGGER.error("atm_color_rgb: Atmosphere light not supported by this fan model.")
             return
-        if self._atm_color == color_value:
+        if self._atm_color is not None and self._atm_color == color_value:
             _LOGGER.debug("atm_color_rgb: atm_color_rgb - value already %s, skipping command", color_value)
             return
         self._send_command(ATMCOLOR_KEY, color_value)
@@ -302,5 +306,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
     def is_feature_supported(self, feature: str) -> bool:
         """Check if this ceiling fan supports a specific feature"""
         if feature == "atm_light":
+            return self._atm_light_on is not None
+        # atm_color_rgb is considered supported whenever the atmosphere light itself is
+        # present on the device.  Some device variants (e.g. DR-HCF002S RGBIC) do not
+        # echo "atmcolor" back in their state heartbeat, so _atm_color stays None and the
+        # base implementation (which uses getattr/None-check) would wrongly report the
+        # feature as unsupported.
+        if feature == "atm_color_rgb":
             return self._atm_light_on is not None
         return super().is_feature_supported(feature)

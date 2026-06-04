@@ -164,6 +164,61 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 # Should send atmcolor command (atmon sent first automatically)
                 assert mock_send_command.call_count == 2  # atmon + atmcolor
 
+    def test_HCF002S_CFRGB(self):  # pylint: disable=invalid-name
+        """Load DR-HCF002S RGBIC variant (CFRGB control type) and verify that RGB colour
+        and colour-temperature commands are generated even when 'atmcolor' was absent
+        from the device's initial state.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+
+            assert pydreo_fan.model == "DR-HCF002S"
+            assert pydreo_fan.speed_range == (1, 12)
+            assert ha_fan.speed_count == 12
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+
+            # Both main light and RGB light entities should be created
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["Light", "RGB Light"])
+
+            # ---- Main light (colour temperature) ----
+            main_light = self.get_entity_by_key(lights, "Light")
+            assert main_light is not None
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                main_light.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True}})
+
+            # Setting brightness while light is already on must send only the brightness command
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                main_light.turn_on(brightness=128)
+                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
+
+            # ---- RGB atmosphere light ----
+            rgb_light = self.get_entity_by_key(lights, "RGB Light")
+            assert rgb_light is not None
+            # Device reported atmon=true but no atmcolor, so rgb_color is unknown
+            assert rgb_light.rgb_color is None
+            # atmon=true in initial state, so the RGB light should be "on"
+            assert rgb_light.is_on is True
+
+            # atmon is already True, so turn_on() sends no commands
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on()
+                mock_send_command.assert_not_called()
+
+            # Setting an RGB colour must produce an atmcolor command even though
+            # _atm_color was None on load (regression test for the CFRGB variant)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
+                mock_send_command.assert_called_once_with(pydreo_fan, {ATMCOLOR_KEY: 16711680})
+
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S fan and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):

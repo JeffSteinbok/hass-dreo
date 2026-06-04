@@ -1,0 +1,138 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "wifi_rssi": {
+                "state": -51,
+                "timestamp": 1780064221
+            },
+            "poweron": {
+                "state": false,
+                "timestamp": 1780303264
+            },
+            "scheid": {
+                "state": 0,
+                "timestamp": 1780064221
+            },
+            "timeron": {
+                "state": {
+                    "du": 0,
+                    "ts": 1780064220
+                },
+                "timestamp": null
+            },
+            "rgbeffectid": {
+                "state": "2060365036332777472",
+                "timestamp": 1780134811
+            },
+            "scheon": {
+                "state": false,
+                "timestamp": 1780064221
+            },
+            "mcuon": {
+                "state": true,
+                "timestamp": 1780064221
+            },
+            "mode": {
+                "state": 1,
+                "timestamp": 1780064592
+            },
+            "rgbpresetnum": {
+                "state": 4,
+                "timestamp": 1780064221
+            },
+            "network_latency": {
+                "state": 41,
+                "timestamp": 1780064224
+            },
+            "module_hardware_model": {
+                "state": "X3",
+                "timestamp": 1780064221
+            },
+            "mcu_firmware_version": {
+                "state": "2.1.39",
+                "timestamp": 1780064221
+            },
+            "colortemp": {
+                "state": 100,
+                "timestamp": 1780136099
+            },
+            "temperature": {
+                "state": 77,
+                "timestamp": 1780279607
+            },
+            "muteon": {
+                "state": true,
+                "timestamp": 1780134508
+            },
+            "lighton": {
+                "state": false,
+                "timestamp": 1780303216
+            },
+            "mcu_hardware_model": {
+                "state": "CMS32/GL",
+                "timestamp": 1780064221
+            },
+            "windlevel": {
+                "state": 3,
+                "timestamp": 1780243126
+            },
+            "atmbri": {
+                "state": 1,
+                "timestamp": 1780133500
+            },
+            "rgbpresetsel": {
+                "state": 0,
+                "timestamp": 1780134802
+            },
+            "module_firmware_version": {
+                "state": "1.0.49",
+                "timestamp": 1780064221
+            },
+            "wrong": {
+                "state": 0,
+                "timestamp": 1780064221
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 1780064221
+            },
+            "timeroff": {
+                "state": {
+                    "du": 0,
+                    "ts": 1780064220
+                },
+                "timestamp": null
+            },
+            "_ota": {
+                "state": 0,
+                "timestamp": 1780064221
+            },
+            "predefine": {
+                "state": "0",
+                "timestamp": 1780136156
+            },
+            "brightness": {
+                "state": 10,
+                "timestamp": 1780136054
+            },
+            "atmon": {
+                "state": true,
+                "timestamp": 1780294160
+            },
+            "scenes": {
+                "state": "{\"mode\":0,\"du\":0,\"minbri\":0,\"maxbri\":0}",
+                "timestamp": 1780136151
+            },
+            "fanon": {
+                "state": false,
+                "timestamp": 1780303242
+            }
+        },
+        "sn": "HCF002S_CFRGB_1",
+        "productId": "**REDACTED**",
+        "region": "eu-central-1/emq",
+        "deviceInfo": null
+    }
+}

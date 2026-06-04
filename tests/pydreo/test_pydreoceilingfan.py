@@ -13,6 +13,7 @@ logger.setLevel(logging.DEBUG)
 CEILING_FAN_EXHAUSTIVE_MODELS = [
     "get_devices_HCF001S.json",
     "get_devices_HCF002S.json",
+    "get_devices_HCF002S_CFRGB.json",
     "get_devices_HCF003S.json",
 ]
 
@@ -216,6 +217,66 @@ class TestPyDreoCeilingFan(TestBase):
             fan.atm_color_rgb = (255, 0, 0)  # Red
             mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
         fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
+
+    def test_HCF002S_CFRGB(self):  # pylint: disable=invalid-name
+        """Test DR-HCF002S RGBIC variant that has atmon/atmbri but no atmcolor in state.
+
+        Regression test for https://github.com/JeffSteinbok/hass-dreo/issues/XXX:
+        RGB color commands must be accepted even when the device never reported
+        'atmcolor' in its state heartbeat (i.e. _atm_color is None on load).
+        """
+        self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        # Basic fan properties
+        assert fan.model == "DR-HCF002S"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+
+        # Main light and colour temperature are supported
+        assert fan.is_feature_supported("light_on") is True
+        assert fan.is_feature_supported("brightness") is True
+        assert fan.is_feature_supported("color_temperature") is True
+        assert fan.brightness == 10
+        assert fan.color_temperature == 100
+
+        # Atmosphere light is tracked (atmon present in state)
+        assert fan.is_feature_supported("atm_light") is True
+        assert fan.atm_light_on is True
+        assert fan.atm_brightness == 1
+
+        # atmcolor was NOT in the device state, so the current value is unknown
+        assert fan.atm_color_rgb is None
+
+        # atm_color_rgb must still be recognised as a settable feature because the
+        # atmosphere light itself is present on the device.
+        assert fan.is_feature_supported("atm_color_rgb") is True
+
+        # Setting RGB colour must send the atmcolor command even though _atm_color is None
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (255, 0, 0)  # Red
+            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
+        fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
+
+        # After the server echoes the colour back, subsequent identical set should be skipped
+        assert fan.atm_color_rgb == (255, 0, 0)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (255, 0, 0)  # same colour – should NOT re-send
+            mock_send_command.assert_not_called()
+
+        # Setting a different colour after state is known must send the command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (0, 255, 0)  # Green
+            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 65280})  # 0x00FF00
+        fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 65280}})
+
+        # Colour temperature control must also work
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.color_temperature = 50
+            mock_send_command.assert_called_once_with(fan, {COLORTEMP_KEY: 50})
+        fan.handle_server_update({REPORTED_KEY: {COLORTEMP_KEY: 50}})
 
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S and test core fan/light command paths."""
