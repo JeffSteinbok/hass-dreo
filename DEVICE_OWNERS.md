@@ -22,6 +22,7 @@ Sourced from GitHub issues, PRs, and contributed test data.
 | DR-HTF017S | [@DanfieldNet](https://github.com/DanfieldNet) | [#665](https://github.com/JeffSteinbok/hass-dreo/issues/665) |
 | DR-HTF018S | [@greengiant912](https://github.com/greengiant912) | [#517](https://github.com/JeffSteinbok/hass-dreo/issues/517), [#559](https://github.com/JeffSteinbok/hass-dreo/issues/559) |
 | DR-HTF024S | [@Snuffy2](https://github.com/Snuffy2) | [#614](https://github.com/JeffSteinbok/hass-dreo/issues/614), [#615](https://github.com/JeffSteinbok/hass-dreo/issues/615) |
+| DR-HTF518S | [@acaonweb](https://github.com/acaonweb) | [#712](https://github.com/JeffSteinbok/hass-dreo/issues/712) |
 
 ## Air Circulators (DR-HPF)
 
