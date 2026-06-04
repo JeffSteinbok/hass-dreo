@@ -316,3 +316,71 @@ class TestDreoCeilingFan(IntegrationTestBase):
                     light_switch.turn_on(color_temp=300)
                     # Should convert and send colortemp command
                     assert mock_send_command.called
+
+    def test_HCF521S(self):  # pylint: disable=invalid-name
+        """Load HCF521S fan and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HCF521S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.is_on is False
+            assert ha_fan.speed_count == 12
+            assert ha_fan.unique_id is not None
+            assert pydreo_fan.model == "DR-HCF521S"
+            assert pydreo_fan.speed_range == (1, 12)
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
+
+            # Test power commands
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+
+            # turn_on when already on should NOT send redundant command
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_not_called()
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+
+            # Test speed settings - use 75% which maps to windlevel 9 (different from fixture's 6)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(75)  # Speed 9
+                # set_percentage turns on the fan first (fanon: true), then sets speed
+                assert mock_send_command.call_count == 2
+                mock_send_command.assert_any_call(pydreo_fan, {FANON_KEY: True})
+                mock_send_command.assert_any_call(pydreo_fan, {WINDLEVEL_KEY: 9})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 9}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(100)  # Speed 12 (max)
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 12})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+            # Test preset modes
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("reverse")
+                mock_send_command.assert_called_once_with(pydreo_fan, {MODE_KEY: 4})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
+
+            # Check switches, numbers, and lights
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(switches, ["Panel Sound"])
+
+            numbers = number.get_entries([pydreo_fan])
+            self.verify_expected_entities(numbers, [])
+
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["Light"])

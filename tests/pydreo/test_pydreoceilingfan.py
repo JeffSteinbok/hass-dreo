@@ -15,6 +15,7 @@ CEILING_FAN_EXHAUSTIVE_MODELS = [
     "get_devices_HCF002S.json",
     "get_devices_HCF002S_CFRGB.json",
     "get_devices_HCF003S.json",
+    "get_devices_HCF521S.json",
 ]
 
 
@@ -307,6 +308,61 @@ class TestPyDreoCeilingFan(TestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 fan.light_on = not fan.light_on
                 mock_send_command.assert_called_once()
+
+    def test_HCF521S(self):  # pylint: disable=invalid-name
+        """Load HCF521S and test fan commands."""
+        self.get_devices_file_name = "get_devices_HCF521S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HCF521S"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
+        assert fan.is_feature_supported("light_on") is True
+        assert fan.is_feature_supported("brightness") is True
+        assert fan.is_feature_supported("color_temperature") is True
+        assert fan.brightness == 75
+        assert fan.color_temperature == 50
+
+        # Turn on when off - should send command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {FANON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+
+        # Turn on again when already on - should NOT send redundant command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_not_called()
+
+        # Turn off when on - should send command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {FANON_KEY: False})
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+
+        # Turn off again when already off - should NOT send redundant command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_not_called()
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 8
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 8})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 8}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "natural"
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 2})
+        fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "reverse"
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 13
 
     @pytest.mark.parametrize("devices_file", CEILING_FAN_EXHAUSTIVE_MODELS)
     def test_all_settable_properties_for_each_model(self, devices_file: str):
