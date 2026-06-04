@@ -56,6 +56,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         self._is_on = False
         self._power_on_key = None
+        # Some devices (e.g. DR-HPF017S) use different keys for commands vs. reading state.
+        # _power_on_key is used to SEND commands (e.g. "poweron"),
+        # while _power_state_key (when set) is used to READ state from websocket updates
+        # (e.g. "fanon").  Defaults to _power_on_key when None.
+        self._power_state_key = None
         self._fan_speed = None
 
         self._wind_type = None
@@ -350,13 +355,15 @@ class PyDreoFanBase(PyDreoBaseDevice):
         power_on = self.get_state_update_value(state, POWERON_KEY)
         if power_on is not None:
             self._is_on = power_on
-            self._power_on_key = POWERON_KEY
+            if self._power_on_key is None:
+                self._power_on_key = POWERON_KEY
         else:
             # If power_on is not in the state, we need to check if the fan is on or off.
             fan_on = self.get_state_update_value(state, FANON_KEY)
             if fan_on is not None:
                 self._is_on = fan_on
-                self._power_on_key = FANON_KEY
+                if self._power_on_key is None:
+                    self._power_on_key = FANON_KEY
             else:
                 _LOGGER.error("update_state: Unable to get power on state from state. Check debug logs for more information.")
                 # Default to POWERON_KEY so is_on setter doesn't send None key
@@ -389,10 +396,12 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
     def _handle_power_state_update(self, message):
         """Handle power state updates"""
-        val_poweron = self.get_server_update_key_value(message, self._power_on_key)
+        # Use _power_state_key if set (e.g. HPF017S sends fanon for state but uses poweron for commands)
+        state_key = self._power_state_key if self._power_state_key is not None else self._power_on_key
+        val_poweron = self.get_server_update_key_value(message, state_key)
         if isinstance(val_poweron, bool):
             self._is_on = val_poweron
-            _LOGGER.debug("_handle_power_state_update: _handle_power_state_update - %s is %s", self._power_on_key, self._is_on)
+            _LOGGER.debug("_handle_power_state_update: _handle_power_state_update - %s is %s", state_key, self._is_on)
 
     def _handle_fan_properties_update(self, message):
         """Handle common fan properties"""

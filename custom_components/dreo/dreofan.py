@@ -39,6 +39,8 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
             elif self.device.preset_mode == "High":
                 return 100
             return None
+        if self.device.speed_range is None or self.device.fan_speed is None:
+            return None
         return ranged_value_to_percentage(self.device.speed_range, self.device.fan_speed)
 
     @property

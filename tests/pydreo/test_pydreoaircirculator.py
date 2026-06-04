@@ -741,14 +741,27 @@ class TestPyDreoAirCirculator(TestBase):
 
         assert fan.model == "DR-HPF017S"
         assert fan.is_on is True
+        assert fan.speed_range == (1, 12)
         assert fan._power_on_key == POWERON_KEY  # pylint: disable=protected-access
+        assert fan._power_state_key == FANON_KEY  # pylint: disable=protected-access
 
+        # Command must use poweron key
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = False
             mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
 
-        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        # Websocket updates come in via fanon (not poweron)
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
         assert fan.is_on is False
+
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+        assert fan.is_on is True
+
+        # Calling update_state again (as happens in set_device_setting) must not
+        # overwrite _power_on_key back to fanon
+        self.pydreo_manager.load_device_state(fan)
+        assert fan._power_on_key == POWERON_KEY  # pylint: disable=protected-access
+        assert fan._power_state_key == FANON_KEY  # pylint: disable=protected-access
 
     def test_HPF025S(self):  # pylint: disable=invalid-name
         """Test HPF025S tall air circulator fan."""
