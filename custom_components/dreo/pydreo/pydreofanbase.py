@@ -56,7 +56,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         self._is_on = False
         self._power_on_key = None
-        self._power_state_key = None  # if set, used for reading state; otherwise _power_on_key is used
+        # Some devices (e.g. DR-HPF017S) use different keys for commands vs. reading state.
+        # _power_on_key is used to SEND commands (e.g. "poweron"),
+        # while _power_state_key (when set) is used to READ state from websocket updates
+        # (e.g. "fanon").  Defaults to _power_on_key when None.
+        self._power_state_key = None
         self._fan_speed = None
 
         self._wind_type = None
