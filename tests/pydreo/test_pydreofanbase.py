@@ -474,8 +474,10 @@ class TestPyDreoFanBase(TestBase):
 
     # --- update_state with FANON_KEY fallback ---
     def test_update_state_fanon_fallback(self):
-        """Test update_state uses FANON_KEY when POWERON_KEY is absent."""
+        """Test update_state uses FANON_KEY when POWERON_KEY is absent on first call."""
         fan = self._load_htf005s()
+        # Reset to None to simulate first initialization with a fanon-reporting device
+        fan._power_on_key = None  # pylint: disable=protected-access
         state = {
             FANON_KEY: {"state": True},
             WINDLEVEL_KEY: {"state": 5},
@@ -483,6 +485,25 @@ class TestPyDreoFanBase(TestBase):
         fan.update_state(state)
         assert fan.is_on is True
         assert fan._power_on_key == FANON_KEY  # pylint: disable=protected-access
+
+    def test_update_state_preserves_power_on_key(self):
+        """Test update_state does not reset _power_on_key on subsequent calls.
+
+        This is critical for devices like DR-HPF017S where the override sets
+        _power_on_key=POWERON_KEY but the REST state only contains fanon.
+        """
+        fan = self._load_htf005s()
+        # Simulate the override setting poweron as command key
+        fan._power_on_key = POWERON_KEY  # pylint: disable=protected-access
+        # State only contains fanon (like HPF017S REST state)
+        state = {
+            FANON_KEY: {"state": True},
+            WINDLEVEL_KEY: {"state": 5},
+        }
+        fan.update_state(state)
+        assert fan.is_on is True
+        # _power_on_key must not be overwritten — the override must survive re-loads
+        assert fan._power_on_key == POWERON_KEY  # pylint: disable=protected-access
 
     def test_update_state_no_power_key_defaults_poweron(self):
         """Test update_state defaults _power_on_key to POWERON_KEY when neither key present."""
