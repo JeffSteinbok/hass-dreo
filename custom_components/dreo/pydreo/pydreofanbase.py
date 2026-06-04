@@ -139,6 +139,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if self._power_on_key is None:
             _LOGGER.error("is_on: Cannot set power state — power on key is unknown")
             return
+        if self._is_on == value:
+            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
+            return
         self._send_command(self._power_on_key, value)
 
     @property

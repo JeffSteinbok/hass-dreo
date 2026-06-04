@@ -13,7 +13,9 @@ logger.setLevel(logging.DEBUG)
 CEILING_FAN_EXHAUSTIVE_MODELS = [
     "get_devices_HCF001S.json",
     "get_devices_HCF002S.json",
+    "get_devices_HCF002S_CFRGB.json",
     "get_devices_HCF003S.json",
+    "get_devices_HCF521S.json",
 ]
 
 
@@ -217,6 +219,66 @@ class TestPyDreoCeilingFan(TestBase):
             mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
         fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
 
+    def test_HCF002S_CFRGB(self):  # pylint: disable=invalid-name
+        """Test DR-HCF002S RGBIC variant that has atmon/atmbri but no atmcolor in state.
+
+        Regression test for https://github.com/JeffSteinbok/hass-dreo/issues/XXX:
+        RGB color commands must be accepted even when the device never reported
+        'atmcolor' in its state heartbeat (i.e. _atm_color is None on load).
+        """
+        self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        # Basic fan properties
+        assert fan.model == "DR-HCF002S"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+
+        # Main light and colour temperature are supported
+        assert fan.is_feature_supported("light_on") is True
+        assert fan.is_feature_supported("brightness") is True
+        assert fan.is_feature_supported("color_temperature") is True
+        assert fan.brightness == 10
+        assert fan.color_temperature == 100
+
+        # Atmosphere light is tracked (atmon present in state)
+        assert fan.is_feature_supported("atm_light") is True
+        assert fan.atm_light_on is True
+        assert fan.atm_brightness == 1
+
+        # atmcolor was NOT in the device state, so the current value is unknown
+        assert fan.atm_color_rgb is None
+
+        # atm_color_rgb must still be recognised as a settable feature because the
+        # atmosphere light itself is present on the device.
+        assert fan.is_feature_supported("atm_color_rgb") is True
+
+        # Setting RGB colour must send the atmcolor command even though _atm_color is None
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (255, 0, 0)  # Red
+            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
+        fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
+
+        # After the server echoes the colour back, subsequent identical set should be skipped
+        assert fan.atm_color_rgb == (255, 0, 0)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (255, 0, 0)  # same colour – should NOT re-send
+            mock_send_command.assert_not_called()
+
+        # Setting a different colour after state is known must send the command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_color_rgb = (0, 255, 0)  # Green
+            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 65280})  # 0x00FF00
+        fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 65280}})
+
+        # Colour temperature control must also work
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.color_temperature = 50
+            mock_send_command.assert_called_once_with(fan, {COLORTEMP_KEY: 50})
+        fan.handle_server_update({REPORTED_KEY: {COLORTEMP_KEY: 50}})
+
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S and test core fan/light command paths."""
         self.get_devices_file_name = "get_devices_HCF003S.json"
@@ -246,6 +308,61 @@ class TestPyDreoCeilingFan(TestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 fan.light_on = not fan.light_on
                 mock_send_command.assert_called_once()
+
+    def test_HCF521S(self):  # pylint: disable=invalid-name
+        """Load HCF521S and test fan commands."""
+        self.get_devices_file_name = "get_devices_HCF521S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HCF521S"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
+        assert fan.is_feature_supported("light_on") is True
+        assert fan.is_feature_supported("brightness") is True
+        assert fan.is_feature_supported("color_temperature") is True
+        assert fan.brightness == 75
+        assert fan.color_temperature == 50
+
+        # Turn on when off - should send command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_called_once_with(fan, {FANON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+
+        # Turn on again when already on - should NOT send redundant command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = True
+            mock_send_command.assert_not_called()
+
+        # Turn off when on - should send command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_called_once_with(fan, {FANON_KEY: False})
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+
+        # Turn off again when already off - should NOT send redundant command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.is_on = False
+            mock_send_command.assert_not_called()
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 8
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 8})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 8}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "natural"
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 2})
+        fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "reverse"
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 13
 
     @pytest.mark.parametrize("devices_file", CEILING_FAN_EXHAUSTIVE_MODELS)
     def test_all_settable_properties_for_each_model(self, devices_file: str):
