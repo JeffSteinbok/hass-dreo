@@ -136,7 +136,7 @@ The integration includes a special debug mode for testing without live devices:
 5. Add test JSON to `custom_components/dreo/e2e_test_data/`
 6. Write integration test in `tests/dreo/integrationtests/`
 7. Update README.md with the new supported model
-8. Update [DEVICE_OWNERS.md](../DEVICE_OWNERS.md) with the GitHub username of the person who reported the device (from the GitHub issue), the issue number, and the device model, following the existing table format
+8. Update DEVICE_OWNERS.md with the GitHub username of the issue reporter, the issue number(s), and an issue filter link (e.g. `[filter](https://github.com/JeffSteinbok/hass-dreo/issues?q=DR-HXXXXX)`) in the Evidence column
 
 ### Fixing a Bug
 

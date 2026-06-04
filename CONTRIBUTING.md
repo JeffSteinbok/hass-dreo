@@ -129,7 +129,7 @@ This script will:
 2. Run the deployment script with `--debug` flag
 3. Test your changes in Home Assistant with the debug mode enabled
 4. When satisfied, deploy without `--debug` flag for normal operation
-5. Update [DEVICE_OWNERS.md](DEVICE_OWNERS.md) with the GitHub username of the person who owns/contributed the device data, following the existing table format
+5. Update [DEVICE_OWNERS.md](DEVICE_OWNERS.md) with the GitHub username of the person who owns/contributed the device data, the linked issue number(s), and an issue filter link (e.g. `[filter](https://github.com/JeffSteinbok/hass-dreo/issues?q=DR-HXXXXX)`), following the existing table format
 
 Make sure you have Debug logging enabled in Home Assistant so you can confirm your files are loading correctly.
 
