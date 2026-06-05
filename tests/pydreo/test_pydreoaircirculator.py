@@ -731,7 +731,7 @@ class TestPyDreoAirCirculator(TestBase):
             fan.fan_speed = 13
 
     def test_HPF017S(self):  # pylint: disable=invalid-name
-        """Test HPF017S uses poweron commands despite reporting fanon in REST state."""
+        """Test HPF017S uses fanon for both commands and state (no poweron key)."""
         self.get_devices_file_name = "get_devices_HPF017S.json"
         self.pydreo_manager.load_devices()
 
@@ -742,26 +742,24 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.model == "DR-HPF017S"
         assert fan.is_on is True
         assert fan.speed_range == (1, 12)
-        assert fan._power_on_key == POWERON_KEY  # pylint: disable=protected-access
-        assert fan._power_state_key == FANON_KEY  # pylint: disable=protected-access
+        assert fan._power_on_key == FANON_KEY  # pylint: disable=protected-access
 
-        # Command must use poweron key
+        # Command must use fanon key (device does not respond to poweron)
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.is_on = False
-            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: False})
+            mock_send_command.assert_called_once_with(fan, {FANON_KEY: False})
 
-        # Websocket updates come in via fanon (not poweron)
+        # Websocket updates also use fanon
         fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
         assert fan.is_on is False
 
         fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
         assert fan.is_on is True
 
-        # Calling update_state again (as happens in set_device_setting) must not
-        # overwrite _power_on_key back to fanon
+        # Calling update_state again (as happens in set_device_setting) must
+        # preserve fanon as the power key
         self.pydreo_manager.load_device_state(fan)
-        assert fan._power_on_key == POWERON_KEY  # pylint: disable=protected-access
-        assert fan._power_state_key == FANON_KEY  # pylint: disable=protected-access
+        assert fan._power_on_key == FANON_KEY  # pylint: disable=protected-access
 
     def test_HPF025S(self):  # pylint: disable=invalid-name
         """Test HPF025S tall air circulator fan."""
