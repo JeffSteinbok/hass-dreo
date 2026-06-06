@@ -718,14 +718,24 @@ class TestPyDreoAirCirculator(TestBase):
 
         assert fan.model == "DR-HPF015S"
         assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
+        assert fan.preset_mode == "natural"
         assert fan.fan_speed == 6
         assert fan.is_on is False
         assert fan.oscillating is True
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "turbo"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 5})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 12
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
         fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+        with pytest.raises(ValueError):
+            fan.preset_mode = "not_a_mode"
 
         with pytest.raises(ValueError):
             fan.fan_speed = 13
