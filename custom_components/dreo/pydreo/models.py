@@ -289,6 +289,7 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HPF015S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
+        preset_modes=[("normal", 1), ("auto", 2), ("sleep", 3), ("natural", 4), ("turbo", 5), ("custom", 6)],
         device_ranges={SPEED_RANGE: (1, 12)},
     ),
     "DR-HPF017S": DreoDeviceDetails(
@@ -320,7 +321,17 @@ SUPPORTED_DEVICES = {
     ),
     # Ceiling Fans
     "DR-HCF": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN),
+    "DR-HCF001S": DreoDeviceDetails(
+        device_type=DreoDeviceType.CEILING_FAN,
+        preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
+        device_ranges={SPEED_RANGE: (1, 12)},
+    ),
     "DR-HCF002S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
+    "DR-HCF007S": DreoDeviceDetails(
+        device_type=DreoDeviceType.CEILING_FAN,
+        preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
+        device_ranges={SPEED_RANGE: (1, 12)},
+    ),
     "DR-HCF521S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
     # Air Purifiers
     "DR-HAP": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),

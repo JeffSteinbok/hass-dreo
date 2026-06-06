@@ -1,0 +1,48 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2060364783267950793",
+        "sn": "HCF007S_1",
+        "brand": "Dreo",
+        "model": "DR-HCF007S",
+        "productId": "**REDACTED**",
+        "productName": "Ceiling Fan",
+        "deviceName": "DEBUGTEST - Ceiling Fan - DR-HCF007S",
+        "shared": false,
+        "series": null,
+        "seriesName": "CF521S (RGBIC)",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202409/110ca66a28afea4e619d82606ea5a05f1f.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/202404/29/038729e81fbf482e8cae9e2c6e489c45.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": []
+      }
+    ]
+  }
+}

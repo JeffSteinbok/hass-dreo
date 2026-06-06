@@ -15,6 +15,7 @@ CEILING_FAN_EXHAUSTIVE_MODELS = [
     "get_devices_HCF002S.json",
     "get_devices_HCF002S_CFRGB.json",
     "get_devices_HCF003S.json",
+    "get_devices_HCF007S.json",
     "get_devices_HCF521S.json",
 ]
 
@@ -363,6 +364,26 @@ class TestPyDreoCeilingFan(TestBase):
 
         with pytest.raises(ValueError):
             fan.fan_speed = 13
+
+    def test_HCF007S(self):  # pylint: disable=invalid-name
+        """Load HCF007S (CF521S RGBIC) and verify fallback model capabilities."""
+        self.get_devices_file_name = "get_devices_HCF007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HCF007S"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 12
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "reverse"
+            mock_send_command.assert_called_once_with(fan, {MODE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
 
     @pytest.mark.parametrize("devices_file", CEILING_FAN_EXHAUSTIVE_MODELS)
     def test_all_settable_properties_for_each_model(self, devices_file: str):

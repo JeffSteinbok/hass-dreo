@@ -386,6 +386,8 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.speed_range == (1, 12)
             assert ha_fan.speed_count == 12
             assert ha_fan.percentage == 50
+            assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
+            assert ha_fan.preset_mode == "natural"
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_on()
@@ -396,6 +398,11 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_percentage(100)
                 mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 12})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
 
     def test_HAF003S_newer_firmware(self):  # pylint: disable=invalid-name
         """Test HAF003S fan with newer firmware (Device 1 - with cruiseconf/fixedconf)."""
