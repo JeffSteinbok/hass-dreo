@@ -402,10 +402,14 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("reverse")
-                mock_send_command.assert_called_once_with(pydreo_fan, {MODE_KEY: 4})
+                assert mock_send_command.call_count == 2
+                mock_send_command.assert_any_call(pydreo_fan, {FANON_KEY: True})
+                mock_send_command.assert_any_call(pydreo_fan, {MODE_KEY: 4})
             pydreo_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)
-                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 12})
+                assert mock_send_command.call_count == 2
+                mock_send_command.assert_any_call(pydreo_fan, {FANON_KEY: True})
+                mock_send_command.assert_any_call(pydreo_fan, {WINDLEVEL_KEY: 12})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
