@@ -158,7 +158,7 @@ In your `configuration.yaml` file, add this:
 ```
 logger:
     logs:
-        custom_compoments.dreo: debug
+        custom_components.dreo: debug
 ```
 
 Now restart HomeAssistant. Perform the actions needed to generate some debugging info.
