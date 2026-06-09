@@ -188,6 +188,21 @@ class TestPyDreoProcessDevices(TestBase):
         assert len(self.pydreo_manager.devices) == 1
         assert isinstance(self.pydreo_manager.devices[0], PyDreoTowerFan)
 
+    def test_known_dehumidifier_model_match(self):
+        """Test known dehumidifier model creates correct device type."""
+        devices = [
+            {
+                "deviceId": "test456",
+                "sn": "SN456",
+                "deviceName": "Dehumidifier",
+                "model": "DR-HDH003S",
+            }
+        ]
+        result = self.pydreo_manager._process_devices(devices)
+        assert result is True
+        assert len(self.pydreo_manager.devices) == 1
+        assert isinstance(self.pydreo_manager.devices[0], PyDreoDehumidifier)
+
 
 class TestPyDreoLoadDevices(TestBase):
     """Test load_devices method."""
