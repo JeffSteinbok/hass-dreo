@@ -454,6 +454,7 @@ SUPPORTED_DEVICES = {
     # Dehumidifiers
     "DR-HDH001S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
     "DR-HDH002S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
+    "DR-HDH003S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
     "DR-HDH005S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
     # Evaporative Coolers
     "DR-HEC": DreoDeviceDetails(

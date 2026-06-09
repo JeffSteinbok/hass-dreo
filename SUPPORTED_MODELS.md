@@ -66,6 +66,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 
 - DR-HDH001S
 - DR-HDH002S
+- DR-HDH003S
 - DR-HDH005S
 
 ## Space Heaters

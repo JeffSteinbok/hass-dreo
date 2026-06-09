@@ -121,6 +121,7 @@ Sourced from GitHub issues, PRs, and contributed test data.
 |---|---|---|
 | DR-HDH001S | [@KadenThomp36](https://github.com/KadenThomp36) | [#346](https://github.com/JeffSteinbok/hass-dreo/issues/346) |
 | DR-HDH002S | [@anshulgupta0803](https://github.com/anshulgupta0803), [@JayJayXXX](https://github.com/JayJayXXX), [@Lex8P](https://github.com/Lex8P), [@richardsevern](https://github.com/richardsevern) | [#415](https://github.com/JeffSteinbok/hass-dreo/issues/415), [#429](https://github.com/JeffSteinbok/hass-dreo/issues/429), [#373](https://github.com/JeffSteinbok/hass-dreo/issues/373), [#408](https://github.com/JeffSteinbok/hass-dreo/issues/408) |
+| DR-HDH003S | [@KeithMnemonic](https://github.com/KeithMnemonic) | [#726](https://github.com/JeffSteinbok/hass-dreo/issues/726), [filter](https://github.com/JeffSteinbok/hass-dreo/issues?q=DR-HDH003S) |
 | DR-HDH005S | [@KiloEnglish](https://github.com/KiloEnglish) | [#497](https://github.com/JeffSteinbok/hass-dreo/issues/497), [#656](https://github.com/JeffSteinbok/hass-dreo/issues/656) |
 
 ## Cookers (DR-KCM)
