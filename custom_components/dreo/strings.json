@@ -39,6 +39,7 @@
         "vertically_oscillating":   { "name": "Vertical Oscillation" },
         "display_auto_off":         { "name": "Display Auto Off" },
         "panel_sound":              { "name": "Panel Sound" },
+        "mist":                     { "name": "Misting" },
         "adaptive_brightness":      { "name": "Adaptive Brightness" },
         "mute_on":                  { "name": "Panel Mute" },
         "oscon":                    { "name": "Oscillation" },

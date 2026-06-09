@@ -10,6 +10,7 @@ from .constant import (
     TEMPERATURE_KEY,
     LEDALWAYSON_KEY,
     VOICEON_KEY,
+    MISTON_KEY,
     WINDTYPE_KEY,
     WIND_MODE_KEY,
     LIGHTSENSORON_KEY,
@@ -69,6 +70,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._temperature = None
         self._led_always_on = None
         self._voice_on = None
+        self._mist_on = None
         self._light_sensor_on = None
         self._mute_on = None
         self._pm25 = None
@@ -328,6 +330,26 @@ class PyDreoFanBase(PyDreoBaseDevice):
             raise NotImplementedError("PyDreoFanBase: Attempting to set panel_sound on a device that doesn't support.")
 
     @property
+    def mist(self) -> bool:
+        """Is the mist/water-spray pump on (misting fans, e.g. DR-HTF021S 711S)."""
+        if self._mist_on is not None:
+            return self._mist_on
+        return None
+
+    @mist.setter
+    def mist(self, value: bool) -> None:
+        """Turn the mist pump on or off."""
+        _LOGGER.debug("mist: mist.setter")
+
+        if self._mist_on is not None:
+            if self._mist_on == value:
+                _LOGGER.debug("mist: mist - value already %s, skipping command", value)
+                return
+            self._send_command(MISTON_KEY, value)
+        else:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set mist on a device that doesn't support.")
+
+    @property
     def pm25(self) -> int:
         """Get the PM2.5 value"""
         if self._pm25 is not None:
@@ -377,6 +399,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
         self._voice_on = self.get_state_update_value(state, VOICEON_KEY)
+        self._mist_on = self.get_state_update_value(state, MISTON_KEY)
         self._wind_type = self.get_state_update_value(state, WINDTYPE_KEY)
         self._wind_mode = self.get_state_update_value(state, WIND_MODE_KEY)
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
@@ -420,6 +443,10 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_panel_sound = self.get_server_update_key_value(message, VOICEON_KEY)
         if isinstance(val_panel_sound, bool):
             self._voice_on = val_panel_sound
+
+        val_mist = self.get_server_update_key_value(message, MISTON_KEY)
+        if isinstance(val_mist, bool):
+            self._mist_on = val_mist
 
         val_wind_mode = self.get_server_update_key_value(message, WIND_MODE_KEY)
         if isinstance(val_wind_mode, (int, str)):
