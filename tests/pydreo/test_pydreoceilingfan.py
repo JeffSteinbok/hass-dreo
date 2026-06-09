@@ -395,7 +395,7 @@ class TestPyDreoCeilingFan(TestBase):
             fan: PyDreoCeilingFan = device
             self._exercise_all_settable_properties(fan)
 
-    def test_HCF002S_poweron_false_overrides_fanon_true_via_state(self):  # pylint: disable=invalid-name
+    def test_poweron_false_overrides_fanon_true_via_state(self):  # pylint: disable=invalid-name
         """Regression test for issue #727: poweron=false must win over fanon=true in REST state.
 
         The DR-HCF002S (and similar ceiling fans) retains the last fanon value when the
@@ -411,7 +411,7 @@ class TestPyDreoCeilingFan(TestBase):
         # poweron=false in state despite fanon=true; device must report as off
         assert fan.is_on is False
 
-    def test_HCF002S_poweron_false_overrides_fanon_true_via_ws(self):  # pylint: disable=invalid-name
+    def test_poweron_false_overrides_fanon_true_via_ws(self):  # pylint: disable=invalid-name
         """Regression test for issue #727: poweron=false WS update wins over a concurrent fanon=true.
 
         When the remote sends a single WS message containing both poweron=false and fanon=true
