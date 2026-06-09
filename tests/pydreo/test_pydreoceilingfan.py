@@ -394,3 +394,44 @@ class TestPyDreoCeilingFan(TestBase):
         for device in self.pydreo_manager.devices:
             fan: PyDreoCeilingFan = device
             self._exercise_all_settable_properties(fan)
+
+    def test_poweron_false_overrides_fanon_true_via_state(self):  # pylint: disable=invalid-name
+        """Regression test for issue #727: poweron=false must win over fanon=true in REST state.
+
+        The DR-HCF002S (and similar ceiling fans) retains the last fanon value when the
+        device is turned off via the physical remote. The REST state poll therefore reports
+        poweron=false AND fanon=true simultaneously. Before the fix, _is_on was set to True
+        (wrong). After the fix it must be False.
+        """
+        self.get_devices_file_name = "get_devices_HCF002S_poweron_off.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        # poweron=false in state despite fanon=true; device must report as off
+        assert fan.is_on is False
+
+    def test_poweron_false_overrides_fanon_true_via_ws(self):  # pylint: disable=invalid-name
+        """Regression test for issue #727: poweron=false WS update wins over a concurrent fanon=true.
+
+        When the remote sends a single WS message containing both poweron=false and fanon=true
+        (or when poweron=false arrives after fanon=true was already set), the fan must be off.
+        """
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        # Start with fan running
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+        assert fan.is_on is True
+
+        # Remote turns off entire device (poweron=false); fanon stays True in retained state
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        assert fan.is_on is False
+
+        # Edge case: poweron=false and fanon=true arrive in the same WS message
+        fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})  # fan running again
+        assert fan.is_on is True
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False, FANON_KEY: True}})
+        assert fan.is_on is False  # poweron=false must win
