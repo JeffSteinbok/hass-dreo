@@ -244,7 +244,19 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if self._fan_speed is None:
             _LOGGER.error("update_state: Unable to get fan speed from state. Check debug logs for more information.")
 
-        self._is_on = self.get_state_update_value(state, FANON_KEY)
+        # Ceiling fans report both poweron (whole-device power) and fanon (fan motor).
+        # poweron=False means the device is entirely off and takes priority over fanon.
+        # When poweron is True (or absent), fanon reflects the actual fan motor state.
+        poweron_val = self.get_state_update_value(state, POWERON_KEY)
+        fanon_val = self.get_state_update_value(state, FANON_KEY)
+        if poweron_val is not None:
+            if not poweron_val:
+                self._is_on = False
+            elif fanon_val is not None:
+                self._is_on = fanon_val
+        elif fanon_val is not None:
+            self._is_on = fanon_val
+
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
         self._brightness = self.get_state_update_value(state, BRIGHTNESS_KEY)
         self._color_temp = self.get_state_update_value(state, COLORTEMP_KEY)
@@ -259,9 +271,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
 
-        val_power_on = self.get_server_update_key_value(message, FANON_KEY)
-        if isinstance(val_power_on, bool):
-            self._is_on = val_power_on
+        # Power state (fanon/poweron) is handled by _handle_power_state_update.
 
         val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_light_on, bool):
@@ -293,18 +303,19 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
     def _handle_power_state_update(self, message):
         """Override power state handling for ceiling fans"""
-        # Handle poweron: False = turn off entire device (both fan and light)
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        val_fan_on = self.get_server_update_key_value(message, FANON_KEY)
+
+        # Handle fanon first (fan motor state)
+        if isinstance(val_fan_on, bool):
+            self._is_on = val_fan_on
+            _LOGGER.debug("_handle_power_state_update: Fan state updated from fanon: %s", val_fan_on)
+
+        # poweron=False always takes priority: entire device off means fan is off too
         if val_poweron is False:
             self._is_on = False
             self._light_on = False
             _LOGGER.debug("_handle_power_state_update: Device powered off - fan and light off")
-
-        # Handle fanon: True/False = specific fan motor control
-        val_fan_on = self.get_server_update_key_value(message, FANON_KEY)
-        if isinstance(val_fan_on, bool):
-            self._is_on = val_fan_on
-            _LOGGER.debug("_handle_power_state_update: Fan state updated from fanon: %s", val_fan_on)
 
     def is_feature_supported(self, feature: str) -> bool:
         """Check if this ceiling fan supports a specific feature"""
