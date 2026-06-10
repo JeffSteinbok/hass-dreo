@@ -360,6 +360,19 @@ class TestDreoTowerFan(IntegrationTestBase):
             mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})
         fan.handle_server_update({REPORTED_KEY: {SHAKEHORIZON_KEY: True}})
 
+        # The 711S exposes a Misting switch that drives the `miston` water pump.
+        switches = switch.get_entries([fan])
+        misting = next(s for s in switches if s.entity_description.key == "Misting")
+        assert misting.is_on is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            misting.turn_on()
+            mock_send_command.assert_called_once_with(fan, {MISTON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {MISTON_KEY: True}})
+        assert misting.is_on is True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            misting.turn_off()
+            mock_send_command.assert_called_once_with(fan, {MISTON_KEY: False})
+
     def test_HTF007S(self):  # pylint: disable=invalid-name
         """Load HTF007S tower fan (old revision, CMS89F7518/EUR MCU) and test HA entity.
 

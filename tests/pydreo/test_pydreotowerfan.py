@@ -646,6 +646,24 @@ class TestPyDreoTowerFan(TestBase):
             fan.oscillating = True
             mock_send_command.assert_called_once_with(fan, {SHAKEHORIZON_KEY: True})
 
+        # Misting: the DR-HTF021S (TF711S) has a water-mist pump and reports `miston`.
+        assert fan.is_feature_supported("mist") is True
+        assert fan.mist is False  # miston=false in the state fixture
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.mist = True
+            mock_send_command.assert_called_once_with(fan, {MISTON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {MISTON_KEY: True}})
+        assert fan.mist is True
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.mist = True  # already on -> no redundant command
+            mock_send_command.assert_not_called()
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.mist = False
+            mock_send_command.assert_called_once_with(fan, {MISTON_KEY: False})
+
     def test_HTF518S(self):  # pylint: disable=invalid-name
         """Load HTF518S tower fan and test sending commands."""
 
