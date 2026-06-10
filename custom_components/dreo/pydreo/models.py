@@ -265,6 +265,13 @@ SUPPORTED_DEVICES = {
     ),
     # Air Circulators
     "DR-HAF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
+    # DR-HAF001S: The API may return controlsConf with only a template reference,
+    # so preset_modes and speed_range are hardcoded here to ensure full functionality.
+    "DR-HAF001S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_CIRCULATOR,
+        preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4)],
+        device_ranges={SPEED_RANGE: (1, 4)},
+    ),
     "DR-HAF004S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         override_fn=_haf004s_mcu_override,

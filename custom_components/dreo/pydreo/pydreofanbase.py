@@ -9,11 +9,13 @@ from .constant import (
     WINDLEVEL_KEY,
     TEMPERATURE_KEY,
     LEDALWAYSON_KEY,
+    LEDKEPTON_KEY,
     VOICEON_KEY,
     WINDTYPE_KEY,
     WIND_MODE_KEY,
     LIGHTSENSORON_KEY,
     MUTEON_KEY,
+    CHILDLOCKON_KEY,
     PM25_KEY,
     TemperatureUnit,
     SPEED_RANGE,
@@ -68,9 +70,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         self._temperature = None
         self._led_always_on = None
+        self._led_kept_on = None
         self._voice_on = None
         self._light_sensor_on = None
         self._mute_on = None
+        self._child_lock_on = None
         self._pm25 = None
 
     def parse_speed_range(self, details: Dict[str, list]) -> tuple[int, int]:
@@ -260,9 +264,12 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
     @property
     def display_auto_off(self) -> bool:
-        """Is the display always on?"""
+        """Is the display set to auto off?"""
         if self._led_always_on is not None:
             return not self._led_always_on
+
+        if self._led_kept_on is not None:
+            return not self._led_kept_on
 
         return None
 
@@ -276,6 +283,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
                 _LOGGER.debug("display_auto_off: display_auto_off - value already %s, skipping command", value)
                 return
             self._send_command(LEDALWAYSON_KEY, not value)
+        elif self._led_kept_on is not None:
+            if self._led_kept_on == (not value):
+                _LOGGER.debug("display_auto_off: display_auto_off - value already %s, skipping command", value)
+                return
+            self._send_command(LEDKEPTON_KEY, not value)
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set display always on on a device that doesn't support.")
 
@@ -347,6 +359,24 @@ class PyDreoFanBase(PyDreoBaseDevice):
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set pm25 on a device that doesn't support.")
 
+    @property
+    def childlockon(self) -> bool:
+        """Is the child lock on?"""
+        return self._child_lock_on
+
+    @childlockon.setter
+    def childlockon(self, value: bool) -> None:
+        """Set the child lock state"""
+        _LOGGER.debug("childlockon: childlockon.setter")
+
+        if self._child_lock_on is not None:
+            if self._child_lock_on == value:
+                _LOGGER.debug("childlockon: childlockon - value already %s, skipping command", value)
+                return
+            self._send_command(CHILDLOCKON_KEY, value)
+        else:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set childlockon on a device that doesn't support.")
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
@@ -376,11 +406,13 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
+        self._led_kept_on = self.get_state_update_value(state, LEDKEPTON_KEY)
         self._voice_on = self.get_state_update_value(state, VOICEON_KEY)
         self._wind_type = self.get_state_update_value(state, WINDTYPE_KEY)
         self._wind_mode = self.get_state_update_value(state, WIND_MODE_KEY)
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
+        self._child_lock_on = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._pm25 = self.get_state_update_value(state, PM25_KEY)
 
     def handle_server_update(self, message):
@@ -417,6 +449,10 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if isinstance(val_display_always_on, bool):
             self._led_always_on = val_display_always_on
 
+        val_led_kept_on = self.get_server_update_key_value(message, LEDKEPTON_KEY)
+        if isinstance(val_led_kept_on, bool):
+            self._led_kept_on = val_led_kept_on
+
         val_panel_sound = self.get_server_update_key_value(message, VOICEON_KEY)
         if isinstance(val_panel_sound, bool):
             self._voice_on = val_panel_sound
@@ -436,6 +472,10 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_mute = self.get_server_update_key_value(message, MUTEON_KEY)
         if isinstance(val_mute, bool):
             self._mute_on = val_mute
+
+        val_child_lock = self.get_server_update_key_value(message, CHILDLOCKON_KEY)
+        if isinstance(val_child_lock, bool):
+            self._child_lock_on = val_child_lock
 
         val_pm25 = self.get_server_update_key_value(message, PM25_KEY)
         if isinstance(val_pm25, int):
