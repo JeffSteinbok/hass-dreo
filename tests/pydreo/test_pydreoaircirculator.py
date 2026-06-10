@@ -348,7 +348,7 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.preset_modes is not None
         assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
 
-        # Test display_auto_off (ledkepton: False initially means display auto-offs)
+        # Test display_auto_off (ledkepton: False initially means display auto-off is enabled)
         assert fan.display_auto_off is not None
         assert fan.display_auto_off is True  # ledkepton=False → display_auto_off=True
 
