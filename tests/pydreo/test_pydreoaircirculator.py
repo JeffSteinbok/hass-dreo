@@ -346,6 +346,15 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.is_on is True
         assert fan.fan_speed >= 1 and fan.fan_speed <= 4
         assert fan.preset_modes is not None
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+
+        # Test display_auto_off (ledkepton: False initially means display auto-off is enabled)
+        assert fan.display_auto_off is not None
+        assert fan.display_auto_off is True  # ledkepton=False → display_auto_off=True
+
+        # Test child lock (childlockon: False initially)
+        assert fan.childlockon is not None
+        assert fan.childlockon is False
 
         # Test power commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -400,21 +409,53 @@ class TestPyDreoAirCirculator(TestBase):
             mock_send_command.assert_called_once()
         fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_KEY: False}})
 
-        # Test preset modes if available
-        if fan.preset_modes:
-            for idx, mode in enumerate(fan.preset_modes):
-                if mode == fan.preset_mode:
-                    continue  # Skip if already in this mode
+        # Test preset mode commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "natural"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 2})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
 
-                with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                    fan.preset_mode = mode
-                    mock_send_command.assert_called_once()
-                # Update internal state to reflect the change
-                fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: idx + 1}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "sleep"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 3})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 3}})
 
-            # Test invalid preset mode
-            with pytest.raises(ValueError):
-                fan.preset_mode = "invalid_mode_xyz"
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "normal"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 1})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 1}})
+
+        # Test invalid preset mode
+        with pytest.raises(ValueError):
+            fan.preset_mode = "invalid_mode_xyz"
+
+        # Test display_auto_off commands (uses ledkepton key)
+        # display_auto_off=True → ledkepton=False (do not keep LED on)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.display_auto_off = False
+            mock_send_command.assert_called_once_with(fan, {LEDKEPTON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {LEDKEPTON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.display_auto_off = True
+            mock_send_command.assert_called_once_with(fan, {LEDKEPTON_KEY: False})
+        fan.handle_server_update({REPORTED_KEY: {LEDKEPTON_KEY: False}})
+
+        # Test child lock commands
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.childlockon = True
+            mock_send_command.assert_called_once_with(fan, {CHILDLOCKON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {CHILDLOCKON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.childlockon = False
+            mock_send_command.assert_called_once_with(fan, {CHILDLOCKON_KEY: False})
+        fan.handle_server_update({REPORTED_KEY: {CHILDLOCKON_KEY: False}})
 
     def test_HAF008S(self):  # pylint: disable=invalid-name
         """Test HAF008S air circulator (565S series, empty controlsConf)."""

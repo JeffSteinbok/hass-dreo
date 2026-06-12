@@ -563,6 +563,6 @@ class TestDreoTowerFan(IntegrationTestBase):
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
 
             switches = switch.get_entries([pydreo_fan])
-            self.verify_expected_entities(switches, ["Panel Sound"])
+            self.verify_expected_entities(switches, ["Child Lock", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_fan])
             self.verify_expected_entities(sensors, ["Temperature", "pm25"])

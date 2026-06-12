@@ -55,7 +55,7 @@ class TestDreoAirPurifier(IntegrationTestBase):
 
             # Test entity inventory
             switches = switch.get_entries([pydreo_ap])
-            self.verify_expected_entities(switches, ["Display Auto Off", "Panel Sound"])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_ap])
             self.verify_expected_entities(sensors, [])
 
@@ -92,7 +92,7 @@ class TestDreoAirPurifier(IntegrationTestBase):
 
             # Test entity inventory
             switches = switch.get_entries([pydreo_ap])
-            self.verify_expected_entities(switches, ["Display Auto Off", "Panel Sound"])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_ap])
             self.verify_expected_entities(sensors, [])
 
@@ -128,6 +128,6 @@ class TestDreoAirPurifier(IntegrationTestBase):
 
             # Test entity inventory
             switches = switch.get_entries([pydreo_ap])
-            self.verify_expected_entities(switches, ["Display Auto Off", "Panel Sound"])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_ap])
             self.verify_expected_entities(sensors, ["pm25"])
