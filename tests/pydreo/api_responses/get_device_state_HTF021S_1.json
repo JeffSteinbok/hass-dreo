@@ -24,6 +24,14 @@
         "state": false,
         "timestamp": 1778867456
       },
+      "ismist": {
+        "state": true,
+        "timestamp": 1778859210
+      },
+      "miston": {
+        "state": false,
+        "timestamp": 1778867456
+      },
       "scheid": {
         "state": 0,
         "timestamp": 1778859210

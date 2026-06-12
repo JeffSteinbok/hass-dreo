@@ -183,6 +183,44 @@ class TestPyDreoFanBase(TestBase):
             fan.is_on = True
             mock_send_command.assert_not_called()
 
+    # --- mist property (misting fans) ---
+    def test_mist_not_supported_when_no_miston(self):
+        """Fans that don't report `miston` expose no mist feature (HTF005S has none)."""
+        fan = self._load_htf005s()
+        assert fan.mist is None
+        assert fan.is_feature_supported("mist") is False
+
+    def test_mist_setter_raises_when_unsupported(self):
+        """Setting mist on a fan without a mist pump raises NotImplementedError."""
+        fan = self._load_htf005s()
+        with pytest.raises(NotImplementedError):
+            fan.mist = True
+
+    def test_mist_setter_sends_command(self):
+        """mist setter sends the miston command when the value changes."""
+        fan = self._load_htf005s()
+        fan.handle_server_update({REPORTED_KEY: {MISTON_KEY: False}})
+        assert fan.mist is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.mist = True
+            mock_send_command.assert_called_once_with(fan, {MISTON_KEY: True})
+
+    def test_mist_setter_no_command_when_same_value(self):
+        """mist setter is a no-op when the value is unchanged."""
+        fan = self._load_htf005s()
+        fan.handle_server_update({REPORTED_KEY: {MISTON_KEY: True}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.mist = True
+            mock_send_command.assert_not_called()
+
+    def test_mist_reflects_server_update(self):
+        """mist property tracks `miston` pushed from the device."""
+        fan = self._load_htf005s()
+        fan.handle_server_update({REPORTED_KEY: {MISTON_KEY: True}})
+        assert fan.mist is True
+        fan.handle_server_update({REPORTED_KEY: {MISTON_KEY: False}})
+        assert fan.mist is False
+
     # --- parse_speed_range edge cases ---
     def test_parse_speed_range_no_controls_conf(self):
         """Test parse_speed_range returns None with no controlsConf."""

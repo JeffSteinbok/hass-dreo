@@ -62,6 +62,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         icon="mdi:volume-high",
     ),
     DreoSwitchEntityDescription(
+        key="Misting",
+        translation_key="mist",
+        attr_name="mist",
+        icon="mdi:sprinkler-variant",
+    ),
+    DreoSwitchEntityDescription(
         key="Adaptive Brightness",
         translation_key="adaptive_brightness",
         attr_name="adaptive_brightness",

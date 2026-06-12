@@ -21,6 +21,7 @@ Sourced from GitHub issues, PRs, and contributed test data.
 | DR-HTF011S | [@cookiedabaker](https://github.com/cookiedabaker) | [#316](https://github.com/JeffSteinbok/hass-dreo/issues/316) |
 | DR-HTF017S | [@DanfieldNet](https://github.com/DanfieldNet) | [#665](https://github.com/JeffSteinbok/hass-dreo/issues/665) |
 | DR-HTF018S | [@greengiant912](https://github.com/greengiant912) | [#517](https://github.com/JeffSteinbok/hass-dreo/issues/517), [#559](https://github.com/JeffSteinbok/hass-dreo/issues/559) |
+| DR-HTF021S | [@amarcher](https://github.com/amarcher) | [#733](https://github.com/JeffSteinbok/hass-dreo/pull/733) |
 | DR-HTF024S | [@hawkeye80](https://github.com/hawkeye80), [@Snuffy2](https://github.com/Snuffy2) | [#721](https://github.com/JeffSteinbok/hass-dreo/issues/721), [#614](https://github.com/JeffSteinbok/hass-dreo/issues/614), [#615](https://github.com/JeffSteinbok/hass-dreo/issues/615) |
 | DR-HTF518S | [@acaonweb](https://github.com/acaonweb) | [#712](https://github.com/JeffSteinbok/hass-dreo/issues/712) |
 
