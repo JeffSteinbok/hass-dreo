@@ -25,14 +25,19 @@ Dreo also maintains an [official Home Assistant integration](https://github.com/
 
 | | **hass-dreo** (this project) | **hass-dreoverse** (official) |
 |---|---|---|
-| API used | Mobile app API | Dreo Open API |
-| Device types | Fans, Heaters, ACs, Humidifiers, Dehumidifiers, Air Purifiers, Cookers, Evaporative Coolers | Fans, Ceiling Fans, ACs, Evaporative Coolers |
-| Missing from official | — | Space Heaters, Humidifiers, Dehumidifiers, Air Purifiers, ChefMaker |
-| Device feature coverage | ~61 state fields — more controls exposed | ~36 state fields — fewer controls |
-| Notable extras here | Timers, PTC heater status, PM2.5 sensors, ChefMaker, cruise control, work time, and more | Not available |
-| Support model | Community-maintained | Officially maintained by Dreo |
+| Maintainer | Community ([@JeffSteinbok](https://github.com/JeffSteinbok)) | Dreo engineering team |
+| API | Mobile app API | Dreo Cloud API (`pydreo-cloud`) |
+| State updates | WebSocket (real-time push) | Cloud polling (every 15 s) |
+| Device types | Fans, Heaters, ACs, Humidifiers, Dehumidifiers, Air Purifiers, Cookers, Evaporative Coolers | Fans, Heaters, ACs, Humidifiers, Dehumidifiers, Air Purifiers, Evaporative Coolers |
+| Only in this integration | ChefMaker (cooker) support | — |
+| Sensors & diagnostics | PM2.5, filter life, work time, water level, PTC status, target-reached indicators (~11 sensor types) | Temperature and humidity sensors only |
+| Switches & controls | 14 toggle types (oscillation, child lock, display, misting, schedule, …) | 5 toggle types (LED, light sensor, mute, child lock, heater fan-on-temp) |
+| RGB lighting | Basic RGB color support | Full RGB with effects (Breath, Circle), animation speed selector, brightness |
+| Oscillation angles | Angle range numbers for horizontal & vertical | More granular angle controls (pair/single/both modes, 4-boundary ranges) |
+| Timers & schedules | Timer and auto-schedule switches | Not available |
+| Support model | Community-maintained; fast iteration on new models | Officially maintained by Dreo; working toward HA core acceptance |
 
-**tl;dr** — If you want the broadest feature set and control over your Dreo devices in Home Assistant, use this integration. If you prefer an officially-supported integration with a smaller feature set, use hass-dreoverse.
+**tl;dr** — Both integrations now cover most Dreo device types. This project exposes more sensors, diagnostics, and controls per device and uses real-time WebSocket updates. The official integration has richer RGB lighting support and is backed by Dreo's engineering team. Choose whichever fits your priorities.
 
 You can purchase these devices from Amazon: [Dreo Fans on Amazon](https://www.amazon.com/gp/search?ie=UTF8&tag=jeffsteinbok-20&linkCode=ur2&linkId=264bf9285db76a172f81bad93760d162&camp=1789&creative=9325&index=hpc&keywords=Dreo%20Smart%20Fan)
 
