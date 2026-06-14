@@ -1,0 +1,108 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_ssid": "**REDACTED**",
+      "mcu_hardware_model": {
+        "state": "CMS89F7518",
+        "timestamp": 1781282366
+      },
+      "windlevel": {
+        "state": 3,
+        "timestamp": 1781283689
+      },
+      "wifi_rssi": {
+        "state": -66,
+        "timestamp": 1781282934
+      },
+      "windtype": {
+        "state": 1,
+        "timestamp": 1781282366
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1781282369
+      },
+      "tempunit": {
+        "state": 2,
+        "timestamp": 1781282366
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1781282366
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1781282366
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1781282366
+      },
+      "voiceon": {
+        "state": false,
+        "timestamp": 1781282366
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1781282366
+      },
+      "module_firmware_version": {
+        "state": "1.2.5",
+        "timestamp": 1781282934
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1781282366
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1781282933
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1781282366
+        },
+        "timestamp": null
+      },
+      "shakehorizon": {
+        "state": true,
+        "timestamp": 1781282371
+      },
+      "network_latency": {
+        "state": 170,
+        "timestamp": 1781282934
+      },
+      "childrenlockon": {
+        "state": false,
+        "timestamp": 1781282366
+      },
+      "module_hardware_model": {
+        "state": "PAI-051",
+        "timestamp": 1781282934
+      },
+      "mcu_firmware_version": {
+        "state": "3.0.4",
+        "timestamp": 1781282366
+      },
+      "temperature": {
+        "state": 82,
+        "timestamp": 1781283645
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "ledalwayson": {
+        "state": false,
+        "timestamp": 1781282366
+      }
+    },
+    "sn": "**REDACTED**",
+    "productId": "1453300621256003585",
+    "region": "us-east-2",
+    "deviceInfo": null
+  }
+}

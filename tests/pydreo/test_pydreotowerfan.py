@@ -309,6 +309,32 @@ class TestPyDreoTowerFan(TestBase):
         with pytest.raises(ValueError):
             fan.fan_speed = 9
 
+    def test_HTF007S_bare_mcu(self):  # pylint: disable=invalid-name
+        """Load HTF007S with bare CMS89F7518 MCU string (no region suffix) and verify speed range is 4.
+
+        Some units report the MCU string without a region suffix (e.g. 'CMS89F7518' instead of
+        'CMS89F7518/EUR').  The override_fn must recognise the bare string and clamp speed_range
+        to (1, 4) so that wind levels 5-8 are never sent to hardware that ignores them.
+        """
+        self.get_devices_file_name = "get_devices_HTF007S_BARE_MCU.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HTF007S"
+        assert fan.speed_range == (1, 4)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+
+        # Speed commands within the 4-step range must work
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 4
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 4}})
+
+        # Speed levels above 4 must be rejected
+        with pytest.raises(ValueError):
+            fan.fan_speed = 5
+
     def test_HTF009S(self):  # pylint: disable=invalid-name
         """Load HTF009S tower fan and test sending commands."""
 
