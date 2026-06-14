@@ -1,54 +1,49 @@
-name: Enforce Issue Templates
+name: Issue Triage
 
 on:
   issues:
-    types: [opened]
+    types: [opened, edited]
+
+permissions:
+  issues: write
 
 jobs:
   check-template:
+    if: github.event.action == 'opened'
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
-      - name: Check for template usage
+      - name: Enforce issue template
         uses: actions/github-script@v7
         with:
           script: |
-            // Skip check for collaborators with write/admin access
-            const sender = context.payload.sender.login;
+            const author = context.payload.issue.user.login;
+
+            // Skip collaborators
             try {
               const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                username: sender,
+                username: author,
               });
-              const permission = permLevel.permission;
-              if (permission === 'admin' || permission === 'write') {
-                core.info(`Issue opened by collaborator ${sender} (${permission}). Skipping template check.`);
+              if (['admin', 'write'].includes(permLevel.permission)) {
+                core.info(`Collaborator ${author}. Skipping template check.`);
                 return;
               }
             } catch (e) {
-              core.info(`Could not check permissions for ${sender}: ${e.message}. Proceeding with template check.`);
+              core.info(`Could not check permissions: ${e.message}. Proceeding.`);
             }
 
             const body = context.payload.issue.body || '';
-
-            // Each template produces specific ### headers in the issue body.
-            // Check for at least one unique required header from each template.
             const templateMarkers = [
-              '### Describe the bug',        // bug_report
-              '### Problem description',     // device-feature-request
-              '### Product Page Link',       // new-device-request
+              '### Describe the bug',
+              '### Problem description',
+              '### Product Page Link',
             ];
 
-            const usedTemplate = templateMarkers.some(marker => body.includes(marker));
-
-            if (usedTemplate) {
-              core.info('Issue was filed using a template. No action needed.');
+            if (templateMarkers.some(m => body.includes(m))) {
+              core.info('Template detected.');
               return;
             }
-
-            core.info('Issue was not filed using a template. Adding comment and label.');
 
             await github.rest.issues.addLabels({
               owner: context.repo.owner,
@@ -64,13 +59,136 @@ jobs:
               body: [
                 '👋 Thanks for opening an issue!',
                 '',
-                'It looks like this issue was not filed using one of our [issue templates](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new/choose). ' +
-                'Templates help ensure we have the information needed to help you (diagnostics, logs, device model, etc.).',
+                'It looks like this issue was not filed using one of our [issue templates](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new/choose).',
+                'Templates help ensure we have the information needed to help you.',
                 '',
                 'Please **close this issue** and open a new one using the appropriate template:',
                 '- 🐛 **[Bug Report](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new?template=bug_report.yml)**',
                 '- 💡 **[Device Feature Request](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new?template=device-feature-request.yml)**',
                 '- 📱 **[New Device Request](https://github.com/' + context.repo.owner + '/' + context.repo.repo + '/issues/new?template=new-device-request.yml)**',
+                '',
+                '_This is an automated message._',
+              ].join('\n'),
+            });
+
+  check-logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate bug report content
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const author = context.payload.issue.user.login;
+            const issueNumber = context.issue.number;
+
+            // Only check bug reports
+            if (!body.includes('### Describe the bug')) {
+              core.info('Not a bug report. Skipping.');
+              return;
+            }
+
+            // Skip collaborators
+            try {
+              const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: author,
+              });
+              if (['admin', 'write'].includes(permLevel.permission)) {
+                core.info(`Collaborator ${author}. Skipping.`);
+                return;
+              }
+            } catch (e) {
+              core.info(`Could not check permissions: ${e.message}. Proceeding.`);
+            }
+
+            function getSectionContent(heading) {
+              const pattern = new RegExp(
+                `###\\s*${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n([\\s\\S]*?)(?=\\n###\\s|$)`
+              );
+              const match = body.match(pattern);
+              return match ? match[1].trim() : '';
+            }
+
+            function isMissing(content) {
+              if (!content) return true;
+              const stripped = content
+                .replace(/<!--[\s\S]*?-->/g, '')
+                .replace(/\s+/g, ' ')
+                .trim()
+                .toLowerCase();
+              if (stripped.length < 5) return true;
+              const placeholders = ['n/a', 'na', 'none', 'no', 'tbd', 'todo', 'will add later', '_no response_'];
+              return placeholders.includes(stripped);
+            }
+
+            const diagnostics = getSectionContent('Diagnostics');
+            const logs = getSectionContent('Debug Logs');
+
+            const missingDiagnostics = isMissing(diagnostics);
+            const missingLogs = isMissing(logs);
+
+            if (!missingDiagnostics && !missingLogs) {
+              core.info('All required info present.');
+              if (context.payload.action === 'edited') {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issueNumber,
+                    name: 'needs-info',
+                  });
+                } catch (e) { /* label may not exist */ }
+              }
+
+              if (context.payload.action === 'opened') {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  labels: ['triaged'],
+                });
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: 'Thanks for the detailed report! 🔍 This issue has been triaged and is ready for investigation.',
+                });
+              }
+              return;
+            }
+
+            // Don't re-comment on edits that still lack info
+            if (context.payload.action === 'edited') {
+              core.info('Edited but still missing info.');
+              return;
+            }
+
+            const missing = [];
+            if (missingDiagnostics) missing.push('**Diagnostics JSON** — download from Settings → Devices → Dreo → ⋮ → Download diagnostics');
+            if (missingLogs) missing.push('**Debug logs** — enable debug logging, reproduce the issue, then download full logs');
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['needs-info'],
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: [
+                `👋 Hey @${author}, thanks for filing this bug report!`,
+                '',
+                'It looks like the following information is missing:',
+                ...missing.map(item => `- ${item}`),
+                '',
+                'I only personally own 2 Dreo devices, so logs and diagnostics are **essential** for me to debug issues with devices I don\'t own.',
+                '',
+                'Please update your issue with the missing information. See the [debugging instructions](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) for help collecting this data.',
                 '',
                 '_This is an automated message._',
               ].join('\n'),
