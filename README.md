@@ -26,7 +26,7 @@ Dreo also maintains an [official Home Assistant integration](https://github.com/
 | | **hass-dreo** (this project) | **hass-dreoverse** (official) |
 |---|---|---|
 | Maintainer | Community ([@JeffSteinbok](https://github.com/JeffSteinbok)) | Dreo engineering team |
-| API | Mobile app API | Dreo Cloud API (`pydreo-cloud`) |
+| API | Mobile app API | Dreo Open API (`pydreo-cloud`) |
 | State updates | WebSocket (real-time push) | Cloud polling (every 15 s) |
 | Device types | Fans, Heaters, ACs, Humidifiers, Dehumidifiers, Air Purifiers, Cookers, Evaporative Coolers | Fans, Heaters, ACs, Humidifiers, Dehumidifiers, Air Purifiers, Evaporative Coolers |
 | Only in this integration | ChefMaker (cooker) support | — |
