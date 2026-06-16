@@ -1,0 +1,54 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2064081437521915901",
+        "sn": "HTF011S_1",
+        "brand": "Dreo",
+        "model": "DR-HTF011S",
+        "productId": "**REDACTED**",
+        "productName": "Tower Fan",
+        "deviceName": "DEBUGTEST - Tower Fan - DR-HTF011S",
+        "shared": false,
+        "series": null,
+        "seriesName": "Cruiser TF611S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": null,
+        "widgetOffImage": null,
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {
+          "template": "DR-HTF011S"
+        },
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": null,
+          "imageFullSrc": null,
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": []
+      }
+    ]
+  }
+}
