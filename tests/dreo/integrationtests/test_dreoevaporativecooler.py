@@ -4,9 +4,11 @@
 import logging
 from unittest.mock import patch
 from custom_components.dreo import fan
-from custom_components.dreo import sensor
-from custom_components.dreo import number
 from custom_components.dreo import light
+from custom_components.dreo import number
+from custom_components.dreo import select
+from custom_components.dreo import sensor
+from custom_components.dreo import switch
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase
 
@@ -82,8 +84,16 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             assert len(pydreo_ec.preset_modes) == 2
 
             numbers = number.get_entries([pydreo_ec])
-            self.verify_expected_entities(numbers, ["Target Humidity"])
+            self.verify_expected_entities(numbers, ["Fog Level", "Horizontal Angle", "Target Humidity"])
 
             sensors = sensor.get_entries([pydreo_ec])
             self.verify_expected_entities(sensors, ["Temperature", "Humidity", "Use since cleaning"])
 
+            switches = switch.get_entries([pydreo_ec])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Light", "Humidify", "Misting", "Panel Sound"])
+
+            lights = light.get_entries([pydreo_ec])
+            self.verify_expected_entities(lights, ["Ambient Light"])
+
+            selects = select.get_entries([pydreo_ec])
+            self.verify_expected_entities(selects, ["Ambient Light Mode"])
