@@ -6,9 +6,16 @@ from .pydreofanbase import PyDreoFanBase
 
 from .constant import (
     CHILDLOCKON_KEY,
+    FOG_LEVEL_KEY,
     HORIZONTAL_OSCILLATION_KEY,
+    HORIZONTAL_OSCILLATION_ANGLE_KEY,
+    HORIZONTAL_ANGLE_ADJ_KEY,
     HUMIDITY_KEY,
+    LIGHTON_KEY,
     MODE_KEY,
+    MUTEON_KEY,
+    RGB_COLOR,
+    RGB_MODE,
     TEMPOFFSET_KEY,
 )
 from .helpers import Helpers
@@ -22,6 +29,7 @@ HUMIDIFY_SUSPEND_KEY = "rhsuspend"
 HUMIDITY_TARGET_KEY = "rhtarget"
 WORKTIME_KEY = "worktime"
 WATER_LEVEL_STATUS_KEY = "wrong"
+RGB_ON_KEY = "rgbon"
 
 # Status for water level indicator
 WATER_LEVEL_OK = "Ok"
@@ -76,6 +84,13 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._work_time = None
         self._display_auto_off = None
         self._water_level = None
+        self._fog_level = None
+        self._rgb_light_on = None
+        self._rgbmode = None
+        self._rgbcolor = None
+        self._light_on = None
+        self._horizontal_angle = None
+        self._horizontal_angle_range = None
 
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         # Not needed atm
@@ -129,6 +144,28 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._send_command(HUMIDITY_TARGET_KEY, value)
 
     @property
+    def fog_level(self) -> int | None:
+        """Return the misting level."""
+        return self._fog_level
+
+    @property
+    def fog_level_range(self) -> tuple[int, int]:
+        """Return the supported misting level range."""
+        return (1, 3)
+
+    @fog_level.setter
+    def fog_level(self, value: int) -> None:
+        """Set the misting level."""
+        level = int(value)
+        if level < 1 or level > 3:
+            raise ValueError(f"Fog level {level} is out of range (1-3)")
+        if self._fog_level == level:
+            _LOGGER.debug("fog_level: fog_level - value already %s, skipping command", level)
+            return
+        self._fog_level = level
+        self._send_command(FOG_LEVEL_KEY, level)
+
+    @property
     def oscillating(self) -> bool:
         """Returns `True` if oscillation is on"""
         return self._oscillating
@@ -155,6 +192,20 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return
         self._childlockon = value
         self._send_command(CHILDLOCKON_KEY, value)
+
+    @property
+    def display_light(self) -> bool | None:
+        """Return display light state."""
+        return self._light_on
+
+    @display_light.setter
+    def display_light(self, value: bool) -> None:
+        """Set display light state."""
+        if self._light_on == value:
+            _LOGGER.debug("display_light: display_light - value already %s, skipping command", value)
+            return
+        self._light_on = value
+        self._send_command(LIGHTON_KEY, value)
 
     @property
     def preset_mode(self):
@@ -199,6 +250,51 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         return self._preset_modes
 
     @property
+    def rgblevel(self) -> int | None:
+        """Return a compatibility RGB light level for the ambient light entity."""
+        if self._rgb_light_on is None:
+            return None
+        return 1 if self._rgb_light_on else 0
+
+    @rgblevel.setter
+    def rgblevel(self, value: int) -> None:
+        """Map ambient light on/off requests onto the device's rgbon field."""
+        desired_on = int(value) > 0
+        if self._rgb_light_on == desired_on:
+            _LOGGER.debug("rgblevel: rgblevel - value already %s, skipping command", desired_on)
+            return
+        self._rgb_light_on = desired_on
+        self._send_command(RGB_ON_KEY, desired_on)
+
+    @property
+    def rgbmode(self) -> int | None:
+        """Return the ambient light mode."""
+        return self._rgbmode
+
+    @rgbmode.setter
+    def rgbmode(self, value: int) -> None:
+        """Set the ambient light mode."""
+        if self._rgbmode == value:
+            _LOGGER.debug("rgbmode: rgbmode - value already %s, skipping command", value)
+            return
+        self._rgbmode = value
+        self._send_command(RGB_MODE, value)
+
+    @property
+    def rgbcolor(self) -> int | None:
+        """Return the packed ambient light RGB color."""
+        return self._rgbcolor
+
+    @rgbcolor.setter
+    def rgbcolor(self, value: int) -> None:
+        """Set the packed ambient light RGB color."""
+        if self._rgbcolor == value:
+            _LOGGER.debug("rgbcolor: rgbcolor - value already %s, skipping command", value)
+            return
+        self._rgbcolor = value
+        self._send_command(RGB_COLOR, value)
+
+    @property
     def work_time(self) -> int:
         """Return the working time (used since cleaning)"""
         return self._work_time
@@ -207,6 +303,38 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     def water_level(self) -> int:
         """Return the water level status"""
         return self._water_level
+
+    @property
+    def horizontal_angle(self) -> int | None:
+        """Return the configured horizontal angle."""
+        return self._horizontal_angle
+
+    @horizontal_angle.setter
+    def horizontal_angle(self, value: int) -> None:
+        """Set the configured horizontal angle."""
+        angle = int(value)
+        if self._horizontal_angle == angle:
+            _LOGGER.debug("horizontal_angle: horizontal_angle - value already %s, skipping command", angle)
+            return
+        self._horizontal_angle = angle
+        self._send_command(HORIZONTAL_ANGLE_ADJ_KEY, angle)
+
+    @property
+    def horizontal_angle_range(self) -> tuple[int, int] | None:
+        """Return the supported horizontal angle range."""
+        return self._horizontal_angle_range
+
+    @staticmethod
+    def _parse_angle_range(value: str) -> tuple[int, int] | None:
+        """Parse a Dreo angle range string like '-15,15'."""
+        if not isinstance(value, str) or "," not in value:
+            return None
+        try:
+            left, right = value.split(",", 1)
+            return (int(left), int(right))
+        except ValueError:
+            _LOGGER.warning("_parse_angle_range: invalid angle range %s", value)
+            return None
 
     @staticmethod
     def _map_wind_mode_from_rest(index: int) -> Optional[int]:
@@ -233,6 +361,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         raw_humidify = self.get_state_update_value(state, HUMIDIFY_MODE_KEY)
         self._humidify = (raw_humidify == 2) if raw_humidify is not None else None
         self._oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
+        self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         # Only apply the legacy 0-indexed windmode mapping when the "windmode" key is
         # actually present.  Devices that use the global "mode" key (e.g. DR-HEC006S)
@@ -243,6 +372,13 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             self._wind_mode = self._map_wind_mode_from_rest(wind_mode_raw)
         self._work_time = self.get_state_update_value(state, WORKTIME_KEY)
         self._water_level = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
+        self._fog_level = self.get_state_update_value(state, FOG_LEVEL_KEY)
+        self._rgb_light_on = self.get_state_update_value(state, RGB_ON_KEY)
+        self._rgbmode = self.get_state_update_value(state, RGB_MODE)
+        self._rgbcolor = self.get_state_update_value(state, RGB_COLOR)
+        self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
+        self._horizontal_angle = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
+        self._horizontal_angle_range = self._parse_angle_range(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY))
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -260,6 +396,10 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
         if isinstance(val_humidity, int):
             self._humidity = val_humidity
+
+        val_muteon = self.get_server_update_key_value(message, MUTEON_KEY)
+        if isinstance(val_muteon, bool):
+            self._mute_on = val_muteon
 
         val_humidify = self.get_server_update_key_value(message, HUMIDIFY_MODE_KEY)
         if isinstance(val_humidify, int):
@@ -286,3 +426,31 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         val_water_level = self.get_server_update_key_value(message, WATER_LEVEL_STATUS_KEY)
         if isinstance(val_water_level, int):
             self._water_level = WATER_LEVEL_STATUS_MAP.get(val_water_level, val_water_level)
+
+        val_fog_level = self.get_server_update_key_value(message, FOG_LEVEL_KEY)
+        if isinstance(val_fog_level, int):
+            self._fog_level = val_fog_level
+
+        val_rgb_light_on = self.get_server_update_key_value(message, RGB_ON_KEY)
+        if isinstance(val_rgb_light_on, bool):
+            self._rgb_light_on = val_rgb_light_on
+
+        val_rgbmode = self.get_server_update_key_value(message, RGB_MODE)
+        if isinstance(val_rgbmode, int):
+            self._rgbmode = val_rgbmode
+
+        val_rgbcolor = self.get_server_update_key_value(message, RGB_COLOR)
+        if isinstance(val_rgbcolor, int):
+            self._rgbcolor = val_rgbcolor
+
+        val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
+        if isinstance(val_light_on, bool):
+            self._light_on = val_light_on
+
+        val_horizontal_angle = self.get_server_update_key_value(message, HORIZONTAL_ANGLE_ADJ_KEY)
+        if isinstance(val_horizontal_angle, int):
+            self._horizontal_angle = val_horizontal_angle
+
+        val_horizontal_angle_range = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
+        if isinstance(val_horizontal_angle_range, str):
+            self._horizontal_angle_range = self._parse_angle_range(val_horizontal_angle_range)

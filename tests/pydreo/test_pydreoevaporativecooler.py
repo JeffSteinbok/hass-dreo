@@ -9,9 +9,15 @@ from .testbase import TestBase, PATCH_SEND_COMMAND
 
 from custom_components.dreo.pydreo import PyDreoEvaporativeCooler
 from custom_components.dreo.pydreo.pydreoevaporativecooler import (
+    FOG_LEVEL_KEY,
     WIND_MODE_KEY,
     HUMIDIFY_MODE_KEY,
     HUMIDITY_TARGET_KEY,
+    HORIZONTAL_ANGLE_ADJ_KEY,
+    LIGHTON_KEY,
+    RGB_ON_KEY,
+    RGB_COLOR,
+    RGB_MODE,
     WATER_LEVEL_STATUS_KEY,
     WORKTIME_KEY,
 )
@@ -269,6 +275,15 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.target_humidity == 55
         assert ec_fan.temperature == 82
         assert ec_fan.humidify is True
+        assert ec_fan.fog_level == 1
+        assert ec_fan.fog_level_range == (1, 3)
+        assert ec_fan.display_light is True
+        assert ec_fan.panel_sound is False
+        assert ec_fan.rgblevel == 0
+        assert ec_fan.rgbmode == 0
+        assert ec_fan.rgbcolor == 30719
+        assert ec_fan.horizontal_angle == 5
+        assert ec_fan.horizontal_angle_range == (-15, 15)
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.is_on = False
@@ -280,6 +295,39 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         with pytest.raises(ValueError):
             ec_fan.fan_speed = 7
+
+    def test_HEC006S_feature_setters(self):  # pylint: disable=invalid-name
+        """Test HEC006S setters for added humidifier-style features."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.fog_level = 3
+            mock_send_command.assert_called_once_with(ec_fan, {FOG_LEVEL_KEY: 3})
+
+        with pytest.raises(ValueError):
+            ec_fan.fog_level = 4
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.display_light = False
+            mock_send_command.assert_called_once_with(ec_fan, {LIGHTON_KEY: False})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgblevel = 1
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_ON_KEY: True})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgbmode = 1
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_MODE: 1})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgbcolor = 0x010203
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_COLOR: 0x010203})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.horizontal_angle = -10
+            mock_send_command.assert_called_once_with(ec_fan, {HORIZONTAL_ANGLE_ADJ_KEY: -10})
 
     def test_HEC006S_preset_mode_setter(self):  # pylint: disable=invalid-name
         """Test that HEC006S preset_mode setter sends the 'mode' command key."""
@@ -350,6 +398,24 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         ec_fan.handle_server_update({REPORTED_KEY: {WATER_LEVEL_STATUS_KEY: 0}})
         assert ec_fan.water_level == "Ok"
+
+        ec_fan.handle_server_update({REPORTED_KEY: {FOG_LEVEL_KEY: 2}})
+        assert ec_fan.fog_level == 2
+
+        ec_fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: False}})
+        assert ec_fan.display_light is False
+
+        ec_fan.handle_server_update({REPORTED_KEY: {RGB_ON_KEY: True}})
+        assert ec_fan.rgblevel == 1
+
+        ec_fan.handle_server_update({REPORTED_KEY: {RGB_MODE: 1}})
+        assert ec_fan.rgbmode == 1
+
+        ec_fan.handle_server_update({REPORTED_KEY: {RGB_COLOR: 12345}})
+        assert ec_fan.rgbcolor == 12345
+
+        ec_fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_ANGLE_ADJ_KEY: -5}})
+        assert ec_fan.horizontal_angle == -5
 
     def test_HEC006S_wind_mode_from_state(self):  # pylint: disable=invalid-name
         """Test that HEC006S correctly reads wind mode from 'mode' state key."""

@@ -141,7 +141,7 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         min_value=0,
         max_value=6,
         step=1,
-        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("fog_level"),
+        exists_fn=lambda device: device.is_feature_supported("fog_level"),
     ),
     DreoNumberEntityDescription(
         key="Sleep Target Humidity",
