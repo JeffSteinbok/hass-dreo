@@ -27,6 +27,8 @@ KEYS_TO_REDACT = {
     "access_token",
     "productId",
     "deviceId",
+    "_product_id",
+    "_device_id",
 }
 
 # Keys whose values are non-serializable objects (live references, locks, callbacks)
