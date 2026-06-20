@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2067226047508100001",
+        "sn": "HEC005S_1",
+        "brand": "Dreo",
+        "model": "DR-HEC005S",
+        "productId": "1924404434153500001",
+        "productName": "Misting Fan",
+        "deviceName": "DEBUGTEST - Misting Fan - DR-HEC005S",
+        "shared": false,
+        "series": null,
+        "seriesName": "765S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "l",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202512/8103e0628ee8a4d428560fce0fe00c8b3.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202512/8ff669706440749a68685d033c33e5418.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202512/8844b18dc3ab44414875606e5165cea7f.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202512/854bbc12b74184fee9e66fe2700b96ebe.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202602/44251189647ae4252baec95e989e413b5.pdf",
+            "icon": null,
+            "desc": "DR-HEC005S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

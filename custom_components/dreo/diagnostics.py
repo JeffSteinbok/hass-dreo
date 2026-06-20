@@ -74,9 +74,10 @@ def _redact_values(data) -> dict:
     new_data = {}
 
     for key, item in data.items():
+        normalized_key = key.lstrip("_")
         if key in KEYS_TO_EXCLUDE:
             continue
-        if key in KEYS_TO_REDACT:
+        if key in KEYS_TO_REDACT or normalized_key in KEYS_TO_REDACT:
             new_data[key] = REDACTED
         elif isinstance(item, dict):
             new_data[key] = _redact_values(item)

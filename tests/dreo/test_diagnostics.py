@@ -116,6 +116,20 @@ class TestRedactValues:
         assert result["mixed_list"][3]["token"] == REDACTED
         assert result["mixed_list"][3]["id"] == 123
 
+    def test_redact_values_underscore_prefixed_sensitive_keys(self):
+        """Test underscore-prefixed sensitive attributes are redacted."""
+        data = {
+            "_device_id": "20672260475081xxxxx",
+            "_product_id": "19244044341535xxxxx",
+            "_sn": "SN123",
+            "_name": "safe",
+        }
+        result = _redact_values(data)
+        assert result["_device_id"] == REDACTED
+        assert result["_product_id"] == REDACTED
+        assert result["_sn"] == REDACTED
+        assert result["_name"] == "safe"
+
 
 class TestGetDiagnostics:
     """Tests for _get_diagnostics function."""
