@@ -102,6 +102,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 ## Evaporative Coolers (DR-HEC Series)
 
 - DR-HEC002S
+- DR-HEC005S (TurboCool Misting Fan 765S, 12 fan speeds)
 - DR-HEC006S (DR-HEC516S TurboCool Misting Fan 516S)
 
 ---
