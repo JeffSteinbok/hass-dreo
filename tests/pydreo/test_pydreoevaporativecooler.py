@@ -417,6 +417,14 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_ANGLE_ADJ_KEY: -5}})
         assert ec_fan.horizontal_angle == -5
 
+        # windlevel as string should still update fan speed
+        ec_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: "6"}})
+        assert ec_fan.fan_speed == 6
+
+        # hoscon sent as int should still update oscillation state
+        ec_fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_KEY: 0}})
+        assert ec_fan.oscillating is False
+
     def test_HEC006S_wind_mode_from_state(self):  # pylint: disable=invalid-name
         """Test that HEC006S correctly reads wind mode from 'mode' state key."""
         self.get_devices_file_name = "get_devices_HEC006S.json"
@@ -426,3 +434,13 @@ class TestPyDreoEvaporativeCooler(TestBase):
         # After update_state, _wind_mode should be set from the "mode" key (value 1)
         assert ec_fan._wind_mode == 1
         assert ec_fan.preset_mode == "Normal"
+
+    def test_HEC006S_state_value_coercion(self):  # pylint: disable=invalid-name
+        """Test HEC006S state parsing coerces windlevel and hoscon value types."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        ec_fan.update_state({WINDLEVEL_KEY: {"state": "4"}, HORIZONTAL_OSCILLATION_KEY: {"state": "false"}})
+        assert ec_fan.fan_speed == 4
+        assert ec_fan.oscillating is False

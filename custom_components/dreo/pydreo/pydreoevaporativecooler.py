@@ -17,6 +17,7 @@ from .constant import (
     RGB_COLOR,
     RGB_MODE,
     TEMPOFFSET_KEY,
+    WINDLEVEL_KEY,
 )
 from .helpers import Helpers
 from .models import DreoDeviceDetails
@@ -350,17 +351,47 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return None
         return WINDMODE_MAP.get(WINDMODES[index])
 
+    @staticmethod
+    def _coerce_int(value: int | str | None) -> int | None:
+        """Convert string/int values to int."""
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str):
+            value = value.strip()
+            if value.lstrip("-").isdigit():
+                return int(value)
+        return None
+
+    @staticmethod
+    def _coerce_bool(value: bool | int | str | None) -> bool | None:
+        """Convert bool-like values to bool."""
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, int):
+            if value in (0, 1):
+                return bool(value)
+            return None
+        if isinstance(value, str):
+            lowered = value.strip().lower()
+            if lowered in ("true", "1", "on"):
+                return True
+            if lowered in ("false", "0", "off"):
+                return False
+        return None
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API"""
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
+
+        self._fan_speed = self._coerce_int(self._fan_speed)
 
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
         self._target_humidity = self.get_state_update_value(state, HUMIDITY_TARGET_KEY)
         raw_humidify = self.get_state_update_value(state, HUMIDIFY_MODE_KEY)
         self._humidify = (raw_humidify == 2) if raw_humidify is not None else None
-        self._oscillating = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
+        self._oscillating = self._coerce_bool(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY))
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         # Only apply the legacy 0-indexed windmode mapping when the "windmode" key is
@@ -385,12 +416,16 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
 
+        val_wind_level = self._coerce_int(self.get_server_update_key_value(message, WINDLEVEL_KEY))
+        if val_wind_level is not None:
+            self._fan_speed = val_wind_level
+
         val_temperature_offset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)
         if isinstance(val_temperature_offset, int):
             self._temperature_offset = val_temperature_offset
 
-        val_oscon = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_KEY)
-        if isinstance(val_oscon, bool):
+        val_oscon = self._coerce_bool(self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_KEY))
+        if val_oscon is not None:
             self._oscillating = val_oscon
 
         val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
