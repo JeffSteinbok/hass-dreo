@@ -497,3 +497,21 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert PyDreoEvaporativeCooler._coerce_bool(2) is None
         assert PyDreoEvaporativeCooler._coerce_bool(None) is None
         assert PyDreoEvaporativeCooler._coerce_bool("unknown") is None
+
+    def test_HEC005S_empty_controls_conf_variance(self):  # pylint: disable=invalid-name
+        """Test DR-HEC005S model variance with empty controlsConf."""
+        self.get_devices_file_name = "get_devices_HEC005S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        assert ec_fan.speed_range == (1, 12)
+        assert ec_fan.preset_modes == ["Normal", "Natural", "Sleep", "Auto"]
+        assert ec_fan._wind_mode == 1
+        assert ec_fan.preset_mode == "Normal"
+        assert ec_fan.fan_speed == 3
+        assert ec_fan.temperature == 82
+        assert ec_fan.humidity == 58
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.preset_mode = "Auto"
+            mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 2})

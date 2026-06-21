@@ -486,11 +486,11 @@ SUPPORTED_DEVICES = {
         device_ranges={SPEED_RANGE: (1, 6)},
     ),
     # DR-HEC005S is the TurboCool Misting Fan 765S.
-    # It has 12 fan speeds; without a dedicated entry it falls back to the
-    # generic "DR-HEC" prefix which caps the speed range at (1, 4).
-    # Preset modes (Normal/Natural/Sleep/Auto) are parsed from controlsConf.
+    # It has 12 fan speeds and can expose an empty controlsConf.
+    # Without an explicit mapping it falls back to generic DR-HEC defaults.
     "DR-HEC005S": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
+        preset_modes=[("Normal", 1), ("Natural", 4), ("Sleep", 3), ("Auto", 2)],
         device_ranges={SPEED_RANGE: (1, 12)},
     ),
 }
