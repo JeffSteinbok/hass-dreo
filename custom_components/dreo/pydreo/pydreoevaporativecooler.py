@@ -365,7 +365,11 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
 
     @staticmethod
     def _coerce_bool(value: bool | int | str | None) -> bool | None:
-        """Convert bool-like values to bool (case-insensitive, trimmed for strings)."""
+        """Convert bool-like values to bool.
+
+        Dreo payloads normally provide real booleans. Int/string variants are accepted
+        as a compatibility fallback when payload typing is inconsistent.
+        """
         if isinstance(value, bool):
             return value
         if isinstance(value, int):

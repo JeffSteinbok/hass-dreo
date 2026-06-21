@@ -448,6 +448,9 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.fan_speed == 4
         assert ec_fan.oscillating is False
 
+        ec_fan.update_state({HORIZONTAL_OSCILLATION_KEY: {"state": 0}})
+        assert ec_fan.oscillating is False
+
         ec_fan.update_state({WINDLEVEL_KEY: {"state": "invalid"}})
         assert ec_fan.fan_speed == 4
 
