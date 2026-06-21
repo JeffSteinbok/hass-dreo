@@ -369,6 +369,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
 
         Dreo payloads normally provide real booleans. Int/string variants are accepted
         as a compatibility fallback when payload typing is inconsistent.
+        Only 0/1 integer encodings are accepted for integers.
         """
         if isinstance(value, bool):
             return value
