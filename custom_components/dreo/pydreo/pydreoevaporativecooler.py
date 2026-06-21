@@ -357,9 +357,10 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         if isinstance(value, int):
             return value
         if isinstance(value, str):
-            value = value.strip()
-            if value.isdigit() or (value.startswith("-") and len(value) > 1 and value[1:].isdigit()):
+            try:
                 return int(value)
+            except ValueError:
+                return None
         return None
 
     @staticmethod
@@ -382,9 +383,14 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API"""
         _LOGGER.debug("update_state: update_state")
+        prev_fan_speed = self._fan_speed
         super().update_state(state)
 
-        self._fan_speed = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
+        val_windlevel = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
+        if val_windlevel is not None:
+            self._fan_speed = val_windlevel
+        else:
+            self._fan_speed = prev_fan_speed
 
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
