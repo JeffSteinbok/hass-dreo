@@ -454,6 +454,12 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan.update_state({WINDLEVEL_KEY: {"state": []}})
         assert ec_fan.fan_speed == 4
 
+        ec_fan.update_state({WINDLEVEL_KEY: {"state": 3.5}})
+        assert ec_fan.fan_speed == 4
+
+        ec_fan.update_state({WINDLEVEL_KEY: {"state": {"invalid": True}}})
+        assert ec_fan.fan_speed == 4
+
         ec_fan.update_state({HORIZONTAL_OSCILLATION_KEY: {"state": 0}})
         assert ec_fan.oscillating is False
 
@@ -463,10 +469,17 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan.update_state({HORIZONTAL_OSCILLATION_KEY: {"state": 2}})
         assert ec_fan.oscillating is True
 
+        ec_fan.update_state({HORIZONTAL_OSCILLATION_KEY: {"state": 1.5}})
+        assert ec_fan.oscillating is True
+
         ec_fan.update_state({WINDLEVEL_KEY: {"state": "invalid"}})
         assert ec_fan.fan_speed == 4
 
         ec_fan.update_state({HORIZONTAL_OSCILLATION_KEY: {"state": "invalid"}})
+        assert ec_fan.oscillating is True
+
+        ec_fan.update_state({})
+        assert ec_fan.fan_speed == 4
         assert ec_fan.oscillating is True
 
     def test_HEC006S_value_coercion_helpers(self):  # pylint: disable=invalid-name

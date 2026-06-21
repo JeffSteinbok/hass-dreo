@@ -392,9 +392,12 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         prev_oscillating = self._oscillating
         super().update_state(state)
 
-        val_windlevel = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
-        if val_windlevel is not None:
-            self._fan_speed = val_windlevel
+        if WINDLEVEL_KEY in state:
+            val_windlevel = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
+            if val_windlevel is not None:
+                self._fan_speed = val_windlevel
+            else:
+                self._fan_speed = prev_fan_speed
         else:
             self._fan_speed = prev_fan_speed
 
@@ -403,9 +406,12 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._target_humidity = self.get_state_update_value(state, HUMIDITY_TARGET_KEY)
         raw_humidify = self.get_state_update_value(state, HUMIDIFY_MODE_KEY)
         self._humidify = (raw_humidify == 2) if raw_humidify is not None else None
-        val_oscillating = self._coerce_bool(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY))
-        if val_oscillating is not None:
-            self._oscillating = val_oscillating
+        if HORIZONTAL_OSCILLATION_KEY in state:
+            val_oscillating = self._coerce_bool(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY))
+            if val_oscillating is not None:
+                self._oscillating = val_oscillating
+            else:
+                self._oscillating = prev_oscillating
         else:
             self._oscillating = prev_oscillating
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
