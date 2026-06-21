@@ -378,17 +378,17 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return None
         if isinstance(value, str):
             lowered = value.strip().lower()
-            if lowered in ("true", "1", "on"):
+            if lowered in ("true", "1"):
                 return True
-            if lowered in ("false", "0", "off"):
+            if lowered in ("false", "0"):
                 return False
         return None
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API"""
         _LOGGER.debug("update_state: update_state")
-        prev_fan_speed = getattr(self, "_fan_speed", None)
-        prev_oscillating = getattr(self, "_oscillating", None)
+        prev_fan_speed = self._fan_speed
+        prev_oscillating = self._oscillating
         super().update_state(state)
 
         val_windlevel = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
