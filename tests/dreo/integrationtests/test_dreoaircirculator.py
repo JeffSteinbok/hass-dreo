@@ -727,3 +727,76 @@ class TestDreoAirCirculator(IntegrationTestBase):
             self.verify_expected_entities(switches, ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
             numbers = number.get_entries([pydreo_fan])
             self.verify_expected_entities(numbers, ["Horizontal Angle"])
+
+    def test_HPF004S(self):  # pylint: disable=invalid-name
+        """Test HPF004S TurboPoly 704S air circulator fan and HA entity."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
+            self.get_devices_file_name = "get_devices_HPF004S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            assert pydreo_fan.model == "DR-HPF004S"
+            assert pydreo_fan.speed_range == (1, 9)
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.is_on is False
+            assert ha_fan.speed_count == 9
+            assert ha_fan.unique_id is not None
+            assert ha_fan.name is not None
+            assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+
+            # Test turn on/off
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+
+            # Test speed
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(100)
+                # Fan is off, so this triggers power on + speed
+                assert mock_send_command.call_count == 2
+                calls = [call[0][1] for call in mock_send_command.call_args_list]
+                assert {POWERON_KEY: True} in calls
+                assert {WINDLEVEL_KEY: 9} in calls
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, WINDLEVEL_KEY: 9}})
+
+            # Test preset modes
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 3})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 3}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("custom")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 6})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+
+            # Test entity inventory
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(switches, ["Adaptive Brightness", "Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
+            numbers = number.get_entries([pydreo_fan])
+            self.verify_expected_entities(numbers, ["Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right", "Vertical Angle", "Vertical Oscillation Angle Bottom", "Vertical Oscillation Angle Top"])

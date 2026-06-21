@@ -1,0 +1,38 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "poweron": {"state": false, "timestamp": 1781900151},
+      "windlevel": {"state": 5, "timestamp": 1781900151},
+      "mode": {"state": 1, "timestamp": 1781900151},
+      "temperature": {"state": 75, "timestamp": 1781901042},
+      "oscmode": {"state": 0, "timestamp": 1781900151},
+      "cruiseconf": {"state": "90,75,-30,-75", "timestamp": 1781900151},
+      "fixedconf": {"state": "0,-5", "timestamp": 1781900151},
+      "customconf": {"state": "temp:23333334444446666668888889", "timestamp": 1781900151},
+      "muteon": {"state": true, "timestamp": 1781900151},
+      "lighton": {"state": false, "timestamp": 1781900151},
+      "childlockon": {"state": false, "timestamp": 1781900151},
+      "alignon": {"state": true, "timestamp": 1781900151},
+      "lightsensoron": {"state": false, "timestamp": 1781900151},
+      "wifi_rssi": {"state": -60, "timestamp": 1781900151},
+      "network_latency": {"state": 19, "timestamp": 1781900152},
+      "module_hardware_model": {"state": "HeFi", "timestamp": 1781900151},
+      "mcu_firmware_version": {"state": "0.5.0", "timestamp": 1781900151},
+      "module_firmware_version": {"state": "3.4.7", "timestamp": 1781900151},
+      "connected": {"state": true, "timestamp": 1781900151},
+      "mcuon": {"state": true, "timestamp": 1781900151},
+      "wrong": {"state": 0, "timestamp": 1781900151},
+      "scheid": {"state": 0, "timestamp": 1781900151},
+      "scheon": {"state": false, "timestamp": 1781900151},
+      "timeron": {"state": {"du": 0, "ts": 1781900151}, "timestamp": null},
+      "timeroff": {"state": {"du": 0, "ts": 1781900151}, "timestamp": null},
+      "_ota": {"state": 0, "timestamp": 1781900151}
+    },
+    "sn": "HPF004S_1",
+    "productId": "1706129276403773442",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}
