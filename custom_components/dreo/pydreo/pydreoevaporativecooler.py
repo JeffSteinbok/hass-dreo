@@ -365,7 +365,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
 
     @staticmethod
     def _coerce_bool(value: bool | int | str | None) -> bool | None:
-        """Convert bool-like values to bool."""
+        """Convert bool-like values to bool (case-insensitive, trimmed for strings)."""
         if isinstance(value, bool):
             return value
         if isinstance(value, int):
@@ -384,6 +384,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         """Process the state dictionary from the REST API"""
         _LOGGER.debug("update_state: update_state")
         prev_fan_speed = self._fan_speed
+        prev_oscillating = self._oscillating
         super().update_state(state)
 
         val_windlevel = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
@@ -397,7 +398,11 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._target_humidity = self.get_state_update_value(state, HUMIDITY_TARGET_KEY)
         raw_humidify = self.get_state_update_value(state, HUMIDIFY_MODE_KEY)
         self._humidify = (raw_humidify == 2) if raw_humidify is not None else None
-        self._oscillating = self._coerce_bool(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY))
+        val_oscillating = self._coerce_bool(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY))
+        if val_oscillating is not None:
+            self._oscillating = val_oscillating
+        else:
+            self._oscillating = prev_oscillating
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         # Only apply the legacy 0-indexed windmode mapping when the "windmode" key is

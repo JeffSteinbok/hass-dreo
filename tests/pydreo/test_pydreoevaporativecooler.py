@@ -441,12 +441,18 @@ class TestPyDreoEvaporativeCooler(TestBase):
         self.pydreo_manager.load_devices()
         ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
+        assert ec_fan.fan_speed == 2
+        assert ec_fan.oscillating is True
+
         ec_fan.update_state({WINDLEVEL_KEY: {"state": "4"}, HORIZONTAL_OSCILLATION_KEY: {"state": "false"}})
         assert ec_fan.fan_speed == 4
         assert ec_fan.oscillating is False
 
         ec_fan.update_state({WINDLEVEL_KEY: {"state": "invalid"}})
         assert ec_fan.fan_speed == 4
+
+        ec_fan.update_state({HORIZONTAL_OSCILLATION_KEY: {"state": "invalid"}})
+        assert ec_fan.oscillating is False
 
     def test_HEC006S_value_coercion_helpers(self):  # pylint: disable=invalid-name
         """Test helper coercion for supported and invalid value formats."""
