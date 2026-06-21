@@ -27,6 +27,8 @@ KEYS_TO_REDACT = {
     "access_token",
     "productId",
     "deviceId",
+    "_product_id",
+    "_device_id",
 }
 
 # Keys whose values are non-serializable objects (live references, locks, callbacks)
@@ -76,7 +78,7 @@ def _redact_values(data) -> dict:
     for key, item in data.items():
         if key in KEYS_TO_EXCLUDE:
             continue
-        if key in KEYS_TO_REDACT:
+        if key in KEYS_TO_REDACT or (key.startswith("_") and key[1:] in KEYS_TO_REDACT):
             new_data[key] = REDACTED
         elif isinstance(item, dict):
             new_data[key] = _redact_values(item)
