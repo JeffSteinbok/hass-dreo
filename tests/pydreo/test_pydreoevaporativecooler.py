@@ -444,3 +444,15 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan.update_state({WINDLEVEL_KEY: {"state": "4"}, HORIZONTAL_OSCILLATION_KEY: {"state": "false"}})
         assert ec_fan.fan_speed == 4
         assert ec_fan.oscillating is False
+
+    def test_HEC006S_value_coercion_helpers(self):  # pylint: disable=invalid-name
+        """Test helper coercion for supported and invalid value formats."""
+        assert PyDreoEvaporativeCooler._coerce_int("6") == 6
+        assert PyDreoEvaporativeCooler._coerce_int("-5") == -5
+        assert PyDreoEvaporativeCooler._coerce_int("---5") is None
+
+        assert PyDreoEvaporativeCooler._coerce_bool(1) is True
+        assert PyDreoEvaporativeCooler._coerce_bool(0) is False
+        assert PyDreoEvaporativeCooler._coerce_bool("on") is True
+        assert PyDreoEvaporativeCooler._coerce_bool("off") is False
+        assert PyDreoEvaporativeCooler._coerce_bool("unknown") is None

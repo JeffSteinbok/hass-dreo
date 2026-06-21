@@ -358,7 +358,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return value
         if isinstance(value, str):
             value = value.strip()
-            if value.lstrip("-").isdigit():
+            if value.isdigit() or (value.startswith("-") and len(value) > 1 and value[1:].isdigit()):
                 return int(value)
         return None
 
@@ -384,7 +384,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
 
-        self._fan_speed = self._coerce_int(self._fan_speed)
+        self._fan_speed = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
 
         self._temperature_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._humidity = self.get_state_update_value(state, HUMIDITY_KEY)
