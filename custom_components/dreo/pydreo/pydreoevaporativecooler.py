@@ -387,8 +387,8 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API"""
         _LOGGER.debug("update_state: update_state")
-        prev_fan_speed = self._fan_speed
-        prev_oscillating = self._oscillating
+        prev_fan_speed = getattr(self, "_fan_speed", None)
+        prev_oscillating = getattr(self, "_oscillating", None)
         super().update_state(state)
 
         val_windlevel = self._coerce_int(self.get_state_update_value(state, WINDLEVEL_KEY))
