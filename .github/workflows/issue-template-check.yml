@@ -34,13 +34,23 @@ jobs:
             }
 
             const body = context.payload.issue.body || '';
-            const templateMarkers = [
-              '### Describe the bug',
-              '### Problem description',
-              '### Product Page Link',
+
+            // Each entry is the set of required headings that uniquely identify a template.
+            // All headings in a set must be present for the template to be considered used.
+            const templateSignatures = [
+              // bug_report.yml
+              ['### Describe the bug'],
+              // device-feature-request.yml
+              ['### Problem description', '### Describe the solution you\'d like'],
+              // new-device-request.yml
+              ['### Product Page Link'],
             ];
 
-            if (templateMarkers.some(m => body.includes(m))) {
+            const templateDetected = templateSignatures.some(sig =>
+              sig.every(marker => body.includes(marker))
+            );
+
+            if (templateDetected) {
               core.info('Template detected.');
               return;
             }
@@ -189,6 +199,112 @@ jobs:
                 'I only personally own 2 Dreo devices, so logs and diagnostics are **essential** for me to debug issues with devices I don\'t own.',
                 '',
                 'Please update your issue with the missing information. See the [debugging instructions](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) for help collecting this data.',
+                '',
+                '_This is an automated message._',
+              ].join('\n'),
+            });
+
+  check-feature-request:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Triage device feature request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const author = context.payload.issue.user.login;
+            const issueNumber = context.issue.number;
+
+            // Only handle device feature requests
+            if (!body.includes('### Problem description') || !body.includes('### Describe the solution you\'d like')) {
+              core.info('Not a device feature request. Skipping.');
+              return;
+            }
+
+            // Skip collaborators
+            try {
+              const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: author,
+              });
+              if (['admin', 'write'].includes(permLevel.permission)) {
+                core.info(`Collaborator ${author}. Skipping.`);
+                return;
+              }
+            } catch (e) {
+              core.info(`Could not check permissions: ${e.message}. Proceeding.`);
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['triaged'],
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: [
+                `👋 Thanks for the feature request, @${author}!`,
+                '',
+                'This has been logged and will be reviewed. Note that I only personally own 2 Dreo devices, so community contributions for additional device support are always welcome!',
+                '',
+                '_This is an automated message._',
+              ].join('\n'),
+            });
+
+  check-new-device-request:
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Triage new device request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const author = context.payload.issue.user.login;
+            const issueNumber = context.issue.number;
+
+            // Only handle new device requests
+            if (!body.includes('### Product Page Link')) {
+              core.info('Not a new device request. Skipping.');
+              return;
+            }
+
+            // Skip collaborators
+            try {
+              const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: author,
+              });
+              if (['admin', 'write'].includes(permLevel.permission)) {
+                core.info(`Collaborator ${author}. Skipping.`);
+                return;
+              }
+            } catch (e) {
+              core.info(`Could not check permissions: ${e.message}. Proceeding.`);
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels: ['triaged'],
+            });
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: [
+                `👋 Thanks for the new device request, @${author}!`,
+                '',
+                'This has been logged. Adding support for new devices requires diagnostics data and community testing — contributions via pull request are very welcome!',
                 '',
                 '_This is an automated message._',
               ].join('\n'),
