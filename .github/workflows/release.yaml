@@ -27,11 +27,11 @@ jobs:
       version: ${{ steps.bump.outputs.version }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7
       with:
         token: ${{ secrets.PAT_TOKEN }}
     - name: Set up Python 3.13
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.13"
     - name: Install dependencies
@@ -63,7 +63,7 @@ jobs:
       run: python -m build
 
     - name: Upload package artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: python-package
         path: dist/
@@ -74,7 +74,7 @@ jobs:
         git push origin --tags
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: v${{ steps.bump.outputs.version }}
         name: Release v${{ steps.bump.outputs.version }}
