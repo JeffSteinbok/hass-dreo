@@ -37,11 +37,42 @@ body:
       required: false
 
   - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: >
+        Attach your diagnostics JSON file here.
+        See [how to download diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging)
+        for instructions.
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log Files
+      description: >
+        **Before capturing logs**, use the Dreo mobile app to perform the exact action(s) you want this integration to support.
+        Then enable debug logging and reproduce the same steps in Home Assistant so the desired behavior is captured in the logs.
+        See [how to enable debug logging and download logs](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) for instructions.
+        Attach the full log file here.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: attachments-confirm
+    attributes:
+      label: Attachments
+      options:
+        - label: I have attached [diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging).
+          required: true
+        - label: I have attached [log files](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) captured after reproducing the desired behavior in the Dreo mobile app.
+          required: true
+
+  - type: textarea
     id: additional
     attributes:
       label: Additional context
-      description: >
-        Add any other context or screenshots about the feature request here.
-        If possible, attach [diagnostics](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging).
+      description: Add any other context or screenshots about the feature request here.
     validations:
       required: false
