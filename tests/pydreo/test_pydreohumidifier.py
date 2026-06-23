@@ -649,3 +649,118 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.suspend is True
         humidifier.handle_server_update({REPORTED_KEY: {"suspend": False}})
         assert humidifier.suspend is False
+
+    # --- Newer firmware (atm* keys) ---
+
+    def test_HHM015S_atm_firmware(self):  # pylint: disable=invalid-name
+        """Load HHM015S (ATM firmware) and verify atm* properties are populated."""
+        self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        assert humidifier.model == "DR-HHM015S"
+
+        # ATM properties must be populated from the state fixture.
+        assert humidifier.atm_on is True
+        assert humidifier.atm_mode == "Breath"
+        assert humidifier.atm_color == 16711680  # red
+        assert humidifier.atm_brightness == 128
+
+        # Legacy rgb* properties are absent for newer firmware.
+        assert humidifier.rgblevel is None
+        assert humidifier.rgbmode is None
+        assert humidifier.rgbcolor is None
+
+        # ambient_light should transparently delegate to atm_on.
+        assert humidifier.ambient_light is True
+
+    def test_HHM015S_atm_ambient_light_setter(self):  # pylint: disable=invalid-name
+        """Test ambient_light setter routes to ambient_switch for newer firmware."""
+        self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        # Turn off via ambient_light — should send ambient_switch=False.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.ambient_light = False
+            mock_send_command.assert_called_once_with(humidifier, {AMBIENT_SWITCH_KEY: False})
+
+        humidifier.handle_server_update({REPORTED_KEY: {AMBIENT_SWITCH_KEY: False}})
+        assert humidifier.atm_on is False
+        assert humidifier.ambient_light is False
+
+        # Turn on — should send ambient_switch=True.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.ambient_light = True
+            mock_send_command.assert_called_once_with(humidifier, {AMBIENT_SWITCH_KEY: True})
+
+    def test_HHM015S_atm_on_setter(self):  # pylint: disable=invalid-name
+        """Test atm_on property setter sends the ambient_switch command."""
+        self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.atm_on = False
+            mock_send_command.assert_called_once_with(humidifier, {AMBIENT_SWITCH_KEY: False})
+
+        # Idempotent — no command if value unchanged.
+        humidifier.handle_server_update({REPORTED_KEY: {AMBIENT_SWITCH_KEY: False}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.atm_on = False
+            mock_send_command.assert_not_called()
+
+    def test_HHM015S_atm_color_setter(self):  # pylint: disable=invalid-name
+        """Test atm_color property setter sends the atmcolor command."""
+        self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        new_color = 255  # blue = 0x0000FF
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.atm_color = new_color
+            mock_send_command.assert_called_once_with(humidifier, {ATMCOLOR_KEY: new_color})
+
+    def test_HHM015S_atm_mode_setter(self):  # pylint: disable=invalid-name
+        """Test atm_mode property setter sends the atmmode command."""
+        self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.atm_mode = "Circle"
+            mock_send_command.assert_called_once_with(humidifier, {ATMMODE_KEY: "Circle"})
+
+        # Idempotent.
+        humidifier.handle_server_update({REPORTED_KEY: {ATMMODE_KEY: "Circle"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.atm_mode = "Circle"
+            mock_send_command.assert_not_called()
+
+    def test_HHM015S_atm_brightness_setter(self):  # pylint: disable=invalid-name
+        """Test atm_brightness property setter sends the atmbri command."""
+        self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.atm_brightness = 200
+            mock_send_command.assert_called_once_with(humidifier, {ATMBRI_KEY: 200})
+
+    def test_HHM015S_atm_handle_server_updates(self):  # pylint: disable=invalid-name
+        """Test WebSocket updates for atm* keys are reflected in atm* properties."""
+        self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        humidifier.handle_server_update({REPORTED_KEY: {AMBIENT_SWITCH_KEY: False}})
+        assert humidifier.atm_on is False
+
+        humidifier.handle_server_update({REPORTED_KEY: {ATMMODE_KEY: "Circle"}})
+        assert humidifier.atm_mode == "Circle"
+
+        humidifier.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 65280}})
+        assert humidifier.atm_color == 65280
+
+        humidifier.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 64}})
+        assert humidifier.atm_brightness == 64

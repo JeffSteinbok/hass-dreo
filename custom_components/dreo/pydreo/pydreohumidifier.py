@@ -21,6 +21,10 @@ from .constant import (
     RGB_MODE,
     RGB_COLOR,
     SCHEDULE_ENABLE,
+    AMBIENT_SWITCH_KEY,
+    ATMMODE_KEY,
+    ATMCOLOR_KEY,
+    ATMBRI_KEY,
 )
 
 from .helpers import Helpers
@@ -97,6 +101,11 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._filtertime = None
         self._filteron = None
         self._suspend = None
+        # Newer firmware uses atm* keys instead of rgb* keys for the ambient light ring.
+        self._atm_on = None       # ambient_switch (bool): on/off
+        self._atm_mode = None     # atmmode (str): mode name e.g. "Breath", "Circle"
+        self._atm_color = None    # atmcolor (int): 24-bit packed RGB
+        self._atm_brightness = None  # atmbri (int): brightness level
 
     def parse_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -355,21 +364,98 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
     @property
     def ambient_light(self) -> bool | None:
-        """Return ambient light on/off state based on raw rgblevel."""
+        """Return ambient light on/off state.
+
+        For newer firmware (atm* keys) uses ``ambient_switch``; falls back to
+        the legacy ``rgblevel`` for older firmware.
+        """
+        if self._atm_on is not None:
+            return self._atm_on
         if self._rgblevel is None:
             return None
         return int(self._rgblevel) > 0
 
     @ambient_light.setter
     def ambient_light(self, value: bool) -> None:
-        """Set ambient light on/off. Sends rgblevel=2 for on, 0 for off."""
+        """Set ambient light on/off.
+
+        For newer firmware sends ``ambient_switch``; for older firmware sends
+        ``rgblevel`` (2=on, 0=off).
+        """
         _LOGGER.debug("ambient_light: ambient_light.setter(%s) --> %s", self.name, value)
-        desired = 2 if value else 0
-        if self._rgblevel == desired:
-            _LOGGER.debug("ambient_light: value already %s, skipping command", value)
+        if self._atm_on is not None:
+            if self._atm_on == value:
+                _LOGGER.debug("ambient_light: value already %s, skipping command", value)
+                return
+            self._atm_on = value  # optimistic update
+            self._send_command(AMBIENT_SWITCH_KEY, value)
+        else:
+            desired = 2 if value else 0
+            if self._rgblevel == desired:
+                _LOGGER.debug("ambient_light: value already %s, skipping command", value)
+                return
+            self._rgblevel = desired  # optimistic update
+            self._send_command(RGB_LEVEL, desired)
+
+    @property
+    def atm_on(self) -> bool | None:
+        """Return ambient light on/off state for newer firmware (ambient_switch key)."""
+        return self._atm_on
+
+    @atm_on.setter
+    def atm_on(self, value: bool) -> None:
+        """Set ambient light on/off using the ambient_switch key (newer firmware)."""
+        _LOGGER.debug("atm_on: atm_on.setter(%s) --> %s", self.name, value)
+        if self._atm_on == value:
+            _LOGGER.debug("atm_on: value already %s, skipping command", value)
             return
-        self._rgblevel = desired  # optimistic update
-        self._send_command(RGB_LEVEL, desired)
+        self._atm_on = value  # optimistic update
+        self._send_command(AMBIENT_SWITCH_KEY, value)
+
+    @property
+    def atm_mode(self) -> str | None:
+        """Return the ambient light animation mode string for newer firmware (e.g. 'Breath', 'Circle')."""
+        return self._atm_mode
+
+    @atm_mode.setter
+    def atm_mode(self, value: str) -> None:
+        """Set the ambient light animation mode string (newer firmware)."""
+        _LOGGER.debug("atm_mode: atm_mode.setter(%s) --> %s", self.name, value)
+        if self._atm_mode == value:
+            _LOGGER.debug("atm_mode: value already %s, skipping command", value)
+            return
+        self._atm_mode = value  # optimistic update
+        self._send_command(ATMMODE_KEY, value)
+
+    @property
+    def atm_color(self) -> int | None:
+        """Return the ambient light RGB color as a 24-bit int (newer firmware, atmcolor key)."""
+        return self._atm_color
+
+    @atm_color.setter
+    def atm_color(self, value: int) -> None:
+        """Set the ambient light RGB color as a 24-bit int (newer firmware, atmcolor key)."""
+        _LOGGER.debug("atm_color: atm_color.setter(%s) --> %s", self.name, value)
+        if self._atm_color == value:
+            _LOGGER.debug("atm_color: value already %s, skipping command", value)
+            return
+        self._atm_color = value  # optimistic update
+        self._send_command(ATMCOLOR_KEY, value)
+
+    @property
+    def atm_brightness(self) -> int | None:
+        """Return the ambient light brightness level (newer firmware, atmbri key)."""
+        return self._atm_brightness
+
+    @atm_brightness.setter
+    def atm_brightness(self, value: int) -> None:
+        """Set the ambient light brightness level (newer firmware, atmbri key)."""
+        _LOGGER.debug("atm_brightness: atm_brightness.setter(%s) --> %s", self.name, value)
+        if self._atm_brightness == value:
+            _LOGGER.debug("atm_brightness: value already %s, skipping command", value)
+            return
+        self._atm_brightness = value  # optimistic update
+        self._send_command(ATMBRI_KEY, value)
 
     @property
     def rgbmode(self) -> int | None:
@@ -499,6 +585,11 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._filtertime = self.get_state_update_value(state, FILTERTIME_KEY)
         self._filteron = self.get_state_update_value(state, FILTERON_KEY)
         self._suspend = self.get_state_update_value(state, SUSPEND_KEY)
+        # Newer firmware ambient light (atm* keys).
+        self._atm_on = self.get_state_update_value(state, AMBIENT_SWITCH_KEY)
+        self._atm_mode = self.get_state_update_value(state, ATMMODE_KEY)
+        self._atm_color = self.get_state_update_value(state, ATMCOLOR_KEY)
+        self._atm_brightness = self.get_state_update_value(state, ATMBRI_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -596,4 +687,21 @@ class PyDreoHumidifier(PyDreoBaseDevice):
 
         val_suspend = self.get_server_update_key_value(message, SUSPEND_KEY)
         if isinstance(val_suspend, bool):
-            self._suspend = val_suspend            
+            self._suspend = val_suspend
+
+        # Newer firmware ambient light keys (atm* / ambient_switch).
+        val_atm_on = self.get_server_update_key_value(message, AMBIENT_SWITCH_KEY)
+        if isinstance(val_atm_on, bool):
+            self._atm_on = val_atm_on
+
+        val_atm_mode = self.get_server_update_key_value(message, ATMMODE_KEY)
+        if isinstance(val_atm_mode, str):
+            self._atm_mode = val_atm_mode
+
+        val_atm_color = self.get_server_update_key_value(message, ATMCOLOR_KEY)
+        if isinstance(val_atm_color, int):
+            self._atm_color = val_atm_color
+
+        val_atm_brightness = self.get_server_update_key_value(message, ATMBRI_KEY)
+        if isinstance(val_atm_brightness, int):
+            self._atm_brightness = val_atm_brightness

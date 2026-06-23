@@ -449,6 +449,12 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.HUMIDIFIER,
         ambient_light_levels=(0, 1, 2),
     ),
+    # DR-HHM015S (HM755S): supports rgbmode (0=humidity indicator, 1=fixed color),
+    # rgbcolor, and rgbth (humidity thresholds).  Brightness is on/full only (no low level).
+    "DR-HHM015S": DreoDeviceDetails(
+        device_type=DreoDeviceType.HUMIDIFIER,
+        ambient_light_levels=(0, 2),
+    ),
     "DR-HHM014S": DreoDeviceDetails(
         device_type=DreoDeviceType.HUMIDIFIER,
         preset_modes=[

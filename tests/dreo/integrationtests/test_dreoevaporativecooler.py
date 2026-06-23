@@ -56,6 +56,13 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             sensors = sensor.get_entries([pydreo_ec])
             self.verify_expected_entities(sensors, ["Temperature", "Humidity", "Use since cleaning"])
 
+            # HEC002S has an ambient light ring (rgbon/rgbmode/rgbcolor keys).
+            lights = light.get_entries([pydreo_ec])
+            self.verify_expected_entities(lights, ["Ambient Light"])
+
+            selects = select.get_entries([pydreo_ec])
+            self.verify_expected_entities(selects, ["Ambient Light Mode"])
+
     def test_HEC006S(self):  # pylint: disable=invalid-name
         """Load HEC006S (TurboCool Misting Fan 516S) and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
