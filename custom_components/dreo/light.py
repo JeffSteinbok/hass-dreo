@@ -375,7 +375,7 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
             atm_bri = getattr(self.device, "atm_brightness", None)
             if atm_bri is None:
                 return None
-            # Newer firmware brightness is already 0-255 (or a device-specific range).
+            # Newer firmware reports brightness as a raw integer value from the device.
             return int(atm_bri)
         if not self._has_brightness:
             return None

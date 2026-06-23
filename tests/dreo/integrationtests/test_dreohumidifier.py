@@ -349,7 +349,10 @@ class TestDreoHumidifier(IntegrationTestBase):
             # RGB color comes from atm_color (16711680 = 0xFF0000 = red).
             assert ambient_ha.rgb_color == (255, 0, 0)
 
-            # No "Ambient Light Mode" select for ATM firmware (uses rgbmode integer, absent here),
-            # but "Mist Level" select is present due to foglevel in device state.
+            # No "Ambient Light Mode" select for ATM firmware: that entity uses the integer
+            # rgbmode key (0=humidity indicator, 1=fixed color), which is absent on newer
+            # firmware.  The ATM firmware uses the string atmmode key instead, for which
+            # no select entity is currently registered.
+            # "Mist Level" select is present due to foglevel in device state.
             selects = select.get_entries([pydreo_humidifier])
             self.verify_expected_entities(selects, ["Mist Level"])
