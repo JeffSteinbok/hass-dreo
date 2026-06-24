@@ -111,5 +111,5 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
 
             numbers = number.get_entries([pydreo_ec])
             fog_level_number = next(n for n in numbers if n.entity_description.key == "Fog Level")
-            assert fog_level_number._attr_native_min_value == 1
-            assert fog_level_number._attr_native_max_value == 4
+            assert fog_level_number.native_min_value == 1
+            assert fog_level_number.native_max_value == 4
