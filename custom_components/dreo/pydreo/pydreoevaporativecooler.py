@@ -151,14 +151,18 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @property
     def fog_level_range(self) -> tuple[int, int]:
         """Return the supported misting level range."""
+        range_from_definition = self._device_definition.device_ranges.get("fog_level_range") if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
         return (1, 3)
 
     @fog_level.setter
     def fog_level(self, value: int) -> None:
         """Set the misting level."""
         level = int(value)
-        if level < 1 or level > 3:
-            raise ValueError(f"Fog level {level} is out of range (1-3)")
+        min_level, max_level = self.fog_level_range
+        if level < min_level or level > max_level:
+            raise ValueError(f"Fog level {level} is out of range ({min_level}-{max_level})")
         if self._fog_level == level:
             _LOGGER.debug("fog_level: fog_level - value already %s, skipping command", level)
             return

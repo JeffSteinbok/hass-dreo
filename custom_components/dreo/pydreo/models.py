@@ -496,6 +496,6 @@ SUPPORTED_DEVICES = {
     "DR-HEC005S": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
         preset_modes=[("Normal", 1), ("Natural", 4), ("Sleep", 3), ("Auto", 2)],
-        device_ranges={SPEED_RANGE: (1, 12)},
+        device_ranges={SPEED_RANGE: (1, 12), "fog_level_range": (1, 4)},
     ),
 }

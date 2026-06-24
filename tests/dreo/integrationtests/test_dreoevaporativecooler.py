@@ -97,3 +97,19 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
 
             selects = select.get_entries([pydreo_ec])
             self.verify_expected_entities(selects, ["Ambient Light Mode"])
+
+    def test_HEC005S_fog_level_range(self):  # pylint: disable=invalid-name
+        """Load HEC005S and verify fog level slider range includes level 4."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HEC005S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_ec = self.pydreo_manager.devices[0]
+            assert pydreo_ec.model == "DR-HEC005S"
+            assert pydreo_ec.fog_level_range == (1, 4)
+
+            numbers = number.get_entries([pydreo_ec])
+            fog_level_number = next(n for n in numbers if n.entity_description.key == "Fog Level")
+            assert fog_level_number._attr_native_min_value == 1
+            assert fog_level_number._attr_native_max_value == 4

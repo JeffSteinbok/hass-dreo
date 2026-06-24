@@ -438,9 +438,17 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan._wind_mode == 1
         assert ec_fan.preset_mode == "Normal"
         assert ec_fan.fan_speed == 3
+        assert ec_fan.fog_level_range == (1, 4)
         assert ec_fan.temperature == 82
         assert ec_fan.humidity == 58
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.preset_mode = "Auto"
             mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 2})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.fog_level = 4
+            mock_send_command.assert_called_once_with(ec_fan, {FOG_LEVEL_KEY: 4})
+
+        with pytest.raises(ValueError):
+            ec_fan.fog_level = 5
