@@ -417,6 +417,14 @@ class PyDreoAC(PyDreoBaseDevice):
             _LOGGER.debug("handle_server_update: %s - target_temperature: %s --> %s", self, self._target_temperature, val_target_temperature)
             self._target_temperature = val_target_temperature
 
+        val_humidity = self.get_server_update_key_value(message, HUMIDITY_KEY)
+        if isinstance(val_humidity, int):
+            self._humidity = val_humidity
+
+        val_target_humidity = self.get_server_update_key_value(message, TARGET_HUMIDITY_KEY)
+        if isinstance(val_target_humidity, int):
+            self._target_humidity = val_target_humidity
+
         # Reported mode can be an empty string if the AC is off. Deal with that by
         # explicitly setting that to off.
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
