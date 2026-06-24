@@ -6,6 +6,7 @@ from unittest.mock import patch
 from custom_components.dreo import binary_sensor
 from custom_components.dreo import number
 from custom_components.dreo import humidifier
+from custom_components.dreo import select
 from custom_components.dreo import sensor
 from custom_components.dreo import switch
 from custom_components.dreo import light
@@ -323,3 +324,35 @@ class TestDreoHumidifier(IntegrationTestBase):
                 # Test set_humidity
                 ha_humidifier.set_humidity(60)
                 mock_schedule.assert_called()
+
+    def test_HHM015S_atm_firmware(self):  # pylint: disable=invalid-name
+        """Load HHM015S (ATM firmware) and verify ambient light entity uses the atm* path."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HHM015S_atm.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+            assert pydreo_humidifier.model == "DR-HHM015S"
+            assert pydreo_humidifier.atm_on is True
+            assert pydreo_humidifier.atm_mode == "Breath"
+            assert pydreo_humidifier.atm_color == 16711680
+            assert pydreo_humidifier.atm_brightness == 128
+
+            # Ambient light entity must be created when device uses atm* keys.
+            lights = light.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(lights, ["Ambient Light"])
+
+            # The light entity must be on (atm_on is True in the fixture).
+            ambient_ha = lights[0]
+            assert ambient_ha.is_on is True
+            # RGB color comes from atm_color (16711680 = 0xFF0000 = red).
+            assert ambient_ha.rgb_color == (255, 0, 0)
+
+            # No "Ambient Light Mode" select for ATM firmware: that entity uses the integer
+            # rgbmode key (0=humidity indicator, 1=fixed color), which is absent on newer
+            # firmware.  The ATM firmware uses the string atmmode key instead, for which
+            # no select entity is currently registered.
+            # "Mist Level" select is present due to foglevel in device state.
+            selects = select.get_entries([pydreo_humidifier])
+            self.verify_expected_entities(selects, ["Mist Level"])
