@@ -77,6 +77,8 @@ SHAKEHORIZONANGLE_KEY = "shakehorizonangle"
 
 # Ceiling Fan
 FANON_KEY = "fanon"
+RGBPRESETSEL_KEY = "rgbpresetsel"
+RGBPRESETNUM_KEY = "rgbpresetnum"
 
 
 DREO_API_URL_FORMAT = "https://app-api-{0}.dreo-tech.com"  # {0} is the 2 letter region code

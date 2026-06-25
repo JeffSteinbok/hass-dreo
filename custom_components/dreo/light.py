@@ -43,8 +43,12 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
             _LOGGER.debug("get_entries: Adding Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoLightHA(pydreo_device))
 
-        # Check if device has an RGB atmosphere light (ceiling fans)
-        if pydreo_device.is_feature_supported("atm_light"):
+        # Check if device has an RGBIC preset-based atmosphere light (e.g., HCF007S)
+        if pydreo_device.is_feature_supported("rgb_preset"):
+            _LOGGER.debug("get_entries: Adding RGBIC Preset Light for %s", pydreo_device.name)
+            light_ha_collection.append(DreoRGBICLightHA(pydreo_device))
+        # Check if device has an RGB atmosphere light with direct color control (ceiling fans)
+        elif pydreo_device.is_feature_supported("atm_color_rgb"):
             _LOGGER.debug("get_entries: Adding RGB Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoRGBLightHA(pydreo_device))
 
@@ -279,6 +283,81 @@ class DreoRGBLightHA(DreoLightHA):
             rgb = kwargs[ATTR_RGB_COLOR]
             _LOGGER.debug("turn_on: Setting RGB color to %s", rgb)
             setattr(self.pydreo_device, "atm_color_rgb", rgb)
+
+
+class DreoRGBICLightHA(DreoLightHA):
+    """RGBIC preset-based atmosphere light for Dreo ceiling fans (e.g., HCF007S).
+
+    Some ceiling fans use an RGBIC (addressable LED) ring that operates via preset
+    effects rather than direct RGB color control. This class exposes preset selection
+    through Home Assistant's light effect system.
+
+    - On/off: atmon (atmosphere light power)
+    - Brightness: atmbri (1-5 scale)
+    - Effects: rgbpresetsel (0-based preset index)
+    """
+
+    # Effect names for RGBIC presets (generic names since API doesn't provide them)
+    EFFECT_NAMES = ["Preset 1", "Preset 2", "Preset 3", "Preset 4"]
+
+    def __init__(self, pyDreoDevice: PyDreoBaseDevice) -> None:
+        """Initialize the RGBIC preset-based atmosphere light."""
+        # Pass RGBIC-specific configuration to parent
+        super().__init__(
+            pyDreoDevice, light_on_attr="atm_light_on", brightness_attr="atm_brightness", brightness_scale=(1, 5)
+        )
+
+        # Override attributes for RGBIC light
+        self.entity_description = EntityDescription("RGBIC Light")
+        self._attr_name = self.pydreo_device.name + " RGB Light"
+        self._attr_unique_id = f"{self.pydreo_device.serial_number}-rgb-light"
+        self._attr_icon = "mdi:led-strip-variant"
+
+        # Use ONOFF mode with effects (not RGB color mode)
+        self._color_mode = ColorMode.ONOFF
+
+        _LOGGER.info("new DreoRGBICLightHA instance(%s), unique ID %s", self._attr_name, self._attr_unique_id)
+
+    @property
+    def supported_features(self) -> LightEntityFeature:
+        """Return the supported features for this light."""
+        return LightEntityFeature.EFFECT
+
+    @property
+    def effect_list(self) -> list[str]:
+        """Return the list of available effects (presets)."""
+        # Use number of presets from device state if available
+        num_presets = getattr(self.pydreo_device, "rgb_preset_num", None)
+        if num_presets is not None and num_presets > 0:
+            return [f"Preset {i + 1}" for i in range(num_presets)]
+        # Fallback to default 4 presets
+        return self.EFFECT_NAMES
+
+    @property
+    def effect(self) -> str | None:
+        """Return the current active effect (preset)."""
+        preset_sel = getattr(self.pydreo_device, "rgb_preset_sel", None)
+        if preset_sel is None:
+            return None
+        # Convert 0-based index to "Preset N" name
+        return f"Preset {preset_sel + 1}"
+
+    def turn_on(self, **kwargs: Any) -> None:
+        """Turn the RGBIC light on, optionally setting effect (preset)."""
+        # Call parent to handle basic light on and brightness
+        super().turn_on(**kwargs)
+
+        # Handle effect/preset selection
+        if ATTR_EFFECT in kwargs:
+            effect = kwargs[ATTR_EFFECT]
+            _LOGGER.debug("turn_on: Setting RGBIC effect to %s", effect)
+            # Parse "Preset N" to get 0-based index
+            if effect.startswith("Preset "):
+                try:
+                    preset_idx = int(effect.split(" ")[1]) - 1
+                    self.pydreo_device.rgb_preset_sel = preset_idx
+                except (ValueError, IndexError):
+                    _LOGGER.warning("turn_on: Invalid effect name %s", effect)
 
 
 class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-method
