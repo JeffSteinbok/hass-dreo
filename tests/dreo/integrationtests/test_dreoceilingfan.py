@@ -182,9 +182,9 @@ class TestDreoCeilingFan(IntegrationTestBase):
             assert ha_fan.speed_count == 12
             assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
 
-            # Both main light and RGB light entities should be created
+            # Both main light and RGBIC light entities should be created
             lights = light.get_entries([pydreo_fan])
-            self.verify_expected_entities(lights, ["Light", "RGB Light"])
+            self.verify_expected_entities(lights, ["Light", "RGBIC Light"])
 
             # ---- Main light (colour temperature) ----
             main_light = self.get_entity_by_key(lights, "Light")
@@ -200,24 +200,27 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 main_light.turn_on(brightness=128)
                 mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
 
-            # ---- RGB atmosphere light ----
-            rgb_light = self.get_entity_by_key(lights, "RGB Light")
-            assert rgb_light is not None
-            # Device reported atmon=true but no atmcolor, so rgb_color is unknown
-            assert rgb_light.rgb_color is None
-            # atmon=true in initial state, so the RGB light should be "on"
-            assert rgb_light.is_on is True
+            # ---- RGBIC atmosphere light (preset-based, not direct RGB) ----
+            rgbic_light = self.get_entity_by_key(lights, "RGBIC Light")
+            assert rgbic_light is not None
+            # RGBIC preset device - rgb_color is not supported
+            assert rgbic_light.rgb_color is None
+            # atmon=true in initial state, so the RGBIC light should be "on"
+            assert rgbic_light.is_on is True
+            # RGBIC light should have effect list with presets
+            assert rgbic_light.effect_list == ["Preset 1", "Preset 2", "Preset 3", "Preset 4"]
+            # Current preset is 0, so effect should be "Preset 1"
+            assert rgbic_light.effect == "Preset 1"
 
             # atmon is already True, so turn_on() sends no commands
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                rgb_light.turn_on()
+                rgbic_light.turn_on()
                 mock_send_command.assert_not_called()
 
-            # Setting an RGB colour must produce an atmcolor command even though
-            # _atm_color was None on load (regression test for the CFRGB variant)
+            # Setting effect must send rgbpresetsel command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
-                mock_send_command.assert_called_once_with(pydreo_fan, {ATMCOLOR_KEY: 16711680})
+                rgbic_light.turn_on(effect="Preset 3")
+                mock_send_command.assert_called_once_with(pydreo_fan, {RGBPRESETSEL_KEY: 2})
 
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S fan and test sending commands."""

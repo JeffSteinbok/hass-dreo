@@ -221,11 +221,10 @@ class TestPyDreoCeilingFan(TestBase):
         fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
 
     def test_HCF002S_CFRGB(self):  # pylint: disable=invalid-name
-        """Test DR-HCF002S RGBIC variant that has atmon/atmbri but no atmcolor in state.
+        """Test DR-HCF002S RGBIC variant that uses preset-based RGB instead of direct color.
 
-        Regression test for https://github.com/JeffSteinbok/hass-dreo/issues/XXX:
-        RGB color commands must be accepted even when the device never reported
-        'atmcolor' in its state heartbeat (i.e. _atm_color is None on load).
+        RGBIC ceiling fans have rgbpresetsel/rgbpresetnum instead of atmcolor.
+        They should expose rgb_preset feature, NOT atm_color_rgb.
         """
         self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
         self.pydreo_manager.load_devices()
@@ -249,30 +248,34 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan.atm_light_on is True
         assert fan.atm_brightness == 1
 
-        # atmcolor was NOT in the device state, so the current value is unknown
+        # This is an RGBIC preset device - atm_color_rgb is NOT supported
         assert fan.atm_color_rgb is None
+        assert fan.is_feature_supported("atm_color_rgb") is False
 
-        # atm_color_rgb must still be recognised as a settable feature because the
-        # atmosphere light itself is present on the device.
-        assert fan.is_feature_supported("atm_color_rgb") is True
+        # RGBIC preset feature IS supported
+        assert fan.is_feature_supported("rgb_preset") is True
+        assert fan.rgb_preset_sel == 0
+        assert fan.rgb_preset_num == 4
 
-        # Setting RGB colour must send the atmcolor command even though _atm_color is None
+        # Setting preset must send the rgbpresetsel command
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.atm_color_rgb = (255, 0, 0)  # Red
-            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 16711680})  # 0xFF0000
-        fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 16711680}})
+            fan.rgb_preset_sel = 2
+            mock_send_command.assert_called_once_with(fan, {RGBPRESETSEL_KEY: 2})
+        fan.handle_server_update({REPORTED_KEY: {RGBPRESETSEL_KEY: 2}})
 
-        # After the server echoes the colour back, subsequent identical set should be skipped
-        assert fan.atm_color_rgb == (255, 0, 0)
+        # After update, preset should be tracked
+        assert fan.rgb_preset_sel == 2
+
+        # Setting same preset should skip command
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.atm_color_rgb = (255, 0, 0)  # same colour – should NOT re-send
+            fan.rgb_preset_sel = 2
             mock_send_command.assert_not_called()
 
-        # Setting a different colour after state is known must send the command
+        # Setting different preset must send command
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.atm_color_rgb = (0, 255, 0)  # Green
-            mock_send_command.assert_called_once_with(fan, {ATMCOLOR_KEY: 65280})  # 0x00FF00
-        fan.handle_server_update({REPORTED_KEY: {ATMCOLOR_KEY: 65280}})
+            fan.rgb_preset_sel = 0
+            mock_send_command.assert_called_once_with(fan, {RGBPRESETSEL_KEY: 0})
+        fan.handle_server_update({REPORTED_KEY: {RGBPRESETSEL_KEY: 0}})
 
         # Colour temperature control must also work
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -366,7 +369,7 @@ class TestPyDreoCeilingFan(TestBase):
             fan.fan_speed = 13
 
     def test_HCF007S(self):  # pylint: disable=invalid-name
-        """Load HCF007S (CF521S RGBIC) and verify fallback model capabilities."""
+        """Load HCF007S (CF521S RGBIC) and verify RGBIC preset capabilities."""
         self.get_devices_file_name = "get_devices_HCF007S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
@@ -374,6 +377,13 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan.model == "DR-HCF007S"
         assert fan.speed_range == (1, 12)
         assert fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
+
+        # HCF007S is an RGBIC preset device - atm_color_rgb is NOT supported
+        assert fan.is_feature_supported("atm_light") is True
+        assert fan.is_feature_supported("atm_color_rgb") is False
+        assert fan.is_feature_supported("rgb_preset") is True
+        assert fan.rgb_preset_sel == 0
+        assert fan.rgb_preset_num == 4
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 12
@@ -384,6 +394,13 @@ class TestPyDreoCeilingFan(TestBase):
             fan.preset_mode = "reverse"
             mock_send_command.assert_called_once_with(fan, {MODE_KEY: 4})
         fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
+
+        # RGBIC preset control
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.rgb_preset_sel = 3
+            mock_send_command.assert_called_once_with(fan, {RGBPRESETSEL_KEY: 3})
+        fan.handle_server_update({REPORTED_KEY: {RGBPRESETSEL_KEY: 3}})
+        assert fan.rgb_preset_sel == 3
 
     @pytest.mark.parametrize("devices_file", CEILING_FAN_EXHAUSTIVE_MODELS)
     def test_all_settable_properties_for_each_model(self, devices_file: str):

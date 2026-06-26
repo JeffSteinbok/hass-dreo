@@ -15,6 +15,8 @@ from .constant import (
     ATMCOLOR_KEY,
     ATMBRI_KEY,
     ATMMODE_KEY,
+    RGBPRESETSEL_KEY,
+    RGBPRESETNUM_KEY,
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -72,6 +74,10 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._atm_brightness: int = None
         self._atm_color: int = None
         self._atm_mode: int = None
+
+        # RGBIC preset system (used by HCF007S and similar)
+        self._rgb_preset_sel: int = None
+        self._rgb_preset_num: int = None
 
         self._wind_type = None
         self._wind_mode = None
@@ -235,6 +241,28 @@ class PyDreoCeilingFan(PyDreoFanBase):
         """Returns the atmosphere mode (1=Constant, 2=Circle, 3=Breath), or None if not supported."""
         return self._atm_mode
 
+    @property
+    def rgb_preset_sel(self) -> int | None:
+        """Returns the currently selected RGBIC preset (0-based index), or None if not supported."""
+        return self._rgb_preset_sel
+
+    @rgb_preset_sel.setter
+    def rgb_preset_sel(self, value: int):
+        """Set the RGBIC preset selection (0-based index)."""
+        _LOGGER.debug("rgb_preset_sel: rgb_preset_sel.setter - %s", value)
+        if self._rgb_preset_sel is None:
+            _LOGGER.error("rgb_preset_sel: RGBIC presets not supported by this fan model.")
+            return
+        if self._rgb_preset_sel == value:
+            _LOGGER.debug("rgb_preset_sel: rgb_preset_sel - value already %s, skipping command", value)
+            return
+        self._send_command(RGBPRESETSEL_KEY, value)
+
+    @property
+    def rgb_preset_num(self) -> int | None:
+        """Returns the number of available RGBIC presets, or None if not supported."""
+        return self._rgb_preset_num
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: Processing state")
@@ -265,6 +293,10 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._atm_brightness = self.get_state_update_value(state, ATMBRI_KEY)
         self._atm_color = self.get_state_update_value(state, ATMCOLOR_KEY)
         self._atm_mode = self.get_state_update_value(state, ATMMODE_KEY)
+
+        # RGBIC preset system
+        self._rgb_preset_sel = self.get_state_update_value(state, RGBPRESETSEL_KEY)
+        self._rgb_preset_num = self.get_state_update_value(state, RGBPRESETNUM_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -301,6 +333,15 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if isinstance(val_atm_mode, int):
             self._atm_mode = val_atm_mode
 
+        # RGBIC preset system
+        val_rgb_preset_sel = self.get_server_update_key_value(message, RGBPRESETSEL_KEY)
+        if isinstance(val_rgb_preset_sel, int):
+            self._rgb_preset_sel = val_rgb_preset_sel
+
+        val_rgb_preset_num = self.get_server_update_key_value(message, RGBPRESETNUM_KEY)
+        if isinstance(val_rgb_preset_num, int):
+            self._rgb_preset_num = val_rgb_preset_num
+
     def _handle_power_state_update(self, message):
         """Override power state handling for ceiling fans"""
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
@@ -321,11 +362,11 @@ class PyDreoCeilingFan(PyDreoFanBase):
         """Check if this ceiling fan supports a specific feature"""
         if feature == "atm_light":
             return self._atm_light_on is not None
-        # atm_color_rgb is considered supported whenever the atmosphere light itself is
-        # present on the device.  Some device variants (e.g. DR-HCF002S RGBIC) do not
-        # echo "atmcolor" back in their state heartbeat, so _atm_color stays None and the
-        # base implementation (which uses getattr/None-check) would wrongly report the
-        # feature as unsupported.
+        # atm_color_rgb is only supported if the device has atmcolor (not RGBIC preset system)
         if feature == "atm_color_rgb":
-            return self._atm_light_on is not None
+            # Device must have atmosphere light AND direct atmcolor support (not RGBIC presets)
+            return self._atm_light_on is not None and self._atm_color is not None
+        # RGBIC preset system - device has atmon + rgbpresetsel but not atmcolor
+        if feature == "rgb_preset":
+            return self._atm_light_on is not None and self._rgb_preset_sel is not None
         return super().is_feature_supported(feature)
