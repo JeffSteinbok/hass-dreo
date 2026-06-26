@@ -268,8 +268,6 @@ jobs:
               body: [
                 `👋 Thanks for the feature request, @${author}!`,
                 '',
-                'This has been logged and will be reviewed. Note that I only personally own 2 Dreo devices, so community contributions for additional device support are always welcome!',
-                '',
                 '_This is an automated message._',
               ].join('\n'),
             });
