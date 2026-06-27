@@ -10,7 +10,13 @@ from custom_components.dreo import number
 from custom_components.dreo import light
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
-from custom_components.dreo.pydreo.constant import HORIZONTAL_OSCILLATION_ANGLE_KEY, VERTICAL_OSCILLATION_ANGLE_KEY, HORIZONTAL_ANGLE_ADJ_KEY
+from custom_components.dreo.pydreo.constant import (
+    CRUISECONF_KEY,
+    FIXEDCONF_KEY,
+    HORIZONTAL_OSCILLATION_ANGLE_KEY,
+    VERTICAL_OSCILLATION_ANGLE_KEY,
+    HORIZONTAL_ANGLE_ADJ_KEY,
+)
 
 PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
 PATCH_SCHEDULE_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
@@ -767,6 +773,32 @@ class TestDreoAirCirculator(IntegrationTestBase):
             self.verify_expected_entities(switches, ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
             numbers = number.get_entries([pydreo_fan])
             self.verify_expected_entities(numbers, ["Horizontal Angle"])
+
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-30,0", CRUISECONF_KEY: "60,30,-30,-30"}})
+            numbers = number.get_entries([pydreo_fan])
+            self.verify_expected_entities(
+                numbers,
+                [
+                    "Horizontal Angle",
+                    "Horizontal Oscillation Angle Left",
+                    "Horizontal Oscillation Angle Right",
+                    "Vertical Angle",
+                    "Vertical Oscillation Angle Top",
+                    "Vertical Oscillation Angle Bottom",
+                ],
+            )
+
+            vertical_angle_number = next(n for n in numbers if n.entity_description.key == "Vertical Angle")
+            assert vertical_angle_number._attr_native_min_value == -30
+            assert vertical_angle_number._attr_native_max_value == 90
+
+            vertical_bottom_number = next(n for n in numbers if n.entity_description.key == "Vertical Oscillation Angle Bottom")
+            assert vertical_bottom_number._attr_native_min_value == -30
+            assert vertical_bottom_number._attr_native_max_value == 90
+
+            vertical_top_number = next(n for n in numbers if n.entity_description.key == "Vertical Oscillation Angle Top")
+            assert vertical_top_number._attr_native_min_value == -30
+            assert vertical_top_number._attr_native_max_value == 90
 
     def test_HPF004S(self):  # pylint: disable=invalid-name
         """Test HPF004S TurboPoly 704S air circulator fan and HA entity."""

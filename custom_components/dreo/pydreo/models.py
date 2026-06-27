@@ -337,7 +337,7 @@ SUPPORTED_DEVICES = {
     "DR-HPF025S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         preset_modes=[("normal", 1), ("auto", 2), ("sleep", 3), ("natural", 4), ("turbo", 5)],
-        device_ranges={SPEED_RANGE: (1, 9), HORIZONTAL_ANGLE_RANGE: (-60, 60), VERTICAL_ANGLE_RANGE: (0, 90)},
+        device_ranges={SPEED_RANGE: (1, 9), HORIZONTAL_ANGLE_RANGE: (-60, 60), VERTICAL_ANGLE_RANGE: (-30, 90)},
     ),
     "DR-HPF004S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,

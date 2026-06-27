@@ -921,7 +921,7 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo"]
         assert fan.preset_mode == "normal"
         assert fan.horizontal_angle_range == (-60, 60)
-        assert fan.vertical_angle_range == (0, 90)
+        assert fan.vertical_angle_range == (-30, 90)
         assert fan.temperature == 74
         assert fan.model == "DR-HPF025S"
         assert fan.device_name is not None
@@ -1327,6 +1327,18 @@ class TestPyDreoAirCirculator(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.horizontal_angle = 40
             mock_send_command.assert_not_called()
+
+    def test_HPF025S_fixed_conf_supports_negative_vertical_angles(self):  # pylint: disable=invalid-name
+        """Test HPF025S fixedconf supports negative vertical angles."""
+        self.get_devices_file_name = "get_devices_HPF025S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-30,20"}})
+        assert fan.vertical_angle_range == (-30, 90)
+        assert fan.vertical_angle == -30
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = -25
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "-25,20"})
 
     def test_horizontal_oscillation_angle_property(self):  # pylint: disable=invalid-name
         """Test horizontal_oscillation_angle property and setter."""
