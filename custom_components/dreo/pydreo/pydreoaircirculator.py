@@ -92,6 +92,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._atm_brightness: int = None
         self._atm_color: int = None
         self._atm_mode: int = None
+        self._atm_brightness_range: tuple[int, int] = (1, 5)
+        if device_definition.device_ranges is not None and "atm_brightness_range" in device_definition.device_ranges:
+            self._atm_brightness_range = device_definition.device_ranges["atm_brightness_range"]
 
     def _uses_hangleadj_for_horizontal(self) -> bool:
         """Check if device uses hangleadj (simpler angle control) instead of hoscangle."""
@@ -570,12 +573,13 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     @atm_brightness.setter
     def atm_brightness(self, value: int):
-        """Set the brightness of the atmosphere light (1-5 scale)."""
+        """Set the brightness of the atmosphere light."""
         _LOGGER.debug("atm_brightness: atm_brightness.setter - %s", value)
         if self._atm_brightness is None:
             _LOGGER.error("atm_brightness: Atmosphere brightness not supported by this fan model.")
             return
-        brightness = max(1, min(5, value))
+        min_brightness, max_brightness = self._atm_brightness_range
+        brightness = max(min_brightness, min(max_brightness, value))
         if self._atm_brightness == brightness:
             _LOGGER.debug("atm_brightness: atm_brightness - value already %s, skipping command", brightness)
             return

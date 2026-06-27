@@ -352,9 +352,9 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert rgb_light is not None
             assert rgb_light.is_on is False  # atmon=false in initial state
 
-            # Verify brightness is reported correctly (atmbri=1, scale 1-5)
+            # Verify brightness is reported correctly (atmbri=1, scale 1-3)
             assert rgb_light.brightness is not None
-            assert rgb_light.brightness == 51  # 1/5 * 255 = 51
+            assert rgb_light.brightness == 85  # 1/3 * 255 = 85
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgb_light.turn_on()
@@ -373,9 +373,9 @@ class TestDreoAirCirculator(IntegrationTestBase):
 
             # Test brightness control via turn_on
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                rgb_light.turn_on(brightness=255)  # Max brightness -> 5 on 1-5 scale
-                mock_send_command.assert_any_call(pydreo_fan, {ATMBRI_KEY: 5})
-            pydreo_fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 5}})
+                rgb_light.turn_on(brightness=255)  # Max brightness -> 3 on 1-3 scale
+                mock_send_command.assert_any_call(pydreo_fan, {ATMBRI_KEY: 3})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 3}})
             assert rgb_light.brightness == 255
 
     def test_HPF015S(self):  # pylint: disable=invalid-name
