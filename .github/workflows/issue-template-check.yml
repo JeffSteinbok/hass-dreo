@@ -138,6 +138,31 @@ jobs:
 
             function isDiagnosticsValid(content) {
               if (isMissing(content)) return false;
+              // Accept uploaded diagnostics file links (common for issue templates)
+              function stripOuterDelimiters(token) {
+                const trimChars = new Set(['(', ')', '[', ']', '\'', '"', '`']);
+                let start = 0;
+                let end = token.length;
+                while (start < end && trimChars.has(token[start])) start++;
+                while (end > start && trimChars.has(token[end - 1])) end--;
+                return token.slice(start, end);
+              }
+
+              const markdownUrls = Array.from(content.matchAll(/\[[^\]]*]\((https?:\/\/[^)]+)\)/gi), (match) => match[1]);
+              const bareUrls = content
+                .split(/\s+/)
+                .filter((token) => token.toLowerCase().includes('http'))
+                .map((token) => stripOuterDelimiters(token))
+                .filter((token) => /^https?:\/\//i.test(token));
+              const urlMatches = [...new Set([...markdownUrls, ...bareUrls])];
+              const hasJsonAttachmentLink = urlMatches.some((url) => {
+                try {
+                  return new URL(url).pathname.toLowerCase().endsWith('.json');
+                } catch (e) {
+                  return false;
+                }
+              });
+              if (hasJsonAttachmentLink) return true;
               // Try to extract and parse JSON from the content
               // Diagnostics may be wrapped in code blocks or have surrounding text
               const jsonMatch = content.match(/\{[\s\S]*"home_assistant"[\s\S]*\}/);
