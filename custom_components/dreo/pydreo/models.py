@@ -78,6 +78,10 @@ class DreoDeviceDetails:
     """Valid rgblevel values for the ambient light ring. None = not set (use default).
     Examples: (0, 2) = off/full only, (0, 1, 2) = off/low/full."""
 
+    rgb_brightness_scale: tuple | None
+    """Valid atmbri values for the rgb light. None = not set (use default 1-5).
+    Examples: (1, 3) = valid values are {1,2,3}"""
+
     def __init__(
         self,
         device_type: DreoDeviceType = None,
@@ -90,6 +94,7 @@ class DreoDeviceDetails:
         cooking_range: dict = None,
         override_fn: Callable | None = None,
         ambient_light_levels: tuple | None = None,
+        rgb_brightness_scale: tuple | None = None,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -106,6 +111,7 @@ class DreoDeviceDetails:
         self.cooking_range = cooking_range
         self.override_fn = override_fn
         self.ambient_light_levels = ambient_light_levels
+        self.rgb_brightness_scale = rgb_brightness_scale
 
 
 @dataclass
@@ -303,6 +309,8 @@ SUPPORTED_DEVICES = {
         # This is required for fans that map preset names to numeric mode values.
         preset_modes=[("normal", 1), ("auto", 2), ("sleep", 3), ("natural", 4), ("turbo", 5)],
         device_ranges={SPEED_RANGE: (1, 9), VERTICAL_ANGLE_RANGE: (-30, 90)},
+        # This model only supports 3 atmbri levels {1,2,3}
+        rgb_brightness_scale=(1,3),
     ),
     "DR-HPF015S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,

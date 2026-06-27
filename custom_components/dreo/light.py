@@ -244,9 +244,14 @@ class DreoRGBLightHA(DreoLightHA):
         RGB lights use different device attributes than main lights and have a smaller
         brightness scale (1-5 instead of 1-100).
         """
+        # Override valid atmbri values from device definition, default to (1, 5)
+        details = getattr(pyDreoDevice, "device_definition", None)
+        self._brightness_scale = getattr(details, "rgb_brightness_scale", None) if details else None
+        if self._brightness_scale is None:
+            self._brightness_scale = (1, 5)
         # Pass RGB-specific configuration to parent - uses "atm_" prefixed attributes
         super().__init__(
-            pyDreoDevice, light_on_attr="atm_light_on", brightness_attr="atm_brightness", brightness_scale=(1, 5)
+            pyDreoDevice, light_on_attr="atm_light_on", brightness_attr="atm_brightness", brightness_scale=self._brightness_scale
         )  # RGB lights have only 5 brightness levels
 
         # Override attributes for RGB light to distinguish from main light
