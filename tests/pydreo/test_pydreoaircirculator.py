@@ -738,9 +738,9 @@ class TestPyDreoAirCirculator(TestBase):
         # Test atm_brightness command
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.atm_brightness = 5
-            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 5})
-        fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 5}})
-        assert fan.atm_brightness == 5
+            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 3})
+        fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 3}})
+        assert fan.atm_brightness == 3
 
         # Test atm_color_rgb command
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -1426,14 +1426,14 @@ class TestPyDreoAirCirculator(TestBase):
             mock_send_command.assert_not_called()
 
     def test_atm_brightness_clamping(self):  # pylint: disable=invalid-name
-        """Test ATM brightness is clamped to 1-5."""
+        """Test ATM brightness is clamped to model range."""
         self.get_devices_file_name = "get_devices_HPF008S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
-        fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 3}})
+        fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 1}})
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            fan.atm_brightness = 10  # should clamp to 5
-            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 5})
+            fan.atm_brightness = 10  # should clamp to model max
+            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 3})
 
     def test_handle_server_update_all_keys(self):  # pylint: disable=invalid-name
         """Test handle_server_update covers all air circulator keys."""

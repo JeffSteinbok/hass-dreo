@@ -302,7 +302,7 @@ SUPPORTED_DEVICES = {
         # Note: Fan preset_modes use tuple format (name, value) despite type annotation.
         # This is required for fans that map preset names to numeric mode values.
         preset_modes=[("normal", 1), ("auto", 2), ("sleep", 3), ("natural", 4), ("turbo", 5)],
-        device_ranges={SPEED_RANGE: (1, 9), VERTICAL_ANGLE_RANGE: (-30, 90)},
+        device_ranges={SPEED_RANGE: (1, 9), VERTICAL_ANGLE_RANGE: (-30, 90), "atm_brightness_range": (1, 3)},
     ),
     "DR-HPF015S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
