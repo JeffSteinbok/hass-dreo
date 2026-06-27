@@ -622,7 +622,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             self.verify_expected_entities(switches, ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
 
     def test_HPF005S(self):  # pylint: disable=invalid-name
-        """Test HPF005S fan with hangleadj support."""
+        """Test HPF005S fan with hangleadj support and full preset mode coverage."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
             self.get_devices_file_name = "get_devices_HPF005S.json"
             self.pydreo_manager.load_devices()
@@ -635,6 +635,11 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.model == "DR-HPF005S"
             assert pydreo_fan.speed_range == (1, 10)
             assert pydreo_fan.horizontal_angle_range == (-60, 60)
+
+            # Verify preset modes include turbo and custom
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+            assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
 
             # Verify it has hangleadj
             assert pydreo_fan._horizontal_angle_adj is not None
@@ -675,6 +680,40 @@ class TestDreoAirCirculator(IntegrationTestBase):
             # Should NOT have old firmware entities (those require hoscangle/voscangle values)
             assert "Horizontal Oscillation Angle" not in number_names
             assert "Vertical Oscillation Angle" not in number_names
+
+            # Test preset mode commands (normal, natural, sleep, auto, turbo, custom)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 3})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 3}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+            assert ha_fan.preset_mode == "turbo"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("custom")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 6})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+            assert ha_fan.preset_mode == "custom"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("normal")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 1})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 1}})
+            assert ha_fan.preset_mode == "normal"
 
     def test_HPF025S(self):  # pylint: disable=invalid-name
         """Load HPF025S tall air circulator fan and test HA entity."""
