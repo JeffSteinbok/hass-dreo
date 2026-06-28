@@ -1,6 +1,8 @@
 # Testing Unreleased Fixes
 
-This guide explains how to install and test unreleased fixes from specific branches or pull requests before they are officially released.
+This guide explains how to install and test unreleased fixes from the `main` branch before they are officially released.
+
+> **Note:** This guide assumes you have the Dreo Smart Device Integration installed via [HACS](https://hacs.xyz/). If you installed manually, you'll need to update the files manually.
 
 ## Why Test Pre-Release Code?
 
@@ -17,96 +19,43 @@ Testing pre-release code helps:
 ## Prerequisites
 
 - Home Assistant with HACS installed
-- Basic familiarity with HACS custom repository features
+- Dreo Smart Device Integration already installed via HACS
 
-## Method 1: Install from a Branch (Recommended)
+## Installing from Main Branch
 
-Use this when a maintainer asks you to test code from `main` or a specific branch.
+Use this when a maintainer asks you to test code from `main` that hasn't been released yet.
 
 ### Steps
 
-1. **Remove the existing installation** (if installed via HACS)
-   - Go to **HACS → Integrations**
-   - Find **Dreo Smart Device Integration**
-   - Click the three dots menu → **Remove**
-   - Restart Home Assistant
+1. Go to **Developer Tools → Actions**
 
-2. **Add as a custom repository**
-   - Go to **HACS → Integrations**
-   - Click the three dots menu (top right) → **Custom repositories**
-   - Enter:
-     - **Repository:** `JeffSteinbok/hass-dreo`
-     - **Category:** `Integration`
-   - Click **Add**
+2. Search for and select **Install update** (`update.install`)
 
-3. **Install from the branch**
-   - Find **Dreo Smart Device Integration** in HACS
-   - Click on it to open details
-   - Click the three dots menu → **Redownload**
-   - Check **Show beta versions** if testing a beta
-   - Or select a specific version/branch from the dropdown
-   - Click **Download**
+3. Under **Targets**, click **Add target** and select **Update: Dreo Smart Device Integration**
 
-4. **Restart Home Assistant**
+4. Check the **Version** checkbox and enter the version you want to install:
+
+   | Value | Description |
+   |-------|-------------|
+   | `main` | Latest code from main branch (most common for testing) |
+   | `branch/branch-name` | A specific branch (e.g., `branch/fix-feature`) |
+   | `v1.2.3` | A specific release version |
+   | `commit/abc1234` | A specific commit hash |
+
+5. Click **Perform action**
+
+![Install update action](docs/images/install-update-action.png)
+
+6. **Restart Home Assistant**
    - Go to **Settings → System → Restart**
 
-5. **Test and report back**
+7. **Test and report back**
    - Test the specific functionality that was fixed
    - Report results on the GitHub issue or PR
 
-## Method 2: Install from a Pull Request
-
-Use this when testing code from an open PR that hasn't been merged yet.
-
-### Steps
-
-1. **Find the PR branch name**
-   - Go to the PR on GitHub (e.g., `https://github.com/JeffSteinbok/hass-dreo/pull/123`)
-   - Note the branch name shown at the top (e.g., `username:fix-feature-branch`)
-
-2. **Download the PR code manually**
-   
-   **Option A: Using HACS (if the branch is in the main repo)**
-   - Follow Method 1, but select the PR branch in step 3
-   
-   **Option B: Manual download**
-   - Go to the PR on GitHub
-   - Click **Code → Download ZIP**
-   - Extract to your Home Assistant `config/custom_components/` directory
-   - Ensure the folder is named `dreo`
-
-3. **Restart Home Assistant**
-
-## Method 3: Direct File Copy (Advanced)
-
-For quick testing without HACS:
-
-```bash
-# SSH into your Home Assistant instance
-cd /config/custom_components/
-
-# Remove existing installation
-rm -rf dreo
-
-# Clone the specific branch
-git clone -b main --single-branch https://github.com/JeffSteinbok/hass-dreo.git temp
-mv temp/custom_components/dreo ./dreo
-rm -rf temp
-
-# Restart Home Assistant
-```
-
 ## Reverting to Stable Release
 
-To go back to the stable HACS release:
-
-1. Remove the custom repository entry in HACS
-2. Remove the integration files:
-   - Go to **HACS → Integrations → Dreo** → Remove
-3. Re-add from the default HACS store:
-   - Search for "Dreo" in HACS Integrations
-   - Install the stable version
-4. Restart Home Assistant
+To go back to the latest stable release, follow the same steps but leave the **Version** field empty (unchecked). This will install the latest released version.
 
 ## Providing Feedback
 
@@ -114,7 +63,7 @@ When reporting test results:
 
 1. **Include your version info**
    - Home Assistant version
-   - The branch/commit you tested
+   - The branch you tested (e.g., `main`)
    - Your device model
 
 2. **Describe what you tested**
@@ -138,15 +87,10 @@ When reporting test results:
 
 ### Integration doesn't load after update
 - Check Home Assistant logs for errors
-- Ensure the folder structure is correct: `config/custom_components/dreo/`
-- Verify `manifest.json` exists in the dreo folder
-
-### HACS shows wrong version
-- Clear browser cache
-- Try removing and re-adding the custom repository
+- Try restarting Home Assistant again
 
 ### Device not responding after update
-- Reload the integration: **Settings → Devices & Services → Dreo → Reload**
+- Reload the integration: **Settings → Devices & Services → Dreo → ⋮ → Reload**
 - Check if your device credentials are still valid
 
 ## Questions?
