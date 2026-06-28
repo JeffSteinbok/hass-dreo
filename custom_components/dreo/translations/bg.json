@@ -45,6 +45,7 @@
         "oscon":                    { "name": "Осцилация" },
         "ptcon":                    { "name": "PTC" },
         "childlockon":              { "name": "Детска блокировка" },
+        "locatemeon":               { "name": "Сензор за присъствие" },
         "light":                    { "name": "Осветление" },
         "humidify":                 { "name": "Овлажнител" },
         "display_light":            { "name": "Подсветка на дисплея" },

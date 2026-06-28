@@ -997,6 +997,21 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.temperature is not None
         assert isinstance(fan.temperature, (int, float))
 
+    def test_HPF007S_presence_sensor(self):  # pylint: disable=invalid-name
+        """Verify HPF007S exposes locatemeon and sends commands for presence tracking."""
+        self.get_devices_file_name = "get_devices_HPF007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+        assert fan.locatemeon is False
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.locatemeon = True
+            mock_send_command.assert_called_once_with(fan, {LOCATEMEON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {LOCATEMEON_KEY: True}})
+        assert fan.locatemeon is True
+
     @pytest.mark.parametrize("devices_file", ["get_devices_HPF005S.json", "get_devices_HPF007S.json", "get_devices_HPF020S.json"])
     def test_additional_hpf_models(self, devices_file: str):  # pylint: disable=invalid-name
         """Load additional HPF models and test core command paths."""

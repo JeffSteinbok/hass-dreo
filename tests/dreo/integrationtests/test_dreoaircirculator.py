@@ -276,6 +276,13 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
             assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
 
+            # Check switches
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(
+                switches,
+                ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Presence Sensor", "Vertically Oscillating"],
+            )
+
     def test_HPF008S(self):  # pylint: disable=invalid-name
         """Test HPF008S fan."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
