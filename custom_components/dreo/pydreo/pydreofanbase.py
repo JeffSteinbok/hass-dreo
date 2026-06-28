@@ -17,6 +17,7 @@ from .constant import (
     LIGHTSENSORON_KEY,
     MUTEON_KEY,
     CHILDLOCKON_KEY,
+    LOCATEMEON_KEY,
     PM25_KEY,
     TemperatureUnit,
     SPEED_RANGE,
@@ -77,6 +78,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._light_sensor_on = None
         self._mute_on = None
         self._child_lock_on = None
+        self._locate_me_on = None
         self._pm25 = None
 
     def parse_speed_range(self, details: Dict[str, list]) -> tuple[int, int]:
@@ -399,6 +401,24 @@ class PyDreoFanBase(PyDreoBaseDevice):
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set childlockon on a device that doesn't support.")
 
+    @property
+    def locatemeon(self) -> bool:
+        """Is the Locate Me / presence tracking mode on?"""
+        return self._locate_me_on
+
+    @locatemeon.setter
+    def locatemeon(self, value: bool) -> None:
+        """Set the Locate Me / presence tracking mode state."""
+        _LOGGER.debug("locatemeon: locatemeon.setter")
+
+        if self._locate_me_on is not None:
+            if self._locate_me_on == value:
+                _LOGGER.debug("locatemeon: locatemeon - value already %s, skipping command", value)
+                return
+            self._send_command(LOCATEMEON_KEY, value)
+        else:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set locatemeon on a device that doesn't support.")
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
@@ -436,6 +456,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._light_sensor_on = self.get_state_update_value(state, LIGHTSENSORON_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._child_lock_on = self.get_state_update_value(state, CHILDLOCKON_KEY)
+        self._locate_me_on = self.get_state_update_value(state, LOCATEMEON_KEY)
         self._pm25 = self.get_state_update_value(state, PM25_KEY)
 
     def handle_server_update(self, message):
@@ -503,6 +524,10 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_child_lock = self.get_server_update_key_value(message, CHILDLOCKON_KEY)
         if isinstance(val_child_lock, bool):
             self._child_lock_on = val_child_lock
+
+        val_locate_me = self.get_server_update_key_value(message, LOCATEMEON_KEY)
+        if isinstance(val_locate_me, bool):
+            self._locate_me_on = val_locate_me
 
         val_pm25 = self.get_server_update_key_value(message, PM25_KEY)
         if isinstance(val_pm25, int):

@@ -44,6 +44,7 @@
       "oscon":                    { "name": "Oszillation" },
       "ptcon":                    { "name": "PTC" },
       "childlockon":              { "name": "Kindersicherung" },
+      "locatemeon":               { "name": "Präsenzsensor" },
       "light":                    { "name": "Licht" },
       "humidify":                 { "name": "Befeuchten" },
       "display_light":            { "name": "Display-Beleuchtung" },
