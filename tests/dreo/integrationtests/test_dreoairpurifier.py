@@ -90,6 +90,16 @@ class TestDreoAirPurifier(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_ap, {POWERON_KEY: False})
             pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
 
+            # Test setting preset_mode auto maps to auto-silent on DR-HAP003S
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "auto-silent"})
+
+            # Test other modes (like sleep) remain unchanged
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "sleep"})
+
             # Test entity inventory
             switches = switch.get_entries([pydreo_ap])
             self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Panel Sound"])

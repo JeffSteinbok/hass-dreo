@@ -73,3 +73,30 @@ class TestPyDreoAirPurifier(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             air_purifier.preset_mode = "sleep"
             mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "sleep"})
+
+    def test_air_purifier_set_preset_mode_auto_maps_to_auto_silent_for_HAP003S(self):
+        """DR-HAP003S should map preset_mode='auto' to command value 'auto-silent'."""
+        self.get_devices_file_name = "get_devices_HAP003S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-silent"})
+
+        # Other modes like sleep should remain unchanged
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "sleep"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "sleep"})
+
+    def test_air_purifier_set_preset_mode_auto_remains_unchanged_for_other_models(self):
+        """Other air purifiers should NOT map preset_mode='auto' to 'auto-silent'."""
+        self.get_devices_file_name = "get_devices_HAP003S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+        # Temporarily mock the model to something else
+        air_purifier._model = "DR-HAP999S"
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto"})
