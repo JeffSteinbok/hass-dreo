@@ -35,12 +35,10 @@ Use this when a maintainer asks you to test code from `main` that hasn't been re
 
 4. Check the **Version** checkbox and enter the version you want to install:
 
-   | Value | Description |
-   |-------|-------------|
-   | `main` | Latest code from main branch (most common for testing) |
-   | `branch/branch-name` | A specific branch (e.g., `branch/fix-feature`) |
-   | `v1.2.3` | A specific release version |
-   | `commit/abc1234` | A specific commit hash |
+   | Value | Example | Description |
+   |-------|---------|-------------|
+   | Branch name | `main` | Install from a branch (must match exactly) |
+   | Release tag | `v1.9.20` | Install a specific release version |
 
 5. Click **Perform action**
 
