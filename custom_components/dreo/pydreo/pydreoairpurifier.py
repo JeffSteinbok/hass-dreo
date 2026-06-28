@@ -71,3 +71,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Process a websocket update"""
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
+
+
+    def _send_command(self, command_key: str, value):
+        """Override to map 'auto' mode to 'auto-silent' for air purifiers."""
+        _LOGGER.debug("PyDreoAirPurifier _send_command: %s -> %s", command_key, value)
+        if command_key == "mode" and value == "auto":
+            _LOGGER.debug("PyDreoAirPurifier mapping 'auto' mode to 'auto-silent'")
+            value = "auto-silent"
+        super()._send_command(command_key, value)
