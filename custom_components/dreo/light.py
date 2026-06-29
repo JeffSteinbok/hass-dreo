@@ -185,6 +185,8 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
         if ATTR_COLOR_TEMP_KELVIN in kwargs:
             color_temp = kwargs[ATTR_COLOR_TEMP_KELVIN]
             _LOGGER.debug("turn_on: Setting color temperature to %s", color_temp)
+            # Clamp to the device's valid range to prevent out-of-range (e.g. negative) values
+            color_temp = max(self.min_color_temp_kelvin, min(self.max_color_temp_kelvin, color_temp))
             setattr(
                 self.pydreo_device,
                 self._color_temp_attr,
@@ -299,7 +301,7 @@ class DreoRGBICLightHA(DreoLightHA):
     through Home Assistant's light effect system.
 
     - On/off: atmon (atmosphere light power)
-    - Brightness: atmbri (1-5 scale)
+    - Brightness: atmbri (device-specific range, e.g. 1-100 for HCF007S)
     - Effects: rgbpresetsel (0-based preset index)
     """
 
@@ -308,9 +310,12 @@ class DreoRGBICLightHA(DreoLightHA):
 
     def __init__(self, pyDreoDevice: PyDreoBaseDevice) -> None:
         """Initialize the RGBIC preset-based atmosphere light."""
+        # Read brightness range from device so we pass the correct scale to the parent
+        atm_bri_range = getattr(pyDreoDevice, "atm_brightness_range", (1, 100))
+
         # Pass RGBIC-specific configuration to parent
         super().__init__(
-            pyDreoDevice, light_on_attr="atm_light_on", brightness_attr="atm_brightness", brightness_scale=(1, 5)
+            pyDreoDevice, light_on_attr="atm_light_on", brightness_attr="atm_brightness", brightness_scale=atm_bri_range
         )
 
         # Override attributes for RGBIC light
@@ -319,8 +324,8 @@ class DreoRGBICLightHA(DreoLightHA):
         self._attr_unique_id = f"{self.pydreo_device.serial_number}-rgb-light"
         self._attr_icon = "mdi:led-strip-variant"
 
-        # Use ONOFF mode with effects (not RGB color mode)
-        self._color_mode = ColorMode.ONOFF
+        # Use BRIGHTNESS mode so HA exposes the brightness slider alongside effects
+        self._color_mode = ColorMode.BRIGHTNESS
 
         _LOGGER.info("new DreoRGBICLightHA instance(%s), unique ID %s", self._attr_name, self._attr_unique_id)
 
