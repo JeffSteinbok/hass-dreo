@@ -2,7 +2,7 @@
 
 This guide explains how to install and test unreleased fixes from the `main` branch before they are officially released.
 
-> **Note:** This guide assumes you have the Dreo Smart Device Integration installed via [HACS](https://hacs.xyz/). If you installed manually, you'll need to update the files manually.
+> **Note:** This guide assumes you have the Dreo Smart Device Integration installed via [HACS](https://hacs.xyz/). If you installed manually, you'll need to update the files manually. The steps below use the [HACS Update entity](https://hacs.xyz/docs/use/entities/update) to install a specific version.
 
 ## Why Test Pre-Release Code?
 
@@ -38,6 +38,7 @@ Use this when a maintainer asks you to test code from `main` that hasn't been re
    | Value | Example | Description |
    |-------|---------|-------------|
    | Branch name | `main` | Install from a branch (must match exactly) |
+   | PR branch | `refs/pull/123/head` | Install directly from a pull request (replace `123` with the PR number) |
    | Release tag | `v1.9.20` | Install a specific release version |
 
 5. Click **Perform action**
