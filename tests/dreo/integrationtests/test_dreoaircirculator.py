@@ -418,6 +418,35 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
 
+    def test_HPF017S(self):  # pylint: disable=invalid-name
+        """Test HPF017S fan uses fanon for on/off commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HPF017S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+
+            assert pydreo_fan.model == "DR-HPF017S"
+            assert pydreo_fan.speed_range == (1, 12)
+            assert ha_fan.speed_count == 12
+            assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
+            assert ha_fan.preset_mode == "natural"
+            assert ha_fan.is_on is True
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+            assert ha_fan.is_on is False
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+            assert ha_fan.is_on is True
+
     def test_HAF003S_newer_firmware(self):  # pylint: disable=invalid-name
         """Test HAF003S fan with newer firmware (Device 1 - with cruiseconf/fixedconf)."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
