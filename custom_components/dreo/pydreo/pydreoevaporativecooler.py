@@ -326,6 +326,9 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @property
     def horizontal_angle_range(self) -> tuple[int, int] | None:
         """Return the supported horizontal angle range."""
+        range_from_definition = self._device_definition.device_ranges.get("horizontal_angle_range" ) if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
         return self._horizontal_angle_range
 
     @staticmethod
