@@ -75,6 +75,12 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._atm_color: int = None
         self._atm_mode: int = None
 
+        # Brightness range for the atmosphere light (device-specific; defaults to 1-5 for
+        # older models, but HCF007S and similar use 1-100).
+        self._atm_brightness_range: tuple[int, int] = (1, 5)
+        if device_definition.device_ranges is not None and "atm_brightness_range" in device_definition.device_ranges:
+            self._atm_brightness_range = device_definition.device_ranges["atm_brightness_range"]
+
         # RGBIC preset system (used by HCF007S and similar)
         self._rgb_preset_sel: int = None
         self._rgb_preset_num: int = None
@@ -192,18 +198,24 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
     @property
     def atm_brightness(self) -> int | None:
-        """Returns the brightness of the atmosphere light (1-5), or None if not supported."""
+        """Returns the brightness of the atmosphere light, or None if not supported."""
         return self._atm_brightness
+
+    @property
+    def atm_brightness_range(self) -> tuple[int, int]:
+        """Returns the valid brightness range (min, max) for the atmosphere light."""
+        return self._atm_brightness_range
 
     @atm_brightness.setter
     def atm_brightness(self, value: int):
-        """Set the brightness of the atmosphere light (1-5 scale)."""
+        """Set the brightness of the atmosphere light."""
         _LOGGER.debug("atm_brightness: atm_brightness.setter - %s", value)
         if self._atm_brightness is None:
             _LOGGER.error("atm_brightness: Atmosphere brightness not supported by this fan model.")
             return
-        # Ensure value is in valid range
-        brightness = max(1, min(5, value))
+        # Clamp to the device-specific valid range
+        low, high = self._atm_brightness_range
+        brightness = max(low, min(high, value))
         if self._atm_brightness == brightness:
             _LOGGER.debug("atm_brightness: atm_brightness - value already %s, skipping command", brightness)
             return
