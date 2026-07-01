@@ -36,6 +36,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HPF007S
 - DR-HPF008S
 - DR-HPF015S
+- DR-HPF017S
 - DR-HPF020S
 - DR-HPF025S
 
