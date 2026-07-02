@@ -233,7 +233,9 @@ jobs:
             const logs = getSectionContent('Debug Logs') || getSectionContent('Log Files');
 
             let supplementalContent = '';
-            if (Object.prototype.hasOwnProperty.call(context.payload, 'comment') || context.payload.action === 'edited') {
+            if (context.payload.comment) {
+              supplementalContent = context.payload.comment.user?.login === author ? (context.payload.comment.body || '') : '';
+            } else if (context.payload.action === 'edited') {
               const comments = await github.paginate(github.rest.issues.listComments, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
