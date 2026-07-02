@@ -158,7 +158,7 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
 
 # Supported prefixes.
 # These prefixes will be listed along with the models in the below collections.
-SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "WH", "DR-HAC", "DR-HHM", "DR-"}
+SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "WH", "DR-HAC", "DR-HHM", "DR-HEC"}
 
 # MCU hardware model strings used to identify specific hardware revisions.
 _MCU_HAF004S_OLD_REV = "SC95F8613B"
