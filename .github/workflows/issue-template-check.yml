@@ -92,11 +92,6 @@ jobs:
         with:
           script: |
             const issue = context.payload.issue;
-            if (issue.pull_request) {
-              core.info('Pull request comment detected. Skipping.');
-              return;
-            }
-
             const body = issue.body || '';
             const author = issue.user.login;
             const issueNumber = issue.number;
@@ -238,7 +233,7 @@ jobs:
             const logs = getSectionContent('Debug Logs') || getSectionContent('Log Files');
 
             let supplementalContent = '';
-            if (context.payload.comment || context.payload.action === 'edited') {
+            if (Object.prototype.hasOwnProperty.call(context.payload, 'comment') || context.payload.action === 'edited') {
               const comments = await github.paginate(github.rest.issues.listComments, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -291,7 +286,9 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issueNumber,
-                  body: 'Thanks for the update! 🔍 This issue has been re-triaged and is ready for investigation.',
+                  body: hasNeedsInfo
+                    ? 'Thanks for the update! 🔍 This issue has been re-triaged and is ready for investigation.'
+                    : 'Thanks! 🔍 This issue has been triaged and is ready for investigation.',
                 });
               }
               return;
