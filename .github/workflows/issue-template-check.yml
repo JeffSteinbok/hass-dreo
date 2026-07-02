@@ -3,13 +3,15 @@ name: Issue Triage
 on:
   issues:
     types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
 
 permissions:
   issues: write
 
 jobs:
   check-template:
-    if: github.event.action == 'opened'
+    if: github.event_name == 'issues' && github.event.action == 'opened'
     runs-on: ubuntu-latest
     steps:
       - name: Enforce issue template
@@ -88,9 +90,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const body = context.payload.issue.body || '';
-            const author = context.payload.issue.user.login;
-            const issueNumber = context.issue.number;
+            const issue = context.payload.issue;
+            if (issue.pull_request) {
+              core.info('Pull request comment detected. Skipping.');
+              return;
+            }
+
+            const body = issue.body || '';
+            const author = issue.user.login;
+            const issueNumber = issue.number;
+            const existingLabels = issue.labels.map((label) => typeof label === 'string' ? label : label.name);
+            const hasNeedsInfo = existingLabels.includes('needs-info');
+            const hasTriaged = existingLabels.includes('triaged');
 
             // Check if this is a bug report or feature request that needs validation
             const isBugReport = body.includes('### Describe the bug');
@@ -124,37 +135,63 @@ jobs:
               return match ? match[1].trim() : '';
             }
 
-            function isMissing(content) {
-              if (!content) return true;
-              const stripped = content
+            function normalizeContent(content) {
+              return (content || '')
                 .replace(/<!--[\s\S]*?-->/g, '')
+                .replace(/```[\w-]*\n?/g, '')
+                .replace(/```/g, '')
                 .replace(/\s+/g, ' ')
                 .trim()
                 .toLowerCase();
-              if (stripped.length < 10) return true;
-              const placeholders = ['n/a', 'na', 'none', 'no', 'tbd', 'todo', 'will add later', '_no response_', 'not available', 'not applicable'];
-              return placeholders.includes(stripped);
             }
 
-            function isDiagnosticsValid(content) {
-              if (isMissing(content)) return false;
-              // Accept uploaded diagnostics file links (common for issue templates)
-              function stripOuterDelimiters(token) {
-                const trimChars = new Set(['(', ')', '[', ']', '\'', '"', '`']);
-                let start = 0;
-                let end = token.length;
-                while (start < end && trimChars.has(token[start])) start++;
-                while (end > start && trimChars.has(token[end - 1])) end--;
-                return token.slice(start, end);
-              }
+            const placeholders = new Set([
+              'n/a',
+              'na',
+              'none',
+              'no',
+              'tbd',
+              'todo',
+              'will add later',
+              '_no response_',
+              'not available',
+              'not applicable',
+              'see diags',
+              'see diagnostics',
+              'see attached',
+              'attached above',
+              'same as above',
+            ]);
 
+            function isMissing(content) {
+              const stripped = normalizeContent(content);
+              if (!stripped) return true;
+              if (stripped.length < 10) return true;
+              return placeholders.has(stripped);
+            }
+
+            function stripOuterDelimiters(token) {
+              const trimChars = new Set(['(', ')', '[', ']', '\'', '"', '`']);
+              let start = 0;
+              let end = token.length;
+              while (start < end && trimChars.has(token[start])) start++;
+              while (end > start && trimChars.has(token[end - 1])) end--;
+              return token.slice(start, end);
+            }
+
+            function extractUrls(content) {
               const markdownUrls = Array.from(content.matchAll(/\[[^\]]*]\((https?:\/\/[^)]+)\)/gi), (match) => match[1]);
               const bareUrls = content
                 .split(/\s+/)
                 .filter((token) => token.toLowerCase().includes('http'))
                 .map((token) => stripOuterDelimiters(token))
                 .filter((token) => /^https?:\/\//i.test(token));
-              const urlMatches = [...new Set([...markdownUrls, ...bareUrls])];
+              return [...new Set([...markdownUrls, ...bareUrls])];
+            }
+
+            function isDiagnosticsValid(content) {
+              if (isMissing(content)) return false;
+              const urlMatches = extractUrls(content);
               const hasJsonAttachmentLink = urlMatches.some((url) => {
                 try {
                   return new URL(url).pathname.toLowerCase().endsWith('.json');
@@ -176,16 +213,52 @@ jobs:
               }
             }
 
+            function isLogsValid(content) {
+              if (isMissing(content)) return false;
+
+              const stripped = normalizeContent(content);
+              const urlMatches = extractUrls(content);
+              const hasLogAttachmentLink = urlMatches.some((url) => {
+                try {
+                  return /\.(log|txt|zip)$/i.test(new URL(url).pathname);
+                } catch (e) {
+                  return false;
+                }
+              });
+
+              const fencedBlocks = Array.from(content.matchAll(/```(?:[\w-]+)?\n([\s\S]*?)```/g), (match) => match[1]);
+              const hasMeaningfulCodeBlock = fencedBlocks.some((block) => !isMissing(block) && normalizeContent(block).length >= 20);
+
+              return hasLogAttachmentLink || hasMeaningfulCodeBlock || stripped.length >= 30;
+            }
+
             const diagnostics = getSectionContent('Diagnostics');
             // Bug reports use "Debug Logs", feature requests use "Log Files"
             const logs = getSectionContent('Debug Logs') || getSectionContent('Log Files');
 
-            const missingDiagnostics = !isDiagnosticsValid(diagnostics);
-            const missingLogs = isMissing(logs);
+            let supplementalContent = '';
+            if (context.eventName === 'issue_comment' || context.payload.action === 'edited') {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                per_page: 100,
+              });
+              supplementalContent = comments
+                .filter((comment) => comment.user?.login === author)
+                .map((comment) => comment.body || '')
+                .join('\n\n');
+            }
+
+            const diagnosticsPresent = isDiagnosticsValid(diagnostics) || isDiagnosticsValid(supplementalContent);
+            const logsPresent = isLogsValid(logs) || isLogsValid(supplementalContent);
+
+            const missingDiagnostics = !diagnosticsPresent;
+            const missingLogs = !logsPresent;
 
             if (!missingDiagnostics && !missingLogs) {
               core.info('All required info present.');
-              if (context.payload.action === 'edited') {
+              if (hasNeedsInfo) {
                 try {
                   await github.rest.issues.removeLabel({
                     owner: context.repo.owner,
@@ -196,58 +269,77 @@ jobs:
                 } catch (e) { /* label may not exist */ }
               }
 
-              if (context.payload.action === 'opened') {
+              if (!hasTriaged) {
                 await github.rest.issues.addLabels({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issueNumber,
                   labels: ['triaged'],
                 });
+              }
+
+              if (context.payload.action === 'opened') {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issueNumber,
                   body: 'Thanks for the detailed report! 🔍 This issue has been triaged and is ready for investigation.',
                 });
+              } else if (hasNeedsInfo) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  body: 'Thanks for the update! 🔍 This issue has been re-triaged and is ready for investigation.',
+                });
               }
               return;
             }
 
-            // Don't re-comment on edits that still lack info
-            if (context.payload.action === 'edited') {
-              core.info('Edited but still missing info.');
-              return;
+            if (hasTriaged) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issueNumber,
+                  name: 'triaged',
+                });
+              } catch (e) { /* label may not exist */ }
             }
 
             const missing = [];
             if (missingDiagnostics) missing.push('**Diagnostics JSON** — download from Settings → Devices → Dreo → ⋮ → Download diagnostics');
             if (missingLogs) missing.push('**Debug logs** — enable debug logging, reproduce the issue, then download full logs');
 
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              labels: ['needs-info'],
-            });
+            if (!hasNeedsInfo) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                labels: ['needs-info'],
+              });
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              body: [
-                `👋 Hey @${author}, thanks for filing this issue!`,
-                '',
-                'It looks like the following information is missing:',
-                ...missing.map(item => `- ${item}`),
-                '',
-                'Please update your issue with the missing information. See the [debugging instructions](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) for help collecting this data.',
-                '',
-                '_This is an automated message._',
-              ].join('\n'),
-            });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: [
+                  `👋 Hey @${author}, thanks for filing this issue!`,
+                  '',
+                  'It looks like the following information is missing:',
+                  ...missing.map(item => `- ${item}`),
+                  '',
+                  'Please update your issue with the missing information. See the [debugging instructions](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) for help collecting this data.',
+                  '',
+                  '_This is an automated message._',
+                ].join('\n'),
+              });
+            } else {
+              core.info('Issue still missing required info.');
+            }
 
   check-new-device-request:
-    if: github.event.action == 'opened'
+    if: github.event_name == 'issues' && github.event.action == 'opened'
     runs-on: ubuntu-latest
     steps:
       - name: Triage new device request
