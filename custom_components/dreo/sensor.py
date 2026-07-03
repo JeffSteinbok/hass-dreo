@@ -29,6 +29,7 @@ from .pydreo.pydreochefmaker import (
     MODE_COOKING,
     MODE_STANDBY,
     MODE_PAUSED,
+    MODE_COMPLETE,
 )
 
 from .pydreo.pydreohumidifier import (
@@ -98,7 +99,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         key="Status",
         translation_key="status",
         device_class=SensorDeviceClass.ENUM,
-        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
+        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED, MODE_COMPLETE],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: (device.type in {DreoDeviceType.CHEF_MAKER}) and device.is_feature_supported(MODE_KEY),
     ),
