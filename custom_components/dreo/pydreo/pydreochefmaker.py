@@ -18,6 +18,7 @@ MODE_KEY = "mode"
 MODE_STANDBY = "standby"
 MODE_COOKING = "cooking"
 MODE_PAUSED = "ckpause"
+MODE_COMPLETE = "ckcomplete"
 MODE_OFF = "off"
 
 _LOGGER = logging.getLogger(__name__)
