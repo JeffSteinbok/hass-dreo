@@ -30,6 +30,7 @@ HUMIDIFY_SUSPEND_KEY = "rhsuspend"
 HUMIDITY_TARGET_KEY = "rhtarget"
 WORKTIME_KEY = "worktime"
 WATER_LEVEL_STATUS_KEY = "wrong"
+WATER_LEVEL_KEY = "water_level"
 RGB_ON_KEY = "rgbon"
 
 # Status for water level indicator
