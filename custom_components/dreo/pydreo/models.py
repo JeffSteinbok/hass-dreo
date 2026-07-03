@@ -493,10 +493,11 @@ SUPPORTED_DEVICES = {
     ),
     # DR-HEC006S is the TurboCool Misting Fan 516S.
     # controlsConf is empty so speed range and preset modes must be hardcoded.
+    # DR-HEC006S has +/-75° oscillation range and the turbo-mode is 4
     "DR-HEC006S": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
-        preset_modes=[("Normal", 1), ("Turbo", 2)],
-        device_ranges={SPEED_RANGE: (1, 6)},
+        preset_modes=[("Normal", 1), ("Turbo", 4)],
+        device_ranges={SPEED_RANGE: (1, 6), HORIZONTAL_ANGLE_RANGE: (-75, 75)},
     ),
     # DR-HEC005S is the TurboCool Misting Fan 765S.
     # It has 12 fan speeds and can expose an empty controlsConf.

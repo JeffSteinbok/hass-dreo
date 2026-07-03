@@ -10,6 +10,7 @@ from .constant import (
     HORIZONTAL_OSCILLATION_KEY,
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
     HORIZONTAL_ANGLE_ADJ_KEY,
+    HORIZONTAL_ANGLE_RANGE,
     HUMIDITY_KEY,
     LIGHTON_KEY,
     MODE_KEY,
@@ -326,6 +327,9 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @property
     def horizontal_angle_range(self) -> tuple[int, int] | None:
         """Return the supported horizontal angle range."""
+        range_from_definition = self._device_definition.device_ranges.get(HORIZONTAL_ANGLE_RANGE) if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
         return self._horizontal_angle_range
 
     @staticmethod
