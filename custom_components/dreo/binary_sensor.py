@@ -17,7 +17,7 @@ from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import DreoDeviceType
 from .pydreo.pydreohumidifier import WATER_LEVEL_STATUS_KEY, WATER_LEVEL_EMPTY
 from .pydreo.pydreoevaporativecooler import (
-    WATER_LEVEL_STATUS_KEY as EVAP_WATER_LEVEL_STATUS_KEY,
+    WATER_LEVEL_KEY as EVAP_WATER_LEVEL_KEY,
     WATER_LEVEL_EMPTY as EVAP_WATER_LEVEL_EMPTY,
 )
 from .pydreo.pydreodehumidifier import (
@@ -52,7 +52,8 @@ def _water_empty_exists(device: PyDreoBaseDevice) -> bool:
     if device.type == DreoDeviceType.HUMIDIFIER:
         return device.is_feature_supported(WATER_LEVEL_STATUS_KEY)
     if device.type == DreoDeviceType.EVAPORATIVE_COOLER:
-        return device.is_feature_supported(EVAP_WATER_LEVEL_STATUS_KEY)
+        # DR-HEC devices have the property "water_level" instead of "wrong"
+        return device.is_feature_supported(EVAP_WATER_LEVEL_KEY)
     if device.type == DreoDeviceType.DEHUMIDIFIER:
         return device.is_feature_supported(DEHUMIDIFIER_ERROR_CODE_KEY)
     return False
