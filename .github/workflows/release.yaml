@@ -80,6 +80,7 @@ jobs:
         name: Release v${{ steps.bump.outputs.version }}
         draft: true
         prerelease: false
+        generate_release_notes: true
         files: dist/*
 
   # PyPI publishing is handled by publish.yaml, triggered when the draft release is published
