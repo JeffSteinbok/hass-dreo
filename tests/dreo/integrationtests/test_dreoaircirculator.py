@@ -40,6 +40,8 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.is_on is True
             assert ha_fan.speed_count == 4
             assert ha_fan.supported_features & FanEntityFeature.OSCILLATE
+            assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
             assert ha_fan.unique_id is not None
             assert pydreo_fan.model == "DR-HAF001S"
             assert pydreo_fan.speed_range == (1, 4)
@@ -76,6 +78,12 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_percentage(100)  # Speed 4 (max)
                 mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 4})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 4}})
+
+            # Test preset mode setting
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 3})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 3}})
 
             # Check to see what switches are added to air circulator fans
             switches = switch.get_entries([pydreo_fan])
