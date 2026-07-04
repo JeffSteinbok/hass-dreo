@@ -555,6 +555,8 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.device_name is not None
         assert fan.serial_number is not None
         assert fan.fan_speed == 1
+        assert fan.angle_preset == "0,0"
+        assert fan.angle_preset_options == ["0,0"]
 
         # Test power commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -611,6 +613,15 @@ class TestPyDreoAirCirculator(TestBase):
             fan.preset_mode = "custom"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 6})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+
+        # Test 3D angle preset handling
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-15,-5"}})
+        assert fan.angle_preset == "-15,-5"
+        assert fan.angle_preset_options == ["0,0", "-15,-5"]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.angle_preset = "0,0"
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "0,0"})
 
     def test_HPF008S(self):  # pylint: disable=invalid-name
         """Test HPF008S fan."""

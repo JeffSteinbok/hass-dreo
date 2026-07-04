@@ -73,6 +73,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     if DreoDeviceType.CEILING_FAN in device_types or DreoDeviceType.AIR_CIRCULATOR in device_types:
         platforms.add(Platform.LIGHT)
+    if DreoDeviceType.AIR_CIRCULATOR in device_types:
+        platforms.add(Platform.SELECT)
 
     if DreoDeviceType.HEATER in device_types or DreoDeviceType.AIR_CONDITIONER in device_types:
         platforms.add(Platform.CLIMATE)
