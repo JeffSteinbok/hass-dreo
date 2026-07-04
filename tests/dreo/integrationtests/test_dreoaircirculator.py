@@ -276,6 +276,19 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
             assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
 
+            # Verify preset mode command mappings for the DR-HPF007S firmware
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+            assert ha_fan.preset_mode == "auto"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
+            assert ha_fan.preset_mode == "natural"
+
             # Check switches
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(
