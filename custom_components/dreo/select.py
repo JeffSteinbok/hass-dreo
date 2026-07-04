@@ -120,7 +120,6 @@ class DreoSelectHA(DreoBaseDeviceHA, SelectEntity):
     @property
     def current_option(self) -> str | None:
         """Return the current selected option."""
-        self._attr_options = self._get_device_options()
         raw = getattr(self.device, self.entity_description.attr_name)
         if raw is None:
             return None

@@ -460,12 +460,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
     def angle_preset(self, value: str) -> None:
         """Set the current 3D angle preset value."""
         if self._fixed_conf is None:
-            raise NotImplementedError("3D angle presets are not supported on this device.")
+            raise NotImplementedError("3D angle presets are not supported on this device model.")
         normalized = self._normalize_fixed_conf(value)
         if normalized is None:
             raise ValueError(f"Invalid 3D angle preset format: {value}")
-        if self._normalize_fixed_conf(self._fixed_conf) == normalized:
-            _LOGGER.debug("angle_preset: value already %s, skipping command", normalized)
+        if self.angle_preset == normalized:
+            _LOGGER.debug("angle_preset: Angle preset value already %s, skipping command", normalized)
             return
         self._send_command(FIXEDCONF_KEY, normalized)
 
