@@ -165,7 +165,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         options=["Yes", "No"],
         value_fn=lambda device: None if device.suspend is None else ("Yes" if device.suspend else "No"),
-        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(SUSPEND_KEY),
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}) and device.is_feature_supported(SUSPEND_KEY),
     ),
 )
 
