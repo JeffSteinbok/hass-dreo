@@ -104,6 +104,15 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: (device.type in {DreoDeviceType.CHEF_MAKER}) and device.is_feature_supported(MODE_KEY),
     ),
     DreoSensorEntityDescription(
+        key="Cook time remaining",
+        translation_key="cook_time_remaining",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "s",
+        value_fn=lambda device: device.cook_time_remaining,
+        exists_fn=lambda device: (device.type in {DreoDeviceType.CHEF_MAKER}) and device.is_feature_supported("cook_time_remaining"),
+    ),
+    DreoSensorEntityDescription(
         key="pm25",
         translation_key="pm25",
         device_class=SensorDeviceClass.PM25,

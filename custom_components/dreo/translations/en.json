@@ -58,6 +58,7 @@
         "use_hours":               { "name": "Use Since Cleaning" },
         "reach_target_temp":       { "name": "Target Temp Reached" },
         "status":                  { "name": "Status" },
+        "cook_time_remaining":     { "name": "Cook Time Remaining" },
         "pm25":                    { "name": "PM2.5" },
         "water":                   { "name": "Water Level" },
         "use_hours_hm":            { "name": "Use Since Cleaning" },

@@ -138,6 +138,15 @@ class TestDreoSensorHA(TestDeviceBase):
         entities = sensor.get_entries([device])
         keys = [e.entity_description.key for e in entities]
         assert "Status" in keys
+
+    def test_sensor_chefmaker_cook_time_remaining(self):
+        """Test ChefMaker cook time remaining sensor creation."""
+        device = self.create_mock_device(name="Chef Maker", serial_number="CM001", type="Chef Maker", features={"cook_time_remaining": 600})
+
+        entities = sensor.get_entries([device])
+        cook_time_sensor = next(e for e in entities if e.entity_description.key == "Cook time remaining")
+        assert cook_time_sensor.native_value == 600
+        assert cook_time_sensor._attr_native_unit_of_measurement == "s"
         
     def test_sensor_filter_life(self):
         """Test Filter Life sensor creation for humidifiers."""

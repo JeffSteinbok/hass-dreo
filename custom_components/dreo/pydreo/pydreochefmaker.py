@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 LIGHT_KEY = "ledpotkepton"
 MODE_KEY = "mode"
+COOK_TIME_REMAINING_KEY = "wkcountdown"
 MODE_STANDBY = "standby"
 MODE_COOKING = "cooking"
 MODE_PAUSED = "ckpause"
@@ -38,6 +39,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._is_on = False
         self._ledpotkepton = 0
         self.mode = None
+        self.cook_time_remaining = None
 
     @property
     def is_on(self) -> bool:
@@ -91,6 +93,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._is_on = self.get_state_update_value(state, POWERON_KEY)
         self.set_mode_from_is_on()
         self._ledpotkepton = self.get_state_update_value(state, LIGHT_KEY)
+        self.cook_time_remaining = self.get_state_update_value(state, COOK_TIME_REMAINING_KEY)
 
         if self.is_on:
             self.mode = self.get_state_update_value(state, MODE_KEY)
@@ -126,3 +129,12 @@ class PyDreoChefMaker(PyDreoBaseDevice):
                 val_mode,
             )
             self.mode = val_mode
+
+        val_cook_time_remaining = self.get_server_update_key_value(message, COOK_TIME_REMAINING_KEY)
+        if isinstance(val_cook_time_remaining, int):
+            _LOGGER.debug(
+                "handle_server_update: cook_time_remaining: %s --> %s",
+                self.cook_time_remaining,
+                val_cook_time_remaining,
+            )
+            self.cook_time_remaining = val_cook_time_remaining
