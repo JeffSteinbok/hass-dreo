@@ -52,6 +52,13 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
         and device.is_feature_supported("rgbmode"),
     ),
+    DreoSelectEntityDescription(
+        key="3D Angle Preset",
+        translation_key="three_d_angle_preset",
+        attr_name="angle_preset",
+        icon="mdi:axis-arrow",
+        exists_fn=lambda device: device.type == DreoDeviceType.AIR_CIRCULATOR and device.is_feature_supported("angle_preset"),
+    ),
 )
 
 
@@ -94,7 +101,21 @@ class DreoSelectHA(DreoBaseDeviceHA, SelectEntity):
         del self._attr_name
         self._attr_translation_key = description.translation_key
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
-        self._attr_options = description.options_list
+        self._attr_options = self._get_device_options()
+
+    def _get_device_options(self) -> list[str]:
+        """Return current options list for this select."""
+        options_attr_name = f"{self.entity_description.attr_name}_options"
+        options = getattr(self.device, options_attr_name, None)
+        if isinstance(options, list) and len(options) > 0:
+            return options
+        return self.entity_description.options_list
+
+    @property
+    def options(self) -> list[str]:
+        """Return the list of selectable options."""
+        self._attr_options = self._get_device_options()
+        return self._attr_options
 
     @property
     def current_option(self) -> str | None:
@@ -102,6 +123,8 @@ class DreoSelectHA(DreoBaseDeviceHA, SelectEntity):
         raw = getattr(self.device, self.entity_description.attr_name)
         if raw is None:
             return None
+        if len(self.entity_description.raw_values) == 0:
+            return str(raw)
         try:
             idx = self.entity_description.raw_values.index(int(raw))
             return self.entity_description.options_list[idx]
@@ -110,6 +133,9 @@ class DreoSelectHA(DreoBaseDeviceHA, SelectEntity):
 
     def select_option(self, option: str) -> None:
         """Set a new option."""
+        if len(self.entity_description.raw_values) == 0:
+            setattr(self.device, self.entity_description.attr_name, option)
+            return
         try:
             idx = self.entity_description.options_list.index(option)
         except ValueError:

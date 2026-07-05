@@ -8,6 +8,7 @@ from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo import light
+from custom_components.dreo import select
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 from custom_components.dreo.pydreo.constant import (
@@ -658,6 +659,20 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_preset_mode("custom")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 6})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+
+            # Verify 3D angle preset select
+            selects = select.get_entries([pydreo_fan])
+            self.verify_expected_entities(selects, ["3D Angle Preset"])
+            angle_preset_select = selects[0]
+            assert angle_preset_select.current_option == "0,0"
+
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-15,-5"}})
+            assert "-15,-5" in angle_preset_select.options
+            assert angle_preset_select.current_option == "-15,-5"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                angle_preset_select.select_option("0,0")
+                mock_send_command.assert_called_once_with(pydreo_fan, {FIXEDCONF_KEY: "0,0"})
 
             # Check entities
             switches = switch.get_entries([pydreo_fan])

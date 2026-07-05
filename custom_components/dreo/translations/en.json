@@ -97,6 +97,9 @@
             "humidity": "Humidity",
             "color": "Color"
           }
+        },
+        "three_d_angle_preset": {
+          "name": "3D Angle Preset"
         }
       }
     }
