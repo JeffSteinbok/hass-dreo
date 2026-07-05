@@ -54,7 +54,7 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Target Humidity"])
 
             sensors = sensor.get_entries([pydreo_ec])
-            self.verify_expected_entities(sensors, ["Temperature", "Humidity", "Use since cleaning"])
+            self.verify_expected_entities(sensors, ["Temperature", 'Target Humidity Reached', "Humidity", "Use since cleaning"])
 
             # HEC002S has an ambient light ring (rgbon/rgbmode/rgbcolor keys).
             lights = light.get_entries([pydreo_ec])
