@@ -39,6 +39,15 @@ class TestPyDreoChefMaker(TestBase):
         # After load_devices, update_state should have been called
         assert cm.is_on is False  # from device state file
         assert cm.mode == "standby" or cm.mode == "off"
+        assert cm.cook_time_remaining is not None
+
+    def test_update_state_cook_time_remaining(self):
+        """Test update_state reads cook time remaining from state."""
+        cm = self._load_chefmaker()
+        state = {
+            COOK_TIME_REMAINING_KEY: {"state": 300},
+        }
+        cm.update_state(state)
         assert cm.cook_time_remaining == 300
 
     def test_update_state_led(self):

@@ -39,7 +39,7 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._is_on = False
         self._ledpotkepton = 0
         self.mode = None
-        self.cook_time_remaining = None
+        self.cook_time_remaining = None  # Remaining cook time in seconds from wkcountdown.
 
     @property
     def is_on(self) -> bool:

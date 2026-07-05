@@ -11,6 +11,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import logging
 
+from homeassistant.const import UnitOfTime
+
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
@@ -108,7 +110,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         translation_key="cook_time_remaining",
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement_fn=lambda device: "s",
+        native_unit_of_measurement=UnitOfTime.SECONDS,
         value_fn=lambda device: device.cook_time_remaining,
         exists_fn=lambda device: (device.type in {DreoDeviceType.CHEF_MAKER}) and device.is_feature_supported("cook_time_remaining"),
     ),

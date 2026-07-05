@@ -2,6 +2,9 @@
 
 from unittest.mock import patch
 
+from homeassistant.const import UnitOfTime
+from homeassistant.components.sensor import SensorDeviceClass
+
 from custom_components.dreo import sensor
 from custom_components.dreo.sensor import DreoSensorHA, DreoSensorEntityDescription, SENSORS
 from custom_components.dreo.pydreo.constant import DreoDeviceType
@@ -141,12 +144,20 @@ class TestDreoSensorHA(TestDeviceBase):
 
     def test_sensor_chefmaker_cook_time_remaining(self):
         """Test ChefMaker cook time remaining sensor creation."""
-        device = self.create_mock_device(name="Chef Maker", serial_number="CM001", type="Chef Maker", features={"cook_time_remaining": 600})
+        device = self.create_mock_device(
+            name="Chef Maker",
+            serial_number="CM001",
+            type=DreoDeviceType.CHEF_MAKER,
+            features={"cook_time_remaining": 600},
+        )
 
         entities = sensor.get_entries([device])
-        cook_time_sensor = next(e for e in entities if e.entity_description.key == "Cook time remaining")
+        cook_time_sensors = [e for e in entities if e.entity_description.key == "Cook time remaining"]
+        assert len(cook_time_sensors) == 1
+        cook_time_sensor = cook_time_sensors[0]
         assert cook_time_sensor.native_value == 600
-        assert cook_time_sensor._attr_native_unit_of_measurement == "s"
+        assert cook_time_sensor.entity_description.device_class == SensorDeviceClass.DURATION
+        assert cook_time_sensor.entity_description.native_unit_of_measurement == UnitOfTime.SECONDS
         
     def test_sensor_filter_life(self):
         """Test Filter Life sensor creation for humidifiers."""
