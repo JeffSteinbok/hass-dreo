@@ -91,6 +91,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._rgbmode = None
         self._rgbcolor = None
         self._light_on = None
+        self._suspend = None
         self._horizontal_angle = None
         self._horizontal_angle_range = None
 
@@ -138,8 +139,6 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @target_humidity.setter
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
-        # value needs to be an INT for the _send_command to work properly, so we convert it here
-        value = int(value)       
         _LOGGER.debug("target_humidity: target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         if self._target_humidity == value:
             _LOGGER.debug("target_humidity: target_humidity - value already %s, skipping command", value)
@@ -313,6 +312,11 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         return self._water_level
 
     @property
+    def suspend(self) -> bool | None:
+        """Return True if humidifier is suspended (target humidity reached)."""
+        return self._suspend
+
+    @property
     def horizontal_angle(self) -> int | None:
         """Return the configured horizontal angle."""
         return self._horizontal_angle
@@ -388,6 +392,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._rgbmode = self.get_state_update_value(state, RGB_MODE)
         self._rgbcolor = self.get_state_update_value(state, RGB_COLOR)
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
+        self._suspend = self.get_state_update_value(state, HUMIDIFY_SUSPEND_KEY)
         self._horizontal_angle = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
         self._horizontal_angle_range = self._parse_angle_range(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY))
 
@@ -457,6 +462,10 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_light_on, bool):
             self._light_on = val_light_on
+
+        val_suspend = self.get_server_update_key_value(message, HUMIDIFY_SUSPEND_KEY)
+        if isinstance(val_suspend, bool):
+            self._suspend = val_suspend
 
         val_horizontal_angle = self.get_server_update_key_value(message, HORIZONTAL_ANGLE_ADJ_KEY)
         if isinstance(val_horizontal_angle, int):
