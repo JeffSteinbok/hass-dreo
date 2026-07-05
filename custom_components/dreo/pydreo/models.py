@@ -288,7 +288,7 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HAF008S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
-        preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4)],
+        preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4), ("turbo", 5)],
         device_ranges={SPEED_RANGE: (1, 9)},
     ),
     "DR-HPF": DreoDeviceDetails(device_type=DreoDeviceType.AIR_CIRCULATOR),
