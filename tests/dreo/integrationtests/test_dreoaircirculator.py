@@ -268,6 +268,8 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_preset_mode("turbo")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+            assert pydreo_fan.preset_mode == "turbo"
+            assert ha_fan.preset_mode == "turbo"
 
             # Check switches
             switches = switch.get_entries([pydreo_fan])

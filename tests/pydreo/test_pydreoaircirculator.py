@@ -526,6 +526,7 @@ class TestPyDreoAirCirculator(TestBase):
             fan.preset_mode = "turbo"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 5})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+        assert fan.preset_mode == "turbo"
 
         with pytest.raises(ValueError):
             fan.preset_mode = "not_a_mode"
