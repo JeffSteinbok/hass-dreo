@@ -94,7 +94,7 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Fog Level", "Horizontal Angle", "Target Humidity"])
 
             sensors = sensor.get_entries([pydreo_ec])
-            self.verify_expected_entities(sensors, ["Temperature", "Humidity", "Use since cleaning"])
+            self.verify_expected_entities(sensors, ['Humidity', 'Target Humidity Reached', 'Temperature', 'Use since cleaning'])
 
             switches = switch.get_entries([pydreo_ec])
             self.verify_expected_entities(switches, ["Child Lock", "Display Light", "Humidify", "Misting", "Panel Sound"])
