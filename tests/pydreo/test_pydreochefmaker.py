@@ -11,6 +11,7 @@ logger.setLevel(logging.DEBUG)
 
 LIGHT_KEY = "ledpotkepton"
 CM_MODE_KEY = "mode"
+COOK_TIME_REMAINING_KEY = "wkcountdown"
 
 
 class TestPyDreoChefMaker(TestBase):
@@ -38,6 +39,16 @@ class TestPyDreoChefMaker(TestBase):
         # After load_devices, update_state should have been called
         assert cm.is_on is False  # from device state file
         assert cm.mode == "standby" or cm.mode == "off"
+        assert cm.cook_time_remaining is not None
+
+    def test_update_state_cook_time_remaining(self):
+        """Test update_state reads cook time remaining from state."""
+        cm = self._load_chefmaker()
+        state = {
+            COOK_TIME_REMAINING_KEY: {"state": 300},
+        }
+        cm.update_state(state)
+        assert cm.cook_time_remaining == 300
 
     def test_update_state_led(self):
         """Test update_state processes LED state from REST."""
@@ -52,10 +63,12 @@ class TestPyDreoChefMaker(TestBase):
             POWERON_KEY: {"state": True},
             LIGHT_KEY: {"state": 1},
             CM_MODE_KEY: {"state": "cooking"},
+            COOK_TIME_REMAINING_KEY: {"state": 1200},
         }
         cm.update_state(state)
         assert cm.is_on is True
         assert cm.mode == "cooking"
+        assert cm.cook_time_remaining == 1200
 
     def test_update_state_mode_when_off(self):
         """Test update_state sets mode from power state when device is off."""
@@ -147,7 +160,8 @@ class TestPyDreoChefMaker(TestBase):
     def test_handle_server_update_combined(self):
         """Test handle_server_update processes multiple keys."""
         cm = self._load_chefmaker()
-        cm.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHT_KEY: 1, CM_MODE_KEY: "cooking"}})
+        cm.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHT_KEY: 1, CM_MODE_KEY: "cooking", COOK_TIME_REMAINING_KEY: 900}})
         assert cm.is_on is True
         assert cm.ledpotkepton is True
         assert cm.mode == "cooking"
+        assert cm.cook_time_remaining == 900

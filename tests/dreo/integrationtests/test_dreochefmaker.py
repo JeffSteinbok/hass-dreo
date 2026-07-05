@@ -5,6 +5,7 @@ import logging
 from unittest.mock import patch
 from custom_components.dreo import switch
 from custom_components.dreo import number
+from custom_components.dreo import sensor
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
@@ -43,3 +44,7 @@ class TestDreoChefMaker(IntegrationTestBase):
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_chef_maker])
             self.verify_expected_entities(numbers, [])
+
+            # Check to see what sensors are added to chef makers
+            sensors = sensor.get_entries([pydreo_chef_maker])
+            self.verify_expected_entities(sensors, ["Cook time remaining", "Status"])
