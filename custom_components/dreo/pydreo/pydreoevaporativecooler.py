@@ -138,6 +138,8 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @target_humidity.setter
     def target_humidity(self, value: int) -> None:
         """Set the target humidity"""
+        # value needs to be an INT for the _send_command to work properly, so we convert it here
+        value = int(value)       
         _LOGGER.debug("target_humidity: target_humidity.setter(%s) %s --> %s", self, self._target_humidity, value)
         if self._target_humidity == value:
             _LOGGER.debug("target_humidity: target_humidity - value already %s, skipping command", value)
