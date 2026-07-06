@@ -102,7 +102,8 @@ class DreoBinarySensorHA(DreoBaseDeviceHA, BinarySensorEntity):
         super().__init__(device)
         self.device = device
         self.entity_description = description
-        self._attr_name = super().name + " Water Empty"
+        self._attr_has_entity_name = True
+        del self._attr_name
         self._attr_unique_id = f"{super().unique_id}-water-empty"
 
     @property
