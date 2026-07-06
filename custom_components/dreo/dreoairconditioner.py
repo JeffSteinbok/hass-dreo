@@ -116,7 +116,8 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             pyDreoDevice.fan_mode,
         )
 
-        self._attr_name = "Air Conditioner"
+        # setting _attr_name destroy automatic translation
+        # self._attr_name = "Air Conditioner"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
         self._attr_target_temperature = self.device.target_temperature
         self._attr_current_temperature = self.device.temperature
