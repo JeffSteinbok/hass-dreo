@@ -392,6 +392,12 @@ class DreoRGBICLightHA(DreoLightHA):
             index = self._parse_effect_index(effect_id)
             if index is None:
                 return None
+            effect_range = getattr(self.pydreo_device, "rgb_effect_range", None)
+            if effect_range is not None:
+                low, high = effect_range
+                if index < low or index > high:
+                    return None
+                return f"Effect {index - low + 1}"
             return f"Effect {index + 1}"
         # Preset system
         preset_sel = getattr(self.pydreo_device, "rgb_preset_sel", None)
@@ -412,7 +418,16 @@ class DreoRGBICLightHA(DreoLightHA):
             if self._uses_effect_id and effect.startswith("Effect "):
                 # Effect ID system: construct rgbeffectid from base + index
                 try:
-                    effect_idx = int(effect.split(" ")[1]) - 1
+                    selected_effect = int(effect.split(" ")[1])
+                    effect_range = getattr(self.pydreo_device, "rgb_effect_range", None)
+                    if effect_range is not None:
+                        low, high = effect_range
+                        effect_idx = low + selected_effect - 1
+                        if effect_idx < low or effect_idx > high:
+                            _LOGGER.warning("turn_on: Effect %s out of supported range %s", effect, effect_range)
+                            return
+                    else:
+                        effect_idx = selected_effect - 1
                     current_id = getattr(self.pydreo_device, "rgb_effect_id", None)
                     if current_id is not None:
                         new_id = self._build_effect_id(current_id, effect_idx)

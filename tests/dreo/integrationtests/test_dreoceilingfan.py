@@ -427,19 +427,17 @@ class TestDreoCeilingFan(IntegrationTestBase):
             # HCF007S has 8 effects (rgb_effect_range 0-7)
             assert rgbic_light.effect_list == [f"Effect {i}" for i in range(1, 9)]
 
-            # Initial rgbeffectid ends in "472" in test data → effect index 472
-            # (test data uses a different base ID than the real device)
-            initial_effect = rgbic_light.effect
-            assert initial_effect is not None
+            # Initial rgbeffectid "2060365036332777003" → effect index 3 → "Effect 4"
+            assert rgbic_light.effect == "Effect 4"
 
             # atmon=true in test data, so RGBIC light is on
             assert rgbic_light.is_on is True
 
             # Setting effect must send rgbeffectid command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                rgbic_light.turn_on(effect="Effect 4")
-                # Constructs effect ID by replacing last 3 digits with 003
-                expected_id = pydreo_fan.rgb_effect_id[:-3] + "003"
+                rgbic_light.turn_on(effect="Effect 5")
+                # Constructs effect ID by replacing last 3 digits with 004
+                expected_id = pydreo_fan.rgb_effect_id[:-3] + "004"
                 mock_send_command.assert_any_call(pydreo_fan, {RGBEFFECTID_KEY: expected_id})
 
             # Verify rgbeffectid server update changes the effect

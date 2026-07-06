@@ -82,12 +82,13 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if device_definition.device_ranges is not None and "atm_brightness_range" in device_definition.device_ranges:
             self._atm_brightness_range = device_definition.device_ranges["atm_brightness_range"]
 
-        # RGBIC preset system (used by HCF007S and similar)
+        # RGBIC preset system (used by some ceiling fan variants)
         self._rgb_preset_sel: int = None
         self._rgb_preset_num: int = None
 
-        # RGBIC effect ID system – the device reports/accepts a string-based effect ID
-        # (e.g. "2070476690030592000") where the last 3 digits are the effect index.
+        # RGBIC effect ID system (used by HCF007S and similar) – the device
+        # reports/accepts a string-based effect ID (e.g. "2070476690030592000")
+        # where the last 3 digits are the effect index.
         self._rgb_effect_id: str = None
         self._rgb_effect_range: tuple[int, int] = None
         if device_definition.device_ranges is not None and "rgb_effect_range" in device_definition.device_ranges:
