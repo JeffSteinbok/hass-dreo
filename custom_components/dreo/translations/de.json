@@ -32,13 +32,14 @@
   },
   "entity": {
     "binary_sensor": {
-      "water_empty": { "name": "Wasser leer" }
+      "water_empty": { "name": "Wasserstand", "state": { "off":, "OK", "on": "Leer" }}
     },
     "switch": {
       "horizontally_oscillating": { "name": "Horizontale Oszillation" },
       "vertically_oscillating":   { "name": "Vertikale Oszillation" },
       "display_auto_off":         { "name": "Display automatisch aus" },
       "panel_sound":              { "name": "Bedienfeld-Ton" },
+      "mist":                     { "name": "Vernebler" },
       "adaptive_brightness":      { "name": "Adaptive Helligkeit" },
       "mute_on":                  { "name": "Bedienfeld stumm" },
       "oscon":                    { "name": "Oszillation" },
@@ -55,14 +56,14 @@
       "temperature":             { "name": "Temperatur" },
       "humidity":                { "name": "Luftfeuchtigkeit" },
       "use_hours":               { "name": "Nutzung seit Reinigung" },
-      "reach_target_temp":       { "name": "Zieltemperatur erreicht" },
-      "status":                  { "name": "Status" },
-      "pm25":                    { "name": "PM2.5" },
-      "water":                   { "name": "Wasserstand" },
+      "reach_target_temp":       { "name": "Zieltemperatur erreicht", "state": { "Yes": "Ja", "No": "Nein" } },
+      "status":                  { "name": "Status", "state": { "standby": "Bereitschaft", "cooking": "Kochen", "off": "Aus", "ckpause": "Pause", "ckcomplete": "Fertig" } },
+      "pm25":                    { "name": "Feinstaub" },
+      "water":                   { "name": "Wasserstand", "state": { "Ok":, "OK", "Empty": "Leer" } },
       "use_hours_hm":            { "name": "Nutzung seit Reinigung" },
       "filter_life":             { "name": "Filterlebensdauer" },
-      "filter_active":           { "name": "Filter aktiv" },
-      "target_humidity_reached": { "name": "Ziel-Luftfeuchtigkeit erreicht" } 
+      "filter_active":           { "name": "Filter aktiv", "state": { "Aktive":, "aktiv", "Inactive": "inaktiv" } },
+      "target_humidity_reached": { "name": "Ziel-Luftfeuchtigkeit erreicht", "state": { "Yes": "Ja", "No": "Nein" } }
     },
     "number": {
       "horizontal_angle":             { "name": "Horizontaler Winkel" },
@@ -75,6 +76,8 @@
       "horizontal_oscillation_angle": { "name": "Horizontaler Oszillationswinkel" },
       "vertical_oscillation_angle":   { "name": "Vertikaler Oszillationswinkel" },
       "target_humidity":              { "name": "Ziel-Luftfeuchtigkeit" },
+      "fog_level":                    { "name": "Nebelstufe" },
+      "sleep_target_humidity":        { "name": "Ziel-Luftfeuchtigkeit (Schlafmodus)" },
       "ambient_light_threshold_low":  { "name": "Umgebungslicht Feuchtigkeitsschwelle niedrig" },
       "ambient_light_threshold_high": { "name": "Umgebungslicht Feuchtigkeitsschwelle hoch" },
       "ambient_light_level":          { "name": "Umgebungslicht-Stufe" }
