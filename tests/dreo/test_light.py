@@ -58,6 +58,31 @@ class TestDreoLightHA(TestDeviceBase):
         assert "DreoLightHA" in types
         assert "DreoRGBLightHA" in types
 
+    def test_light_get_entries_rgbic_effect_light(self):
+        """Test that get_entries creates RGBIC light entities for devices with rgb_effect_id."""
+        device = self.create_mock_device(
+            name="Ceiling Fan RGBIC",
+            serial_number="CF007",
+            features={
+                "light_on": True,
+                "brightness": 50,
+                "atm_light": True,
+                "atm_light_on": True,
+                "atm_brightness": 50,
+                "rgb_effect_id": "2070476690030592000",
+                "rgb_preset_sel": 0,
+                "rgb_preset_num": 4,
+            },
+        )
+        device.atm_brightness_range = (1, 100)
+        device.rgb_effect_range = (0, 7)
+
+        entities = light.get_entries([device])
+        assert len(entities) == 2
+        types = [type(e).__name__ for e in entities]
+        assert "DreoLightHA" in types
+        assert "DreoRGBICLightHA" in types
+
     def test_light_get_entries_empty(self):
         """Test get_entries returns empty for devices without lights."""
         device = self.create_mock_device(name="Heater", serial_number="HTR001", features={"poweron": True})
@@ -324,9 +349,10 @@ class TestDreoRGBLightHA(TestDeviceBase):
 
 
 class TestDreoRGBICLightHA(TestDeviceBase):
-    """Test the Dreo RGBIC Light entity (RGBIC preset-based atmosphere light, e.g. HCF007S)."""
+    """Test the Dreo RGBIC Light entity (RGBIC effect-based atmosphere light, e.g. HCF007S)."""
 
-    def _make_device(self, atm_bri_range=(1, 100), atm_brightness=50, atm_light_on=True, preset_sel=0, preset_num=4):
+    def _make_device(self, atm_bri_range=(1, 100), atm_brightness=50, atm_light_on=True,
+                     preset_sel=0, preset_num=4, effect_id="2070476690030592000", effect_range=(0, 7)):
         """Create a mock RGBIC device with default values."""
         device = self.create_mock_device(
             name="Ceiling Fan",
@@ -337,10 +363,12 @@ class TestDreoRGBICLightHA(TestDeviceBase):
                 "atm_brightness": atm_brightness,
                 "rgb_preset_sel": preset_sel,
                 "rgb_preset_num": preset_num,
+                "rgb_effect_id": effect_id,
             },
         )
-        # atm_brightness_range is a property, not a feature flag; set it explicitly
+        # atm_brightness_range and rgb_effect_range are properties, not feature flags
         device.atm_brightness_range = atm_bri_range
+        device.rgb_effect_range = effect_range
         return device
 
     def test_rgbic_basic_properties(self):
@@ -359,28 +387,45 @@ class TestDreoRGBICLightHA(TestDeviceBase):
             assert entity.color_mode == ColorMode.BRIGHTNESS
             assert ColorMode.BRIGHTNESS in entity.supported_color_modes
 
-    def test_rgbic_effect_list(self):
-        """Effect list should reflect the number of presets from the device."""
+    def test_rgbic_effect_list_from_effect_range(self):
+        """Effect list should use rgb_effect_range from device definition."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self._make_device(preset_num=4)
+            device = self._make_device(effect_range=(0, 7))
+            entity = DreoRGBICLightHA(device)
+            assert entity.effect_list == [f"Effect {i}" for i in range(1, 9)]
+
+    def test_rgbic_effect_list_fallback_to_preset_num(self):
+        """When rgb_effect_range is not set and rgb_effect_id is absent, fall back to rgb_preset_num."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self._make_device(preset_num=4, effect_range=None, effect_id=None)
+            device.rgb_effect_range = None
+            # Remove rgb_effect_id from supported features to trigger preset path
+            device._supported_features = [f for f in device._supported_features if f != "rgb_effect_id"]
             entity = DreoRGBICLightHA(device)
             assert entity.effect_list == ["Preset 1", "Preset 2", "Preset 3", "Preset 4"]
 
     def test_rgbic_current_effect(self):
-        """Current effect should reflect the 0-based preset index from the device."""
+        """Current effect should reflect the effect index from the rgbeffectid."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self._make_device(preset_sel=2)
+            device = self._make_device(effect_id="2070476690030592003")
             entity = DreoRGBICLightHA(device)
-            assert entity.effect == "Preset 3"
+            assert entity.effect == "Effect 4"
 
-    def test_rgbic_turn_on_selects_preset(self):
-        """turn_on with an effect kwarg should set atm_light_on and send the correct preset index."""
+    def test_rgbic_current_effect_zero(self):
+        """Effect index 0 should show as 'Effect 1'."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self._make_device(atm_light_on=False, preset_sel=0)
+            device = self._make_device(effect_id="2070476690030592000")
             entity = DreoRGBICLightHA(device)
-            entity.turn_on(**{ATTR_EFFECT: "Preset 2"})
+            assert entity.effect == "Effect 1"
+
+    def test_rgbic_turn_on_selects_effect(self):
+        """turn_on with an effect kwarg should set atm_light_on and send the correct effect ID."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self._make_device(atm_light_on=False, effect_id="2070476690030592000")
+            entity = DreoRGBICLightHA(device)
+            entity.turn_on(**{ATTR_EFFECT: "Effect 3"})
             assert device.atm_light_on is True
-            assert device.rgb_preset_sel == 1  # "Preset 2" → 0-based index 1
+            assert device.rgb_effect_id == "2070476690030592002"
 
     def test_rgbic_turn_on_with_brightness(self):
         """turn_on with brightness kwarg should set atm_brightness via the correct 1-100 scale."""
@@ -410,3 +455,16 @@ class TestDreoRGBICLightHA(TestDeviceBase):
             assert entity.is_on is True
             entity.turn_off()
             assert device.atm_light_on is False
+
+    def test_rgbic_parse_effect_index(self):
+        """Test static method for parsing effect index from ID string."""
+        assert DreoRGBICLightHA._parse_effect_index("2070476690030592000") == 0
+        assert DreoRGBICLightHA._parse_effect_index("2070476690030592007") == 7
+        assert DreoRGBICLightHA._parse_effect_index(None) is None
+        assert DreoRGBICLightHA._parse_effect_index("ab") is None
+
+    def test_rgbic_build_effect_id(self):
+        """Test static method for building an effect ID from base + index."""
+        assert DreoRGBICLightHA._build_effect_id("2070476690030592000", 3) == "2070476690030592003"
+        assert DreoRGBICLightHA._build_effect_id("2070476690030592000", 0) == "2070476690030592000"
+        assert DreoRGBICLightHA._build_effect_id(None, 0) is None

@@ -17,6 +17,7 @@ from .constant import (
     ATMMODE_KEY,
     RGBPRESETSEL_KEY,
     RGBPRESETNUM_KEY,
+    RGBEFFECTID_KEY,
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -84,6 +85,13 @@ class PyDreoCeilingFan(PyDreoFanBase):
         # RGBIC preset system (used by HCF007S and similar)
         self._rgb_preset_sel: int = None
         self._rgb_preset_num: int = None
+
+        # RGBIC effect ID system – the device reports/accepts a string-based effect ID
+        # (e.g. "2070476690030592000") where the last 3 digits are the effect index.
+        self._rgb_effect_id: str = None
+        self._rgb_effect_range: tuple[int, int] = None
+        if device_definition.device_ranges is not None and "rgb_effect_range" in device_definition.device_ranges:
+            self._rgb_effect_range = device_definition.device_ranges["rgb_effect_range"]
 
         self._wind_type = None
         self._wind_mode = None
@@ -275,6 +283,28 @@ class PyDreoCeilingFan(PyDreoFanBase):
         """Returns the number of available RGBIC presets, or None if not supported."""
         return self._rgb_preset_num
 
+    @property
+    def rgb_effect_id(self) -> str | None:
+        """Returns the current RGBIC effect ID string, or None if not supported."""
+        return self._rgb_effect_id
+
+    @rgb_effect_id.setter
+    def rgb_effect_id(self, value: str):
+        """Set the RGBIC effect by full effect ID string."""
+        _LOGGER.debug("rgb_effect_id: rgb_effect_id.setter - %s", value)
+        if self._rgb_effect_id is None:
+            _LOGGER.error("rgb_effect_id: RGBIC effect ID not supported by this fan model.")
+            return
+        if self._rgb_effect_id == value:
+            _LOGGER.debug("rgb_effect_id: rgb_effect_id - value already %s, skipping command", value)
+            return
+        self._send_command(RGBEFFECTID_KEY, value)
+
+    @property
+    def rgb_effect_range(self) -> tuple[int, int] | None:
+        """Returns the valid range (min, max) of RGBIC effect indices, or None."""
+        return self._rgb_effect_range
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: Processing state")
@@ -309,6 +339,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         # RGBIC preset system
         self._rgb_preset_sel = self.get_state_update_value(state, RGBPRESETSEL_KEY)
         self._rgb_preset_num = self.get_state_update_value(state, RGBPRESETNUM_KEY)
+        self._rgb_effect_id = self.get_state_update_value(state, RGBEFFECTID_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -354,6 +385,10 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if isinstance(val_rgb_preset_num, int):
             self._rgb_preset_num = val_rgb_preset_num
 
+        val_rgb_effect_id = self.get_server_update_key_value(message, RGBEFFECTID_KEY)
+        if isinstance(val_rgb_effect_id, str):
+            self._rgb_effect_id = val_rgb_effect_id
+
     def _handle_power_state_update(self, message):
         """Override power state handling for ceiling fans"""
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
@@ -381,4 +416,8 @@ class PyDreoCeilingFan(PyDreoFanBase):
         # RGBIC preset system - device has atmon + rgbpresetsel but not atmcolor
         if feature == "rgb_preset":
             return self._atm_light_on is not None and self._rgb_preset_sel is not None
+        # RGBIC effect ID system - device uses string-based effect IDs (e.g. HCF007S)
+        # Only enabled when the device also has a defined rgb_effect_range in its model
+        if feature == "rgb_effect_id":
+            return self._rgb_effect_id is not None and self._rgb_effect_range is not None
         return super().is_feature_supported(feature)
