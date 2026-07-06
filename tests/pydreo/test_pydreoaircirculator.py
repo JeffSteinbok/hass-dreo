@@ -469,7 +469,7 @@ class TestPyDreoAirCirculator(TestBase):
 
         # Test initial state values
         assert fan.speed_range == (1, 9)
-        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo"]
         assert fan.preset_mode == "normal"  # Initial mode is 1
         assert fan.model == "DR-HAF008S"
         assert fan.device_name is not None
@@ -521,6 +521,12 @@ class TestPyDreoAirCirculator(TestBase):
             fan.preset_mode = "auto"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "turbo"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 5})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+        assert fan.preset_mode == "turbo"
 
         with pytest.raises(ValueError):
             fan.preset_mode = "not_a_mode"

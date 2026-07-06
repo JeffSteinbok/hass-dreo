@@ -202,9 +202,9 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.speed_range == (1, 9)
 
             # Verify preset modes
-            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo"]
             assert pydreo_fan.preset_mode == "normal"
-            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo"]
             assert ha_fan.preset_mode == "normal"
 
             # Test percentage calculation doesn't crash (was the bug in #678)
@@ -263,6 +263,13 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_preset_mode("auto")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+            assert pydreo_fan.preset_mode == "turbo"
+            assert ha_fan.preset_mode == "turbo"
 
             # Check switches
             switches = switch.get_entries([pydreo_fan])
