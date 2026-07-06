@@ -339,6 +339,76 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return range_from_definition
         return self._horizontal_angle_range
 
+    @property
+    def horizontal_osc_angle_left(self) -> int | None:
+        """Return the configured left horizontal oscillation angle (derived from horizontal_angle_range)."""
+        if self._horizontal_angle_range is not None:
+            return self._horizontal_angle_range[0]
+        return None
+
+    @horizontal_osc_angle_left.setter
+    def horizontal_osc_angle_left(self, value: int) -> None:
+        """Set the left horizontal oscillation angle."""
+        _LOGGER.debug("horizontal_osc_angle_left: setting to %s", value)
+        angle = int(value)
+        current_left = self.horizontal_osc_angle_left
+        current_right = self.horizontal_osc_angle_right
+        if current_left == angle:
+            _LOGGER.debug("horizontal_osc_angle_left: value already %s, skipping command", angle)
+            return
+        # Validate that left < right
+        if current_right is not None and angle >= current_right:
+            raise ValueError(f"Left angle {angle} must be less than right angle {current_right}")
+        # Send as "left,right" via hoscangle key
+        if current_right is not None:
+            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, f"{angle},{current_right}")
+
+    @property
+    def horizontal_osc_angle_left_range(self) -> tuple[int, int] | None:
+        """Return the supported left horizontal oscillation angle range."""
+        range_from_definition = self._device_definition.device_ranges.get("horizontal_osc_angle_left_range") if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
+        # Fall back to horizontal angle range if available
+        if self._horizontal_angle_range is not None:
+            return (self._horizontal_angle_range[0], self._horizontal_angle_range[1])
+        return None
+
+    @property
+    def horizontal_osc_angle_right(self) -> int | None:
+        """Return the configured right horizontal oscillation angle (derived from horizontal_angle_range)."""
+        if self._horizontal_angle_range is not None:
+            return self._horizontal_angle_range[1]
+        return None
+
+    @horizontal_osc_angle_right.setter
+    def horizontal_osc_angle_right(self, value: int) -> None:
+        """Set the right horizontal oscillation angle."""
+        _LOGGER.debug("horizontal_osc_angle_right: setting to %s", value)
+        angle = int(value)
+        current_left = self.horizontal_osc_angle_left
+        current_right = self.horizontal_osc_angle_right
+        if current_right == angle:
+            _LOGGER.debug("horizontal_osc_angle_right: value already %s, skipping command", angle)
+            return
+        # Validate that left < right
+        if current_left is not None and angle <= current_left:
+            raise ValueError(f"Right angle {angle} must be greater than left angle {current_left}")
+        # Send as "left,right" via hoscangle key
+        if current_left is not None:
+            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, f"{current_left},{angle}")
+
+    @property
+    def horizontal_osc_angle_right_range(self) -> tuple[int, int] | None:
+        """Return the supported right horizontal oscillation angle range."""
+        range_from_definition = self._device_definition.device_ranges.get("horizontal_osc_angle_right_range") if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
+        # Fall back to horizontal angle range if available
+        if self._horizontal_angle_range is not None:
+            return (self._horizontal_angle_range[0], self._horizontal_angle_range[1])
+        return None
+
     @staticmethod
     def _parse_angle_range(value: str) -> tuple[int, int] | None:
         """Parse a Dreo angle range string like '-15,15'."""
