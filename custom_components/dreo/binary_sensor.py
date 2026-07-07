@@ -102,7 +102,10 @@ class DreoBinarySensorHA(DreoBaseDeviceHA, BinarySensorEntity):
         super().__init__(device)
         self.device = device
         self.entity_description = description
-        self._attr_name = super().name + " Water Empty"
+        # Use has_entity_name + translation_key so the entity name and its
+        # on/off state text are localized from the translations/*.json files.
+        self._attr_has_entity_name = True
+        del self._attr_name
         self._attr_unique_id = f"{super().unique_id}-water-empty"
 
     @property
