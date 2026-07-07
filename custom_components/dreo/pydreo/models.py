@@ -360,6 +360,10 @@ SUPPORTED_DEVICES = {
     "DR-HCF521S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
     # Air Purifiers
     "DR-HAP": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
+    "DR-HAP003S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_PURIFIER,
+        override_fn=lambda dev: setattr(dev, "_mode_translation", {"auto": "auto-silent"})
+    ),
     # Heaters
     "DR-HSH017BS": DreoHeaterDeviceDetails(
         device_ranges={ECOLEVEL_RANGE: (41, 85)},

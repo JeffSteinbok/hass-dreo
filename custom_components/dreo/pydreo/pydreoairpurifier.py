@@ -71,11 +71,3 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Process a websocket update"""
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
-
-
-    def _send_command(self, command_key: str, value) -> None:
-        """Override to map 'auto' mode to 'auto-silent' for DR-HAP003S (Macro Max S)."""
-        if self.model == "DR-HAP003S" and command_key == "mode" and value == "auto":
-            _LOGGER.debug("PyDreoAirPurifier mapping 'auto' mode to 'auto-silent' for %s", self.model)
-            value = "auto-silent"
-        super()._send_command(command_key, value)

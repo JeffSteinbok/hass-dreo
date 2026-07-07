@@ -131,6 +131,13 @@ class PyDreoBaseDevice:
         """Send a command to the Dreo servers via WebSocket."""
         _LOGGER.debug("_send_command: %s-> %s", command_key, value)
 
+        # Apply model-specific mode translation if configured (e.g. from models.py override_fn)
+        if command_key == "mode" and getattr(self, "_mode_translation", None) is not None:
+            translated_value = self._mode_translation.get(value)
+            if translated_value is not None:
+                _LOGGER.debug("Translating mode %s -> %s", value, translated_value)
+                value = translated_value
+
         params: dict = {command_key: value}
         self._dreo.send_command(self, params)
 
