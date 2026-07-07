@@ -355,7 +355,7 @@ SUPPORTED_DEVICES = {
     "DR-HCF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.CEILING_FAN,
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
-        device_ranges={SPEED_RANGE: (1, 12), "atm_brightness_range": (1, 100)},
+        device_ranges={SPEED_RANGE: (1, 12), "atm_brightness_range": (1, 100), "rgb_effect_range": (0, 7)},
     ),
     "DR-HCF521S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
     # Air Purifiers

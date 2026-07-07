@@ -416,3 +416,35 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 mock_send_command.assert_any_call(pydreo_fan, {FANON_KEY: True})
                 mock_send_command.assert_any_call(pydreo_fan, {WINDLEVEL_KEY: 12})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
+
+            # ---- RGBIC atmosphere light (effect-ID based) ----
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["Light", "RGBIC Light"])
+
+            rgbic_light = self.get_entity_by_key(lights, "RGBIC Light")
+            assert rgbic_light is not None
+
+            # HCF007S has 8 effects (rgb_effect_range 0-7)
+            assert rgbic_light.effect_list == [f"Effect {i}" for i in range(1, 9)]
+
+            # Initial rgbeffectid "2060365036332777003" → effect index 3 → "Effect 4"
+            assert rgbic_light.effect == "Effect 4"
+
+            # atmon=true in test data, so RGBIC light is on
+            assert rgbic_light.is_on is True
+
+            # Setting effect must send rgbeffectid command
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgbic_light.turn_on(effect="Effect 5")
+                # Constructs effect ID by replacing last 3 digits with 004
+                expected_id = pydreo_fan.rgb_effect_id[:-3] + "004"
+                mock_send_command.assert_any_call(pydreo_fan, {RGBEFFECTID_KEY: expected_id})
+
+            # Verify rgbeffectid server update changes the effect
+            pydreo_fan.handle_server_update({REPORTED_KEY: {RGBEFFECTID_KEY: "2060365036332777005"}})
+            assert rgbic_light.effect == "Effect 6"
+
+            # Verify brightness slider works
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgbic_light.turn_on(brightness=128)
+                mock_send_command.assert_any_call(pydreo_fan, {ATMBRI_KEY: 50})
