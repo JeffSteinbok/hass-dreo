@@ -235,63 +235,12 @@ jobs:
               repo: context.repo.repo,
               issue_number: issueNumber,
               body: [
-                `👋 Hey @${author}, thanks for filing this bug report!`,
+                `👋 Hey @${author}, thanks for filing this issue!`,
                 '',
                 'It looks like the following information is missing:',
                 ...missing.map(item => `- ${item}`),
                 '',
                 'Please update your issue with the missing information. See the [debugging instructions](https://github.com/JeffSteinbok/hass-dreo?tab=readme-ov-file#debugging) for help collecting this data.',
-                '',
-                '_This is an automated message._',
-              ].join('\n'),
-            });
-
-  check-feature-request:
-    if: github.event.action == 'opened'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Triage device feature request
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const body = context.payload.issue.body || '';
-            const author = context.payload.issue.user.login;
-            const issueNumber = context.issue.number;
-
-            // Only handle device feature requests
-            if (!body.includes('### Problem description') || !body.includes('### Describe the solution you\'d like')) {
-              core.info('Not a device feature request. Skipping.');
-              return;
-            }
-
-            // Skip collaborators
-            try {
-              const { data: permLevel } = await github.rest.repos.getCollaboratorPermissionLevel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                username: author,
-              });
-              if (['admin', 'write'].includes(permLevel.permission)) {
-                core.info(`Collaborator ${author}. Skipping.`);
-                return;
-              }
-            } catch (e) {
-              core.info(`Could not check permissions: ${e.message}. Proceeding.`);
-            }
-
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              labels: ['triaged'],
-            });
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              body: [
-                `👋 Thanks for the feature request, @${author}!`,
                 '',
                 '_This is an automated message._',
               ].join('\n'),

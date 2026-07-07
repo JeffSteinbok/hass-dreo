@@ -31,6 +31,7 @@ LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
 MUTEON_KEY = "muteon"
 PM25_KEY = "pm25"
+LOCATEMEON_KEY = "locatemeon"
 FIXEDCONF_KEY = "fixedconf"
 DEVON_KEY = "devon"
 TIMERON_KEY = "timeron"
@@ -80,6 +81,7 @@ SHAKEHORIZONANGLE_KEY = "shakehorizonangle"
 FANON_KEY = "fanon"
 RGBPRESETSEL_KEY = "rgbpresetsel"
 RGBPRESETNUM_KEY = "rgbpresetnum"
+RGBEFFECTID_KEY = "rgbeffectid"
 
 
 DREO_API_URL_FORMAT = "https://app-api-{0}.dreo-tech.com"  # {0} is the 2 letter region code

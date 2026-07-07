@@ -87,6 +87,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         icon="mdi:lock",
     ),
     DreoSwitchEntityDescription(
+        key="Presence Sensor",
+        translation_key="locatemeon",
+        attr_name="locatemeon",
+        icon="mdi:crosshairs-gps",
+    ),
+    DreoSwitchEntityDescription(
         key="Light",
         translation_key="light",
         attr_name="ledpotkepton",

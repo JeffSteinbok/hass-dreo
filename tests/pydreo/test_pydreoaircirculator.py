@@ -469,7 +469,7 @@ class TestPyDreoAirCirculator(TestBase):
 
         # Test initial state values
         assert fan.speed_range == (1, 9)
-        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo"]
         assert fan.preset_mode == "normal"  # Initial mode is 1
         assert fan.model == "DR-HAF008S"
         assert fan.device_name is not None
@@ -522,6 +522,12 @@ class TestPyDreoAirCirculator(TestBase):
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
 
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "turbo"
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 5})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+        assert fan.preset_mode == "turbo"
+
         with pytest.raises(ValueError):
             fan.preset_mode = "not_a_mode"
 
@@ -555,6 +561,8 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.device_name is not None
         assert fan.serial_number is not None
         assert fan.fan_speed == 1
+        assert fan.angle_preset == "0,0"
+        assert fan.angle_preset_options == ["0,0"]
 
         # Test power commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -611,6 +619,15 @@ class TestPyDreoAirCirculator(TestBase):
             fan.preset_mode = "custom"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 6})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+
+        # Test 3D angle preset handling
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-15,-5"}})
+        assert fan.angle_preset == "-15,-5"
+        assert fan.angle_preset_options == ["0,0", "-15,-5"]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.angle_preset = "0,0"
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "0,0"})
 
     def test_HPF008S(self):  # pylint: disable=invalid-name
         """Test HPF008S fan."""
@@ -996,6 +1013,21 @@ class TestPyDreoAirCirculator(TestBase):
 
         assert fan.temperature is not None
         assert isinstance(fan.temperature, (int, float))
+
+    def test_HPF007S_presence_sensor(self):  # pylint: disable=invalid-name
+        """Verify HPF007S exposes locatemeon and sends commands for presence tracking."""
+        self.get_devices_file_name = "get_devices_HPF007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+        assert fan.locatemeon is False
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.locatemeon = True
+            mock_send_command.assert_called_once_with(fan, {LOCATEMEON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {LOCATEMEON_KEY: True}})
+        assert fan.locatemeon is True
 
     @pytest.mark.parametrize("devices_file", ["get_devices_HPF005S.json", "get_devices_HPF007S.json", "get_devices_HPF020S.json"])
     def test_additional_hpf_models(self, devices_file: str):  # pylint: disable=invalid-name

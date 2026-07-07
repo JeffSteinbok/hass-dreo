@@ -10,6 +10,7 @@ from .constant import (
     HORIZONTAL_OSCILLATION_KEY,
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
     HORIZONTAL_ANGLE_ADJ_KEY,
+    HORIZONTAL_ANGLE_RANGE,
     HUMIDITY_KEY,
     LIGHTON_KEY,
     MODE_KEY,
@@ -29,6 +30,7 @@ HUMIDIFY_SUSPEND_KEY = "rhsuspend"
 HUMIDITY_TARGET_KEY = "rhtarget"
 WORKTIME_KEY = "worktime"
 WATER_LEVEL_STATUS_KEY = "wrong"
+WATER_LEVEL_KEY = "water_level"
 RGB_ON_KEY = "rgbon"
 
 # Status for water level indicator
@@ -89,6 +91,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._rgbmode = None
         self._rgbcolor = None
         self._light_on = None
+        self._suspend = None
         self._horizontal_angle = None
         self._horizontal_angle_range = None
 
@@ -309,6 +312,11 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         return self._water_level
 
     @property
+    def suspend(self) -> bool | None:
+        """Return True if humidifier is suspended (target humidity reached)."""
+        return self._suspend
+
+    @property
     def horizontal_angle(self) -> int | None:
         """Return the configured horizontal angle."""
         return self._horizontal_angle
@@ -326,7 +334,80 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @property
     def horizontal_angle_range(self) -> tuple[int, int] | None:
         """Return the supported horizontal angle range."""
+        range_from_definition = self._device_definition.device_ranges.get(HORIZONTAL_ANGLE_RANGE) if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
         return self._horizontal_angle_range
+
+    @property
+    def horizontal_osc_angle_left(self) -> int | None:
+        """Return the configured left horizontal oscillation angle (derived from horizontal_angle_range)."""
+        if self._horizontal_angle_range is not None:
+            return self._horizontal_angle_range[0]
+        return None
+
+    @horizontal_osc_angle_left.setter
+    def horizontal_osc_angle_left(self, value: int) -> None:
+        """Set the left horizontal oscillation angle."""
+        _LOGGER.debug("horizontal_osc_angle_left: setting to %s", value)
+        angle = int(value)
+        current_left = self.horizontal_osc_angle_left
+        current_right = self.horizontal_osc_angle_right
+        if current_left == angle:
+            _LOGGER.debug("horizontal_osc_angle_left: value already %s, skipping command", angle)
+            return
+        # Validate that left < right
+        if current_right is not None and angle >= current_right:
+            raise ValueError(f"Left angle {angle} must be less than right angle {current_right}")
+        # Send as "left,right" via hoscangle key
+        if current_right is not None:
+            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, f"{angle},{current_right}")
+
+    @property
+    def horizontal_osc_angle_left_range(self) -> tuple[int, int] | None:
+        """Return the supported left horizontal oscillation angle range."""
+        range_from_definition = self._device_definition.device_ranges.get("horizontal_osc_angle_left_range") if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
+        # Fall back to horizontal angle range if available
+        if self._horizontal_angle_range is not None:
+            return (self._horizontal_angle_range[0], self._horizontal_angle_range[1])
+        return None
+
+    @property
+    def horizontal_osc_angle_right(self) -> int | None:
+        """Return the configured right horizontal oscillation angle (derived from horizontal_angle_range)."""
+        if self._horizontal_angle_range is not None:
+            return self._horizontal_angle_range[1]
+        return None
+
+    @horizontal_osc_angle_right.setter
+    def horizontal_osc_angle_right(self, value: int) -> None:
+        """Set the right horizontal oscillation angle."""
+        _LOGGER.debug("horizontal_osc_angle_right: setting to %s", value)
+        angle = int(value)
+        current_left = self.horizontal_osc_angle_left
+        current_right = self.horizontal_osc_angle_right
+        if current_right == angle:
+            _LOGGER.debug("horizontal_osc_angle_right: value already %s, skipping command", angle)
+            return
+        # Validate that left < right
+        if current_left is not None and angle <= current_left:
+            raise ValueError(f"Right angle {angle} must be greater than left angle {current_left}")
+        # Send as "left,right" via hoscangle key
+        if current_left is not None:
+            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, f"{current_left},{angle}")
+
+    @property
+    def horizontal_osc_angle_right_range(self) -> tuple[int, int] | None:
+        """Return the supported right horizontal oscillation angle range."""
+        range_from_definition = self._device_definition.device_ranges.get("horizontal_osc_angle_right_range") if self._device_definition.device_ranges else None
+        if range_from_definition is not None:
+            return range_from_definition
+        # Fall back to horizontal angle range if available
+        if self._horizontal_angle_range is not None:
+            return (self._horizontal_angle_range[0], self._horizontal_angle_range[1])
+        return None
 
     @staticmethod
     def _parse_angle_range(value: str) -> tuple[int, int] | None:
@@ -381,6 +462,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._rgbmode = self.get_state_update_value(state, RGB_MODE)
         self._rgbcolor = self.get_state_update_value(state, RGB_COLOR)
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
+        self._suspend = self.get_state_update_value(state, HUMIDIFY_SUSPEND_KEY)
         self._horizontal_angle = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
         self._horizontal_angle_range = self._parse_angle_range(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY))
 
@@ -450,6 +532,10 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_light_on, bool):
             self._light_on = val_light_on
+
+        val_suspend = self.get_server_update_key_value(message, HUMIDIFY_SUSPEND_KEY)
+        if isinstance(val_suspend, bool):
+            self._suspend = val_suspend
 
         val_horizontal_angle = self.get_server_update_key_value(message, HORIZONTAL_ANGLE_ADJ_KEY)
         if isinstance(val_horizontal_angle, int):

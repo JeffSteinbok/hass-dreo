@@ -76,6 +76,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._osc_mode = None
         self._cruise_conf = None
         self._fixed_conf = None
+        self._angle_preset_options: list[str] = []
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
@@ -429,6 +430,50 @@ class PyDreoAirCirculator(PyDreoFanBase):
             return int(self._fixed_conf.split(",")[1])
         return None
 
+    @staticmethod
+    def _normalize_fixed_conf(value: str) -> str | None:
+        """Normalize fixedconf strings to 'vertical,horizontal' format."""
+        if not isinstance(value, str):
+            return None
+        parts = value.split(",")
+        if len(parts) != 2:
+            return None
+        try:
+            vertical = int(parts[0].strip())
+            horizontal = int(parts[1].strip())
+        except ValueError:
+            return None
+        return f"{vertical},{horizontal}"
+
+    def _add_angle_preset_option(self, value: str | None) -> None:
+        """Track fixedconf values as available 3D angle presets."""
+        normalized = self._normalize_fixed_conf(value)
+        if normalized is not None and normalized not in self._angle_preset_options:
+            self._angle_preset_options.append(normalized)
+
+    @property
+    def angle_preset(self) -> str | None:
+        """Get the current 3D angle preset value."""
+        return self._normalize_fixed_conf(self._fixed_conf)
+
+    @angle_preset.setter
+    def angle_preset(self, value: str) -> None:
+        """Set the current 3D angle preset value."""
+        if self._fixed_conf is None:
+            raise NotImplementedError("3D angle presets are not supported on this device model.")
+        normalized = self._normalize_fixed_conf(value)
+        if normalized is None:
+            raise ValueError(f"Invalid 3D angle preset format: {value}")
+        if self.angle_preset == normalized:
+            _LOGGER.debug("angle_preset: Angle preset value already %s, skipping command", normalized)
+            return
+        self._send_command(FIXEDCONF_KEY, normalized)
+
+    @property
+    def angle_preset_options(self) -> list[str]:
+        """Get all discovered 3D angle preset values."""
+        return self._angle_preset_options
+
     @horizontal_angle.setter
     def horizontal_angle(self, value: int) -> None:
         """Set the horizontal angle."""
@@ -615,6 +660,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Check if this air circulator supports a specific feature."""
         if feature == "atm_light":
             return self._atm_light_on is not None
+        if feature == "angle_preset":
+            return self._fixed_conf is not None
         return super().is_feature_supported(feature)
 
     def update_state(self, state: dict):
@@ -627,6 +674,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._cruise_conf = self.get_state_update_value(state, CRUISECONF_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
+        self._add_angle_preset_option(self._fixed_conf)
 
         # Parse hoscangle - only use if it's an integer, not a string like "0,0"
         hoscangle_val = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
@@ -669,6 +717,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
+            self._add_angle_preset_option(self._fixed_conf)
 
         val_horiz_osc_angle = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
         if isinstance(val_horiz_osc_angle, int):

@@ -45,13 +45,13 @@ This integration is based on the engineering that Gavin Zyonse did for the HomeB
 
 > This documentation is intended to be accurate for the branch/tag it's in. If you are installing a specific version (including latest) of the integration, please change current viewing tag in GitHub to see the matching documentation.
 
-## A Note on Betas (Pre-Release)
-
-The maintainers and I only have a small subset of the devices that this integration supports and we depend on users who open issues to confirm things work. I will keep a release in Beta until I get confirmation from folks that things work, then I'll promote.
-
 ## Interested in Contributing?
 
 I'm always happy to have people add features via Pull Request. More info on how to capture network traces and what not can be found on: [Contributing](CONTRIBUTING.md).
+
+## Testing Unreleased Fixes
+
+Want to help test a bug fix before it's officially released? See **[Testing Unreleased Fixes](TESTING_UNRELEASED.md)** for instructions on installing from branches or pull requests.
 
 ## Table of Contents
 

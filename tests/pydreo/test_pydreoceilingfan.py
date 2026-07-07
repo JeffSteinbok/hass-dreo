@@ -385,6 +385,10 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan.rgb_preset_sel == 0
         assert fan.rgb_preset_num == 4
 
+        # HCF007S uses a 1-100 brightness range (not the default 1-5)
+        assert fan.atm_brightness_range == (1, 100)
+        assert fan.atm_brightness == 1
+
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.fan_speed = 12
             mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 12})
@@ -401,6 +405,20 @@ class TestPyDreoCeilingFan(TestBase):
             mock_send_command.assert_called_once_with(fan, {RGBPRESETSEL_KEY: 3})
         fan.handle_server_update({REPORTED_KEY: {RGBPRESETSEL_KEY: 3}})
         assert fan.rgb_preset_sel == 3
+
+        # HCF007S uses 1-100 brightness range; values up to 100 should be sent as-is
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_brightness = 50
+            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 50})
+        fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 50}})
+        assert fan.atm_brightness == 50
+
+        # Values above 100 are clamped to 100 for HCF007S
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.atm_brightness = 120
+            mock_send_command.assert_called_once_with(fan, {ATMBRI_KEY: 100})
+        fan.handle_server_update({REPORTED_KEY: {ATMBRI_KEY: 100}})
+        assert fan.atm_brightness == 100
 
     @pytest.mark.parametrize("devices_file", CEILING_FAN_EXHAUSTIVE_MODELS)
     def test_all_settable_properties_for_each_model(self, devices_file: str):

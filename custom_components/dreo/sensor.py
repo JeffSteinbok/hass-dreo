@@ -11,6 +11,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import logging
 
+from homeassistant.const import UnitOfTime
+
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
@@ -29,6 +31,7 @@ from .pydreo.pydreochefmaker import (
     MODE_COOKING,
     MODE_STANDBY,
     MODE_PAUSED,
+    MODE_COMPLETE,
 )
 
 from .pydreo.pydreohumidifier import (
@@ -98,9 +101,18 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         key="Status",
         translation_key="status",
         device_class=SensorDeviceClass.ENUM,
-        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED],
+        options=[MODE_STANDBY, MODE_COOKING, MODE_OFF, MODE_PAUSED, MODE_COMPLETE],
         value_fn=lambda device: device.mode,
         exists_fn=lambda device: (device.type in {DreoDeviceType.CHEF_MAKER}) and device.is_feature_supported(MODE_KEY),
+    ),
+    DreoSensorEntityDescription(
+        key="Cook time remaining",
+        translation_key="cook_time_remaining",
+        device_class=SensorDeviceClass.DURATION,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        value_fn=lambda device: device.cook_time_remaining,
+        exists_fn=lambda device: (device.type in {DreoDeviceType.CHEF_MAKER}) and device.is_feature_supported("cook_time_remaining"),
     ),
     DreoSensorEntityDescription(
         key="pm25",
@@ -153,7 +165,7 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.ENUM,
         options=["Yes", "No"],
         value_fn=lambda device: None if device.suspend is None else ("Yes" if device.suspend else "No"),
-        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(SUSPEND_KEY),
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}) and device.is_feature_supported(SUSPEND_KEY),
     ),
 )
 
@@ -204,14 +216,19 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
 
         # Note this is a "magic" HA property.  Don't rename
         self.entity_description = description
-        self._attr_name = super().name + " " + description.key
+        # Use has_entity_name + translation_key so the entity name (and, where
+        # provided, state values) are localized from the translations/*.json files.
+        # The base class sets _attr_name to the device name; delete it so the
+        # translation_key on the entity description is used instead.
+        self._attr_has_entity_name = True
+        del self._attr_name
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
         if description.native_unit_of_measurement_fn is not None:
             self._attr_native_unit_of_measurement = description.native_unit_of_measurement_fn(self.device)
         if description.options is not None:
             self._attr_options = description.options
 
-        _LOGGER.info("new DreoSensorHA instance(%s), unique ID %s", self._attr_name, self._attr_unique_id)
+        _LOGGER.info("new DreoSensorHA instance(%s), unique ID %s", description.translation_key, self._attr_unique_id)
 
     def __repr__(self):
         # Representation string of object.

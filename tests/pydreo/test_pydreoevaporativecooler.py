@@ -283,7 +283,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.rgbmode == 0
         assert ec_fan.rgbcolor == 30719
         assert ec_fan.horizontal_angle == 5
-        assert ec_fan.horizontal_angle_range == (-15, 15)
+        assert ec_fan.horizontal_angle_range == (-75, 75)
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.is_on = False
@@ -335,11 +335,11 @@ class TestPyDreoEvaporativeCooler(TestBase):
         self.pydreo_manager.load_devices()
         ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
-        # "Turbo" -> mode value 2
+        # "Turbo" -> mode value 4
         ec_fan._wind_mode = 1  # set to Normal first
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.preset_mode = "Turbo"
-            mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 2})
+            mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 4})
 
         # "Normal" -> mode value 1
         ec_fan._wind_mode = 2
@@ -384,8 +384,8 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.childlockon is True
 
         # mode: HEC006S uses "mode" key via base class; WebSocket sends 1-based int
-        ec_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
-        assert ec_fan._wind_mode == 2
+        ec_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
+        assert ec_fan._wind_mode == 4
         assert ec_fan.preset_mode == "Turbo"
 
         # work_time

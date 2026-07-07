@@ -17,7 +17,7 @@ from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.constant import DreoDeviceType
 from .pydreo.pydreohumidifier import WATER_LEVEL_STATUS_KEY, WATER_LEVEL_EMPTY
 from .pydreo.pydreoevaporativecooler import (
-    WATER_LEVEL_STATUS_KEY as EVAP_WATER_LEVEL_STATUS_KEY,
+    WATER_LEVEL_KEY as EVAP_WATER_LEVEL_KEY,
     WATER_LEVEL_EMPTY as EVAP_WATER_LEVEL_EMPTY,
 )
 from .pydreo.pydreodehumidifier import (
@@ -52,7 +52,7 @@ def _water_empty_exists(device: PyDreoBaseDevice) -> bool:
     if device.type == DreoDeviceType.HUMIDIFIER:
         return device.is_feature_supported(WATER_LEVEL_STATUS_KEY)
     if device.type == DreoDeviceType.EVAPORATIVE_COOLER:
-        return device.is_feature_supported(EVAP_WATER_LEVEL_STATUS_KEY)
+        return device.is_feature_supported(EVAP_WATER_LEVEL_KEY)
     if device.type == DreoDeviceType.DEHUMIDIFIER:
         return device.is_feature_supported(DEHUMIDIFIER_ERROR_CODE_KEY)
     return False
@@ -102,7 +102,10 @@ class DreoBinarySensorHA(DreoBaseDeviceHA, BinarySensorEntity):
         super().__init__(device)
         self.device = device
         self.entity_description = description
-        self._attr_name = super().name + " Water Empty"
+        # Use has_entity_name + translation_key so the entity name and its
+        # on/off state text are localized from the translations/*.json files.
+        self._attr_has_entity_name = True
+        del self._attr_name
         self._attr_unique_id = f"{super().unique_id}-water-empty"
 
     @property

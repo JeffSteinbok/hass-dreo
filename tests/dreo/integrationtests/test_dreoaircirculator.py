@@ -8,6 +8,7 @@ from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo import light
+from custom_components.dreo import select
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 from custom_components.dreo.pydreo.constant import (
@@ -40,6 +41,8 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.is_on is True
             assert ha_fan.speed_count == 4
             assert ha_fan.supported_features & FanEntityFeature.OSCILLATE
+            assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
             assert ha_fan.unique_id is not None
             assert pydreo_fan.model == "DR-HAF001S"
             assert pydreo_fan.speed_range == (1, 4)
@@ -76,6 +79,12 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_percentage(100)  # Speed 4 (max)
                 mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 4})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 4}})
+
+            # Test preset mode setting
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 3})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 3}})
 
             # Check to see what switches are added to air circulator fans
             switches = switch.get_entries([pydreo_fan])
@@ -193,9 +202,9 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.speed_range == (1, 9)
 
             # Verify preset modes
-            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo"]
             assert pydreo_fan.preset_mode == "normal"
-            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo"]
             assert ha_fan.preset_mode == "normal"
 
             # Test percentage calculation doesn't crash (was the bug in #678)
@@ -255,6 +264,13 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
 
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+            assert pydreo_fan.preset_mode == "turbo"
+            assert ha_fan.preset_mode == "turbo"
+
             # Check switches
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
@@ -272,9 +288,29 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.speed_count == 10
             assert ha_fan.supported_features & FanEntityFeature.PRESET_MODE
 
-            # Verify preset modes
-            assert pydreo_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
-            assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
+            # Verify preset modes (normal=1, natural=2, sleep=3, auto=4, turbo=5, custom=6)
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+
+            # Verify preset mode command mappings for the DR-HPF007S firmware
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+            assert ha_fan.preset_mode == "auto"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
+            assert ha_fan.preset_mode == "natural"
+
+            # Check switches
+            switches = switch.get_entries([pydreo_fan])
+            self.verify_expected_entities(
+                switches,
+                ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Presence Sensor", "Vertically Oscillating"],
+            )
 
     def test_HPF008S(self):  # pylint: disable=invalid-name
         """Test HPF008S fan."""
@@ -410,6 +446,35 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_preset_mode("turbo")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+
+    def test_HPF017S(self):  # pylint: disable=invalid-name
+        """Test HPF017S fan uses fanon for on/off commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HPF017S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+
+            assert pydreo_fan.model == "DR-HPF017S"
+            assert pydreo_fan.speed_range == (1, 12)
+            assert ha_fan.speed_count == 12
+            assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
+            assert ha_fan.preset_mode == "natural"
+            assert ha_fan.is_on is True
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+            assert ha_fan.is_on is False
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
+            assert ha_fan.is_on is True
 
     def test_HAF003S_newer_firmware(self):  # pylint: disable=invalid-name
         """Test HAF003S fan with newer firmware (Device 1 - with cruiseconf/fixedconf)."""
@@ -622,6 +687,20 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ha_fan.set_preset_mode("custom")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 6})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+
+            # Verify 3D angle preset select
+            selects = select.get_entries([pydreo_fan])
+            self.verify_expected_entities(selects, ["3D Angle Preset"])
+            angle_preset_select = selects[0]
+            assert angle_preset_select.current_option == "0,0"
+
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-15,-5"}})
+            assert "-15,-5" in angle_preset_select.options
+            assert angle_preset_select.current_option == "-15,-5"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                angle_preset_select.select_option("0,0")
+                mock_send_command.assert_called_once_with(pydreo_fan, {FIXEDCONF_KEY: "0,0"})
 
             # Check entities
             switches = switch.get_entries([pydreo_fan])
