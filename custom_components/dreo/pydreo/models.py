@@ -163,6 +163,7 @@ SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "W
 # MCU hardware model strings used to identify specific hardware revisions.
 _MCU_HAF004S_OLD_REV = "SC95F8613B"
 _MCU_HTF007S_OLD_REV = ("CMS89F7518", "CMS89F7518/EUR", "CMS89F7518/USA")
+_MCU_HAP003S_AUTO_SILENT_REV = "midea"
 
 
 def _haf004s_mcu_override(device) -> None:
@@ -195,6 +196,22 @@ def _htf007s_mcu_override(device) -> None:
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
     if mcu_model in _MCU_HTF007S_OLD_REV:
         device._speed_range = (1, 4)  # pylint: disable=protected-access
+
+
+def _hap003s_mcu_override(device) -> None:
+    """Enable auto-silent command remapping for DR-HAP003S units with the "midea" MCU.
+
+    A newer hardware revision of the Macro Max S/AS uses a "midea" MCU that rejects the
+    plain "auto" mode command string.  These units require "auto-silent" to be sent instead.
+    Units with a different MCU (e.g. "meidi") accept "auto" directly and are left untouched.
+    """
+    if device.raw_state is None:
+        return
+    mixed = device.raw_state.get("data", {}).get("mixed", {})
+    mcu_obj = mixed.get("mcu_hardware_model", {})
+    mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
+    if mcu_model == _MCU_HAP003S_AUTO_SILENT_REV:
+        device._auto_mode_uses_auto_silent = True  # pylint: disable=protected-access
 
 
 SUPPORTED_DEVICES = {
@@ -360,6 +377,14 @@ SUPPORTED_DEVICES = {
     "DR-HCF521S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
     # Air Purifiers
     "DR-HAP": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
+    "DR-HAP003S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_PURIFIER,
+        # Newer hardware revision ("midea" MCU, seriesName "Macro Max S/AS") rejects the plain
+        # "auto" mode command and requires "auto-silent" instead.  The override sets a flag on
+        # the device instance so PyDreoAirPurifier._send_command can remap the command value.
+        # The original revision ("meidi" MCU, seriesName "Macro Max S") is left untouched.
+        override_fn=_hap003s_mcu_override,
+    ),
     # Heaters
     "DR-HSH017BS": DreoHeaterDeviceDetails(
         device_ranges={ECOLEVEL_RANGE: (41, 85)},
