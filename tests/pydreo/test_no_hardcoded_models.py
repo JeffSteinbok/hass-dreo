@@ -12,8 +12,11 @@ from pathlib import Path
 
 import pytest
 
+# Repository root, derived from this file's location (tests/pydreo/test_no_hardcoded_models.py)
+REPO_ROOT = Path(__file__).parents[2]
+
 # Root of the pydreo source package
-PYDREO_SRC_DIR = Path(__file__).parents[2] / "custom_components" / "dreo" / "pydreo"
+PYDREO_SRC_DIR = REPO_ROOT / "custom_components" / "dreo" / "pydreo"
 MODELS_FILE = PYDREO_SRC_DIR / "models.py"
 
 
@@ -61,9 +64,11 @@ class TestNoHardcodedModels:
     """Ensure device model names are only referenced as string literals in models.py."""
 
     def test_model_names_found_in_supported_devices(self):
-        """Sanity check: SUPPORTED_DEVICES must not be empty."""
+        """Sanity check: SUPPORTED_DEVICES must contain at least one DR- prefixed model name."""
         model_names = _load_model_names_from_models_py()
         assert len(model_names) > 0, "Could not parse any model names from SUPPORTED_DEVICES in models.py"
+        dr_models = [m for m in model_names if m.startswith("DR-")]
+        assert len(dr_models) > 0, "Expected at least one 'DR-' prefixed model in SUPPORTED_DEVICES"
 
     def test_no_model_names_in_source_files(self):
         """Fail if any source file outside models.py contains a model name string literal."""
@@ -75,7 +80,7 @@ class TestNoHardcodedModels:
         for source_file in sorted(source_files):
             for line_no, string_value in _collect_string_literals(source_file):
                 if string_value in model_names:
-                    rel_path = source_file.relative_to(PYDREO_SRC_DIR.parent.parent.parent)
+                    rel_path = source_file.relative_to(REPO_ROOT)
                     violations.append(f"  {rel_path}:{line_no}  →  {string_value!r}")
 
         if violations:
