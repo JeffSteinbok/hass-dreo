@@ -94,7 +94,9 @@ class TestDreoAirConditionerHA(TestDeviceBase):
             device = self._create_ac_device()
             ac = DreoAirConditionerHA(device)
 
-            assert ac.name == "Air Conditioner"
+            assert ac.translation_key == "air_conditioner"
+            assert ac.has_entity_name is True
+            assert not hasattr(ac, "_attr_name")
             assert ac.unique_id is not None
             assert ac.is_on is True
             assert ac.current_temperature == 72

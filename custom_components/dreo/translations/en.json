@@ -34,6 +34,9 @@
       "binary_sensor": {
         "water_empty": { "name": "Water Empty" }
       },
+      "climate": {
+        "air_conditioner": { "name": "Air Conditioner" }
+      },
       "switch": {
         "horizontally_oscillating": { "name": "Horizontal Oscillation" },
         "vertically_oscillating":   { "name": "Vertical Oscillation" },

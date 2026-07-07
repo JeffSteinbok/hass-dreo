@@ -66,7 +66,11 @@ class TestDreoSensorHA(TestDeviceBase):
 
             entities = sensor.get_entries([device])
             temp_sensor = next(e for e in entities if e.entity_description.key == "Temperature")
-            assert temp_sensor.name == "Test Humidifier Temperature"
+            # Name is now derived from the translation_key + has_entity_name rather
+            # than a hardcoded _attr_name (which requires the entity platform to resolve).
+            assert temp_sensor.has_entity_name is True
+            assert temp_sensor.translation_key == "temperature"
+            assert not hasattr(temp_sensor, "_attr_name")
             assert temp_sensor.unique_id == "HUM001-Temperature"
 
     def test_sensor_native_value(self):

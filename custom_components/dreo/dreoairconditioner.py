@@ -96,7 +96,6 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
     _attr_current_temperature = None
     _attr_fan_mode = None
     _attr_fan_modes = [FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO]
-    _attr_name = None
     _attr_has_entity_name = True
     _attr_hvac_mode = HVACMode.OFF
     _attr_hvac_modes = None
@@ -116,7 +115,12 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             pyDreoDevice.fan_mode,
         )
 
-        self._attr_name = "Air Conditioner"
+        # Use has_entity_name (set on the class) + translation_key so the entity
+        # name is localized from the translations/*.json files. The base class
+        # sets _attr_name to the device name; delete it so the translation_key
+        # is used instead.
+        del self._attr_name
+        self._attr_translation_key = "air_conditioner"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
         self._attr_target_temperature = self.device.target_temperature
         self._attr_current_temperature = self.device.temperature
@@ -150,7 +154,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
         _LOGGER.info(
             "new DreoAirConditionerHA instance(%s), unique ID %s, HVAC mode %s, target temp %s, current temp %s, swing mode %s, swing modes [%s], oscon %s, fan_mode %s",
-            self._attr_name,
+            self._attr_translation_key,
             self._attr_unique_id,
             self._attr_hvac_mode,
             self._attr_target_temperature,

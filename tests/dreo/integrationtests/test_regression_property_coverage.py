@@ -97,7 +97,11 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
         _ = ac.current_humidity
         _ = ac.target_humidity
         _ = ac.unique_id
-        _ = ac.name
+        # The AC entity name is derived from translation_key + has_entity_name, so
+        # reading .name requires an entity platform (unavailable in this unit test).
+        # Exercise the naming attributes that drive it instead.
+        _ = ac.translation_key
+        _ = ac.has_entity_name
 
         if ac.fan_modes:
             target_mode = next((mode for mode in ac.fan_modes if mode != ac.fan_mode), None)
