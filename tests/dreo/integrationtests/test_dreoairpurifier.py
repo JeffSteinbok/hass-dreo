@@ -108,6 +108,7 @@ class TestDreoAirPurifier(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "sleep"})
 
             # Test entity inventory
+            # Original revision uses ledalwayson → Display Auto Off switch; no pm25 sensor.
             switches = switch.get_entries([pydreo_ap])
             self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_ap])
@@ -162,6 +163,8 @@ class TestDreoAirPurifier(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "sleep"})
 
             # Test entity inventory
+            # Newer revision uses lightmode (not ledalwayson) so no Display Auto Off switch is
+            # created.  The firmware also exposes pm25 air quality data, adding a PM2.5 sensor.
             switches = switch.get_entries([pydreo_ap])
             self.verify_expected_entities(switches, ["Child Lock", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_ap])
