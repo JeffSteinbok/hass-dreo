@@ -72,7 +72,7 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier._auto_mode_uses_auto_silent is True  # pylint: disable=protected-access
 
         # Setting auto on the new revision must send "auto-silent"
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+        with patch(PATCH_SEND_COMMAND):
             air_purifier.preset_mode = "sleep"  # move away from current mode first
         air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
