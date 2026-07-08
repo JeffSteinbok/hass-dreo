@@ -163,7 +163,7 @@ SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "W
 # MCU hardware model strings used to identify specific hardware revisions.
 _MCU_HAF004S_OLD_REV = "SC95F8613B"
 _MCU_HTF007S_OLD_REV = ("CMS89F7518", "CMS89F7518/EUR", "CMS89F7518/USA")
-_MCU_HAP003S_AUTO_SILENT_REV = "midea"
+_MCU_HAP003S_AUTO_SILENT_REV = ("midea", "001")
 
 
 def _haf004s_mcu_override(device) -> None:
@@ -210,7 +210,7 @@ def _hap003s_mcu_override(device) -> None:
     mixed = device.raw_state.get("data", {}).get("mixed", {})
     mcu_obj = mixed.get("mcu_hardware_model", {})
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
-    if mcu_model == _MCU_HAP003S_AUTO_SILENT_REV:
+    if mcu_model in _MCU_HAP003S_AUTO_SILENT_REV:
         device._auto_mode_uses_auto_silent = True  # pylint: disable=protected-access
 
 
