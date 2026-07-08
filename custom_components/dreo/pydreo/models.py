@@ -199,9 +199,9 @@ def _htf007s_mcu_override(device) -> None:
 
 
 def _hap003s_mcu_override(device) -> None:
-    """Enable auto-silent command remapping for DR-HAP003S units with the "midea" MCU.
+    """Enable auto-silent command remapping for DR-HAP003S units with the "midea" or "001" MCU.
 
-    A newer hardware revision of the Macro Max S/AS uses a "midea" MCU that rejects the
+    Newer hardware and firmware revisions (mcu_hardware_model is "midea" or "001") reject the
     plain "auto" mode command string.  These units require "auto-silent" to be sent instead.
     Units with a different MCU (e.g. "meidi") accept "auto" directly and are left untouched.
     """
