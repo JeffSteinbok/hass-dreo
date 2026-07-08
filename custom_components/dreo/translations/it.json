@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Inserisci username e password Dreo",
+        "title": "Inserisci i dati dell'account Dreo",
         "data": {
           "username": "Indirizzo email",
           "password": "Password",
@@ -32,7 +32,7 @@
   },
   "entity": {
     "binary_sensor": {
-      "water_empty": { "name": "Acqua esaurita" }
+      "water_empty": { "name": "Livello acqua", "state": { "off": "OK", "on": "Vuoto" } }
     },
     "fan": {
       "fan": {
@@ -54,35 +54,39 @@
         }
       }
     },
+    "climate": {
+      "air_conditioner": { "name": "Condizionatore" }
+    },
     "switch": {
       "horizontally_oscillating": { "name": "Oscillazione orizzontale" },
       "vertically_oscillating":   { "name": "Oscillazione verticale" },
-      "display_auto_off":         { "name": "Display spegnimento automatico" },
+      "display_auto_off":         { "name": "Spegnimento automatico display" },
       "panel_sound":              { "name": "Suono pannello" },
+      "mist":                     { "name": "Nebulizzatore" },
       "adaptive_brightness":      { "name": "Luminosità adattiva" },
-      "mute_on":                  { "name": "Silenziamento pannello" },
+      "mute_on":                  { "name": "Silenzia pannello" },
       "oscon":                    { "name": "Oscillazione" },
       "ptcon":                    { "name": "PTC" },
       "childlockon":              { "name": "Blocco bambini" },
       "locatemeon":               { "name": "Sensore di presenza" },
       "light":                    { "name": "Luce" },
-      "humidify":                 { "name": "Umidifica" },
-      "display_light":            { "name": "Luce display" },
+      "humidify":                 { "name": "Umidificazione" },
+      "display_light":            { "name": "Illuminazione display" },
       "auto_mode":                { "name": "Accensione automatica" },
       "scheon":                   { "name": "Programmazione" }
     },
     "sensor": {
       "temperature":             { "name": "Temperatura" },
       "humidity":                { "name": "Umidità" },
-      "use_hours":               { "name": "Ore dalla pulizia" },
-      "reach_target_temp":       { "name": "Temperatura target raggiunta" },
-      "status":                  { "name": "Stato" },
+      "use_hours":               { "name": "Utilizzo dalla pulizia" },
+      "reach_target_temp":       { "name": "Temperatura target raggiunta", "state": { "Yes": "Sì", "No": "No" } },
+      "status":                  { "name": "Stato", "state": { "standby": "Standby", "cooking": "Cottura", "off": "Spento", "ckpause": "Pausa", "ckcomplete": "Completato" } },
       "pm25":                    { "name": "PM2.5" },
-      "water":                   { "name": "Livello acqua" },
-      "use_hours_hm":            { "name": "Ore dalla pulizia" },
-      "filter_life":             { "name": "Vita del filtro"},
-      "filter_active":           { "name": "Filtro attivo"},
-      "target_humidity_reached": { "name": "Umidità target raggiunta"} 
+      "water":                   { "name": "Livello acqua", "state": { "Ok": "OK", "Empty": "Vuoto" } },
+      "use_hours_hm":            { "name": "Utilizzo dalla pulizia" },
+      "filter_life":             { "name": "Durata filtro" },
+      "filter_active":           { "name": "Filtro attivo", "state": { "Active": "attivo", "Inactive": "inattivo" } },
+      "target_humidity_reached": { "name": "Umidità target raggiunta", "state": { "Yes": "Sì", "No": "No" } }
     },
     "number": {
       "horizontal_angle":             { "name": "Angolo orizzontale" },
@@ -95,17 +99,19 @@
       "horizontal_oscillation_angle": { "name": "Angolo oscillazione orizzontale" },
       "vertical_oscillation_angle":   { "name": "Angolo oscillazione verticale" },
       "target_humidity":              { "name": "Umidità target" },
-      "ambient_light_threshold_low":  { "name": "Soglia umidità luce ambientale bassa" },
-      "ambient_light_threshold_high": { "name": "Soglia umidità luce ambientale alta" },
+      "fog_level":                    { "name": "Livello nebbia" },
+      "sleep_target_humidity":        { "name": "Umidità target (modalità sonno)" },
+      "ambient_light_threshold_low":  { "name": "Soglia luce ambientale bassa" },
+      "ambient_light_threshold_high": { "name": "Soglia luce ambientale alta" },
       "ambient_light_level":          { "name": "Livello luce ambientale" }
     },
     "select": {
       "mist_level": {
-        "name": "Livello vapore",
+        "name": "Livello nebbia",
         "state": {
-          "low":    "Bassa",
+          "low": "Bassa",
           "medium": "Media",
-          "high":   "Alta"
+          "high": "Alta"
         }
       },
       "ambient_light_mode": {
