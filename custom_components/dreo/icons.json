@@ -1,0 +1,21 @@
+{
+  "entity": {
+    "fan": {
+      "fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "normal": "mdi:fan-speed-1",
+              "natural": "mdi:leaf",
+              "sleep": "mdi:sleep",
+              "auto": "mdi:fan-auto",
+              "turbo": "mdi:fan-speed-3",
+              "reverse": "mdi:swap-horizontal",
+              "custom": "mdi:tune-variant"
+            }
+          }
+        }
+      }
+    }
+  }
+}

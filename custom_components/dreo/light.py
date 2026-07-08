@@ -316,6 +316,7 @@ class DreoRGBICLightHA(DreoLightHA):
 
     - On/off: atmon (atmosphere light power)
     - Brightness: atmbri (device-specific range, e.g. 1-100 for HCF007S)
+    - Optional direct RGB color (HCF007S): atmcolor
     """
 
     def __init__(self, pyDreoDevice: PyDreoBaseDevice) -> None:
@@ -334,8 +335,10 @@ class DreoRGBICLightHA(DreoLightHA):
         self._attr_unique_id = f"{self.pydreo_device.serial_number}-rgb-light"
         self._attr_icon = "mdi:led-strip-variant"
 
-        # Use BRIGHTNESS mode so HA exposes the brightness slider alongside effects
-        self._color_mode = ColorMode.BRIGHTNESS
+        # HCF007S supports direct RGB color control in addition to effects.
+        # Keep other RGBIC devices in BRIGHTNESS mode (effects + brightness only).
+        self._supports_direct_rgb = getattr(pyDreoDevice, "model", None) == "DR-HCF007S"
+        self._color_mode = ColorMode.RGB if self._supports_direct_rgb else ColorMode.BRIGHTNESS
 
         # Determine which command mechanism to use
         self._uses_effect_id = pyDreoDevice.is_feature_supported("rgb_effect_id")
@@ -346,6 +349,13 @@ class DreoRGBICLightHA(DreoLightHA):
     def supported_features(self) -> LightEntityFeature:
         """Return the supported features for this light."""
         return LightEntityFeature.EFFECT
+
+    @property
+    def rgb_color(self) -> tuple[int, int, int] | None:
+        """Return the RGB color when direct RGB control is supported."""
+        if not self._supports_direct_rgb:
+            return None
+        return getattr(self.pydreo_device, "atm_color_rgb", None)
 
     @property
     def effect_list(self) -> list[str]:
@@ -409,6 +419,11 @@ class DreoRGBICLightHA(DreoLightHA):
         """Turn the RGBIC light on, optionally setting effect."""
         # Call parent to handle basic light on and brightness
         super().turn_on(**kwargs)
+
+        if self._supports_direct_rgb and ATTR_RGB_COLOR in kwargs:
+            rgb = kwargs[ATTR_RGB_COLOR]
+            _LOGGER.debug("turn_on: Setting RGBIC RGB color to %s", rgb)
+            self.pydreo_device.atm_color_rgb = rgb
 
         # Handle effect selection
         if ATTR_EFFECT in kwargs:

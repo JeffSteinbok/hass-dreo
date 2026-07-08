@@ -53,6 +53,7 @@ class TestDreoFanHA(TestDeviceBase):
             assert test_fan.speed_count == 5
             assert test_fan.name == "Test Ceiling Fan"
             assert test_fan.unique_id is not None  # Unique ID format varies by implementation
+            assert test_fan.translation_key == "fan"
 
             # Test percentage to speed conversion
             test_fan.set_percentage(20)
