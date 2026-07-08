@@ -11,7 +11,7 @@
 </p>
 
 > [!NOTE]
-> As of v1.8.4, the underlying Python library is now available as a standalone package on PyPI: [`pydreo-community`](https://pypi.org/project/pydreo-community/). You can install it with `pip install pydreo-community` to use the Dreo API independently of Home Assistant.
+> I have turned off the "Discussion" feature in GitHub. I now have automation based on Issues to help diagnose/fix issues, so please use that as a means of communications.
 
 Community HomeAssistant integration for Dreo brand smart devices.Currently supports most models of Fans, Air Conditioners, Humidifiers, Dehumidifiers and Space Heaters as well as ChefMaker. I do not work for Dreo; just something I'm doing for fun.
 
