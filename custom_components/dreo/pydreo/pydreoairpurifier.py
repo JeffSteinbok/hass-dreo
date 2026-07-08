@@ -19,6 +19,10 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Initialize air devices."""
         _LOGGER.debug("__init__: __init__")
         super().__init__(device_definition, details, dreo)
+        # Set by _hap003s_mcu_override after device state is loaded when the "midea" MCU is
+        # detected.  When True, _send_command remaps the "auto" mode value to "auto-silent"
+        # before transmission because that hardware revision rejects the plain "auto" string.
+        self._auto_mode_uses_auto_silent: bool = False
 
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
         """Parse the speed range from a control node"""
@@ -71,3 +75,18 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Process a websocket update"""
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
+
+    def _send_command(self, command_key: str, value) -> None:
+        """Override to remap the 'auto' mode to 'auto-silent' on newer DR-HAP003S hardware.
+
+        Newer revisions of the DR-HAP003S (identified by the "midea" MCU model) reject the
+        plain "auto" mode command string.  When _auto_mode_uses_auto_silent is set by the
+        override function, outgoing "auto" mode commands are translated to "auto-silent"
+        before transmission. The device reports back "auto-silent" as its state; PyDreoFanBase.preset_mode
+        normalizes mode variants by stripping any "-<suffix>" (so "auto-silent" resolves to "auto").
+        This keeps the Home Assistant-facing preset name stable across hardware/firmware variants.
+        """
+        if self._auto_mode_uses_auto_silent and command_key == "mode" and value == "auto":
+            _LOGGER.debug("PyDreoAirPurifier._send_command: remapping 'auto' to 'auto-silent' for %s", self.model)
+            value = "auto-silent"
+        super()._send_command(command_key, value)
