@@ -19,7 +19,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Initialize air devices."""
         _LOGGER.debug("__init__: __init__")
         super().__init__(device_definition, details, dreo)
-        # Set by _hap003s_mcu_override after device state is loaded when the "midea" MCU is
+        # Set by _hap003s_mcu_override after device state is loaded when the "midea" or "001" MCU is
         # detected.  When True, _send_command remaps the "auto" mode value to "auto-silent"
         # before transmission because that hardware revision rejects the plain "auto" string.
         self._auto_mode_uses_auto_silent: bool = False
@@ -79,7 +79,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
     def _send_command(self, command_key: str, value) -> None:
         """Override to remap the 'auto' mode to 'auto-silent' on newer DR-HAP003S hardware.
 
-        Newer revisions of the DR-HAP003S (identified by the "midea" MCU model) reject the
+        Newer revisions of the DR-HAP003S (identified by the "midea" or "001" MCU models) reject the
         plain "auto" mode command string.  When _auto_mode_uses_auto_silent is set by the
         override function, outgoing "auto" mode commands are translated to "auto-silent"
         before transmission. The device reports back "auto-silent" as its state; PyDreoFanBase.preset_mode

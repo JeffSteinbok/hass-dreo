@@ -170,6 +170,61 @@ class TestDreoAirPurifier(IntegrationTestBase):
             sensors = sensor.get_entries([pydreo_ap])
             self.verify_expected_entities(sensors, ["pm25"])
 
+    def test_HAP003S_3(self):  # pylint: disable=invalid-name
+        """Load HAP003S air purifier (Macro Max S/AS) — newer "001" MCU revision."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HAP003S_3.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_ap = self.pydreo_manager.devices[0]
+            assert pydreo_ap.type == "Air Purifier"
+            assert pydreo_ap.model == "DR-HAP003S"
+            assert pydreo_ap.series_name == "Macro Max S/AS"
+            assert pydreo_ap.speed_range == (1, 18)
+            assert pydreo_ap.preset_modes == ["auto", "manual", "sleep", "turbo"]
+            # Newer "001" MCU revision must have auto-silent remapping enabled
+            assert pydreo_ap._auto_mode_uses_auto_silent is True  # pylint: disable=protected-access
+
+            ha_fan = fan.DreoFanHA(pydreo_ap)
+            assert ha_fan.speed_count == 18
+            assert ha_fan.unique_id is not None
+            assert ha_fan.name is not None
+            assert ha_fan.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
+            # Test turn on/off
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_ap, {POWERON_KEY: True})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_ap, {POWERON_KEY: False})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+
+            # Restore ON state via state update (no command sent) before testing preset mode
+            pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+
+            # Newer revision must remap "auto" preset command to "auto-silent"
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "auto-silent"})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-silent"}})
+
+            # Other modes must pass through unchanged
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "sleep"})
+
+            # Test entity inventory
+            # Newer revision uses lightmode so no Display Auto Off switch is created, and adds a pm25 sensor.
+            switches = switch.get_entries([pydreo_ap])
+            self.verify_expected_entities(switches, ["Child Lock", "Panel Sound"])
+            sensors = sensor.get_entries([pydreo_ap])
+            self.verify_expected_entities(sensors, ["pm25"])
+
     def test_HAP005S(self):  # pylint: disable=invalid-name
         """Load HAP005S air purifier (Macro AP505S) and test HA entity."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):

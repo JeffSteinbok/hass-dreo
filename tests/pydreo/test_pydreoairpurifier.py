@@ -89,6 +89,45 @@ class TestPyDreoAirPurifier(TestBase):
         air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-silent"}})
         assert air_purifier.preset_mode == "auto"
 
+    def test_HAP003S_3(self):  # pylint: disable=invalid-name
+        """Test DR-HAP003S Air Purifier (Macro Max S/AS) — newer "001" MCU revision.
+
+        This hardware revision (firmware v1.0.51) also rejects the plain "auto" mode command.
+        The device requires "auto-silent" to be sent.  The _auto_mode_uses_auto_silent flag
+        must be set by the MCU override, and preset_mode="auto" must translate to command
+        value "auto-silent". State updates reporting "auto-silent" must still resolve to
+        preset_mode "auto".
+        """
+
+        self.get_devices_file_name = "get_devices_HAP003S_3.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP003S"
+        assert air_purifier.series_name == "Macro Max S/AS"
+        assert air_purifier.speed_range == (1, 18)
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+        # Newer "001" MCU revision must have the auto-silent remap flag set
+        assert air_purifier._auto_mode_uses_auto_silent is True  # pylint: disable=protected-access
+
+        # Setting auto on the new revision must send "auto-silent"
+        with patch(PATCH_SEND_COMMAND):
+            air_purifier.preset_mode = "sleep"  # move away from current mode first
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-silent"})
+
+        # Other modes must remain unchanged
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-silent"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "sleep"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "sleep"})
+
+        # State updates with "auto-silent" must resolve to preset_mode "auto"
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-silent"}})
+        assert air_purifier.preset_mode == "auto"
+
     def test_HAP005S(self):  # pylint: disable=invalid-name
         """Test DR-HAP005S Air Purifier (Macro AP505S)."""
 
