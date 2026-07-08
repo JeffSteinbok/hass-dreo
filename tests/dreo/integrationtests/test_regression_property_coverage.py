@@ -121,7 +121,11 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
         _ = heater.min_temp
         _ = heater.max_temp
         _ = heater.unique_id
-        _ = heater.name
+        # The heater entity name is derived from translation_key + has_entity_name, so
+        # reading .name requires an entity platform (unavailable in this unit test).
+        # Exercise the naming attributes that drive it instead.
+        _ = heater.translation_key
+        _ = heater.has_entity_name
         _ = heater.is_on
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:

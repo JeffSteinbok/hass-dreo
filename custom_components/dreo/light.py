@@ -509,12 +509,14 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
             self._has_rgb = pyDreoDevice.is_feature_supported("rgbcolor")
             self._has_brightness = len(self._levels) > 2  # more than just off/on
 
+        # Home Assistant forbids combining ColorMode.BRIGHTNESS with any color
+        # mode (RGB already implies brightness control), so pick a single mode.
         modes: set[ColorMode] = set()
         if self._has_rgb:
             modes.add(ColorMode.RGB)
-        if self._has_brightness:
+        elif self._has_brightness:
             modes.add(ColorMode.BRIGHTNESS)
-        if not modes:
+        else:
             modes.add(ColorMode.ONOFF)
         self._supported_modes = modes
 

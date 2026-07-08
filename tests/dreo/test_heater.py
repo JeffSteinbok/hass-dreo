@@ -61,7 +61,7 @@ class TestDreoHeaterHA(TestDeviceBase):
         # Name is derived from translation_key + has_entity_name (resolved by the
         # entity platform at runtime), not a hardcoded _attr_name.
         assert test_heater.translation_key == "heater"
-        assert test_heater._attr_name is None
+        assert not hasattr(test_heater, "_attr_name")
         assert test_heater.unique_id is not None
         assert test_heater.current_temperature == 75
         assert test_heater.hvac_mode == HVACMode.HEAT
