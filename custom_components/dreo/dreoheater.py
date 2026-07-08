@@ -77,7 +77,6 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
     _attr_target_temperature = None
     _attr_current_temperature = None
-    _attr_name = None
     _attr_has_entity_name = True
     _attr_hvac_mode = HVACMode.OFF
     _attr_hvac_modes = None
@@ -94,7 +93,12 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             pyDreoDevice.ecolevel,
         )
 
-        self._attr_name = "Heater"
+        # Use has_entity_name (set on the class) + translation_key so the entity
+        # name is localized from the translations/*.json files. The base class
+        # sets _attr_name to the device name; delete it so the translation_key
+        # is used instead.
+        del self._attr_name
+        self._attr_translation_key = "heater"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
         self._attr_target_temperature = self.device.ecolevel
         self._attr_current_temperature = self.device.temperature
@@ -118,7 +122,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
         _LOGGER.info(
             "new DreoHeaterHA instance(%s), unique ID %s, HVAC mode %s, target temp %s, current temp %s, swing mode %s, swing modes [%s]",
-            self._attr_name,
+            self._attr_translation_key,
             self._attr_unique_id,
             self._attr_hvac_mode,
             self._attr_target_temperature,

@@ -27,7 +27,13 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         if self.device.type is DreoDeviceType.CEILING_FAN:
             self._attr_icon = "mdi:ceiling-fan"
         elif self.device.type is DreoDeviceType.DEHUMIDIFIER:
-            self._attr_name = f"{super().name} Fan Speed"
+            # Localize the sub-entity name via has_entity_name + translation_key
+            # instead of hardcoding an English string. The base class sets
+            # _attr_name to the device name; delete it so the translation_key is
+            # used instead.
+            self._attr_has_entity_name = True
+            del self._attr_name
+            self._attr_translation_key = "fan_speed"
 
     @property
     def percentage(self) -> int | None:

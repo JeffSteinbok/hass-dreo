@@ -1,0 +1,273 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dreo-gebruikersnaam en wachtwoord invoeren",
+        "data": {
+          "username": "E-mailadres",
+          "password": "Wachtwoord",
+          "region": "Regio"
+        },
+        "data_description": {
+          "region": "Kies de Dreo-cloudregio voor je account. Automatische detectie werkt voor de meeste gebruikers."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Verificatie mislukt."
+    },
+    "abort": {
+      "single_instance_allowed": "Er is slechts één instantie toegestaan."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Dreo-opties",
+        "data": {
+          "auto_reconnect": "Automatisch opnieuw verbinden als de websocket wegvalt."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "water_empty": {
+        "name": "Waterreservoir leeg",
+        "state": {
+          "off": "OK",
+          "on": "Leeg"
+        }
+      }
+    },
+    "fan": {
+      "fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "normal": "Normaal",
+              "natural": "Natuurlijk",
+              "sleep": "Slaap",
+              "auto": "Auto",
+              "turbo": "Turbo",
+              "reverse": "Omgekeerd",
+              "custom": "Aangepast",
+              "low": "Laag",
+              "medium": "Gemiddeld",
+              "high": "Hoog"
+            }
+          }
+        }
+      },
+      "fan_speed": {
+        "name": "Ventilatorsnelheid",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "low": "Laag",
+              "medium": "Gemiddeld",
+              "high": "Hoog"
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "air_conditioner": {
+        "name": "Airconditioner"
+      },
+      "heater": {
+        "name": "Kachel"
+      }
+    },
+    "switch": {
+      "horizontally_oscillating": {
+        "name": "Horizontaal zwenken"
+      },
+      "vertically_oscillating": {
+        "name": "Verticaal zwenken"
+      },
+      "display_auto_off": {
+        "name": "Display automatisch uit"
+      },
+      "panel_sound": {
+        "name": "Paneelgeluid"
+      },
+      "mist": {
+        "name": "Vernevelen"
+      },
+      "adaptive_brightness": {
+        "name": "Adaptieve helderheid"
+      },
+      "mute_on": {
+        "name": "Paneel dempen"
+      },
+      "oscon": {
+        "name": "Zwenken"
+      },
+      "ptcon": {
+        "name": "PTC"
+      },
+      "childlockon": {
+        "name": "Kinderslot"
+      },
+      "locatemeon": {
+        "name": "Aanwezigheidssensor"
+      },
+      "light": {
+        "name": "Licht"
+      },
+      "humidify": {
+        "name": "Bevochtigen"
+      },
+      "display_light": {
+        "name": "Displayverlichting"
+      },
+      "auto_mode": {
+        "name": "Automatisch inschakelen"
+      },
+      "scheon": {
+        "name": "Schema"
+      }
+    },
+    "sensor": {
+      "temperature": {
+        "name": "Temperatuur"
+      },
+      "humidity": {
+        "name": "Luchtvochtigheid"
+      },
+      "use_hours": {
+        "name": "Gebruik sinds reiniging"
+      },
+      "reach_target_temp": {
+        "name": "Doeltemperatuur bereikt",
+        "state": {
+          "yes": "Ja",
+          "no": "Nee"
+        }
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "standby": "Stand-by",
+          "cooking": "Koken",
+          "off": "Uit",
+          "ckpause": "Pauze",
+          "ckcomplete": "Voltooid"
+        }
+      },
+      "cook_time_remaining": {
+        "name": "Resterende kooktijd"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "water": {
+        "name": "Waterniveau",
+        "state": {
+          "ok": "OK",
+          "empty": "Leeg"
+        }
+      },
+      "use_hours_hm": {
+        "name": "Gebruik sinds reiniging"
+      },
+      "filter_life": {
+        "name": "Filterlevensduur"
+      },
+      "filter_active": {
+        "name": "Filter actief",
+        "state": {
+          "active": "actief",
+          "inactive": "inactief"
+        }
+      },
+      "target_humidity_reached": {
+        "name": "Doelvochtigheid bereikt",
+        "state": {
+          "yes": "Ja",
+          "no": "Nee"
+        }
+      }
+    },
+    "number": {
+      "horizontal_angle": {
+        "name": "Horizontale hoek"
+      },
+      "vertical_angle": {
+        "name": "Verticale hoek"
+      },
+      "horizontal_osc_angle_left": {
+        "name": "Horizontale zwenkhoek links"
+      },
+      "horizontal_osc_angle_right": {
+        "name": "Horizontale zwenkhoek rechts"
+      },
+      "vertical_osc_angle_top": {
+        "name": "Verticale zwenkhoek boven"
+      },
+      "vertical_osc_angle_bottom": {
+        "name": "Verticale zwenkhoek onder"
+      },
+      "osc_angle": {
+        "name": "Zwenkhoek"
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Horizontale zwenkhoek"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Verticale zwenkhoek"
+      },
+      "target_humidity": {
+        "name": "Doelvochtigheid"
+      },
+      "fog_level": {
+        "name": "Nevelniveau"
+      },
+      "sleep_target_humidity": {
+        "name": "Doelvochtigheid (slaapstand)"
+      },
+      "ambient_light_threshold_low": {
+        "name": "Ondergrens vochtigheid sfeerverlichting"
+      },
+      "ambient_light_threshold_high": {
+        "name": "Bovengrens vochtigheid sfeerverlichting"
+      },
+      "ambient_light_level": {
+        "name": "Sfeerverlichtingsniveau"
+      }
+    },
+    "select": {
+      "mist_level": {
+        "name": "Nevelniveau",
+        "state": {
+          "low": "Laag",
+          "medium": "Gemiddeld",
+          "high": "Hoog"
+        }
+      },
+      "ambient_light_mode": {
+        "name": "Sfeerverlichtingsmodus",
+        "state": {
+          "humidity": "Vochtigheid",
+          "color": "Kleur"
+        }
+      },
+      "three_d_angle_preset": {
+        "name": "3D-hoekvoorinstelling"
+      }
+    },
+    "light": {
+      "light": {
+        "name": "Licht"
+      },
+      "rgb_light": {
+        "name": "RGB-licht"
+      },
+      "ambient_light": {
+        "name": "Sfeerverlichting"
+      }
+    }
+  }
+}

@@ -32,7 +32,13 @@
   },
   "entity": {
     "binary_sensor": {
-      "water_empty": { "name": "Wasserstand", "state": { "off": "OK", "on": "Leer" } }
+      "water_empty": {
+        "name": "Wasserstand",
+        "state": {
+          "off": "OK",
+          "on": "Leer"
+        }
+      }
     },
     "fan": {
       "fan": {
@@ -52,58 +58,185 @@
             }
           }
         }
+      },
+      "fan_speed": {
+        "name": "Lüftergeschwindigkeit",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "low": "Niedrig",
+              "medium": "Mittel",
+              "high": "Hoch"
+            }
+          }
+        }
       }
     },
     "climate": {
-      "air_conditioner": { "name": "Klimaanlage" }
+      "air_conditioner": {
+        "name": "Klimaanlage"
+      },
+      "heater": {
+        "name": "Heizung"
+      }
     },
     "switch": {
-      "horizontally_oscillating": { "name": "Horizontale Oszillation" },
-      "vertically_oscillating":   { "name": "Vertikale Oszillation" },
-      "display_auto_off":         { "name": "Display automatisch aus" },
-      "panel_sound":              { "name": "Bedienfeld-Ton" },
-      "mist":                     { "name": "Vernebler" },
-      "adaptive_brightness":      { "name": "Adaptive Helligkeit" },
-      "mute_on":                  { "name": "Bedienfeld stumm" },
-      "oscon":                    { "name": "Oszillation" },
-      "ptcon":                    { "name": "PTC" },
-      "childlockon":              { "name": "Kindersicherung" },
-      "locatemeon":               { "name": "Präsenzsensor" },
-      "light":                    { "name": "Licht" },
-      "humidify":                 { "name": "Befeuchten" },
-      "display_light":            { "name": "Display-Beleuchtung" },
-      "auto_mode":                { "name": "Automatisches Einschalten" },
-      "scheon":                   { "name": "Zeitplan" }
+      "horizontally_oscillating": {
+        "name": "Horizontale Oszillation"
+      },
+      "vertically_oscillating": {
+        "name": "Vertikale Oszillation"
+      },
+      "display_auto_off": {
+        "name": "Display automatisch aus"
+      },
+      "panel_sound": {
+        "name": "Bedienfeld-Ton"
+      },
+      "mist": {
+        "name": "Vernebler"
+      },
+      "adaptive_brightness": {
+        "name": "Adaptive Helligkeit"
+      },
+      "mute_on": {
+        "name": "Bedienfeld stumm"
+      },
+      "oscon": {
+        "name": "Oszillation"
+      },
+      "ptcon": {
+        "name": "PTC"
+      },
+      "childlockon": {
+        "name": "Kindersicherung"
+      },
+      "locatemeon": {
+        "name": "Präsenzsensor"
+      },
+      "light": {
+        "name": "Licht"
+      },
+      "humidify": {
+        "name": "Befeuchten"
+      },
+      "display_light": {
+        "name": "Display-Beleuchtung"
+      },
+      "auto_mode": {
+        "name": "Automatisches Einschalten"
+      },
+      "scheon": {
+        "name": "Zeitplan"
+      }
     },
     "sensor": {
-      "temperature":             { "name": "Temperatur" },
-      "humidity":                { "name": "Luftfeuchtigkeit" },
-      "use_hours":               { "name": "Nutzung seit Reinigung" },
-      "reach_target_temp":       { "name": "Zieltemperatur erreicht", "state": { "Yes": "Ja", "No": "Nein" } },
-      "status":                  { "name": "Status", "state": { "standby": "Bereitschaft", "cooking": "Kochen", "off": "Aus", "ckpause": "Pause", "ckcomplete": "Fertig" } },
-      "pm25":                    { "name": "Feinstaub" },
-      "water":                   { "name": "Wasserstand", "state": { "Ok": "OK", "Empty": "Leer" } },
-      "use_hours_hm":            { "name": "Nutzung seit Reinigung" },
-      "filter_life":             { "name": "Filterlebensdauer" },
-      "filter_active":           { "name": "Filter aktiv", "state": { "Active": "aktiv", "Inactive": "inaktiv" } },
-      "target_humidity_reached": { "name": "Ziel-Luftfeuchtigkeit erreicht", "state": { "Yes": "Ja", "No": "Nein" } }
+      "temperature": {
+        "name": "Temperatur"
+      },
+      "humidity": {
+        "name": "Luftfeuchtigkeit"
+      },
+      "use_hours": {
+        "name": "Nutzung seit Reinigung"
+      },
+      "reach_target_temp": {
+        "name": "Zieltemperatur erreicht",
+        "state": {
+          "yes": "Ja",
+          "no": "Nein"
+        }
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "standby": "Bereitschaft",
+          "cooking": "Kochen",
+          "off": "Aus",
+          "ckpause": "Pause",
+          "ckcomplete": "Fertig"
+        }
+      },
+      "cook_time_remaining": {
+        "name": "Verbleibende Garzeit"
+      },
+      "pm25": {
+        "name": "Feinstaub"
+      },
+      "water": {
+        "name": "Wasserstand",
+        "state": {
+          "ok": "OK",
+          "empty": "Leer"
+        }
+      },
+      "use_hours_hm": {
+        "name": "Nutzung seit Reinigung"
+      },
+      "filter_life": {
+        "name": "Filterlebensdauer"
+      },
+      "filter_active": {
+        "name": "Filter aktiv",
+        "state": {
+          "active": "aktiv",
+          "inactive": "inaktiv"
+        }
+      },
+      "target_humidity_reached": {
+        "name": "Ziel-Luftfeuchtigkeit erreicht",
+        "state": {
+          "yes": "Ja",
+          "no": "Nein"
+        }
+      }
     },
     "number": {
-      "horizontal_angle":             { "name": "Horizontaler Winkel" },
-      "vertical_angle":               { "name": "Vertikaler Winkel" },
-      "horizontal_osc_angle_left":    { "name": "Horizontaler Oszillationswinkel links" },
-      "horizontal_osc_angle_right":   { "name": "Horizontaler Oszillationswinkel rechts" },
-      "vertical_osc_angle_top":       { "name": "Vertikaler Oszillationswinkel oben" },
-      "vertical_osc_angle_bottom":    { "name": "Vertikaler Oszillationswinkel unten" },
-      "osc_angle":                    { "name": "Oszillationswinkel" },
-      "horizontal_oscillation_angle": { "name": "Horizontaler Oszillationswinkel" },
-      "vertical_oscillation_angle":   { "name": "Vertikaler Oszillationswinkel" },
-      "target_humidity":              { "name": "Ziel-Luftfeuchtigkeit" },
-      "fog_level":                    { "name": "Nebelstufe" },
-      "sleep_target_humidity":        { "name": "Ziel-Luftfeuchtigkeit (Schlafmodus)" },
-      "ambient_light_threshold_low":  { "name": "Umgebungslicht Feuchtigkeitsschwelle niedrig" },
-      "ambient_light_threshold_high": { "name": "Umgebungslicht Feuchtigkeitsschwelle hoch" },
-      "ambient_light_level":          { "name": "Umgebungslicht-Stufe" }
+      "horizontal_angle": {
+        "name": "Horizontaler Winkel"
+      },
+      "vertical_angle": {
+        "name": "Vertikaler Winkel"
+      },
+      "horizontal_osc_angle_left": {
+        "name": "Horizontaler Oszillationswinkel links"
+      },
+      "horizontal_osc_angle_right": {
+        "name": "Horizontaler Oszillationswinkel rechts"
+      },
+      "vertical_osc_angle_top": {
+        "name": "Vertikaler Oszillationswinkel oben"
+      },
+      "vertical_osc_angle_bottom": {
+        "name": "Vertikaler Oszillationswinkel unten"
+      },
+      "osc_angle": {
+        "name": "Oszillationswinkel"
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Horizontaler Oszillationswinkel"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Vertikaler Oszillationswinkel"
+      },
+      "target_humidity": {
+        "name": "Ziel-Luftfeuchtigkeit"
+      },
+      "fog_level": {
+        "name": "Nebelstufe"
+      },
+      "sleep_target_humidity": {
+        "name": "Ziel-Luftfeuchtigkeit (Schlafmodus)"
+      },
+      "ambient_light_threshold_low": {
+        "name": "Umgebungslicht Feuchtigkeitsschwelle niedrig"
+      },
+      "ambient_light_threshold_high": {
+        "name": "Umgebungslicht Feuchtigkeitsschwelle hoch"
+      },
+      "ambient_light_level": {
+        "name": "Umgebungslicht-Stufe"
+      }
     },
     "select": {
       "mist_level": {
@@ -120,6 +253,20 @@
           "humidity": "Feuchtigkeit",
           "color": "Farbe"
         }
+      },
+      "three_d_angle_preset": {
+        "name": "3D-Winkel-Voreinstellung"
+      }
+    },
+    "light": {
+      "light": {
+        "name": "Licht"
+      },
+      "rgb_light": {
+        "name": "RGB-Licht"
+      },
+      "ambient_light": {
+        "name": "Umgebungslicht"
       }
     }
   }

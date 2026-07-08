@@ -1,0 +1,11 @@
+Add regression tests for humidifier light color modes and temp-offset data completeness
+
+- TestDreoHumidifierLightHA: verify a device supporting both atm_color and
+  atm_brightness exposes a single valid color mode (RGB), and that brightness-only
+  and on/off-only devices are valid too. Each asserts HA's own
+  valid_supported_color_modes accepts the result.
+- test_temp_calibration_devices_have_setting_files: fail if any get_devices fixture
+  declaring the Temperature Calibration preference lacks its canned
+  get_device_setting_{sn}_kHafFanTempOffsetKey.json file.
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

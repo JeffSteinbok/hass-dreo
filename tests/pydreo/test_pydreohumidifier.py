@@ -184,7 +184,7 @@ class TestPyDreoHumidifier(TestBase):
 
         # Check that water_level is accessible and returns the expected value
         assert humidifier.is_feature_supported("water_level") is True
-        assert humidifier.water_level == "Ok"
+        assert humidifier.water_level == "ok"
 
     def test_HHM003S(self):  # pylint: disable=invalid-name
         """Load HHM003S (HM713S/813S) and test humidity properties."""
@@ -269,7 +269,7 @@ class TestPyDreoHumidifier(TestBase):
 
         # Check that water_level is accessible and returns the expected value
         assert humidifier.is_feature_supported("water_level") is True
-        assert humidifier.water_level == "Ok"
+        assert humidifier.water_level == "ok"
 
     def test_HHM015S(self):  # pylint: disable=invalid-name
         """Load HHM015S (HM755S) and test humidity properties."""
@@ -320,7 +320,7 @@ class TestPyDreoHumidifier(TestBase):
 
         # Check that water_level is accessible and returns the expected value
         assert humidifier.is_feature_supported("water_level") is True
-        assert humidifier.water_level == "Ok"
+        assert humidifier.water_level == "ok"
 
     def test_HHM001S_power_cycle_stale_state(self):  # pylint: disable=invalid-name
         """Test that turn_on command is sent even when cached state is stale after power cycle."""
@@ -482,7 +482,7 @@ class TestPyDreoHumidifier(TestBase):
         self.get_devices_file_name = "get_devices_HHM001S.json"
         self.pydreo_manager.load_devices()
         humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
-        assert humidifier.wrong == "Ok"
+        assert humidifier.wrong == "ok"
 
     # --- rgblevel property ---
 
@@ -530,8 +530,8 @@ class TestPyDreoHumidifier(TestBase):
         self.pydreo_manager.load_devices()
         humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
         humidifier.handle_server_update({REPORTED_KEY: {"wrong": 1}})
-        assert humidifier.wrong == "Empty"
-        assert humidifier.water_level == "Empty"
+        assert humidifier.wrong == "empty"
+        assert humidifier.water_level == "empty"
 
     def test_handle_server_update_rgblevel(self):
         """Test handle_server_update processes rgblevel."""

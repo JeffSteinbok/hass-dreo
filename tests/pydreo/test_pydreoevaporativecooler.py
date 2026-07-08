@@ -46,7 +46,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.childlockon is False
         assert ec_fan.preset_mode == "sleep"
         assert ec_fan.work_time == 19
-        assert ec_fan.water_level == "Ok"
+        assert ec_fan.water_level == "ok"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.is_on = True
@@ -201,12 +201,12 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan.handle_server_update({REPORTED_KEY: {WORKTIME_KEY: 25}})
         assert ec_fan.work_time == 25
 
-        # water_level: 0 -> "Ok", 1 -> "Empty"
+        # water_level: 0 -> "ok", 1 -> "empty"
         ec_fan.handle_server_update({REPORTED_KEY: {WATER_LEVEL_STATUS_KEY: 0}})
-        assert ec_fan.water_level == "Ok"
+        assert ec_fan.water_level == "ok"
 
         ec_fan.handle_server_update({REPORTED_KEY: {WATER_LEVEL_STATUS_KEY: 1}})
-        assert ec_fan.water_level == "Empty"
+        assert ec_fan.water_level == "empty"
 
     def test_HEC002S_map_wind_mode_from_rest(self):  # pylint: disable=invalid-name
         """Test the extracted _map_wind_mode_from_rest helper method."""
@@ -271,7 +271,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.childlockon is False
         assert ec_fan.preset_mode == "normal"
         assert ec_fan.work_time == 42
-        assert ec_fan.water_level == "Ok"
+        assert ec_fan.water_level == "ok"
         assert ec_fan.target_humidity == 55
         assert ec_fan.temperature == 82
         assert ec_fan.humidify is True
@@ -394,10 +394,10 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         # water_level
         ec_fan.handle_server_update({REPORTED_KEY: {WATER_LEVEL_STATUS_KEY: 1}})
-        assert ec_fan.water_level == "Empty"
+        assert ec_fan.water_level == "empty"
 
         ec_fan.handle_server_update({REPORTED_KEY: {WATER_LEVEL_STATUS_KEY: 0}})
-        assert ec_fan.water_level == "Ok"
+        assert ec_fan.water_level == "ok"
 
         ec_fan.handle_server_update({REPORTED_KEY: {FOG_LEVEL_KEY: 2}})
         assert ec_fan.fog_level == 2

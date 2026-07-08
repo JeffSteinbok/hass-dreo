@@ -1,0 +1,273 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Saisir le nom d'utilisateur et le mot de passe Dreo",
+        "data": {
+          "username": "Adresse e-mail",
+          "password": "Mot de passe",
+          "region": "Région"
+        },
+        "data_description": {
+          "region": "Choisissez la région cloud Dreo de votre compte. La détection automatique convient à la plupart des utilisateurs."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Échec de l'authentification."
+    },
+    "abort": {
+      "single_instance_allowed": "Une seule instance est autorisée."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Dreo",
+        "data": {
+          "auto_reconnect": "Se reconnecter automatiquement si la connexion websocket est interrompue."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "water_empty": {
+        "name": "Réservoir vide",
+        "state": {
+          "off": "OK",
+          "on": "Vide"
+        }
+      }
+    },
+    "fan": {
+      "fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "normal": "Normal",
+              "natural": "Naturel",
+              "sleep": "Sommeil",
+              "auto": "Auto",
+              "turbo": "Turbo",
+              "reverse": "Inversé",
+              "custom": "Personnalisé",
+              "low": "Faible",
+              "medium": "Moyen",
+              "high": "Élevé"
+            }
+          }
+        }
+      },
+      "fan_speed": {
+        "name": "Vitesse du ventilateur",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "low": "Faible",
+              "medium": "Moyen",
+              "high": "Élevé"
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "air_conditioner": {
+        "name": "Climatiseur"
+      },
+      "heater": {
+        "name": "Chauffage"
+      }
+    },
+    "switch": {
+      "horizontally_oscillating": {
+        "name": "Oscillation horizontale"
+      },
+      "vertically_oscillating": {
+        "name": "Oscillation verticale"
+      },
+      "display_auto_off": {
+        "name": "Extinction auto de l'écran"
+      },
+      "panel_sound": {
+        "name": "Son du panneau"
+      },
+      "mist": {
+        "name": "Brumisation"
+      },
+      "adaptive_brightness": {
+        "name": "Luminosité adaptative"
+      },
+      "mute_on": {
+        "name": "Panneau muet"
+      },
+      "oscon": {
+        "name": "Oscillation"
+      },
+      "ptcon": {
+        "name": "PTC"
+      },
+      "childlockon": {
+        "name": "Sécurité enfant"
+      },
+      "locatemeon": {
+        "name": "Capteur de présence"
+      },
+      "light": {
+        "name": "Lumière"
+      },
+      "humidify": {
+        "name": "Humidifier"
+      },
+      "display_light": {
+        "name": "Éclairage de l'écran"
+      },
+      "auto_mode": {
+        "name": "Allumage automatique"
+      },
+      "scheon": {
+        "name": "Programmation"
+      }
+    },
+    "sensor": {
+      "temperature": {
+        "name": "Température"
+      },
+      "humidity": {
+        "name": "Humidité"
+      },
+      "use_hours": {
+        "name": "Utilisation depuis le nettoyage"
+      },
+      "reach_target_temp": {
+        "name": "Température cible atteinte",
+        "state": {
+          "yes": "Oui",
+          "no": "Non"
+        }
+      },
+      "status": {
+        "name": "Statut",
+        "state": {
+          "standby": "Veille",
+          "cooking": "Cuisson",
+          "off": "Éteint",
+          "ckpause": "Pause",
+          "ckcomplete": "Terminé"
+        }
+      },
+      "cook_time_remaining": {
+        "name": "Temps de cuisson restant"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "water": {
+        "name": "Niveau d'eau",
+        "state": {
+          "ok": "OK",
+          "empty": "Vide"
+        }
+      },
+      "use_hours_hm": {
+        "name": "Utilisation depuis le nettoyage"
+      },
+      "filter_life": {
+        "name": "Durée de vie du filtre"
+      },
+      "filter_active": {
+        "name": "Filtre actif",
+        "state": {
+          "active": "actif",
+          "inactive": "inactif"
+        }
+      },
+      "target_humidity_reached": {
+        "name": "Humidité cible atteinte",
+        "state": {
+          "yes": "Oui",
+          "no": "Non"
+        }
+      }
+    },
+    "number": {
+      "horizontal_angle": {
+        "name": "Angle horizontal"
+      },
+      "vertical_angle": {
+        "name": "Angle vertical"
+      },
+      "horizontal_osc_angle_left": {
+        "name": "Angle d'oscillation horizontale gauche"
+      },
+      "horizontal_osc_angle_right": {
+        "name": "Angle d'oscillation horizontale droite"
+      },
+      "vertical_osc_angle_top": {
+        "name": "Angle d'oscillation verticale haut"
+      },
+      "vertical_osc_angle_bottom": {
+        "name": "Angle d'oscillation verticale bas"
+      },
+      "osc_angle": {
+        "name": "Angle d'oscillation"
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Angle d'oscillation horizontale"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Angle d'oscillation verticale"
+      },
+      "target_humidity": {
+        "name": "Humidité cible"
+      },
+      "fog_level": {
+        "name": "Niveau de brume"
+      },
+      "sleep_target_humidity": {
+        "name": "Humidité cible (mode sommeil)"
+      },
+      "ambient_light_threshold_low": {
+        "name": "Seuil bas d'humidité lumière d'ambiance"
+      },
+      "ambient_light_threshold_high": {
+        "name": "Seuil haut d'humidité lumière d'ambiance"
+      },
+      "ambient_light_level": {
+        "name": "Niveau de lumière d'ambiance"
+      }
+    },
+    "select": {
+      "mist_level": {
+        "name": "Niveau de brume",
+        "state": {
+          "low": "Faible",
+          "medium": "Moyen",
+          "high": "Élevé"
+        }
+      },
+      "ambient_light_mode": {
+        "name": "Mode lumière d'ambiance",
+        "state": {
+          "humidity": "Humidité",
+          "color": "Couleur"
+        }
+      },
+      "three_d_angle_preset": {
+        "name": "Préréglage d'angle 3D"
+      }
+    },
+    "light": {
+      "light": {
+        "name": "Lumière"
+      },
+      "rgb_light": {
+        "name": "Lumière RGB"
+      },
+      "ambient_light": {
+        "name": "Lumière d'ambiance"
+      }
+    }
+  }
+}

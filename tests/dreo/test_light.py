@@ -4,7 +4,7 @@ import math
 from unittest.mock import patch
 
 from custom_components.dreo import light
-from custom_components.dreo.light import DreoLightHA, DreoRGBLightHA, DreoRGBICLightHA
+from custom_components.dreo.light import DreoLightHA, DreoRGBLightHA, DreoRGBICLightHA, DreoHumidifierLightHA
 from custom_components.dreo.haimports import (
     ColorMode,
     ATTR_BRIGHTNESS,
@@ -98,7 +98,10 @@ class TestDreoLightHA(TestDeviceBase):
             )
 
             light_entity = DreoLightHA(device)
-            assert light_entity.name == "Ceiling Fan Light"
+            # Name is derived from translation_key + has_entity_name (resolved by the
+            # entity platform at runtime), not a hardcoded _attr_name.
+            assert light_entity.translation_key == "light"
+            assert not hasattr(light_entity, "_attr_name")
             assert light_entity.unique_id == "CF001-light"
 
     def test_light_is_on(self):
@@ -269,7 +272,8 @@ class TestDreoRGBLightHA(TestDeviceBase):
             )
 
             rgb_light = DreoRGBLightHA(device)
-            assert rgb_light.name == "Ceiling Fan RGB Light"
+            assert rgb_light.translation_key == "rgb_light"
+            assert not hasattr(rgb_light, "_attr_name")
             assert rgb_light.unique_id == "CF001-rgb-light"
             assert rgb_light.color_mode == ColorMode.RGB
             assert rgb_light.supported_color_modes == {ColorMode.RGB}
@@ -380,7 +384,8 @@ class TestDreoRGBICLightHA(TestDeviceBase):
         with patch(PATCH_UPDATE_HA_STATE):
             device = self._make_device()
             entity = DreoRGBICLightHA(device)
-            assert entity.name == "Ceiling Fan RGB Light"
+            assert entity.translation_key == "rgb_light"
+            assert not hasattr(entity, "_attr_name")
             assert entity.unique_id == "HCF007-rgb-light"
 
     def test_rgbic_color_mode_is_brightness(self):
@@ -483,3 +488,70 @@ class TestDreoRGBICLightHA(TestDeviceBase):
         assert DreoRGBICLightHA._build_effect_id("2070476690030592000", 3) == "2070476690030592003"
         assert DreoRGBICLightHA._build_effect_id("2070476690030592000", 0) == "2070476690030592000"
         assert DreoRGBICLightHA._build_effect_id(None, 0) is None
+
+
+class TestDreoHumidifierLightHA(TestDeviceBase):
+    """Test the Dreo humidifier ambient light entity (atmosphere light on humidifiers)."""
+
+    def _make_device(self, atm_color=True, atm_brightness=True):
+        """Create a mock humidifier device using the newer atm_* firmware path."""
+        features = {"atm_on": True}
+        if atm_color:
+            features["atm_color"] = "255,255,255"
+        if atm_brightness:
+            features["atm_brightness"] = 50
+        return self.create_mock_device(
+            name="Humidifier",
+            serial_number="HHM015S",
+            features=features,
+        )
+
+    def test_humidifier_light_basic_properties(self):
+        """Entity must localize its name via translation_key and not hardcode _attr_name."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            entity = DreoHumidifierLightHA(self._make_device())
+            assert entity.translation_key == "ambient_light"
+            assert not hasattr(entity, "_attr_name")
+            assert entity.unique_id == "HHM015S-ambient-light"
+
+    def test_humidifier_light_color_and_brightness_yields_single_valid_mode(self):
+        """A device supporting both atm_color and atm_brightness must expose RGB only.
+
+        Home Assistant forbids combining ColorMode.BRIGHTNESS with any color mode
+        (RGB already implies brightness). Combining them raises HomeAssistantError
+        when the entity is added, so supported_color_modes must be a single mode.
+        """
+        # Local import so the test explicitly exercises HA's validation rule.
+        from homeassistant.components.light import valid_supported_color_modes
+
+        with patch(PATCH_UPDATE_HA_STATE):
+            entity = DreoHumidifierLightHA(self._make_device(atm_color=True, atm_brightness=True))
+            modes = entity.supported_color_modes
+            assert modes == {ColorMode.RGB}
+            assert ColorMode.BRIGHTNESS not in modes
+            # Must pass HA's own validator (raises vol.Invalid otherwise).
+            valid_supported_color_modes(modes)
+            assert entity.color_mode in modes
+
+    def test_humidifier_light_brightness_only(self):
+        """A device with brightness but no color should expose BRIGHTNESS only."""
+        from homeassistant.components.light import valid_supported_color_modes
+
+        with patch(PATCH_UPDATE_HA_STATE):
+            entity = DreoHumidifierLightHA(self._make_device(atm_color=False, atm_brightness=True))
+            modes = entity.supported_color_modes
+            assert modes == {ColorMode.BRIGHTNESS}
+            valid_supported_color_modes(modes)
+            assert entity.color_mode in modes
+
+    def test_humidifier_light_onoff_only(self):
+        """A device with neither color nor brightness should expose ONOFF only."""
+        from homeassistant.components.light import valid_supported_color_modes
+
+        with patch(PATCH_UPDATE_HA_STATE):
+            entity = DreoHumidifierLightHA(self._make_device(atm_color=False, atm_brightness=False))
+            modes = entity.supported_color_modes
+            assert modes == {ColorMode.ONOFF}
+            valid_supported_color_modes(modes)
+            assert entity.color_mode in modes
+

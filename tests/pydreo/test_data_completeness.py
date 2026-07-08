@@ -272,3 +272,42 @@ class TestDeviceDataCompleteness:
                 error_message += f"({invalid['reason']})\n"
 
             pytest.fail(error_message)
+
+    def test_temp_calibration_devices_have_setting_files(self):
+        """Every device declaring the Temperature Calibration preference must have a
+        canned get_device_setting_{sn}_kHafFanTempOffsetKey.json file.
+
+        In debug test mode PyDreo fetches the temperature offset setting for any
+        device whose controlsConf declares this preference. A missing canned file
+        surfaces as an error in the logs, so require the fixture to be present.
+        """
+        setting_key = "kHafFanTempOffsetKey"
+        device_files = list(API_RESPONSES_DIR.glob("get_devices_*.json"))
+
+        missing_setting_files = []
+
+        for device_file in device_files:
+            with open(device_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            for device in data.get("data", {}).get("list", []):
+                controls_conf = device.get("controlsConf") or {}
+                preferences = controls_conf.get("preference") or []
+                if not any(p.get("type") == "Temperature Calibration" for p in preferences):
+                    continue
+
+                sn = device.get("sn", "")
+                expected = API_RESPONSES_DIR / f"get_device_setting_{sn}_{setting_key}.json"
+                if not expected.exists():
+                    missing_setting_files.append(
+                        {"devices_file": device_file.name, "sn": sn, "expected_setting_file": expected.name}
+                    )
+
+        if missing_setting_files:
+            error_message = "Missing temperature-calibration setting files:\n"
+            for missing in missing_setting_files:
+                error_message += f"  - {missing['devices_file']} (sn: {missing['sn']}) "
+                error_message += f"needs {missing['expected_setting_file']}\n"
+
+            pytest.fail(error_message)
+

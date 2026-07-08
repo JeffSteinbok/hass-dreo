@@ -1,0 +1,10 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "id": "0",
+        "deviceSn": "REDACTED",
+        "dataKey": "kHafFanTempOffsetKey",
+        "dataValue": "0"
+    }
+}
