@@ -23,6 +23,7 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         """Initialize the Dreo fan device."""
         super().__init__(pyDreoFan)
         self.device = pyDreoFan
+        self._attr_translation_key = "fan"
         if self.device.type is DreoDeviceType.CEILING_FAN:
             self._attr_icon = "mdi:ceiling-fan"
         elif self.device.type is DreoDeviceType.DEHUMIDIFIER:

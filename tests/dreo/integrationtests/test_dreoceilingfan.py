@@ -7,6 +7,7 @@ from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo import light
+from custom_components.dreo.haimports import ColorMode, ATTR_RGB_COLOR
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
@@ -423,6 +424,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             rgbic_light = self.get_entity_by_key(lights, "RGBIC Light")
             assert rgbic_light is not None
+            assert rgbic_light.color_mode == ColorMode.RGB
 
             # HCF007S has 8 effects (rgb_effect_range 0-7)
             assert rgbic_light.effect_list == [f"Effect {i}" for i in range(1, 9)]
@@ -448,3 +450,8 @@ class TestDreoCeilingFan(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgbic_light.turn_on(brightness=128)
                 mock_send_command.assert_any_call(pydreo_fan, {ATMBRI_KEY: 50})
+
+            # HCF007S direct RGB control should send atmcolor command
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgbic_light.turn_on(**{ATTR_RGB_COLOR: (0, 255, 0)})
+                mock_send_command.assert_any_call(pydreo_fan, {ATMCOLOR_KEY: 65280})
