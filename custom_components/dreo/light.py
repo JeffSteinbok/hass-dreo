@@ -121,7 +121,12 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
 
         self.entity_description = EntityDescription("Light")
 
-        self._attr_name = super().name + " Light"
+        # Localize the entity name via has_entity_name + translation_key instead
+        # of hardcoding an English string. The base class sets _attr_name to the
+        # device name; delete it so the translation_key is used instead.
+        self._attr_has_entity_name = True
+        del self._attr_name
+        self._attr_translation_key = "light"
         self._attr_unique_id = f"{super().unique_id}-light"
 
         self._attr_min_color_temp_kelvin = 2700  # Minimum color temperature in Kelvin (2700K)
@@ -139,7 +144,7 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
         elif self.device.is_feature_supported(brightness_attr):
             self._color_mode = ColorMode.BRIGHTNESS  # Supports brightness only
 
-        _LOGGER.info("new DreoLightHA instance(%s), unique ID %s", self._attr_name, self._attr_unique_id)
+        _LOGGER.info("new DreoLightHA instance(%s), unique ID %s", self._attr_translation_key, self._attr_unique_id)
 
     @property
     def supported_color_modes(self) -> set[ColorMode]:
@@ -268,14 +273,14 @@ class DreoRGBLightHA(DreoLightHA):
 
         # Override attributes for RGB light to distinguish from main light
         self.entity_description = EntityDescription("RGB Light")
-        self._attr_name = self.pydreo_device.name + " RGB Light"
+        self._attr_translation_key = "rgb_light"
         self._attr_unique_id = f"{self.pydreo_device.serial_number}-rgb-light"
         self._attr_icon = "mdi:led-strip-variant"
 
         # RGB lights support RGB color mode (not brightness-only or color temp)
         self._color_mode = ColorMode.RGB
 
-        _LOGGER.info("new DreoRGBLightHA instance(%s), unique ID %s", self._attr_name, self._attr_unique_id)
+        _LOGGER.info("new DreoRGBLightHA instance(%s), unique ID %s", self._attr_translation_key, self._attr_unique_id)
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:
@@ -331,7 +336,7 @@ class DreoRGBICLightHA(DreoLightHA):
 
         # Override attributes for RGBIC light
         self.entity_description = EntityDescription("RGBIC Light")
-        self._attr_name = self.pydreo_device.name + " RGB Light"
+        self._attr_translation_key = "rgb_light"
         self._attr_unique_id = f"{self.pydreo_device.serial_number}-rgb-light"
         self._attr_icon = "mdi:led-strip-variant"
 
@@ -343,7 +348,7 @@ class DreoRGBICLightHA(DreoLightHA):
         # Determine which command mechanism to use
         self._uses_effect_id = pyDreoDevice.is_feature_supported("rgb_effect_id")
 
-        _LOGGER.info("new DreoRGBICLightHA instance(%s), unique ID %s", self._attr_name, self._attr_unique_id)
+        _LOGGER.info("new DreoRGBICLightHA instance(%s), unique ID %s", self._attr_translation_key, self._attr_unique_id)
 
     @property
     def supported_features(self) -> LightEntityFeature:
@@ -476,7 +481,12 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
         self.device = pyDreoDevice
 
         self.entity_description = EntityDescription("Ambient Light")
-        self._attr_name = self.pydreo_device.name + " Ambient Light"
+        # Localize the entity name via has_entity_name + translation_key instead
+        # of hardcoding an English string. The base class sets _attr_name to the
+        # device name; delete it so the translation_key is used instead.
+        self._attr_has_entity_name = True
+        del self._attr_name
+        self._attr_translation_key = "ambient_light"
         self._attr_unique_id = f"{self.pydreo_device.serial_number}-ambient-light"
         self._attr_icon = "mdi:lightbulb"
 
@@ -510,7 +520,7 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
 
         _LOGGER.info(
             "new DreoHumidifierLightHA instance(%s), unique ID %s, levels=%s, rgb=%s, uses_atm=%s",
-            self._attr_name,
+            self._attr_translation_key,
             self._attr_unique_id,
             self._levels,
             self._has_rgb,

@@ -34,8 +34,8 @@ WATER_LEVEL_KEY = "water_level"
 RGB_ON_KEY = "rgbon"
 
 # Status for water level indicator
-WATER_LEVEL_OK = "Ok"
-WATER_LEVEL_EMPTY = "Empty"
+WATER_LEVEL_OK = "ok"
+WATER_LEVEL_EMPTY = "empty"
 
 # States (enabled, disabled) for humidifier
 HUMIDIFY_MODE_MAP = {

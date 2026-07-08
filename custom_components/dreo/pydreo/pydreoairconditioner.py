@@ -396,7 +396,7 @@ class PyDreoAC(PyDreoBaseDevice):
         self._target_humidity = self.get_state_update_value(state, TARGET_HUMIDITY_KEY)
         self.work_time = self.get_state_update_value(state, WORKTIME_KEY)
         temp_target_val = self.get_state_update_value(state, TEMP_TARGET_REACHED_KEY)
-        self.temp_target_reached = "Yes" if temp_target_val is not None and temp_target_val > 0 else "No"
+        self.temp_target_reached = "yes" if temp_target_val is not None and temp_target_val > 0 else "no"
         # TODO ecopauserate
 
     def handle_server_update(self, message):
@@ -491,7 +491,7 @@ class PyDreoAC(PyDreoBaseDevice):
 
         val_temp_target_reached = self.get_server_update_key_value(message, TEMP_TARGET_REACHED_KEY)
         if isinstance(val_temp_target_reached, int):
-            self.temp_target_reached = "Yes" if val_temp_target_reached > 0 else "No"
+            self.temp_target_reached = "yes" if val_temp_target_reached > 0 else "no"
 
     def set_ha_temperature_unit_is_celsius(self, is_celsius: bool) -> None:
         """Set whether Home Assistant uses Celsius (called by HA climate entity)"""

@@ -32,7 +32,13 @@
   },
   "entity": {
     "binary_sensor": {
-      "water_empty": { "name": "Nivel de agua", "state": { "off": "OK", "on": "Vacío" } }
+      "water_empty": {
+        "name": "Nivel de agua",
+        "state": {
+          "off": "OK",
+          "on": "Vacío"
+        }
+      }
     },
     "fan": {
       "fan": {
@@ -52,59 +58,185 @@
             }
           }
         }
+      },
+      "fan_speed": {
+        "name": "Velocidad del ventilador",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "low": "Bajo",
+              "medium": "Medio",
+              "high": "Alto"
+            }
+          }
+        }
       }
     },
     "climate": {
-      "air_conditioner": { "name": "Aire acondicionado" }
+      "air_conditioner": {
+        "name": "Aire acondicionado"
+      },
+      "heater": {
+        "name": "Calefactor"
+      }
     },
     "switch": {
-      "horizontally_oscillating": { "name": "Oscilación horizontal" },
-      "vertically_oscillating":   { "name": "Oscilación vertical" },
-      "display_auto_off":         { "name": "Apagado automático de pantalla" },
-      "panel_sound":              { "name": "Sonido del panel" },
-      "mist":                     { "name": "Nebulizador" },
-      "adaptive_brightness":      { "name": "Brillo adaptativo" },
-      "mute_on":                  { "name": "Silenciar panel" },
-      "oscon":                    { "name": "Oscilación" },
-      "ptcon":                    { "name": "PTC" },
-      "childlockon":              { "name": "Bloqueo infantil" },
-      "locatemeon":               { "name": "Sensor de presencia" },
-      "light":                    { "name": "Luz" },
-      "humidify":                 { "name": "Humidificar" },
-      "display_light":            { "name": "Iluminación de pantalla" },
-      "auto_mode":                { "name": "Encendido automático" },
-      "scheon":                   { "name": "Programación" }
+      "horizontally_oscillating": {
+        "name": "Oscilación horizontal"
+      },
+      "vertically_oscillating": {
+        "name": "Oscilación vertical"
+      },
+      "display_auto_off": {
+        "name": "Apagado automático de pantalla"
+      },
+      "panel_sound": {
+        "name": "Sonido del panel"
+      },
+      "mist": {
+        "name": "Nebulizador"
+      },
+      "adaptive_brightness": {
+        "name": "Brillo adaptativo"
+      },
+      "mute_on": {
+        "name": "Silenciar panel"
+      },
+      "oscon": {
+        "name": "Oscilación"
+      },
+      "ptcon": {
+        "name": "PTC"
+      },
+      "childlockon": {
+        "name": "Bloqueo infantil"
+      },
+      "locatemeon": {
+        "name": "Sensor de presencia"
+      },
+      "light": {
+        "name": "Luz"
+      },
+      "humidify": {
+        "name": "Humidificar"
+      },
+      "display_light": {
+        "name": "Iluminación de pantalla"
+      },
+      "auto_mode": {
+        "name": "Encendido automático"
+      },
+      "scheon": {
+        "name": "Programación"
+      }
     },
     "sensor": {
-      "temperature":             { "name": "Temperatura" },
-      "humidity":                { "name": "Humedad" },
-      "use_hours":               { "name": "Uso desde la limpieza" },
-      "reach_target_temp":       { "name": "Temperatura objetivo alcanzada", "state": { "Yes": "Sí", "No": "No" } },
-      "status":                  { "name": "Estado", "state": { "standby": "Espera", "cooking": "Cocinando", "off": "Apagado", "ckpause": "Pausa", "ckcomplete": "Completado" } },
-      "cook_time_remaining":     { "name": "Tiempo de cocción restante" },
-      "pm25":                    { "name": "PM2.5" },
-      "water":                   { "name": "Nivel de agua", "state": { "Ok": "OK", "Empty": "Vacío" } },
-      "use_hours_hm":            { "name": "Uso desde la limpieza" },
-      "filter_life":             { "name": "Vida del filtro" },
-      "filter_active":           { "name": "Filtro activo", "state": { "Active": "activo", "Inactive": "inactivo" } },
-      "target_humidity_reached": { "name": "Humedad objetivo alcanzada", "state": { "Yes": "Sí", "No": "No" } }
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "humidity": {
+        "name": "Humedad"
+      },
+      "use_hours": {
+        "name": "Uso desde la limpieza"
+      },
+      "reach_target_temp": {
+        "name": "Temperatura objetivo alcanzada",
+        "state": {
+          "yes": "Sí",
+          "no": "No"
+        }
+      },
+      "status": {
+        "name": "Estado",
+        "state": {
+          "standby": "Espera",
+          "cooking": "Cocinando",
+          "off": "Apagado",
+          "ckpause": "Pausa",
+          "ckcomplete": "Completado"
+        }
+      },
+      "cook_time_remaining": {
+        "name": "Tiempo de cocción restante"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "water": {
+        "name": "Nivel de agua",
+        "state": {
+          "ok": "OK",
+          "empty": "Vacío"
+        }
+      },
+      "use_hours_hm": {
+        "name": "Uso desde la limpieza"
+      },
+      "filter_life": {
+        "name": "Vida del filtro"
+      },
+      "filter_active": {
+        "name": "Filtro activo",
+        "state": {
+          "active": "activo",
+          "inactive": "inactivo"
+        }
+      },
+      "target_humidity_reached": {
+        "name": "Humedad objetivo alcanzada",
+        "state": {
+          "yes": "Sí",
+          "no": "No"
+        }
+      }
     },
     "number": {
-      "horizontal_angle":             { "name": "Ángulo horizontal" },
-      "vertical_angle":               { "name": "Ángulo vertical" },
-      "horizontal_osc_angle_left":    { "name": "Ángulo oscilación horizontal izquierdo" },
-      "horizontal_osc_angle_right":   { "name": "Ángulo oscilación horizontal derecho" },
-      "vertical_osc_angle_top":       { "name": "Ángulo oscilación vertical superior" },
-      "vertical_osc_angle_bottom":    { "name": "Ángulo oscilación vertical inferior" },
-      "osc_angle":                    { "name": "Ángulo de oscilación" },
-      "horizontal_oscillation_angle": { "name": "Ángulo de oscilación horizontal" },
-      "vertical_oscillation_angle":   { "name": "Ángulo de oscilación vertical" },
-      "target_humidity":              { "name": "Humedad objetivo" },
-      "fog_level":                    { "name": "Nivel de niebla" },
-      "sleep_target_humidity":        { "name": "Humedad objetivo (modo reposo)" },
-      "ambient_light_threshold_low":  { "name": "Umbral luz ambiental bajo" },
-      "ambient_light_threshold_high": { "name": "Umbral luz ambiental alto" },
-      "ambient_light_level":          { "name": "Nivel de luz ambiental" }
+      "horizontal_angle": {
+        "name": "Ángulo horizontal"
+      },
+      "vertical_angle": {
+        "name": "Ángulo vertical"
+      },
+      "horizontal_osc_angle_left": {
+        "name": "Ángulo oscilación horizontal izquierdo"
+      },
+      "horizontal_osc_angle_right": {
+        "name": "Ángulo oscilación horizontal derecho"
+      },
+      "vertical_osc_angle_top": {
+        "name": "Ángulo oscilación vertical superior"
+      },
+      "vertical_osc_angle_bottom": {
+        "name": "Ángulo oscilación vertical inferior"
+      },
+      "osc_angle": {
+        "name": "Ángulo de oscilación"
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Ángulo de oscilación horizontal"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Ángulo de oscilación vertical"
+      },
+      "target_humidity": {
+        "name": "Humedad objetivo"
+      },
+      "fog_level": {
+        "name": "Nivel de niebla"
+      },
+      "sleep_target_humidity": {
+        "name": "Humedad objetivo (modo reposo)"
+      },
+      "ambient_light_threshold_low": {
+        "name": "Umbral luz ambiental bajo"
+      },
+      "ambient_light_threshold_high": {
+        "name": "Umbral luz ambiental alto"
+      },
+      "ambient_light_level": {
+        "name": "Nivel de luz ambiental"
+      }
     },
     "select": {
       "mist_level": {
@@ -124,6 +256,17 @@
       },
       "three_d_angle_preset": {
         "name": "Preajuste de ángulo 3D"
+      }
+    },
+    "light": {
+      "light": {
+        "name": "Luz"
+      },
+      "rgb_light": {
+        "name": "Luz RGB"
+      },
+      "ambient_light": {
+        "name": "Luz ambiental"
       }
     }
   }

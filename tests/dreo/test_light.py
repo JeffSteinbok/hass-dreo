@@ -98,7 +98,10 @@ class TestDreoLightHA(TestDeviceBase):
             )
 
             light_entity = DreoLightHA(device)
-            assert light_entity.name == "Ceiling Fan Light"
+            # Name is derived from translation_key + has_entity_name (resolved by the
+            # entity platform at runtime), not a hardcoded _attr_name.
+            assert light_entity.translation_key == "light"
+            assert not hasattr(light_entity, "_attr_name")
             assert light_entity.unique_id == "CF001-light"
 
     def test_light_is_on(self):
@@ -269,7 +272,8 @@ class TestDreoRGBLightHA(TestDeviceBase):
             )
 
             rgb_light = DreoRGBLightHA(device)
-            assert rgb_light.name == "Ceiling Fan RGB Light"
+            assert rgb_light.translation_key == "rgb_light"
+            assert not hasattr(rgb_light, "_attr_name")
             assert rgb_light.unique_id == "CF001-rgb-light"
             assert rgb_light.color_mode == ColorMode.RGB
             assert rgb_light.supported_color_modes == {ColorMode.RGB}
@@ -380,7 +384,8 @@ class TestDreoRGBICLightHA(TestDeviceBase):
         with patch(PATCH_UPDATE_HA_STATE):
             device = self._make_device()
             entity = DreoRGBICLightHA(device)
-            assert entity.name == "Ceiling Fan RGB Light"
+            assert entity.translation_key == "rgb_light"
+            assert not hasattr(entity, "_attr_name")
             assert entity.unique_id == "HCF007-rgb-light"
 
     def test_rgbic_color_mode_is_brightness(self):

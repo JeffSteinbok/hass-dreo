@@ -22,8 +22,8 @@ AUTOON_KEY = "autoon"
 ERROR_CODE_KEY = "wrong"
 
 # Human-readable labels for known error code values
-ERROR_CODE_OK = "Ok"
-ERROR_CODE_WATER_EMPTY = "Empty"
+ERROR_CODE_OK = "ok"
+ERROR_CODE_WATER_EMPTY = "empty"
 
 ERROR_CODE_MAP = {0: ERROR_CODE_OK, 1: ERROR_CODE_WATER_EMPTY, ERROR_CODE_OK: 0, ERROR_CODE_WATER_EMPTY: 1}
 

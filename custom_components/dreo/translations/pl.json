@@ -1,0 +1,273 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Wprowadź nazwę użytkownika i hasło Dreo",
+        "data": {
+          "username": "Adres e-mail",
+          "password": "Hasło",
+          "region": "Region"
+        },
+        "data_description": {
+          "region": "Wybierz region chmury Dreo dla swojego konta. Automatyczne wykrywanie działa dla większości użytkowników."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Uwierzytelnianie nie powiodło się."
+    },
+    "abort": {
+      "single_instance_allowed": "Dozwolona jest tylko jedna instancja."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje Dreo",
+        "data": {
+          "auto_reconnect": "Automatycznie połącz ponownie, gdy połączenie websocket zostanie przerwane."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "water_empty": {
+        "name": "Brak wody",
+        "state": {
+          "off": "OK",
+          "on": "Pusty"
+        }
+      }
+    },
+    "fan": {
+      "fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "normal": "Normalny",
+              "natural": "Naturalny",
+              "sleep": "Sen",
+              "auto": "Auto",
+              "turbo": "Turbo",
+              "reverse": "Wstecz",
+              "custom": "Niestandardowy",
+              "low": "Niski",
+              "medium": "Średni",
+              "high": "Wysoki"
+            }
+          }
+        }
+      },
+      "fan_speed": {
+        "name": "Prędkość wentylatora",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "low": "Niski",
+              "medium": "Średni",
+              "high": "Wysoki"
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "air_conditioner": {
+        "name": "Klimatyzator"
+      },
+      "heater": {
+        "name": "Grzejnik"
+      }
+    },
+    "switch": {
+      "horizontally_oscillating": {
+        "name": "Oscylacja pozioma"
+      },
+      "vertically_oscillating": {
+        "name": "Oscylacja pionowa"
+      },
+      "display_auto_off": {
+        "name": "Automatyczne wyłączanie wyświetlacza"
+      },
+      "panel_sound": {
+        "name": "Dźwięk panelu"
+      },
+      "mist": {
+        "name": "Zamgławianie"
+      },
+      "adaptive_brightness": {
+        "name": "Adaptacyjna jasność"
+      },
+      "mute_on": {
+        "name": "Wyciszenie panelu"
+      },
+      "oscon": {
+        "name": "Oscylacja"
+      },
+      "ptcon": {
+        "name": "PTC"
+      },
+      "childlockon": {
+        "name": "Blokada rodzicielska"
+      },
+      "locatemeon": {
+        "name": "Czujnik obecności"
+      },
+      "light": {
+        "name": "Światło"
+      },
+      "humidify": {
+        "name": "Nawilżanie"
+      },
+      "display_light": {
+        "name": "Podświetlenie wyświetlacza"
+      },
+      "auto_mode": {
+        "name": "Automatyczne włączanie"
+      },
+      "scheon": {
+        "name": "Harmonogram"
+      }
+    },
+    "sensor": {
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "humidity": {
+        "name": "Wilgotność"
+      },
+      "use_hours": {
+        "name": "Użycie od czyszczenia"
+      },
+      "reach_target_temp": {
+        "name": "Osiągnięto temperaturę docelową",
+        "state": {
+          "yes": "Tak",
+          "no": "Nie"
+        }
+      },
+      "status": {
+        "name": "Status",
+        "state": {
+          "standby": "Czuwanie",
+          "cooking": "Gotowanie",
+          "off": "Wyłączony",
+          "ckpause": "Pauza",
+          "ckcomplete": "Zakończono"
+        }
+      },
+      "cook_time_remaining": {
+        "name": "Pozostały czas gotowania"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "water": {
+        "name": "Poziom wody",
+        "state": {
+          "ok": "OK",
+          "empty": "Pusty"
+        }
+      },
+      "use_hours_hm": {
+        "name": "Użycie od czyszczenia"
+      },
+      "filter_life": {
+        "name": "Żywotność filtra"
+      },
+      "filter_active": {
+        "name": "Filtr aktywny",
+        "state": {
+          "active": "aktywny",
+          "inactive": "nieaktywny"
+        }
+      },
+      "target_humidity_reached": {
+        "name": "Osiągnięto docelową wilgotność",
+        "state": {
+          "yes": "Tak",
+          "no": "Nie"
+        }
+      }
+    },
+    "number": {
+      "horizontal_angle": {
+        "name": "Kąt poziomy"
+      },
+      "vertical_angle": {
+        "name": "Kąt pionowy"
+      },
+      "horizontal_osc_angle_left": {
+        "name": "Lewy kąt oscylacji poziomej"
+      },
+      "horizontal_osc_angle_right": {
+        "name": "Prawy kąt oscylacji poziomej"
+      },
+      "vertical_osc_angle_top": {
+        "name": "Górny kąt oscylacji pionowej"
+      },
+      "vertical_osc_angle_bottom": {
+        "name": "Dolny kąt oscylacji pionowej"
+      },
+      "osc_angle": {
+        "name": "Kąt oscylacji"
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Kąt oscylacji poziomej"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Kąt oscylacji pionowej"
+      },
+      "target_humidity": {
+        "name": "Docelowa wilgotność"
+      },
+      "fog_level": {
+        "name": "Poziom mgły"
+      },
+      "sleep_target_humidity": {
+        "name": "Docelowa wilgotność (tryb snu)"
+      },
+      "ambient_light_threshold_low": {
+        "name": "Dolny próg wilgotności światła otoczenia"
+      },
+      "ambient_light_threshold_high": {
+        "name": "Górny próg wilgotności światła otoczenia"
+      },
+      "ambient_light_level": {
+        "name": "Poziom światła otoczenia"
+      }
+    },
+    "select": {
+      "mist_level": {
+        "name": "Poziom mgły",
+        "state": {
+          "low": "Niski",
+          "medium": "Średni",
+          "high": "Wysoki"
+        }
+      },
+      "ambient_light_mode": {
+        "name": "Tryb światła otoczenia",
+        "state": {
+          "humidity": "Wilgotność",
+          "color": "Kolor"
+        }
+      },
+      "three_d_angle_preset": {
+        "name": "Ustawienie kąta 3D"
+      }
+    },
+    "light": {
+      "light": {
+        "name": "Światło"
+      },
+      "rgb_light": {
+        "name": "Światło RGB"
+      },
+      "ambient_light": {
+        "name": "Światło otoczenia"
+      }
+    }
+  }
+}

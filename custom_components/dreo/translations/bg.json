@@ -58,36 +58,94 @@
             }
           }
         }
+      },
+      "fan_speed": {
+        "name": "Скорост на вентилатора",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "low": "Ниско",
+              "medium": "Средно",
+              "high": "Високо"
+            }
+          }
+        }
       }
     },
     "climate": {
-      "air_conditioner": { "name": "Климатик" }
+      "air_conditioner": {
+        "name": "Климатик"
+      },
+      "heater": {
+        "name": "Отоплител"
+      }
     },
     "switch": {
-      "horizontally_oscillating": { "name": "Хоризонтална осцилация" },
-      "vertically_oscillating":   { "name": "Вертикална осцилация" },
-      "display_auto_off":         { "name": "Автоматично изключване на дисплея" },
-      "panel_sound":              { "name": "Звук на панела" },
-      "mist":                     { "name": "Мъгла" },
-      "adaptive_brightness":      { "name": "Адаптивна яркост" },
-      "mute_on":                  { "name": "Заглушаване на панела" },
-      "oscon":                    { "name": "Осцилация" },
-      "ptcon":                    { "name": "PTC" },
-      "childlockon":              { "name": "Детска защита" },
-      "locatemeon":               { "name": "Сензор за присъствие" },
-      "light":                    { "name": "Осветление" },
-      "humidify":                 { "name": "Овлажняване" },
-      "display_light":            { "name": "Подсветка на дисплея" },
-      "auto_mode":                { "name": "Автоматично включване" },
-      "scheon":                   { "name": "График" }
+      "horizontally_oscillating": {
+        "name": "Хоризонтална осцилация"
+      },
+      "vertically_oscillating": {
+        "name": "Вертикална осцилация"
+      },
+      "display_auto_off": {
+        "name": "Автоматично изключване на дисплея"
+      },
+      "panel_sound": {
+        "name": "Звук на панела"
+      },
+      "mist": {
+        "name": "Мъгла"
+      },
+      "adaptive_brightness": {
+        "name": "Адаптивна яркост"
+      },
+      "mute_on": {
+        "name": "Заглушаване на панела"
+      },
+      "oscon": {
+        "name": "Осцилация"
+      },
+      "ptcon": {
+        "name": "PTC"
+      },
+      "childlockon": {
+        "name": "Детска защита"
+      },
+      "locatemeon": {
+        "name": "Сензор за присъствие"
+      },
+      "light": {
+        "name": "Осветление"
+      },
+      "humidify": {
+        "name": "Овлажняване"
+      },
+      "display_light": {
+        "name": "Подсветка на дисплея"
+      },
+      "auto_mode": {
+        "name": "Автоматично включване"
+      },
+      "scheon": {
+        "name": "График"
+      }
     },
     "sensor": {
-      "temperature":             { "name": "Температура" },
-      "humidity":                { "name": "Влажност" },
-      "use_hours":               { "name": "Използване от последното почистване" },
-      "reach_target_temp":       {
+      "temperature": {
+        "name": "Температура"
+      },
+      "humidity": {
+        "name": "Влажност"
+      },
+      "use_hours": {
+        "name": "Използване от последното почистване"
+      },
+      "reach_target_temp": {
         "name": "Целевата температура е достигната",
-        "state": { "Yes": "Да", "No": "Не" }
+        "state": {
+          "yes": "Да",
+          "no": "Не"
+        }
       },
       "status": {
         "name": "Статус",
@@ -99,39 +157,86 @@
           "ckcomplete": "Готово"
         }
       },
-      "cook_time_remaining":     { "name": "Оставащо време за готвене" },
-      "pm25":                    { "name": "ФПЧ2.5" },
+      "cook_time_remaining": {
+        "name": "Оставащо време за готвене"
+      },
+      "pm25": {
+        "name": "ФПЧ2.5"
+      },
       "water": {
         "name": "Ниво на водата",
-        "state": { "Ok": "OK", "Empty": "Празно" }
+        "state": {
+          "ok": "OK",
+          "empty": "Празно"
+        }
       },
-      "use_hours_hm":            { "name": "Използване от последното почистване" },
-      "filter_life":             { "name": "Живот на филтъра" },
+      "use_hours_hm": {
+        "name": "Използване от последното почистване"
+      },
+      "filter_life": {
+        "name": "Живот на филтъра"
+      },
       "filter_active": {
         "name": "Активен филтър",
-        "state": { "Active": "активен", "Inactive": "неактивен" }
+        "state": {
+          "active": "активен",
+          "inactive": "неактивен"
+        }
       },
       "target_humidity_reached": {
         "name": "Целевата влажност е достигната",
-        "state": { "Yes": "Да", "No": "Не" }
+        "state": {
+          "yes": "Да",
+          "no": "Не"
+        }
       }
     },
     "number": {
-      "horizontal_angle":             { "name": "Хоризонтален ъгъл" },
-      "vertical_angle":               { "name": "Вертикален ъгъл" },
-      "horizontal_osc_angle_left":    { "name": "Ляв ъгъл на хоризонталната осцилация" },
-      "horizontal_osc_angle_right":   { "name": "Десен ъгъл на хоризонталната осцилация" },
-      "vertical_osc_angle_top":       { "name": "Горен ъгъл на вертикалната осцилация" },
-      "vertical_osc_angle_bottom":    { "name": "Долен ъгъл на вертикалната осцилация" },
-      "osc_angle":                    { "name": "Ъгъл на осцилация" },
-      "horizontal_oscillation_angle": { "name": "Хоризонтален ъгъл на осцилация" },
-      "vertical_oscillation_angle":   { "name": "Вертикален ъгъл на осцилация" },
-      "target_humidity":              { "name": "Целева влажност" },
-      "fog_level":                    { "name": "Ниво на мъглата" },
-      "sleep_target_humidity":        { "name": "Целева влажност (режим сън)" },
-      "ambient_light_threshold_low":  { "name": "Долен праг на ambient осветление" },
-      "ambient_light_threshold_high": { "name": "Горен праг на ambient осветление" },
-      "ambient_light_level":          { "name": "Ниво на ambient осветление" }
+      "horizontal_angle": {
+        "name": "Хоризонтален ъгъл"
+      },
+      "vertical_angle": {
+        "name": "Вертикален ъгъл"
+      },
+      "horizontal_osc_angle_left": {
+        "name": "Ляв ъгъл на хоризонталната осцилация"
+      },
+      "horizontal_osc_angle_right": {
+        "name": "Десен ъгъл на хоризонталната осцилация"
+      },
+      "vertical_osc_angle_top": {
+        "name": "Горен ъгъл на вертикалната осцилация"
+      },
+      "vertical_osc_angle_bottom": {
+        "name": "Долен ъгъл на вертикалната осцилация"
+      },
+      "osc_angle": {
+        "name": "Ъгъл на осцилация"
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Хоризонтален ъгъл на осцилация"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Вертикален ъгъл на осцилация"
+      },
+      "target_humidity": {
+        "name": "Целева влажност"
+      },
+      "fog_level": {
+        "name": "Ниво на мъглата"
+      },
+      "sleep_target_humidity": {
+        "name": "Целева влажност (режим сън)"
+      },
+      "ambient_light_threshold_low": {
+        "name": "Долен праг на ambient осветление"
+      },
+      "ambient_light_threshold_high": {
+        "name": "Горен праг на ambient осветление"
+      },
+      "ambient_light_level": {
+        "name": "Ниво на ambient осветление"
+      }
     },
     "select": {
       "mist_level": {
@@ -151,6 +256,17 @@
       },
       "three_d_angle_preset": {
         "name": "Предварителна настройка на 3D ъгъл"
+      }
+    },
+    "light": {
+      "light": {
+        "name": "Осветление"
+      },
+      "rgb_light": {
+        "name": "RGB осветление"
+      },
+      "ambient_light": {
+        "name": "Околно осветление"
       }
     }
   }

@@ -37,7 +37,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.hvac_mode == HVACMode.HEAT
             assert heater_ha.preset_mode == "H3"
             assert heater_ha.unique_id is not None
-            assert heater_ha.name is not None
+            assert heater_ha.translation_key == "heater"
             assert heater_ha.is_on is True
 
             # Test temperature reading
@@ -213,7 +213,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.hvac_mode == HVACMode.HEAT
             assert heater_ha.preset_mode == "H3"
             assert heater_ha.unique_id is not None
-            assert heater_ha.name is not None
+            assert heater_ha.translation_key == "heater"
             assert heater_ha.is_on is True
 
             # Test temperature reading
@@ -349,7 +349,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.preset_mode == "H3"
             assert heater_ha.is_on is True
             assert heater_ha.unique_id is not None
-            assert heater_ha.name is not None
+            assert heater_ha.translation_key == "heater"
 
             # Test temperature reading
             if heater_ha.current_temperature is not None:
@@ -445,7 +445,7 @@ class TestDreoHeater(IntegrationTestBase):
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.unique_id is not None
-            assert heater_ha.name is not None
+            assert heater_ha.translation_key == "heater"
             assert heater_ha.hvac_mode in [HVACMode.HEAT, HVACMode.FAN_ONLY, HVACMode.OFF]
 
             # HSH010S has no swing modes
@@ -496,7 +496,7 @@ class TestDreoHeater(IntegrationTestBase):
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.unique_id is not None
-            assert heater_ha.name is not None
+            assert heater_ha.translation_key == "heater"
             assert heater_ha.hvac_mode in [HVACMode.HEAT, HVACMode.FAN_ONLY, HVACMode.OFF]
 
             # HSH011S has no swing modes

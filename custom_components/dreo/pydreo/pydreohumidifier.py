@@ -43,8 +43,8 @@ FILTERON_KEY = "filteron"
 SUSPEND_KEY = "suspend"
 
 # Status for water level indicator
-WATER_LEVEL_OK = "Ok"
-WATER_LEVEL_EMPTY = "Empty"
+WATER_LEVEL_OK = "ok"
+WATER_LEVEL_EMPTY = "empty"
 
 LIGHT_ON = "Enable"
 LIGHT_OFF = "Disabled"

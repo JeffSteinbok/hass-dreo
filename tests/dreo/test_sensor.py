@@ -179,7 +179,7 @@ class TestDreoSensorHA(TestDeviceBase):
 
         entities = sensor.get_entries([device])
         filter_active = next(e for e in entities if e.entity_description.key == "Filter Active")
-        assert filter_active.native_value == "Inactive"
+        assert filter_active.native_value == "inactive"
         assert filter_active.native_value in filter_active._attr_options
 
     def test_sensor_target_humidity_reached(self):
@@ -188,5 +188,5 @@ class TestDreoSensorHA(TestDeviceBase):
 
         entities = sensor.get_entries([device])
         target_reached = next(e for e in entities if e.entity_description.key == "Target Humidity Reached")
-        assert target_reached.native_value == "Yes"
+        assert target_reached.native_value == "yes"
         assert target_reached.native_value in target_reached._attr_options

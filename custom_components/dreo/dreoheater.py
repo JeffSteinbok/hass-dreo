@@ -94,7 +94,12 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             pyDreoDevice.ecolevel,
         )
 
-        self._attr_name = "Heater"
+        # Use has_entity_name (set on the class) + translation_key so the entity
+        # name is localized from the translations/*.json files. The base class
+        # sets _attr_name to the device name; delete it so the translation_key
+        # is used instead.
+        del self._attr_name
+        self._attr_translation_key = "heater"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
         self._attr_target_temperature = self.device.ecolevel
         self._attr_current_temperature = self.device.temperature
