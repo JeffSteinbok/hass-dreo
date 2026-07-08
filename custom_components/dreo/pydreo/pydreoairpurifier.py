@@ -82,9 +82,9 @@ class PyDreoAirPurifier(PyDreoFanBase):
         Newer revisions of the DR-HAP003S (identified by the "midea" MCU model) reject the
         plain "auto" mode command string.  When _auto_mode_uses_auto_silent is set by the
         override function, outgoing "auto" mode commands are translated to "auto-silent"
-        before transmission.  The device reports back "auto-silent" as its state, which
-        PyDreo's name_from_value helper correctly resolves back to the "auto" preset name
-        because "auto" is a prefix of "auto-silent".
+        before transmission. The device reports back "auto-silent" as its state; PyDreoFanBase.preset_mode
+        normalizes mode variants by stripping any "-<suffix>" (so "auto-silent" resolves to "auto").
+        This keeps the Home Assistant-facing preset name stable across hardware/firmware variants.
         """
         if self._auto_mode_uses_auto_silent and command_key == "mode" and value == "auto":
             _LOGGER.debug("PyDreoAirPurifier._send_command: remapping 'auto' to 'auto-silent' for %s", self.model)
