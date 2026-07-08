@@ -33,11 +33,11 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     def percentage(self) -> int | None:
         """Return the current speed."""
         if self.device.type is DreoDeviceType.DEHUMIDIFIER:
-            if self.device.preset_mode == "Low":
+            if self.device.preset_mode == "low":
                 return 33
-            elif self.device.preset_mode == "Medium":
+            elif self.device.preset_mode == "medium":
                 return 67
-            elif self.device.preset_mode == "High":
+            elif self.device.preset_mode == "high":
                 return 100
             return None
         if self.device.speed_range is None or self.device.fan_speed is None:
@@ -133,11 +133,11 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
 
         if self.device.type is DreoDeviceType.DEHUMIDIFIER:
             if percentage <= 33:
-                self.device.set_preset_mode("Low")
+                self.device.set_preset_mode("low")
             elif percentage <= 67:
-                self.device.set_preset_mode("Medium")
+                self.device.set_preset_mode("medium")
             else:
-                self.device.set_preset_mode("High")
+                self.device.set_preset_mode("high")
         else:
             if self.device.speed_range is None:
                 _LOGGER.error("set_percentage: speed_range not available for %s", self.device.name)

@@ -181,27 +181,27 @@ class PyDreoDehumidifier(PyDreoBaseDevice):
     @property
     def preset_modes(self):
         """Get the list of fan speed preset modes"""
-        return ["Low", "Medium", "High"]
+        return ["low", "medium", "high"]
 
     @property
     def preset_mode(self):
         """Get the current fan speed preset mode"""
         if self._wind_level == 1:
-            return "Low"
+            return "low"
         elif self._wind_level == 2:
-            return "Medium"
+            return "medium"
         elif self._wind_level == 3:
-            return "High"
+            return "high"
         return None
 
     def set_preset_mode(self, preset_mode: str) -> None:
         """Set the fan speed preset mode"""
         _LOGGER.debug("set_preset_mode: set_preset_mode(%s) --> %s", self.name, preset_mode)
-        if preset_mode == "Low":
+        if preset_mode == "low":
             self.wind_level = 1
-        elif preset_mode == "Medium":
+        elif preset_mode == "medium":
             self.wind_level = 2
-        elif preset_mode == "High":
+        elif preset_mode == "high":
             self.wind_level = 3
         else:
             raise ValueError(f"Invalid fan preset mode: {preset_mode}")

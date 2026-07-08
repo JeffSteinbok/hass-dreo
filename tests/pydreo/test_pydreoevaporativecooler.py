@@ -41,10 +41,10 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         assert ec_fan.humidity == 41
         assert ec_fan.speed_range == (1, 4)
-        assert ec_fan.preset_modes == ["Normal", "Natural", "Sleep", "Auto"]
+        assert ec_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
         assert ec_fan.oscillating is True
         assert ec_fan.childlockon is False
-        assert ec_fan.preset_mode == "Sleep"
+        assert ec_fan.preset_mode == "sleep"
         assert ec_fan.work_time == 19
         assert ec_fan.water_level == "Ok"
 
@@ -138,21 +138,21 @@ class TestPyDreoEvaporativeCooler(TestBase):
         self.pydreo_manager.load_devices()
         ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
-        # "Normal" -> WINDMODE_MAP["Normal"] = 1
+        # "normal" -> WINDMODE_MAP["normal"] = 1
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = "Normal"
+            ec_fan.preset_mode = "normal"
             mock_send_command.assert_called_once_with(ec_fan, {WIND_MODE_KEY: 1})
 
-        # "Auto" -> WINDMODE_MAP["Auto"] = 2
+        # "auto" -> WINDMODE_MAP["auto"] = 2
         ec_fan._wind_mode = 1
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = "Auto"
+            ec_fan.preset_mode = "auto"
             mock_send_command.assert_called_once_with(ec_fan, {WIND_MODE_KEY: 2})
 
         # Duplicate value -- no command sent (current is 3=Sleep, set Sleep again)
         ec_fan._wind_mode = 3
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = "Sleep"
+            ec_fan.preset_mode = "sleep"
             mock_send_command.assert_not_called()
 
     def test_HEC002S_handle_server_update(self):  # pylint: disable=invalid-name
@@ -215,10 +215,10 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
         # Valid 0-based REST indices -> internal int values
-        assert ec_fan._map_wind_mode_from_rest(0) == 1  # "Normal" -> 1
-        assert ec_fan._map_wind_mode_from_rest(1) == 4  # "Natural" -> 4
-        assert ec_fan._map_wind_mode_from_rest(2) == 3  # "Sleep" -> 3
-        assert ec_fan._map_wind_mode_from_rest(3) == 2  # "Auto" -> 2
+        assert ec_fan._map_wind_mode_from_rest(0) == 1  # "normal" -> 1
+        assert ec_fan._map_wind_mode_from_rest(1) == 4  # "natural" -> 4
+        assert ec_fan._map_wind_mode_from_rest(2) == 3  # "sleep" -> 3
+        assert ec_fan._map_wind_mode_from_rest(3) == 2  # "auto" -> 2
 
         # Invalid indices return None
         assert ec_fan._map_wind_mode_from_rest(None) is None
@@ -266,10 +266,10 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         assert ec_fan.humidity == 41
         assert ec_fan.speed_range == (1, 6)
-        assert ec_fan.preset_modes == ["Normal", "Turbo"]
+        assert ec_fan.preset_modes == ["normal", "turbo"]
         assert ec_fan.oscillating is True
         assert ec_fan.childlockon is False
-        assert ec_fan.preset_mode == "Normal"
+        assert ec_fan.preset_mode == "normal"
         assert ec_fan.work_time == 42
         assert ec_fan.water_level == "Ok"
         assert ec_fan.target_humidity == 55
@@ -335,27 +335,27 @@ class TestPyDreoEvaporativeCooler(TestBase):
         self.pydreo_manager.load_devices()
         ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
-        # "Turbo" -> mode value 4
+        # "turbo" -> mode value 4
         ec_fan._wind_mode = 1  # set to Normal first
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = "Turbo"
+            ec_fan.preset_mode = "turbo"
             mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 4})
 
-        # "Normal" -> mode value 1
+        # "normal" -> mode value 1
         ec_fan._wind_mode = 2
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = "Normal"
+            ec_fan.preset_mode = "normal"
             mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 1})
 
         # Duplicate value -- no command sent
         ec_fan._wind_mode = 1
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = "Normal"
+            ec_fan.preset_mode = "normal"
             mock_send_command.assert_not_called()
 
         # Invalid mode raises ValueError
         with pytest.raises(ValueError):
-            ec_fan.preset_mode = "Sleep"
+            ec_fan.preset_mode = "sleep"
 
     def test_HEC006S_handle_server_update(self):  # pylint: disable=invalid-name
         """Test handle_server_update processes WebSocket fields correctly for HEC006S."""
@@ -386,7 +386,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
         # mode: HEC006S uses "mode" key via base class; WebSocket sends 1-based int
         ec_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
         assert ec_fan._wind_mode == 4
-        assert ec_fan.preset_mode == "Turbo"
+        assert ec_fan.preset_mode == "turbo"
 
         # work_time
         ec_fan.handle_server_update({REPORTED_KEY: {WORKTIME_KEY: 50}})
@@ -425,7 +425,7 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         # After update_state, _wind_mode should be set from the "mode" key (value 1)
         assert ec_fan._wind_mode == 1
-        assert ec_fan.preset_mode == "Normal"
+        assert ec_fan.preset_mode == "normal"
 
     def test_HEC005S_empty_controls_conf_variance(self):  # pylint: disable=invalid-name
         """Test DR-HEC005S model variance with empty controlsConf."""
@@ -434,16 +434,16 @@ class TestPyDreoEvaporativeCooler(TestBase):
         ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
 
         assert ec_fan.speed_range == (1, 12)
-        assert ec_fan.preset_modes == ["Normal", "Natural", "Sleep", "Auto"]
+        assert ec_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
         assert ec_fan._wind_mode == 1
-        assert ec_fan.preset_mode == "Normal"
+        assert ec_fan.preset_mode == "normal"
         assert ec_fan.fan_speed == 3
         assert ec_fan.fog_level_range == (1, 4)
         assert ec_fan.temperature == 82
         assert ec_fan.humidity == 58
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            ec_fan.preset_mode = "Auto"
+            ec_fan.preset_mode = "auto"
             mock_send_command.assert_called_once_with(ec_fan, {MODE_KEY: 2})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:

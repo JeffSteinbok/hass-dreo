@@ -34,6 +34,26 @@
     "binary_sensor": {
       "water_empty": { "name": "Wasserstand", "state": { "off": "OK", "on": "Leer" } }
     },
+    "fan": {
+      "fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "normal": "Normal",
+              "natural": "Natürlich",
+              "sleep": "Schlaf",
+              "auto": "Automatik",
+              "turbo": "Turbo",
+              "reverse": "Rückwärts",
+              "custom": "Benutzerdefiniert",
+              "low": "Niedrig",
+              "medium": "Mittel",
+              "high": "Hoch"
+            }
+          }
+        }
+      }
+    },
     "climate": {
       "air_conditioner": { "name": "Klimaanlage" }
     },
