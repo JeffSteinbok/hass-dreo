@@ -379,7 +379,7 @@ SUPPORTED_DEVICES = {
     "DR-HAP": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
     "DR-HAP003S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_PURIFIER,
-        # Newer hardware revision ("midea" MCU, seriesName "Macro Max S/AS") rejects the plain
+        # Newer hardware and firmware revisions ("midea" or "001" MCU, seriesName "Macro Max S/AS") reject the plain
         # "auto" mode command and requires "auto-silent" instead.  The override sets a flag on
         # the device instance so PyDreoAirPurifier._send_command can remap the command value.
         # The original revision ("meidi" MCU, seriesName "Macro Max S") is left untouched.
