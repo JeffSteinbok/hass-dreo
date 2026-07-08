@@ -81,6 +81,7 @@
       "use_hours":               { "name": "Utilizzo dalla pulizia" },
       "reach_target_temp":       { "name": "Temperatura target raggiunta", "state": { "Yes": "Sì", "No": "No" } },
       "status":                  { "name": "Stato", "state": { "standby": "Standby", "cooking": "Cottura", "off": "Spento", "ckpause": "Pausa", "ckcomplete": "Completato" } },
+      "cook_time_remaining":     { "name": "Tempo di cottura rimanente" },
       "pm25":                    { "name": "PM2.5" },
       "water":                   { "name": "Livello acqua", "state": { "Ok": "OK", "Empty": "Vuoto" } },
       "use_hours_hm":            { "name": "Utilizzo dalla pulizia" },
@@ -120,6 +121,9 @@
           "humidity": "Umidità",
           "color": "Colore"
         }
+      },
+      "three_d_angle_preset": {
+        "name": "Preset angolo 3D"
       }
     }
   }

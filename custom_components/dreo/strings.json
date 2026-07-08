@@ -32,7 +32,7 @@
     },
     "entity": {
       "binary_sensor": {
-        "water_empty": { "name": "Water Empty" }
+        "water_empty": { "name": "Water Empty", "state": { "off": "OK", "on": "Empty" } }
       },
       "fan": {
         "fan": {
@@ -54,6 +54,9 @@
           }
         }
       },
+      "climate": {
+        "air_conditioner": { "name": "Air Conditioner" }
+      },
       "switch": {
         "horizontally_oscillating": { "name": "Horizontal Oscillation" },
         "vertically_oscillating":   { "name": "Vertical Oscillation" },
@@ -73,14 +76,18 @@
         "scheon":                   { "name": "Schedule" }
       },
       "sensor": {
-        "temperature":       { "name": "Temperature" },
-        "humidity":          { "name": "Humidity" },
-        "use_hours":         { "name": "Use Since Cleaning" },
-        "reach_target_temp": { "name": "Target Temp Reached" },
-        "status":            { "name": "Status" },
-        "pm25":              { "name": "PM2.5" },
-        "water":             { "name": "Water Level" },
-        "use_hours_hm":      { "name": "Use Since Cleaning" }
+        "temperature":             { "name": "Temperature" },
+        "humidity":                { "name": "Humidity" },
+        "use_hours":               { "name": "Use Since Cleaning" },
+        "reach_target_temp":       { "name": "Target Temp Reached", "state": { "Yes": "Yes", "No": "No" } },
+        "status":                  { "name": "Status", "state": { "standby": "Standby", "cooking": "Cooking", "off": "Off", "ckpause": "Paused", "ckcomplete": "Complete" } },
+        "cook_time_remaining":     { "name": "Cook Time Remaining" },
+        "pm25":                    { "name": "PM2.5" },
+        "water":                   { "name": "Water Level", "state": { "Ok": "OK", "Empty": "Empty" } },
+        "use_hours_hm":            { "name": "Use Since Cleaning" },
+        "filter_life":             { "name": "Filter Life" },
+        "filter_active":           { "name": "Filter Active", "state": { "Active": "Active", "Inactive": "Inactive" } },
+        "target_humidity_reached": { "name": "Target Humidity Reached", "state": { "Yes": "Yes", "No": "No" } }
       },
       "number": {
         "horizontal_angle":             { "name": "Horizontal Angle" },
