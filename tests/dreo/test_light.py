@@ -352,21 +352,24 @@ class TestDreoRGBICLightHA(TestDeviceBase):
     """Test the Dreo RGBIC Light entity (RGBIC effect-based atmosphere light, e.g. HCF007S)."""
 
     def _make_device(self, atm_bri_range=(1, 100), atm_brightness=50, atm_light_on=True,
-                     preset_sel=0, preset_num=4, effect_id="2070476690030592000", effect_range=(0, 7), model=None):
+                     preset_sel=0, preset_num=4, effect_id="2070476690030592000", effect_range=(0, 7), direct_rgb=False):
         """Create a mock RGBIC device with default values."""
+        features = {
+            "atm_light": True,
+            "atm_light_on": atm_light_on,
+            "atm_brightness": atm_brightness,
+            "rgb_preset_sel": preset_sel,
+            "rgb_preset_num": preset_num,
+            "rgb_effect_id": effect_id,
+        }
+        if direct_rgb:
+            features["atm_color_rgb_write"] = True
+
         device = self.create_mock_device(
             name="Ceiling Fan",
             serial_number="HCF007",
-            features={
-                "atm_light": True,
-                "atm_light_on": atm_light_on,
-                "atm_brightness": atm_brightness,
-                "rgb_preset_sel": preset_sel,
-                "rgb_preset_num": preset_num,
-                "rgb_effect_id": effect_id,
-            },
+            features=features,
         )
-        device.model = model
         # atm_brightness_range and rgb_effect_range are properties, not feature flags
         device.atm_brightness_range = atm_bri_range
         device.rgb_effect_range = effect_range
@@ -391,7 +394,7 @@ class TestDreoRGBICLightHA(TestDeviceBase):
     def test_hcf007s_rgbic_color_mode_is_rgb(self):
         """HCF007S RGBIC entity should expose direct RGB color control."""
         with patch(PATCH_UPDATE_HA_STATE):
-            device = self._make_device(model="DR-HCF007S")
+            device = self._make_device(direct_rgb=True)
             entity = DreoRGBICLightHA(device)
             assert entity.color_mode == ColorMode.RGB
             assert ColorMode.RGB in entity.supported_color_modes

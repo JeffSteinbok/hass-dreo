@@ -7,7 +7,7 @@ from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo import light
-from custom_components.dreo.haimports import ColorMode
+from custom_components.dreo.haimports import ColorMode, ATTR_RGB_COLOR
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
@@ -453,5 +453,5 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             # HCF007S direct RGB control should send atmcolor command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                rgbic_light.turn_on(rgb_color=(0, 255, 0))
+                rgbic_light.turn_on(**{ATTR_RGB_COLOR: (0, 255, 0)})
                 mock_send_command.assert_any_call(pydreo_fan, {ATMCOLOR_KEY: 65280})

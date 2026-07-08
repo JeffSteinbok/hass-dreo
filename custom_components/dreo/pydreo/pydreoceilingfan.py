@@ -414,6 +414,15 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if feature == "atm_color_rgb":
             # Device must have atmosphere light AND direct atmcolor support (not RGBIC presets)
             return self._atm_light_on is not None and self._atm_color is not None
+        # Some RGBIC models (e.g. HCF007S) accept atmcolor commands but don't report atmcolor state.
+        # This capability is model-defined so HA can expose direct RGB control where supported.
+        if feature == "atm_color_rgb_write":
+            direct_rgb = (
+                self._device_definition is not None
+                and self._device_definition.device_ranges is not None
+                and self._device_definition.device_ranges.get("supports_direct_rgb_color", False)
+            )
+            return self._atm_light_on is not None and (self._atm_color is not None or direct_rgb)
         # RGBIC preset system - device has atmon + rgbpresetsel but not atmcolor
         if feature == "rgb_preset":
             return self._atm_light_on is not None and self._rgb_preset_sel is not None

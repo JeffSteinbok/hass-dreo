@@ -335,9 +335,9 @@ class DreoRGBICLightHA(DreoLightHA):
         self._attr_unique_id = f"{self.pydreo_device.serial_number}-rgb-light"
         self._attr_icon = "mdi:led-strip-variant"
 
-        # HCF007S supports direct RGB color control in addition to effects.
+        # Some RGBIC models support direct RGB color commands in addition to effects.
         # Keep other RGBIC devices in BRIGHTNESS mode (effects + brightness only).
-        self._supports_direct_rgb = getattr(pyDreoDevice, "model", None) == "DR-HCF007S"
+        self._supports_direct_rgb = pyDreoDevice.is_feature_supported("atm_color_rgb_write")
         self._color_mode = ColorMode.RGB if self._supports_direct_rgb else ColorMode.BRIGHTNESS
 
         # Determine which command mechanism to use

@@ -381,6 +381,7 @@ class TestPyDreoCeilingFan(TestBase):
         # HCF007S is an RGBIC preset device - atm_color_rgb is NOT supported
         assert fan.is_feature_supported("atm_light") is True
         assert fan.is_feature_supported("atm_color_rgb") is False
+        assert fan.is_feature_supported("atm_color_rgb_write") is True
         assert fan.is_feature_supported("rgb_preset") is True
         assert fan.rgb_preset_sel == 0
         assert fan.rgb_preset_num == 4
