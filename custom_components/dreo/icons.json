@@ -5,7 +5,7 @@
         "state_attributes": {
           "preset_mode": {
             "state": {
-              "normal": "mdi:fan-speed-1",
+              "normal": "mdi:fan",
               "natural": "mdi:leaf",
               "sleep": "mdi:sleep",
               "auto": "mdi:fan-auto",
