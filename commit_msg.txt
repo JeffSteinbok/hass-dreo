@@ -1,13 +1,11 @@
-Fix heater/humidifier-light entity bugs and add missing temp-offset setting fixtures
+Add regression tests for humidifier light color modes and temp-offset data completeness
 
-- Remove class-level `_attr_name = None` on DreoHeaterHA that short-circuited
-  translation resolution (HA returned None instead of the localized name)
-- Fix DreoHumidifierLightHA invalid supported_color_modes (never combine
-  BRIGHTNESS with RGB; pick a single mode)
-- Add canned FAN_TEMP_OFFSET (kHafFanTempOffsetKey) setting fixtures for all
-  temp-calibration devices missing them (HSH003S/HSH004S/HSH009S/HSH010S/
-  HSH011/HTF007S/HTF009S) so debug test mode no longer logs spurious errors
-- Update regression coverage test to exercise translation_key/has_entity_name
-  instead of .name for the heater (name needs a live platform)
+- TestDreoHumidifierLightHA: verify a device supporting both atm_color and
+  atm_brightness exposes a single valid color mode (RGB), and that brightness-only
+  and on/off-only devices are valid too. Each asserts HA's own
+  valid_supported_color_modes accepts the result.
+- test_temp_calibration_devices_have_setting_files: fail if any get_devices fixture
+  declaring the Temperature Calibration preference lacks its canned
+  get_device_setting_{sn}_kHafFanTempOffsetKey.json file.
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
