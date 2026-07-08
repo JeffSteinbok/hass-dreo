@@ -48,14 +48,14 @@ HUMIDIFY_MODE_MAP = {
 WATER_LEVEL_STATUS_MAP = {0: WATER_LEVEL_OK, 1: WATER_LEVEL_EMPTY, WATER_LEVEL_OK: 0, WATER_LEVEL_EMPTY: 1}
 
 WINDMODES = [
-    "Normal",
-    "Natural",
-    "Sleep",
-    "Auto",
+    "normal",
+    "natural",
+    "sleep",
+    "auto",
 ]
 
 # Windmodes for evaporative cooler (HEC002S legacy path, 0-indexed REST → 1-based internal)
-WINDMODE_MAP = {"Normal": 1, "Auto": 2, "Sleep": 3, "Natural": 4, 1: "Normal", 2: "Auto", 3: "Sleep", 4: "Natural"}
+WINDMODE_MAP = {"normal": 1, "auto": 2, "sleep": 3, "natural": 4, 1: "normal", 2: "auto", 3: "sleep", 4: "natural"}
 
 if TYPE_CHECKING:
     from pydreo import PyDreo

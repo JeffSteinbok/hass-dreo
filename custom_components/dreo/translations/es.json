@@ -34,6 +34,26 @@
     "binary_sensor": {
       "water_empty": { "name": "Agua vacía" }
     },
+    "fan": {
+      "fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "normal": "Normal",
+              "natural": "Natural",
+              "sleep": "Reposo",
+              "auto": "Automático",
+              "turbo": "Turbo",
+              "reverse": "Inverso",
+              "custom": "Personalizado",
+              "low": "Bajo",
+              "medium": "Medio",
+              "high": "Alto"
+            }
+          }
+        }
+      }
+    },
     "switch": {
       "horizontally_oscillating": { "name": "Oscilación horizontal" },
       "vertically_oscillating":   { "name": "Oscilación vertical" },

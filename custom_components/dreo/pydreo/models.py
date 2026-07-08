@@ -522,7 +522,7 @@ SUPPORTED_DEVICES = {
     # Asymmetric horizontal oscillation is also supported with left/right angles
     "DR-HEC006S": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
-        preset_modes=[("Normal", 1), ("Turbo", 4)],
+        preset_modes=[("normal", 1), ("turbo", 4)],
         device_ranges={
             SPEED_RANGE: (1, 6),
             HORIZONTAL_ANGLE_RANGE: (-75, 75),
@@ -535,7 +535,7 @@ SUPPORTED_DEVICES = {
     # Without an explicit mapping it falls back to generic DR-HEC defaults.
     "DR-HEC005S": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
-        preset_modes=[("Normal", 1), ("Natural", 4), ("Sleep", 3), ("Auto", 2)],
+        preset_modes=[("normal", 1), ("natural", 4), ("sleep", 3), ("auto", 2)],
         device_ranges={SPEED_RANGE: (1, 12), "fog_level_range": (1, 4)},
     ),
 }

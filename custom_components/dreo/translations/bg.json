@@ -34,6 +34,26 @@
       "binary_sensor": {
         "water_empty": { "name": "Водата е изразходвана" }
       },
+      "fan": {
+        "fan": {
+          "state_attributes": {
+            "preset_mode": {
+              "state": {
+                "normal": "Нормален",
+                "natural": "Естествен",
+                "sleep": "Сън",
+                "auto": "Автоматичен",
+                "turbo": "Турбо",
+                "reverse": "Обратен",
+                "custom": "Персонализиран",
+                "low": "Ниско",
+                "medium": "Средно",
+                "high": "Високо"
+              }
+            }
+          }
+        }
+      },
       "switch": {
         "horizontally_oscillating": { "name": "Хоризонтално осцилиращ" },
         "vertically_oscillating":   { "name": "Вертикално осцилиращ" },

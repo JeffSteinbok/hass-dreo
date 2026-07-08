@@ -11,7 +11,10 @@
               "auto": "mdi:fan-auto",
               "turbo": "mdi:fan-speed-3",
               "reverse": "mdi:swap-horizontal",
-              "custom": "mdi:tune-variant"
+              "custom": "mdi:tune-variant",
+              "low": "mdi:fan-speed-1",
+              "medium": "mdi:fan-speed-2",
+              "high": "mdi:fan-speed-3"
             }
           }
         }

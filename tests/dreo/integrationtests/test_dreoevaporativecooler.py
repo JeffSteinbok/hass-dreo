@@ -87,7 +87,7 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             assert ha_fan.percentage >= 0 and ha_fan.percentage <= 100
 
             # Check preset modes
-            assert pydreo_ec.preset_modes == ["Normal", "Turbo"]
+            assert pydreo_ec.preset_modes == ["normal", "turbo"]
             assert len(pydreo_ec.preset_modes) == 2
 
             numbers = number.get_entries([pydreo_ec])

@@ -48,9 +48,9 @@ class TestPyDreoDehumidifier(TestBase):
         dehumidifier: PyDreoDehumidifier = self.pydreo_manager.devices[0]
 
         assert dehumidifier.speed_range == (1, 3)
-        assert dehumidifier.preset_modes == ["Low", "Medium", "High"]
-        # wind_level=2 → "Medium"
-        assert dehumidifier.preset_mode == "Medium"
+        assert dehumidifier.preset_modes == ["low", "medium", "high"]
+        # wind_level=2 → "medium"
+        assert dehumidifier.preset_mode == "medium"
 
     def test_HDH005S_is_on_setter(self):  # pylint: disable=invalid-name
         """Test that is_on setter sends the correct command."""
@@ -220,15 +220,15 @@ class TestPyDreoDehumidifier(TestBase):
         dehumidifier: PyDreoDehumidifier = self.pydreo_manager.devices[0]
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            dehumidifier.set_preset_mode("Low")
+            dehumidifier.set_preset_mode("low")
             mock_send_command.assert_called_once_with(dehumidifier, {WINDLEVEL_KEY: 1})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            dehumidifier.set_preset_mode("Medium")
+            dehumidifier.set_preset_mode("medium")
             mock_send_command.assert_called_once_with(dehumidifier, {WINDLEVEL_KEY: 2})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            dehumidifier.set_preset_mode("High")
+            dehumidifier.set_preset_mode("high")
             mock_send_command.assert_called_once_with(dehumidifier, {WINDLEVEL_KEY: 3})
 
         with pytest.raises(ValueError):
@@ -241,13 +241,13 @@ class TestPyDreoDehumidifier(TestBase):
         dehumidifier: PyDreoDehumidifier = self.pydreo_manager.devices[0]
 
         dehumidifier._wind_level = 1
-        assert dehumidifier.preset_mode == "Low"
+        assert dehumidifier.preset_mode == "low"
 
         dehumidifier._wind_level = 2
-        assert dehumidifier.preset_mode == "Medium"
+        assert dehumidifier.preset_mode == "medium"
 
         dehumidifier._wind_level = 3
-        assert dehumidifier.preset_mode == "High"
+        assert dehumidifier.preset_mode == "high"
 
         dehumidifier._wind_level = None
         assert dehumidifier.preset_mode is None

@@ -34,6 +34,26 @@
       "binary_sensor": {
         "water_empty": { "name": "Water Empty" }
       },
+      "fan": {
+        "fan": {
+          "state_attributes": {
+            "preset_mode": {
+              "state": {
+                "normal": "Normal",
+                "natural": "Natural",
+                "sleep": "Sleep",
+                "auto": "Auto",
+                "turbo": "Turbo",
+                "reverse": "Reverse",
+                "custom": "Custom",
+                "low": "Low",
+                "medium": "Medium",
+                "high": "High"
+              }
+            }
+          }
+        }
+      },
       "climate": {
         "air_conditioner": { "name": "Air Conditioner" }
       },
