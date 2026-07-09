@@ -369,7 +369,12 @@ class TestPyDreoCeilingFan(TestBase):
             fan.fan_speed = 13
 
     def test_HCF007S(self):  # pylint: disable=invalid-name
-        """Load HCF007S (CF521S RGBIC) and verify RGBIC preset capabilities."""
+        """Load HCF007S (CF521S RGBIC) and verify RGBIC preset capabilities.
+
+        HCF007S uses rgbpresetsel/rgbpresetnum for RGB LED control.  The
+        rgbeffectid field is read-only metadata and does NOT respond to write
+        commands; direct ATMCOLOR_KEY colour control is also not supported.
+        """
         self.get_devices_file_name = "get_devices_HCF007S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
@@ -378,10 +383,12 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan.speed_range == (1, 12)
         assert fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
 
-        # HCF007S is an RGBIC preset device - atm_color_rgb is NOT supported
+        # HCF007S uses the RGBIC preset system - no direct colour control
         assert fan.is_feature_supported("atm_light") is True
         assert fan.is_feature_supported("atm_color_rgb") is False
-        assert fan.is_feature_supported("atm_color_rgb_write") is True
+        assert fan.is_feature_supported("atm_color_rgb_write") is False
+        # rgb_effect_id is NOT enabled (rgb_effect_range removed from model)
+        assert fan.is_feature_supported("rgb_effect_id") is False
         assert fan.is_feature_supported("rgb_preset") is True
         assert fan.rgb_preset_sel == 0
         assert fan.rgb_preset_num == 4
