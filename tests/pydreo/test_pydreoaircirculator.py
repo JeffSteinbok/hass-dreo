@@ -761,8 +761,8 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.model == "DR-HPF015S"
         assert fan.speed_range == (1, 12)
         assert fan.horizontal_angle_range == (-75, 75)
-        assert fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
-        assert fan.preset_mode == "natural"
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+        assert fan.preset_mode == "auto"
         assert fan.fan_speed == 6
         assert fan.is_on is False
         assert fan.oscillating is True

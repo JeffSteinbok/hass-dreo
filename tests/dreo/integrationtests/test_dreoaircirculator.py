@@ -393,8 +393,8 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.horizontal_angle_range == (-75, 75)
             assert ha_fan.speed_count == 12
             assert ha_fan.percentage == 50
-            assert ha_fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo", "custom"]
-            assert ha_fan.preset_mode == "natural"
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+            assert ha_fan.preset_mode == "auto"
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_on()
