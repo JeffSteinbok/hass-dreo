@@ -122,6 +122,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="scheon",
         icon="mdi:calendar",
     ),
+    DreoSwitchEntityDescription(
+        key="Follow Me",
+        translation_key="follow_me",
+        attr_name="follow_me",
+        icon="mdi:motion-sensor",
+    ),
 )
 
 

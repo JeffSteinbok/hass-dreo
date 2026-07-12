@@ -128,11 +128,20 @@
       },
       "scheon": {
         "name": "Schedule"
+      },
+      "follow_me": {
+        "name": "Follow Me"
       }
     },
     "sensor": {
       "temperature": {
         "name": "Temperature"
+      },
+      "people_detected": {
+        "name": "People Detected"
+      },
+      "follow_me_angle": {
+        "name": "Follow Me Angle"
       },
       "humidity": {
         "name": "Humidity"

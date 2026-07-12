@@ -128,11 +128,20 @@
       },
       "scheon": {
         "name": "Zeitplan"
+      },
+      "follow_me": {
+        "name": "Folge mir"
       }
     },
     "sensor": {
       "temperature": {
         "name": "Temperatur"
+      },
+      "people_detected": {
+        "name": "Erkannte Personen"
+      },
+      "follow_me_angle": {
+        "name": "Folgewinkel"
       },
       "humidity": {
         "name": "Luftfeuchtigkeit"

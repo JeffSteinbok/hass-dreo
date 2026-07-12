@@ -128,11 +128,20 @@
       },
       "scheon": {
         "name": "График"
+      },
+      "follow_me": {
+        "name": "Следвай ме"
       }
     },
     "sensor": {
       "temperature": {
         "name": "Температура"
+      },
+      "people_detected": {
+        "name": "Открити хора"
+      },
+      "follow_me_angle": {
+        "name": "Ъгъл на следене"
       },
       "humidity": {
         "name": "Влажност"
