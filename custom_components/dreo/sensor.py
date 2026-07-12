@@ -167,6 +167,23 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         value_fn=lambda device: None if device.suspend is None else ("yes" if device.suspend else "no"),
         exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}) and device.is_feature_supported(SUSPEND_KEY),
     ),
+    DreoSensorEntityDescription(
+        key="People Detected",
+        translation_key="people_detected",
+        icon="mdi:account-multiple",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda device: device.people_detected,
+        exists_fn=lambda device: device.is_feature_supported("people_detected"),
+    ),
+    DreoSensorEntityDescription(
+        key="Follow Me Angle",
+        translation_key="follow_me_angle",
+        icon="mdi:angle-acute",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "°",
+        value_fn=lambda device: device.follow_me_angle,
+        exists_fn=lambda device: device.is_feature_supported("follow_me_angle"),
+    ),
 )
 
 

@@ -128,11 +128,20 @@
       },
       "scheon": {
         "name": "Schema"
+      },
+      "follow_me": {
+        "name": "Volg mij"
       }
     },
     "sensor": {
       "temperature": {
         "name": "Temperatuur"
+      },
+      "people_detected": {
+        "name": "Gedetecteerde personen"
+      },
+      "follow_me_angle": {
+        "name": "Volghoek"
       },
       "humidity": {
         "name": "Luchtvochtigheid"

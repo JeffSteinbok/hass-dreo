@@ -1055,6 +1055,38 @@ class TestPyDreoAirCirculator(TestBase):
                         mock_send_command.assert_called_once()
                     break
 
+    def test_HPF007S_follow_me(self):  # pylint: disable=invalid-name
+        """Verify HPF007S exposes presence-based follow mode (hwfpon) and telemetry."""
+        self.get_devices_file_name = "get_devices_HPF007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        assert fan.follow_me is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.follow_me = True
+            mock_send_command.assert_called_once_with(fan, {HWFPON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {HWFPON_KEY: True}})
+        assert fan.follow_me is True
+
+        fan.handle_server_update({REPORTED_KEY: {HWFPANGLE_KEY: 30, HBODYCNT_KEY: 2}})
+        assert fan.follow_me_angle == 30
+        assert fan.people_detected == 2
+
+    def test_HPF015S_display_light(self):  # pylint: disable=invalid-name
+        """Verify HPF015S exposes the panel display light (lighton)."""
+        self.get_devices_file_name = "get_devices_HPF015S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        assert fan.display_light is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.display_light = True
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True})
+        fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True}})
+        assert fan.display_light is True
+
     def test_HAF003S(self):  # pylint: disable=invalid-name
         """Load HAF003S (two fixtures) and test core command paths."""
         self.get_devices_file_name = "get_devices_HAF003S.json"

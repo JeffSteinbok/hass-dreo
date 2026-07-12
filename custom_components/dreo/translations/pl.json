@@ -128,11 +128,20 @@
       },
       "scheon": {
         "name": "Harmonogram"
+      },
+      "follow_me": {
+        "name": "Podążaj za mną"
       }
     },
     "sensor": {
       "temperature": {
         "name": "Temperatura"
+      },
+      "people_detected": {
+        "name": "Wykryte osoby"
+      },
+      "follow_me_angle": {
+        "name": "Kąt śledzenia"
       },
       "humidity": {
         "name": "Wilgotność"

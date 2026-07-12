@@ -20,6 +20,10 @@ from .constant import (
     ATMCOLOR_KEY,
     ATMBRI_KEY,
     ATMMODE_KEY,
+    LIGHTON_KEY,
+    HWFPON_KEY,
+    HWFPANGLE_KEY,
+    HBODYCNT_KEY,
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -96,6 +100,14 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._atm_brightness_range: tuple[int, int] = (1, 5)
         if device_definition.device_ranges is not None and "atm_brightness_range" in device_definition.device_ranges:
             self._atm_brightness_range = device_definition.device_ranges["atm_brightness_range"]
+
+        # Panel/display light (e.g. DR-HPF015S)
+        self._display_light: bool = None
+
+        # Presence-based follow support (e.g. DR-HPF007S)
+        self._follow_me: bool = None
+        self._follow_me_angle: int = None
+        self._people_detected: int = None
 
     def _uses_hangleadj_for_horizontal(self) -> bool:
         """Check if device uses hangleadj (simpler angle control) instead of hoscangle."""
@@ -664,6 +676,42 @@ class PyDreoAirCirculator(PyDreoFanBase):
             return self._fixed_conf is not None
         return super().is_feature_supported(feature)
 
+    @property
+    def display_light(self) -> bool:
+        """Is the panel display light on."""
+        return self._display_light
+
+    @display_light.setter
+    def display_light(self, value: bool) -> None:
+        """Set the panel display light on or off."""
+        _LOGGER.debug("PyDreoAirCirculator:display_light.setter(%s) --> %s", self, value)
+        if self._display_light is None:
+            raise NotImplementedError("Attempting to set display_light on a device that doesn't support it.")
+        self._send_command(LIGHTON_KEY, value)
+
+    @property
+    def follow_me(self) -> bool:
+        """Is presence-based follow mode on."""
+        return self._follow_me
+
+    @follow_me.setter
+    def follow_me(self, value: bool) -> None:
+        """Enable or disable presence-based follow mode."""
+        _LOGGER.debug("PyDreoAirCirculator:follow_me.setter(%s) --> %s", self, value)
+        if self._follow_me is None:
+            raise NotImplementedError("Attempting to set follow_me on a device that doesn't support it.")
+        self._send_command(HWFPON_KEY, value)
+
+    @property
+    def follow_me_angle(self) -> int:
+        """Horizontal angle toward the person detected by the presence sensor."""
+        return self._follow_me_angle
+
+    @property
+    def people_detected(self) -> int:
+        """Number of people currently detected by the presence sensor."""
+        return self._people_detected
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: Processing state")
@@ -692,6 +740,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._atm_brightness = self.get_state_update_value(state, ATMBRI_KEY)
         self._atm_color = self.get_state_update_value(state, ATMCOLOR_KEY)
         self._atm_mode = self.get_state_update_value(state, ATMMODE_KEY)
+
+        self._display_light = self.get_state_update_value(state, LIGHTON_KEY)
+        self._follow_me = self.get_state_update_value(state, HWFPON_KEY)
+        self._follow_me_angle = self.get_state_update_value(state, HWFPANGLE_KEY)
+        self._people_detected = self.get_state_update_value(state, HBODYCNT_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -746,3 +799,19 @@ class PyDreoAirCirculator(PyDreoFanBase):
         val_atm_mode = self.get_server_update_key_value(message, ATMMODE_KEY)
         if isinstance(val_atm_mode, int):
             self._atm_mode = val_atm_mode
+
+        val_display_light = self.get_server_update_key_value(message, LIGHTON_KEY)
+        if isinstance(val_display_light, bool):
+            self._display_light = val_display_light
+
+        val_follow_me = self.get_server_update_key_value(message, HWFPON_KEY)
+        if isinstance(val_follow_me, bool):
+            self._follow_me = val_follow_me
+
+        val_follow_me_angle = self.get_server_update_key_value(message, HWFPANGLE_KEY)
+        if isinstance(val_follow_me_angle, int):
+            self._follow_me_angle = val_follow_me_angle
+
+        val_people_detected = self.get_server_update_key_value(message, HBODYCNT_KEY)
+        if isinstance(val_people_detected, int):
+            self._people_detected = val_people_detected

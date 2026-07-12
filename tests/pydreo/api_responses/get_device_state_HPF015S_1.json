@@ -27,6 +27,10 @@
         "state": 79,
         "timestamp": 1779483985
       },
+      "lighton": {
+        "state": false,
+        "timestamp": 1779482566
+      },
       "muteon": {
         "state": false,
         "timestamp": 1779483512

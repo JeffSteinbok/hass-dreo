@@ -309,7 +309,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(
                 switches,
-                ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Presence Sensor", "Vertically Oscillating"],
+                ["Child Lock", "Follow Me", "Horizontally Oscillating", "Panel Sound", "Presence Sensor", "Vertically Oscillating"],
             )
 
     def test_HPF008S(self):  # pylint: disable=invalid-name
@@ -625,7 +625,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
 
             # Check entities
             switches = switch.get_entries([pydreo_fan])
-            self.verify_expected_entities(switches, ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Light", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
 
     def test_HPF002S(self):  # pylint: disable=invalid-name
         """Test HPF002S fan."""
@@ -704,7 +704,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
 
             # Check entities
             switches = switch.get_entries([pydreo_fan])
-            self.verify_expected_entities(switches, ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Light", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
 
     def test_HPF005S(self):  # pylint: disable=invalid-name
         """Test HPF005S fan with hangleadj support and full preset mode coverage."""
@@ -849,7 +849,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
 
             # Test entity inventory
             switches = switch.get_entries([pydreo_fan])
-            self.verify_expected_entities(switches, ["Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Light", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
             numbers = number.get_entries([pydreo_fan])
             self.verify_expected_entities(numbers, ["Horizontal Angle"])
 
@@ -948,6 +948,6 @@ class TestDreoAirCirculator(IntegrationTestBase):
 
             # Test entity inventory
             switches = switch.get_entries([pydreo_fan])
-            self.verify_expected_entities(switches, ["Adaptive Brightness", "Child Lock", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
+            self.verify_expected_entities(switches, ["Adaptive Brightness", "Child Lock", "Display Light", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
             numbers = number.get_entries([pydreo_fan])
             self.verify_expected_entities(numbers, ["Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right", "Vertical Angle", "Vertical Oscillation Angle Bottom", "Vertical Oscillation Angle Top"])
