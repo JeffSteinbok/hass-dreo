@@ -137,7 +137,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         _LOGGER.debug("shakehorizonangle: shakehorizonangle.setter")
         new_value = int(value)
         if self._oscillation_angle_key is None:
-            raise NotImplementedError("Attempting to set shakehorizonangle on a device that doesn't support it.")
+            raise RuntimeError("Internal error: oscillation angle key not initialized. This is a bug in the integration.")
         if self._shakehorizonangle == new_value:
             _LOGGER.debug("shakehorizonangle: shakehorizonangle - value already %s, skipping command", new_value)
             return
@@ -147,10 +147,9 @@ class PyDreoTowerFan(PyDreoFanBase):
         elif self._oscillation_angle_key == SHAKEHORIZONANGLE_KEY:
             command_value = new_value
         else:
-            raise NotImplementedError("Attempting to set shakehorizonangle on an unsupported command key.")
+            raise RuntimeError(f"Internal error: unsupported oscillation angle key {self._oscillation_angle_key}. This is a bug in the integration.")
 
         self._send_command(self._oscillation_angle_key, command_value)
-        self._shakehorizonangle = new_value
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
