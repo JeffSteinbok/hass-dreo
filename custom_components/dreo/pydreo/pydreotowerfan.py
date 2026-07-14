@@ -137,7 +137,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         _LOGGER.debug("shakehorizonangle: shakehorizonangle.setter")
         new_value = int(value)
         if self._oscillation_angle_key is None:
-            raise RuntimeError("Internal error: oscillation angle key not initialized. This is a bug in the integration.")
+            raise RuntimeError("Oscillation angle command key has not been initialized from device state yet.")
         if self._shakehorizonangle == new_value:
             _LOGGER.debug("shakehorizonangle: shakehorizonangle - value already %s, skipping command", new_value)
             return
@@ -156,10 +156,12 @@ class PyDreoTowerFan(PyDreoFanBase):
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
 
-        if SHAKEHORIZONANGLE_KEY in state:
+        shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
+        if shakehorizonangle is not None:
             self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
-        self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
+        self._shakehorizonangle = shakehorizonangle
+        # If shakehorizonangle is unavailable (including first-state load), fall back to hoscangle.
         if self._shakehorizonangle is None and self._oscillation_angle_key != SHAKEHORIZONANGLE_KEY:
             hoscangle = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
             parsed_hoscangle = self._parse_hoscangle(hoscangle)
