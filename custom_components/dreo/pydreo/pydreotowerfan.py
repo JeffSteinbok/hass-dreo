@@ -136,19 +136,21 @@ class PyDreoTowerFan(PyDreoFanBase):
         """Set the oscillation angle."""
         _LOGGER.debug("shakehorizonangle: shakehorizonangle.setter")
         new_value = int(value)
+        if self._oscillation_angle_key is None:
+            raise NotImplementedError("Attempting to set shakehorizonangle on a device that doesn't support it.")
         if self._shakehorizonangle == new_value:
             _LOGGER.debug("shakehorizonangle: shakehorizonangle - value already %s, skipping command", new_value)
             return
         if self._oscillation_angle_key == HORIZONTAL_OSCILLATION_ANGLE_KEY:
             half = new_value // 2
-            self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, f"{-half},{half}")
-            self._shakehorizonangle = new_value
-            return
-        if self._oscillation_angle_key == SHAKEHORIZONANGLE_KEY:
-            self._send_command(SHAKEHORIZONANGLE_KEY, new_value)
-            self._shakehorizonangle = new_value
-            return
-        raise NotImplementedError("Attempting to set shakehorizonangle on a device that doesn't support it.")
+            command_value = f"{-half},{half}"
+        elif self._oscillation_angle_key == SHAKEHORIZONANGLE_KEY:
+            command_value = new_value
+        else:
+            raise NotImplementedError("Attempting to set shakehorizonangle on an unsupported command key.")
+
+        self._send_command(self._oscillation_angle_key, command_value)
+        self._shakehorizonangle = new_value
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -159,7 +161,7 @@ class PyDreoTowerFan(PyDreoFanBase):
             self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
         self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
-        if self._shakehorizonangle is None and self._oscillation_angle_key in (None, HORIZONTAL_OSCILLATION_ANGLE_KEY):
+        if self._shakehorizonangle is None and self._oscillation_angle_key != SHAKEHORIZONANGLE_KEY:
             hoscangle = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
             parsed_hoscangle = self._parse_hoscangle(hoscangle)
             if parsed_hoscangle is not None:
