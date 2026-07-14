@@ -37,7 +37,11 @@ class PyDreoTowerFan(PyDreoFanBase):
 
     @staticmethod
     def _parse_hoscangle(value: str) -> int | None:
-        """Parse hoscangle string (`left,right`) into a total sweep width."""
+        """Parse hoscangle string (`left,right`) into total sweep width.
+
+        Returns the computed width (`right - left`) when the input is valid and ordered.
+        Returns None when input is missing, malformed, or not an increasing range.
+        """
         if not isinstance(value, str):
             return None
         angles = value.split(",", maxsplit=1)
@@ -143,6 +147,8 @@ class PyDreoTowerFan(PyDreoFanBase):
         if self._oscillation_angle_key == SHAKEHORIZONANGLE_KEY:
             self._send_command(SHAKEHORIZONANGLE_KEY, new_value)
             self._shakehorizonangle = new_value
+            return
+        raise NotImplementedError("Attempting to set shakehorizonangle on a device that doesn't support it.")
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -153,7 +159,7 @@ class PyDreoTowerFan(PyDreoFanBase):
             self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
         self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
-        if self._shakehorizonangle is None and self._oscillation_angle_key != SHAKEHORIZONANGLE_KEY:
+        if self._shakehorizonangle is None and self._oscillation_angle_key in (None, HORIZONTAL_OSCILLATION_ANGLE_KEY):
             hoscangle = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
             parsed_hoscangle = self._parse_hoscangle(hoscangle)
             if parsed_hoscangle is not None:
