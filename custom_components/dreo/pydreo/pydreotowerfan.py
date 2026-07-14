@@ -33,7 +33,7 @@ class PyDreoTowerFan(PyDreoFanBase):
         self._shakehorizon = None
         self._oscillating = None
         self._shakehorizonangle = None
-        self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
+        self._oscillation_angle_key = None
 
     @staticmethod
     def _parse_hoscangle(value: str) -> int | None:
@@ -138,20 +138,22 @@ class PyDreoTowerFan(PyDreoFanBase):
         if self._oscillation_angle_key == HORIZONTAL_OSCILLATION_ANGLE_KEY:
             half = new_value // 2
             self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, f"{-half},{half}")
+            self._shakehorizonangle = new_value
             return
-        if self._shakehorizonangle is not None:
+        if self._oscillation_angle_key == SHAKEHORIZONANGLE_KEY:
             self._send_command(SHAKEHORIZONANGLE_KEY, new_value)
+            self._shakehorizonangle = new_value
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
 
+        if SHAKEHORIZONANGLE_KEY in state:
+            self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
         self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
-        if self._shakehorizonangle is not None:
-            self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
-        else:
+        if self._shakehorizonangle is None and self._oscillation_angle_key != SHAKEHORIZONANGLE_KEY:
             hoscangle = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
             parsed_hoscangle = self._parse_hoscangle(hoscangle)
             if parsed_hoscangle is not None:
