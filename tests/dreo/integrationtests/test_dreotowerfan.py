@@ -4,7 +4,7 @@
 import logging
 from unittest.mock import patch
 import pytest
-from custom_components.dreo import fan, switch, sensor
+from custom_components.dreo import fan, number, switch, sensor
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
@@ -372,6 +372,24 @@ class TestDreoTowerFan(IntegrationTestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             misting.turn_off()
             mock_send_command.assert_called_once_with(fan, {MISTON_KEY: False})
+
+    def test_HTF021AS_hoscangle_fallback(self):  # pylint: disable=invalid-name
+        """Load HTF021AS fan and expose oscillation angle number entity."""
+        self.get_devices_file_name = "get_devices_HTF021AS.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+
+        assert fan.model == "DR-HTF021AS"
+        assert fan.shakehorizonangle == 90
+
+        numbers = number.get_entries([fan])
+        oscillation_angle = next(n for n in numbers if n.entity_description.key == "Oscillation Angle")
+        assert oscillation_angle.native_value == 90
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            oscillation_angle.set_native_value(60)
+            mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-30,30"})
 
     def test_HTF007S(self):  # pylint: disable=invalid-name
         """Load HTF007S tower fan (old revision, CMS89F7518/EUR MCU) and test HA entity.

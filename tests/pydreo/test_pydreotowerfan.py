@@ -690,6 +690,26 @@ class TestPyDreoTowerFan(TestBase):
             fan.mist = False
             mock_send_command.assert_called_once_with(fan, {MISTON_KEY: False})
 
+    def test_HTF021AS_hoscangle_fallback(self):  # pylint: disable=invalid-name
+        """Load HTF021AS tower fan and map hoscangle to shakehorizonangle."""
+        self.get_devices_file_name = "get_devices_HTF021AS.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan = self.pydreo_manager.devices[0]
+
+        assert fan.model == "DR-HTF021AS"
+        assert fan.speed_range == (1, 12)
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
+        assert fan.shakehorizonangle == 90
+        assert fan.is_feature_supported("shakehorizonangle") is True
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.shakehorizonangle = 60
+            mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-30,30"})
+
+        fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-15,15"}})
+        assert fan.shakehorizonangle == 30
+
     def test_HTF011S(self):  # pylint: disable=invalid-name
         """Load HTF011S tower fan and test sending commands."""
 
