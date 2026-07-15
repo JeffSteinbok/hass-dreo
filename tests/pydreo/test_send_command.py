@@ -39,6 +39,19 @@ class TestSendCommand(TestBase):
         with patch(PATCH_TRANSPORT_SEND, side_effect=simulate_ack):
             fan.is_on = True
 
+    def test_send_command_success_with_control_reply_ack(self):
+        """Test that send_command also accepts control-reply as ACK."""
+        fan = self._load_fan()
+
+        def simulate_control_reply_ack(content):
+            """Simulate server sending back a control-reply ACK."""
+            self.pydreo_manager._transport_consume_message(
+                {"devicesn": fan.serial_number, "method": "control-reply", "reported": {POWERON_KEY: True}}
+            )
+
+        with patch(PATCH_TRANSPORT_SEND, side_effect=simulate_control_reply_ack):
+            fan.is_on = True
+
     def test_send_command_retries_on_timeout(self):
         """Test that send_command retries when no ACK is received."""
         fan = self._load_fan()

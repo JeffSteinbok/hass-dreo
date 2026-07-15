@@ -31,7 +31,7 @@ from .pydreoevaporativecooler import PyDreoEvaporativeCooler
 _LOGGER = logging.getLogger(__name__)
 
 _COMMAND_ACK_TIMEOUT = 2  # seconds to wait for server to confirm command
-_ACK_METHOD_NAME = "control-report"  # wait for device confirmation
+_ACK_METHOD_NAMES = {"control-report", "control-reply"}  # consider fast server reply and later device confirmation as ack
 _MAX_COMMAND_RETRIES = 2  # retry failed commands up to this many times
 
 _DREO_DEVICE_TYPE_TO_CLASS = {
@@ -567,21 +567,21 @@ class PyDreo:  # pylint: disable=function-redefined
             return ack_received
 
     def _handle_command_ack(self, device_sn: Optional[str], method: Optional[str], reported: Optional[dict]) -> None:
-        """Signal ack received when server sends control-report for our device.
+        """Signal ack received when server sends control-reply/control-report for our device.
 
         Some Dreo devices (e.g. humidifier) do not echo back the changed parameter
-        in the control-report, so strict param matching would always fail.
-        Any control-report for the correct device is therefore treated as an ACK;
+        in the response payload, so strict param matching would always fail.
+        Any control-reply/control-report for the correct device is therefore treated as an ACK;
         the actual resulting state is updated separately by handle_server_update.
         """
-        if device_sn is None or method != _ACK_METHOD_NAME:
+        if device_sn is None or method not in _ACK_METHOD_NAMES:
             return
         _LOGGER.debug("_handle_command_ack: Got %s for %s, pending=%s, reported=%s", method, device_sn, self._pending_command_device, reported)
         with self._command_condition:
             if self._pending_command_device != device_sn:
                 _LOGGER.debug("_handle_command_ack: Ignoring, pending device is %s", self._pending_command_device)
                 return
-            # Accept any control-report for the correct device as an ACK.
+            # Accept any control-reply/control-report for the correct device as an ACK.
             _LOGGER.debug("_handle_command_ack: Signaling ack for %s, reported=%s", device_sn, reported)
             self._ack_received = True
             self._command_condition.notify_all()
