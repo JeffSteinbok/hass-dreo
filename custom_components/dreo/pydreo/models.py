@@ -372,7 +372,11 @@ SUPPORTED_DEVICES = {
     "DR-HCF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.CEILING_FAN,
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
-        device_ranges={SPEED_RANGE: (1, 12), "atm_brightness_range": (1, 100), "rgb_effect_range": (0, 7), "supports_direct_rgb_color": True},
+        # HCF007S uses rgbpresetsel/rgbpresetnum for RGB control (like the HCF002S CFRGB variant).
+        # The rgbeffectid field in device state is read-only metadata and does NOT respond
+        # to write commands; only RGBPRESETSEL_KEY commands actually change the LED ring.
+        # Direct RGB colour via ATMCOLOR_KEY is also not supported (no atmcolor in state).
+        device_ranges={SPEED_RANGE: (1, 12), "atm_brightness_range": (1, 100)},
     ),
     "DR-HCF521S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
     # Air Purifiers
