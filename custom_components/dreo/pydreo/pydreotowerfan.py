@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import SHAKEHORIZON_KEY, SHAKEHORIZONANGLE_KEY, OSCILLATION_KEY, SPEED_RANGE
+from .constant import SHAKEHORIZON_KEY, SHAKEHORIZONANGLE_KEY, OSCILLATION_KEY, HORIZONTAL_OSCILLATION_ANGLE_KEY, SPEED_RANGE
 
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
@@ -33,6 +33,28 @@ class PyDreoTowerFan(PyDreoFanBase):
         self._shakehorizon = None
         self._oscillating = None
         self._shakehorizonangle = None
+        self._oscillation_angle_key = None
+
+    @staticmethod
+    def _parse_hoscangle(value: str) -> int | None:
+        """Parse hoscangle string (`left,right`) into total sweep width.
+
+        Returns the computed width (`right - left`) when the input is valid and ordered.
+        Returns None when input is missing, malformed, or not an increasing range.
+        """
+        if not isinstance(value, str):
+            return None
+        angles = value.split(",", maxsplit=1)
+        if len(angles) != 2:
+            return None
+        try:
+            left = int(angles[0])
+            right = int(angles[1])
+        except ValueError:
+            return None
+        if left < right:
+            return right - left
+        return None
 
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
         """Parse the speed range from a control node"""
@@ -113,20 +135,39 @@ class PyDreoTowerFan(PyDreoFanBase):
     def shakehorizonangle(self, value: int) -> None:
         """Set the oscillation angle."""
         _LOGGER.debug("shakehorizonangle: shakehorizonangle.setter")
-        if self._shakehorizonangle is not None:
-            new_value = int(value)
-            if self._shakehorizonangle == new_value:
-                _LOGGER.debug("shakehorizonangle: shakehorizonangle - value already %s, skipping command", new_value)
-                return
-            self._send_command(SHAKEHORIZONANGLE_KEY, new_value)
+        new_value = int(value)
+        if self._oscillation_angle_key is None:
+            raise RuntimeError("Oscillation angle command key has not been initialized from device state yet.")
+        if self._shakehorizonangle == new_value:
+            _LOGGER.debug("shakehorizonangle: shakehorizonangle - value already %s, skipping command", new_value)
+            return
+        if self._oscillation_angle_key == HORIZONTAL_OSCILLATION_ANGLE_KEY:
+            half = new_value // 2
+            command_value = f"{-half},{half}"
+        elif self._oscillation_angle_key == SHAKEHORIZONANGLE_KEY:
+            command_value = new_value
+        else:
+            raise RuntimeError(f"Internal error: unsupported oscillation angle key {self._oscillation_angle_key}. This is a bug in the integration.")
+
+        self._send_command(self._oscillation_angle_key, command_value)
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
 
+        shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
+        if shakehorizonangle is not None:
+            self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
         self._shakehorizon = self.get_state_update_value(state, SHAKEHORIZON_KEY)
-        self._shakehorizonangle = self.get_state_update_value(state, SHAKEHORIZONANGLE_KEY)
+        self._shakehorizonangle = shakehorizonangle
+        # If shakehorizonangle is unavailable (including first-state load), fall back to hoscangle.
+        if self._shakehorizonangle is None and self._oscillation_angle_key != SHAKEHORIZONANGLE_KEY:
+            hoscangle = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY)
+            parsed_hoscangle = self._parse_hoscangle(hoscangle)
+            if parsed_hoscangle is not None:
+                self._shakehorizonangle = parsed_hoscangle
+                self._oscillation_angle_key = HORIZONTAL_OSCILLATION_ANGLE_KEY
         self._oscillating = self.get_state_update_value(state, OSCILLATION_KEY)
 
     def handle_server_update(self, message):
@@ -142,6 +183,13 @@ class PyDreoTowerFan(PyDreoFanBase):
         val_shakehorizonangle = self.get_server_update_key_value(message, SHAKEHORIZONANGLE_KEY)
         if isinstance(val_shakehorizonangle, int):
             self._shakehorizonangle = val_shakehorizonangle
+            self._oscillation_angle_key = SHAKEHORIZONANGLE_KEY
+
+        val_hoscangle = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
+        parsed_hoscangle = self._parse_hoscangle(val_hoscangle)
+        if parsed_hoscangle is not None and not isinstance(val_shakehorizonangle, int):
+            self._shakehorizonangle = parsed_hoscangle
+            self._oscillation_angle_key = HORIZONTAL_OSCILLATION_ANGLE_KEY
 
         val_horiz_oscillation = self.get_server_update_key_value(message, OSCILLATION_KEY)
         if isinstance(val_horiz_oscillation, bool):

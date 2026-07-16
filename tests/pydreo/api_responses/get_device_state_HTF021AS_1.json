@@ -1,0 +1,61 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_ssid": "**REDACTED**",
+      "windlevel": {
+        "state": 12,
+        "timestamp": 1783536095
+      },
+      "windtype": {
+        "state": 4,
+        "timestamp": 1783522982
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1783536137
+      },
+      "ismist": {
+        "state": true,
+        "timestamp": 1783522982
+      },
+      "miston": {
+        "state": false,
+        "timestamp": 1783522982
+      },
+      "voiceon": {
+        "state": true,
+        "timestamp": 1783535620
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1783522982
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1783522982
+      },
+      "oscon": {
+        "state": false,
+        "timestamp": 1783535760
+      },
+      "hoscangle": {
+        "state": "-45,45",
+        "timestamp": 1783535753
+      },
+      "temperature": {
+        "state": 73,
+        "timestamp": 1783539746
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1783522982
+      }
+    },
+    "sn": "HTF021AS_1",
+    "productId": "**REDACTED**",
+    "region": "eu-central-1/emq",
+    "deviceInfo": null
+  }
+}
