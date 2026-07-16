@@ -187,7 +187,7 @@ class PyDreoTowerFan(PyDreoFanBase):
 
         val_hoscangle = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
         parsed_hoscangle = self._parse_hoscangle(val_hoscangle)
-        if parsed_hoscangle is not None:
+        if parsed_hoscangle is not None and not isinstance(val_shakehorizonangle, int):
             self._shakehorizonangle = parsed_hoscangle
             self._oscillation_angle_key = HORIZONTAL_OSCILLATION_ANGLE_KEY
 
