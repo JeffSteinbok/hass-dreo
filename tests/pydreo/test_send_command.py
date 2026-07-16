@@ -49,8 +49,9 @@ class TestSendCommand(TestBase):
                 {"devicesn": fan.serial_number, "method": "control-reply", "reported": {POWERON_KEY: True}}
             )
 
-        with patch(PATCH_TRANSPORT_SEND, side_effect=simulate_control_reply_ack):
+        with patch(PATCH_TRANSPORT_SEND, side_effect=simulate_control_reply_ack) as mock_transport, patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1):
             fan.is_on = True
+            assert mock_transport.call_count == 1
 
     def test_send_command_retries_on_timeout(self):
         """Test that send_command retries when no ACK is received."""
