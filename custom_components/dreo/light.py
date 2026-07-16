@@ -453,14 +453,14 @@ class DreoRGBICLightHA(DreoLightHA):
                         new_id = self._build_effect_id(current_id, effect_idx)
                         if new_id is not None:
                             self.pydreo_device.rgb_effect_id = new_id
-                except (ValueError, IndexError):
+                except ValueError, IndexError:
                     _LOGGER.warning("turn_on: Invalid effect name %s", effect)
             elif effect.startswith("Preset "):
                 # Preset system: send rgbpresetsel index
                 try:
                     preset_idx = int(effect.split(" ")[1]) - 1
                     self.pydreo_device.rgb_preset_sel = preset_idx
-                except (ValueError, IndexError):
+                except ValueError, IndexError:
                     _LOGGER.warning("turn_on: Invalid effect name %s", effect)
 
 
@@ -571,8 +571,10 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
         rgblevel = getattr(self.device, "rgblevel", None)
         if rgblevel is None or int(rgblevel) == 0:
             return 0
+        # Map: level according to number of levels
+        return int(255 / (max(self._levels)) * rgblevel)
         # Map: 1 (low) -> 128, 2 (full) -> 255
-        return 128 if int(rgblevel) == 1 else 255
+        # return 128 if int(rgblevel) == 1 else 255
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:
@@ -610,7 +612,7 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
             if ATTR_BRIGHTNESS in kwargs and self._has_brightness:
                 brightness = kwargs[ATTR_BRIGHTNESS]
                 # Map HA brightness (1-255) to rgblevel: 1-127 -> 1 (low), 128-255 -> 2 (full)
-                desired_level = 1 if brightness < 128 else 2
+                desired_level = round(brightness / 255 * (max(self._levels)))
             else:
                 # Default to full brightness
                 desired_level = max(self._levels)

@@ -260,7 +260,9 @@
         "name": "Ambient Light Mode",
         "state": {
           "humidity": "Humidity",
-          "color": "Color"
+          "color": "Color",
+          "breath": "Breath",
+          "cycle": "Cycle"
         }
       },
       "three_d_angle_preset": {

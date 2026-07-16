@@ -110,6 +110,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.NUMBER)
         platforms.add(Platform.BINARY_SENSOR)
         platforms.add(Platform.LIGHT)
+        platforms.add(Platform.SELECT)
 
     pydreo_manager.start_transport()
 

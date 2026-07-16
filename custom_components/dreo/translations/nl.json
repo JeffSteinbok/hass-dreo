@@ -260,7 +260,9 @@
         "name": "Sfeerverlichtingsmodus",
         "state": {
           "humidity": "Vochtigheid",
-          "color": "Kleur"
+          "color": "Kleur",
+          "breath": "Ademen",
+          "cycle": "cyclisch"
         }
       },
       "three_d_angle_preset": {
