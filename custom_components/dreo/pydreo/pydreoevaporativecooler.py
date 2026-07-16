@@ -293,16 +293,19 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         """Map ambient light on/off requests onto the device's rgbon field."""
         desired_on = int(value) > 0
         if self._rgbbri is not None:
-            if self._rgbbri == value:
-                _LOGGER.debug(
-                    "rgblevel: rgblevel - value already %s, skipping command",
-                    value,
-                )
+            level = int(value)
+            if self._rgb_light_on != desired_on:
+                self._rgb_light_on = desired_on
+                self._send_command(RGB_ON_KEY, desired_on)
+            if not desired_on:
                 return
-            self._rgbbri = value
-            self._send_command(RGB_BRI, value)
+            if self._rgbbri == level:
+                _LOGGER.debug("rgblevel: rgblevel - value already %s, skipping command", level)
+                return
+            self._rgbbri = level
+            self._send_command(RGB_BRI, level)
             return
-        if self._rgb_light_on == desired_on:
+    if self._rgb_light_on == desired_on:
             _LOGGER.debug("rgblevel: rgblevel - value already %s, skipping command", desired_on)
             return
         self._rgb_light_on = desired_on
