@@ -573,8 +573,6 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
             return 0
         # Map: level according to number of levels
         return int(255 / (max(self._levels)) * rgblevel)
-        # Map: 1 (low) -> 128, 2 (full) -> 255
-        # return 128 if int(rgblevel) == 1 else 255
 
     @property
     def rgb_color(self) -> tuple[int, int, int] | None:
@@ -611,8 +609,8 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
             # Older firmware path: use rgblevel and rgb* keys.
             if ATTR_BRIGHTNESS in kwargs and self._has_brightness:
                 brightness = kwargs[ATTR_BRIGHTNESS]
-                # Map HA brightness (1-255) to rgblevel: 1-127 -> 1 (low), 128-255 -> 2 (full)
-                desired_level = round(brightness / 255 * (max(self._levels)))
+                # Map HA brightness (1-255) to number of rgblevels:
+                desired_level = min(max(self._levels), max(1, round(brightness / 255 * (max(self._levels)))))
             else:
                 # Default to full brightness
                 desired_level = max(self._levels)
