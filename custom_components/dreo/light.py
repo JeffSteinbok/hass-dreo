@@ -453,14 +453,14 @@ class DreoRGBICLightHA(DreoLightHA):
                         new_id = self._build_effect_id(current_id, effect_idx)
                         if new_id is not None:
                             self.pydreo_device.rgb_effect_id = new_id
-                except ValueError, IndexError:
+                except (ValueError, IndexError):
                     _LOGGER.warning("turn_on: Invalid effect name %s", effect)
             elif effect.startswith("Preset "):
                 # Preset system: send rgbpresetsel index
                 try:
                     preset_idx = int(effect.split(" ")[1]) - 1
                     self.pydreo_device.rgb_preset_sel = preset_idx
-                except ValueError, IndexError:
+                except (ValueError, IndexError):
                     _LOGGER.warning("turn_on: Invalid effect name %s", effect)
 
 
