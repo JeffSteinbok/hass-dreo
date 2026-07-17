@@ -386,10 +386,16 @@ class TestDreoTowerFan(IntegrationTestBase):
         numbers = number.get_entries([fan])
         oscillation_angle = next(n for n in numbers if n.entity_description.key == "Oscillation Angle")
         assert oscillation_angle.native_value == 90
+        assert oscillation_angle.native_min_value == 30
+        assert oscillation_angle.native_max_value == 150
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             oscillation_angle.set_native_value(60)
             mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-30,30"})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            oscillation_angle.set_native_value(150)
+            mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-75,75"})
 
     def test_HTF007S(self):  # pylint: disable=invalid-name
         """Load HTF007S tower fan (old revision, CMS89F7518/EUR MCU) and test HA entity.
