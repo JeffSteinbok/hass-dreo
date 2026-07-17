@@ -702,10 +702,15 @@ class TestPyDreoTowerFan(TestBase):
         assert fan.preset_modes == ["normal", "natural", "sleep", "auto"]
         assert fan.shakehorizonangle == 90
         assert fan.is_feature_supported("shakehorizonangle") is True
+        assert fan.device_definition.device_ranges.get("shakehorizonangle_range") == (30, 150)
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.shakehorizonangle = 60
             mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-30,30"})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.shakehorizonangle = 150
+            mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-75,75"})
 
         fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-15,15"}})
         assert fan.shakehorizonangle == 30

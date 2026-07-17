@@ -288,7 +288,7 @@ SUPPORTED_DEVICES = {
             ("sleep", 3),
             ("auto", 4),
         ],
-        device_ranges={SPEED_RANGE: (1, 12)},
+        device_ranges={SPEED_RANGE: (1, 12), "shakehorizonangle_range": (30, 150)},
     ),
     "DR-HTF518S": DreoDeviceDetails(
         device_type=DreoDeviceType.TOWER_FAN,
