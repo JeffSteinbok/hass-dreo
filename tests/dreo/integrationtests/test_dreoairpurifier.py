@@ -260,3 +260,36 @@ class TestDreoAirPurifier(IntegrationTestBase):
             self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_ap])
             self.verify_expected_entities(sensors, ["pm25"])
+
+    def test_HAP009S(self):  # pylint: disable=invalid-name
+        """Load HAP009S air purifier with empty controlsConf and test HA fan entity."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HAP009S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_ap = self.pydreo_manager.devices[0]
+            assert pydreo_ap.type == "Air Purifier"
+            assert pydreo_ap.model == "DR-HAP009S"
+            assert pydreo_ap.series_name == "539S/539AS"
+            assert pydreo_ap.speed_range == (1, 4)
+            assert pydreo_ap.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
+            ha_fan = fan.DreoFanHA(pydreo_ap)
+            assert ha_fan.speed_count == 4
+            assert ha_fan.unique_id is not None
+            assert ha_fan.name is not None
+            assert ha_fan.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_ap, {POWERON_KEY: True})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(100)
+                mock_send_command.assert_called_once_with(pydreo_ap, {WINDLEVEL_KEY: 4})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "sleep"})

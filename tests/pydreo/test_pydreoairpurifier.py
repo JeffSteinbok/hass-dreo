@@ -140,6 +140,22 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["manual"]
 
+    def test_HAP009S(self):  # pylint: disable=invalid-name
+        """Test DR-HAP009S Air Purifier with empty controlsConf."""
+
+        self.get_devices_file_name = "get_devices_HAP009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP009S"
+        assert air_purifier.series_name == "539S/539AS"
+        assert air_purifier.speed_range == (1, 4)
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "sleep"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "sleep"})
+
     def test_air_purifier_preset_mode_variant_mapping(self):
         """Mode variants like auto-regular should still map to the base preset mode."""
         self.get_devices_file_name = "get_devices_HAP003S.json"
@@ -164,4 +180,3 @@ class TestPyDreoAirPurifier(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             air_purifier.preset_mode = "sleep"
             mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "sleep"})
-
