@@ -447,6 +447,36 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
 
+    def test_HPF015S_old_rev(self):  # pylint: disable=invalid-name
+        """Test HPF015S hardware revision with the bare SC95F8613B MCU.
+
+        The override_fn should not fire; the vertical angle range stays at the
+        conservative (0, 90) default from the device definition.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HPF015S_2REVS.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 2
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            assert pydreo_fan.model == "DR-HPF015S"
+            assert pydreo_fan.vertical_angle_range == (0, 90)
+
+    def test_HPF015S_new_rev(self):  # pylint: disable=invalid-name
+        """Test HPF015S new hardware revision (SC95F8613B/GL MCU, Matter-capable).
+
+        The override_fn should widen the vertical angle range to (-30, 90) since this
+        revision can physically tilt below horizontal, like the DR-HPF017S sibling.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HPF015S_2REVS.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 2
+
+            pydreo_fan = self.pydreo_manager.devices[1]
+            assert pydreo_fan.model == "DR-HPF015S"
+            assert pydreo_fan.vertical_angle_range == (-30, 90)
+
     def test_HPF017S(self):  # pylint: disable=invalid-name
         """Test HPF017S fan uses fanon for on/off commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
