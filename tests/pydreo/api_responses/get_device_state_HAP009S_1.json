@@ -1,0 +1,138 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -51,
+        "timestamp": 1784311100
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1784311563
+      },
+      "lifetime": {
+        "state": 100,
+        "timestamp": 1784311100
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1784311100
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1784311102
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1784311100
+      },
+      "mode": {
+        "state": "auto-regular",
+        "timestamp": 1784311514
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1784311100
+      },
+      "network_latency": {
+        "state": 264,
+        "timestamp": 1784311101
+      },
+      "rgbalwayson": {
+        "state": true,
+        "timestamp": 1784311548
+      },
+      "rgblevel": {
+        "state": 3,
+        "timestamp": 1784311100
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1784311100
+      },
+      "mcu_firmware_version": {
+        "state": "0.2.6",
+        "timestamp": 1784311100
+      },
+      "module_hardware_mac": {
+        "state": "**REDACTED**",
+        "timestamp": 1784311100
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1784311100
+      },
+      "wifi_ssid": {
+        "state": "**REDACTED**",
+        "timestamp": 1784311100
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8573/GL",
+        "timestamp": 1784311100
+      },
+      "windlevel": {
+        "state": 1,
+        "timestamp": 1784311505
+      },
+      "autoon": {
+        "state": true,
+        "timestamp": 1784311538
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1784311100
+      },
+      "module_firmware_version": {
+        "state": "3.8.4",
+        "timestamp": 1784311100
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1784311100
+      },
+      "aq": {
+        "state": 1,
+        "timestamp": 1784311765
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1784311102
+        },
+        "timestamp": null
+      },
+      "dumpoff": {
+        "state": false,
+        "timestamp": 1784311100
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1784311100
+      },
+      "pm25": {
+        "state": 1,
+        "timestamp": 1784311765
+      },
+      "ledalwayson": {
+        "state": true,
+        "timestamp": 1784311100
+      },
+      "childlockon": {
+        "state": true,
+        "timestamp": 1784311418
+      },
+      "worktime": {
+        "state": 0,
+        "timestamp": 1784311100
+      }
+    },
+    "sn": "HAP009S_1",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}

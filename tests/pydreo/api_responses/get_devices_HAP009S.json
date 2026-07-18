@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1987823056888852482",
+        "sn": "HAP009S_1",
+        "brand": "Dreo",
+        "model": "DR-HAP009S",
+        "productId": "**REDACTED**",
+        "productName": "Air Purifier",
+        "deviceName": "DEBUGTEST - Air Purifier - DR-HAP009S",
+        "shared": false,
+        "series": null,
+        "seriesName": "539S/539AS",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        }
+      }
+    ]
+  }
+}
