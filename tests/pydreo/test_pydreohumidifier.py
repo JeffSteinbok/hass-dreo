@@ -271,6 +271,19 @@ class TestPyDreoHumidifier(TestBase):
         assert humidifier.is_feature_supported("water_level") is True
         assert humidifier.water_level == "ok"
 
+    def test_HHM003S_ledlevel_one_maps_without_error(self):  # pylint: disable=invalid-name
+        """Test HHM003S ledlevel value 1 maps to display light on without logging an error."""
+        self.get_devices_file_name = "get_devices_HHM003S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        self.caplog.clear()
+        humidifier.update_state({LEDLEVEL_KEY: {"state": 1}})
+
+        assert humidifier.display_light is True
+        assert "Value (1) not in mapping for key ledlevel" not in self.caplog.text
+
     def test_HHM015S(self):  # pylint: disable=invalid-name
         """Load HHM015S (HM755S) and test humidity properties."""
 
