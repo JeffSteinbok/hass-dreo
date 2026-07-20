@@ -118,9 +118,9 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         _LOGGER.debug("turn_on: turn_on")
         if preset_mode is not None:
             self.set_preset_mode(preset_mode)
-        elif percentage is not None:
+        if percentage is not None:
             self.set_percentage(percentage)
-        else:
+        if preset_mode is None and percentage is None:
             self.device.is_on = True
 
     def turn_off(self, **kwargs: Any) -> None:

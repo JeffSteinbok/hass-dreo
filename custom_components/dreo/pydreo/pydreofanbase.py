@@ -163,7 +163,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if fan_speed < self._speed_range[0] or fan_speed > self._speed_range[1]:
             _LOGGER.error("fan_speed: Fan speed %s is not in the acceptable range: %s", fan_speed, self._speed_range)
             raise ValueError(f"fan_speed must be between {self._speed_range[0]} and {self._speed_range[1]}")
-        if self._fan_speed == fan_speed:
+        if self._fan_speed == fan_speed and self._is_on:
             _LOGGER.debug("fan_speed: fan_speed - value already %s, skipping command", fan_speed)
             return
         self._send_command(WINDLEVEL_KEY, fan_speed)
@@ -212,7 +212,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if numeric_value is not None:
             # Check current value
             current_value = self._wind_mode if self._wind_mode is not None else self._wind_type
-            if current_value == numeric_value:
+            if current_value == numeric_value and self._is_on:
                 _LOGGER.debug("preset_mode: preset_mode - value already %s, skipping command", value)
                 return
             self._send_command(key, numeric_value)
