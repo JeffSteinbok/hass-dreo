@@ -641,7 +641,7 @@ class TestPyDreoAirCirculator(TestBase):
         # Test initial state values
         assert fan.is_on is True
         assert fan.speed_range == (1, 9)
-        assert fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo"]
+        assert fan.preset_modes == ["normal", "auto", "sleep", "natural", "turbo"]
         assert fan.preset_mode == "normal"  # Initial mode is 1 which is "normal"
         assert fan.horizontally_oscillating is False
         assert fan.oscillating is False
@@ -707,8 +707,8 @@ class TestPyDreoAirCirculator(TestBase):
         # Test preset mode commands
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "auto"
-            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
-        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 2})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "sleep"
@@ -717,8 +717,8 @@ class TestPyDreoAirCirculator(TestBase):
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "natural"
-            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 2})
-        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
+            mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
+        fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "turbo"
