@@ -383,10 +383,11 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan.speed_range == (1, 12)
         assert fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
 
-        # HCF007S uses the RGBIC preset system - no direct colour control
+        # HCF007S uses the RGBIC preset system for pattern selection; direct colour
+        # writes via ATMCOLOR_KEY are also supported (write-only, no state echo).
         assert fan.is_feature_supported("atm_light") is True
-        assert fan.is_feature_supported("atm_color_rgb") is False
-        assert fan.is_feature_supported("atm_color_rgb_write") is False
+        assert fan.is_feature_supported("atm_color_rgb") is False  # no atmcolor in state
+        assert fan.is_feature_supported("atm_color_rgb_write") is True  # write-only colour control
         # rgb_effect_id is NOT enabled (rgb_effect_range removed from model)
         assert fan.is_feature_supported("rgb_effect_id") is False
         assert fan.is_feature_supported("rgb_preset") is True

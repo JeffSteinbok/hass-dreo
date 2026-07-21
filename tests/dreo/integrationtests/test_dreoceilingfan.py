@@ -7,7 +7,7 @@ from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo import light
-from custom_components.dreo.haimports import ColorMode
+from custom_components.dreo.haimports import ColorMode, ATTR_RGB_COLOR
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
@@ -418,14 +418,14 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 mock_send_command.assert_any_call(pydreo_fan, {WINDLEVEL_KEY: 12})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
 
-            # ---- RGBIC atmosphere light (preset-based, not effect-ID) ----
+            # ---- RGBIC atmosphere light (preset-based, with direct RGB colour write) ----
             lights = light.get_entries([pydreo_fan])
             self.verify_expected_entities(lights, ["Light", "RGBIC Light"])
 
             rgbic_light = self.get_entity_by_key(lights, "RGBIC Light")
             assert rgbic_light is not None
-            # No direct colour control - brightness mode only
-            assert rgbic_light.color_mode == ColorMode.BRIGHTNESS
+            # Device accepts ATMCOLOR_KEY commands (write-only) so RGB colour mode is enabled
+            assert rgbic_light.color_mode == ColorMode.RGB
 
             # HCF007S has 4 presets (rgbpresetnum=4 in test data)
             assert rgbic_light.effect_list == ["Preset 1", "Preset 2", "Preset 3", "Preset 4"]
@@ -449,3 +449,8 @@ class TestDreoCeilingFan(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgbic_light.turn_on(brightness=128)
                 mock_send_command.assert_any_call(pydreo_fan, {ATMBRI_KEY: 50})
+
+            # Direct RGB colour control must send ATMCOLOR_KEY
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgbic_light.turn_on(**{ATTR_RGB_COLOR: (0, 255, 0)})
+                mock_send_command.assert_any_call(pydreo_fan, {ATMCOLOR_KEY: 65280})
