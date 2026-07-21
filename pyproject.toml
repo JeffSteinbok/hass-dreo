@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydreo-community"
-version = "1.10.3"
+version = "1.10.4"
 description = "Community Python library for the Dreo cloud API"
 readme = "README.md"
 license = { text = "MIT" }
@@ -33,7 +33,7 @@ where = ["custom_components/dreo"]
 include = ["pydreo*"]
 
 [tool.bumpversion]
-current_version = "1.10.3"
+current_version = "1.10.4"
 commit = true
 tag = true
 tag_name = "v{new_version}"
