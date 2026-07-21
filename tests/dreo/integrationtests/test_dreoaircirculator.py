@@ -465,8 +465,9 @@ class TestDreoAirCirculator(IntegrationTestBase):
     def test_HPF015S_new_rev(self):  # pylint: disable=invalid-name
         """Test HPF015S new hardware revision (SC95F8613B/GL MCU, Matter-capable).
 
-        The override_fn should widen the vertical angle range to (-30, 90) since this
-        revision can physically tilt below horizontal, like the DR-HPF017S sibling.
+        The override_fn should widen the vertical angle range to (-10, 90) since this
+        revision can physically tilt below horizontal; product page confirms 100° range
+        (-10° to 90°).
         """
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
             self.get_devices_file_name = "get_devices_HPF015S_2REVS.json"
@@ -475,7 +476,7 @@ class TestDreoAirCirculator(IntegrationTestBase):
 
             pydreo_fan = self.pydreo_manager.devices[1]
             assert pydreo_fan.model == "DR-HPF015S"
-            assert pydreo_fan.vertical_angle_range == (-30, 90)
+            assert pydreo_fan.vertical_angle_range == (-10, 90)
 
     def test_HPF017S(self):  # pylint: disable=invalid-name
         """Test HPF017S fan uses fanon for on/off commands."""

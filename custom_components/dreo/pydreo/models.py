@@ -216,12 +216,13 @@ def _hap003s_mcu_override(device) -> None:
 
 
 def _hpf015s_mcu_override(device) -> None:
-    """Widen vertical angle range to (-30, 90) for DR-HPF015S units with the SC95F8613B/GL MCU.
+    """Widen vertical angle range to (-10, 90) for DR-HPF015S units with the SC95F8613B/GL MCU.
 
     Newer Matter-capable hardware revisions using this chip can physically tilt below
-    horizontal (owner-verified), matching the DR-HPF017S sibling.  Other revisions keep
-    the conservative (0, 90) default from the device definition, since chips in the
-    SC95F8613B family have variants that cannot reach negative vertical angles.
+    horizontal (owner-verified).  The product page confirms a 100° vertical oscillation
+    range (-10° to 90°).  Other revisions keep the conservative (0, 90) default from the
+    device definition, since chips in the SC95F8613B family have variants that cannot
+    reach negative vertical angles.
     """
     if device.raw_state is None:
         return
@@ -229,7 +230,7 @@ def _hpf015s_mcu_override(device) -> None:
     mcu_obj = mixed.get("mcu_hardware_model", {})
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
     if mcu_model in _MCU_HPF015S_NEG_TILT_REVS:
-        device._vertical_angle_range = (-30, 90)  # pylint: disable=protected-access
+        device._vertical_angle_range = (-10, 90)  # pylint: disable=protected-access
 
 
 SUPPORTED_DEVICES = {
@@ -351,7 +352,7 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4), ("turbo", 5), ("custom", 6)],
         # Conservative default: vertical range (0, 90).
-        # Newer revision (_MCU_HPF015S_NEG_TILT_REVS MCU): widened to (-30, 90) by _hpf015s_mcu_override.
+        # Newer revision (_MCU_HPF015S_NEG_TILT_REVS MCU): widened to (-10, 90) by _hpf015s_mcu_override.
         device_ranges={SPEED_RANGE: (1, 12), HORIZONTAL_ANGLE_RANGE: (-75, 75), VERTICAL_ANGLE_RANGE: (0, 90)},
         override_fn=_hpf015s_mcu_override,
     ),
