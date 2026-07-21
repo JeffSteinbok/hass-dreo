@@ -34,10 +34,11 @@ class TestPyDreoFanBase(TestBase):
 
     # --- fan_speed setter no-op ---
     def test_fan_speed_noop_when_unchanged(self):
-        """Test fan_speed setter skips command when value hasn't changed."""
+        """Test fan_speed setter skips command when value hasn't changed and device is on."""
         fan = self._load_htf005s()
-        # Set initial speed via websocket
+        # Set initial speed via websocket (device starts ON per fixture)
         fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 5}})
+        assert fan.is_on is True
         assert fan.fan_speed == 5
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -52,10 +53,11 @@ class TestPyDreoFanBase(TestBase):
             fan.preset_mode = "turbo_mode"
 
     def test_preset_mode_noop_when_unchanged(self):
-        """Test preset_mode setter skips command when value hasn't changed."""
+        """Test preset_mode setter skips command when value hasn't changed and device is on."""
         fan = self._load_htf005s()
-        # Set wind_type to 'normal' (value 1) via websocket
+        # Set wind_type to 'normal' (value 1) via websocket (device starts ON per fixture)
         fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 1}})
+        assert fan.is_on is True
         assert fan.preset_mode == "normal"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -611,3 +613,65 @@ class TestPyDreoFanBase(TestBase):
         }
         fan.update_state(state)
         assert fan.is_on is True
+
+    # --- fan_speed setter always sends command when device is off ---
+    def test_fan_speed_sends_command_when_device_off_same_value(self):
+        """Test fan_speed setter always sends command when device is off, even if speed matches.
+
+        When turn_on(percentage=X) is called and the fan's last-known speed already
+        equals the target speed, the command must still be sent so the device powers
+        on at the requested speed rather than its firmware default.
+        """
+        fan = self._load_htf005s()
+        # Force device off and set a known speed
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 5}})
+        assert fan.is_on is False
+        assert fan.fan_speed == 5
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 5  # same value, but device is OFF
+            mock_send_command.assert_called_once_with(fan, {WINDLEVEL_KEY: 5})
+
+    def test_fan_speed_noop_when_unchanged_and_device_on(self):
+        """Test fan_speed setter skips command when value hasn't changed and device is on."""
+        fan = self._load_htf005s()
+        # Device starts ON (poweron: true in fixture)
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 5}})
+        assert fan.is_on is True
+        assert fan.fan_speed == 5
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.fan_speed = 5  # same value, device is ON
+            mock_send_command.assert_not_called()
+
+    # --- preset_mode setter always sends command when device is off ---
+    def test_preset_mode_sends_command_when_device_off_same_value(self):
+        """Test preset_mode setter always sends command when device is off, even if mode matches.
+
+        When turn_on(preset_mode=X) is called and the fan's last-known mode already
+        equals the target mode, the command must still be sent so the device powers
+        on in the requested mode rather than its firmware default.
+        """
+        fan = self._load_htf005s()
+        # Force device off and set a known preset mode
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 1}})
+        assert fan.is_on is False
+        assert fan.preset_mode == "normal"
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "normal"  # same value, but device is OFF
+            mock_send_command.assert_called_once_with(fan, {WINDTYPE_KEY: 1})
+
+    def test_preset_mode_noop_when_unchanged_and_device_on(self):
+        """Test preset_mode setter skips command when value hasn't changed and device is on."""
+        fan = self._load_htf005s()
+        # Device starts ON (poweron: true in fixture)
+        fan.handle_server_update({REPORTED_KEY: {WINDTYPE_KEY: 1}})
+        assert fan.is_on is True
+        assert fan.preset_mode == "normal"
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.preset_mode = "normal"  # same value, device is ON
+            mock_send_command.assert_not_called()

@@ -255,6 +255,27 @@ class TestDreoFanHA(TestDeviceBase):
             assert mocked_pydreo_fan.is_on is True
             assert mocked_pydreo_fan.fan_speed == 3  # unchanged
 
+    def test_turn_on_with_both_percentage_and_preset_mode(self):
+        """Test turn_on applies BOTH percentage and preset_mode when both are provided."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            mocked_pydreo_fan = self.create_mock_device(
+                name="Test Fan",
+                type="Tower Fan",
+                features={
+                    "is_on": False,
+                    "fan_speed": 1,
+                    "speed_range": (1, 5),
+                    "preset_mode": "sleep",
+                    "preset_modes": ["normal", "natural", "sleep", "auto"],
+                },
+            )
+
+            test_fan = fan.DreoFanHA(mocked_pydreo_fan)
+            test_fan.turn_on(percentage=60, preset_mode="normal")
+            assert mocked_pydreo_fan.is_on is True
+            assert mocked_pydreo_fan.preset_mode == "normal"
+            assert mocked_pydreo_fan.fan_speed == 3  # 60% of (1,5) = 3
+
     def test_fan_speed_boundaries(self):
         """Test fan speed boundary conditions."""
         with patch(PATCH_UPDATE_HA_STATE) as mock_update_ha_state:
