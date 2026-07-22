@@ -260,7 +260,9 @@
         "name": "Mode lumière d'ambiance",
         "state": {
           "humidity": "Humidité",
-          "color": "Couleur"
+          "color": "Couleur",
+          "breath": "Respirer",
+          "cycle": "cyclique"
         }
       },
       "three_d_angle_preset": {

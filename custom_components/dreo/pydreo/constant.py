@@ -69,6 +69,7 @@ RGB_LEVEL = "rgblevel"
 RGB_TH = "rgbth"
 RGB_MODE = "rgbmode"
 RGB_COLOR = "rgbcolor"
+RGB_BRI = "rgbbri"
 LED_LEVEL_KEY = "ledlevel"
 SCHEDULE_ENABLE = "scheon"
 
@@ -165,6 +166,7 @@ TEMP_RANGE = "temp_range"
 TARGET_TEMP_RANGE = "target_temp_range"
 TARGET_TEMP_RANGE_ECO = "target_temp_range_eco"
 HUMIDITY_RANGE = "humidity_range"
+RGB_MODE_RANGE = "rgb_mode_range"
 
 
 class TemperatureUnit(Enum):

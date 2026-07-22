@@ -260,7 +260,9 @@
         "name": "Modalità luce ambientale",
         "state": {
           "humidity": "Umidità",
-          "color": "Colore"
+          "color": "Colore",
+          "breath": "Respirare",
+          "cycle": "cicliche"
         }
       },
       "three_d_angle_preset": {
