@@ -31,6 +31,17 @@ jobs:
             const repo = context.repo.repo;
             const pull_number = context.payload.pull_request.number;
 
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number,
+              per_page: 100
+            });
+            if (files.length === 0) {
+              core.setFailed("Pull request has no file changes.");
+              return;
+            }
+
             const reviews = await github.paginate(github.rest.pulls.listReviews, {
               owner,
               repo,
