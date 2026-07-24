@@ -106,6 +106,38 @@ class TestDreoCeilingFan(IntegrationTestBase):
                     light_switch.turn_on(brightness=128)
                     mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
 
+    def test_HCF001S_light_atomic_turn_on(self):  # pylint: disable=invalid-name
+        """Issue #846: turning the light on together with a brightness change (as Adaptive
+        Lighting does) must be delivered as a single combined command containing both the
+        brightness and lighton=True, not as two separate sequential commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HCF001S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_fan = self.pydreo_manager.devices[0]
+
+            lights = light.get_entries([pydreo_fan])
+            light_switch = self.get_entity_by_key(lights, "Light")
+
+            # Known starting state: light off, brightness 100.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: False, BRIGHTNESS_KEY: 100}})
+
+            # Turning on with a new brightness must send ONE combined command.
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                light_switch.turn_on(brightness=128)  # 128/255*100 ≈ 50
+                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50, LIGHTON_KEY: True})
+
+            # Turning on with no attributes still sends just lighton=True.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: False}})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                light_switch.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+
+            # If the light is already on and brightness is unchanged, no command is sent.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True, BRIGHTNESS_KEY: 50}})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                light_switch.turn_on(brightness=128)  # still 50 on device scale
+                mock_send_command.assert_not_called()
+
     def test_HCF002S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
