@@ -204,17 +204,13 @@ class PyDreoCeilingFan(PyDreoFanBase):
         params: dict = {}
 
         if brightness is not None and self._brightness is not None and self._brightness != brightness:
-            self._brightness = brightness
             params[BRIGHTNESS_KEY] = brightness
 
         if color_temp is not None and self._color_temp is not None and self._color_temp != color_temp:
-            self._color_temp = color_temp
             params[COLORTEMP_KEY] = color_temp
 
         if not self._light_on:
             params[LIGHTON_KEY] = True
-
-        self._light_on = True
 
         if params:
             _LOGGER.debug("turn_light_on: sending combined command %s", params)
