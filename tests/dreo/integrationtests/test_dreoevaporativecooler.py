@@ -123,3 +123,7 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             fog_level_number = next(n for n in numbers if n.entity_description.key == "Fog Level")
             assert fog_level_number.native_min_value == 1
             assert fog_level_number.native_max_value == 4
+
+            assert pydreo_ec.temperature == 82
+            sensors = sensor.get_entries([pydreo_ec])
+            self.verify_expected_entities(sensors, ["Temperature", "Humidity", "Use since cleaning"])

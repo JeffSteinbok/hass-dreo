@@ -188,6 +188,38 @@ class PyDreoCeilingFan(PyDreoFanBase):
             return
         self._send_command(COLORTEMP_KEY, value)
 
+    def turn_light_on(self, brightness: int | None = None, color_temp: int | None = None) -> None:
+        """Turn the main light on, optionally setting brightness and/or color temperature.
+
+        Sends a single combined control command instead of separate brightness, color
+        temperature and on commands so the device receives the whole desired state
+        atomically. Adaptive Lighting and similar integrations send brightness/color
+        together with the on command; issuing them as separate sequential commands
+        caused the light to intermittently fail to turn on (issue #846).
+        """
+        if self._light_on is None:
+            _LOGGER.error("turn_light_on: Light control not supported by this fan model.")
+            return
+
+        params: dict = {}
+
+        if brightness is not None and self._brightness is not None and self._brightness != brightness:
+            self._brightness = brightness
+            params[BRIGHTNESS_KEY] = brightness
+
+        if color_temp is not None and self._color_temp is not None and self._color_temp != color_temp:
+            self._color_temp = color_temp
+            params[COLORTEMP_KEY] = color_temp
+
+        if not self._light_on:
+            params[LIGHTON_KEY] = True
+
+        self._light_on = True
+
+        if params:
+            _LOGGER.debug("turn_light_on: sending combined command %s", params)
+            self._dreo.send_command(self, params)
+
     @property
     def atm_light_on(self) -> bool | None:
         """Returns True if the atmosphere light is on, False otherwise."""

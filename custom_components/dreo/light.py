@@ -12,6 +12,7 @@ import math
 from .haimports import *  # pylint: disable=W0401,W0614
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
+from .pydreo.pydreoceilingfan import PyDreoCeilingFan
 from .pydreo.constant import DreoDeviceType  # pylint: disable=C0415
 from .dreobasedevice import DreoBaseDeviceHA
 
@@ -187,24 +188,39 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
         """
         _LOGGER.debug("turn_on: Turning on light %s", self.pydreo_device.name)
 
-        # Handle brightness adjustment BEFORE turning on to avoid a momentary jump
-        # to the previous brightness value.
+        # Compute the device-scale brightness value (HA 0-255 -> device scale).
+        computed_brightness: int | None = None
         if ATTR_BRIGHTNESS in kwargs:
             brightness = kwargs[ATTR_BRIGHTNESS]
             _LOGGER.debug("turn_on: Setting brightness to %s", brightness)
-            setattr(self.pydreo_device, self._brightness_attr, round(brightness_to_value(self._brightness_scale, brightness)))
+            computed_brightness = round(brightness_to_value(self._brightness_scale, brightness))
 
-        # Handle color temperature adjustment (also before turning on)
+        # Compute the device-scale color temperature value (Kelvin -> device percentage).
+        computed_color_temp: int | None = None
         if ATTR_COLOR_TEMP_KELVIN in kwargs:
             color_temp = kwargs[ATTR_COLOR_TEMP_KELVIN]
             _LOGGER.debug("turn_on: Setting color temperature to %s", color_temp)
             # Clamp to the device's valid range to prevent out-of-range (e.g. negative) values
             color_temp = max(self.min_color_temp_kelvin, min(self.max_color_temp_kelvin, color_temp))
-            setattr(
-                self.pydreo_device,
-                self._color_temp_attr,
-                math.ceil(ranged_value_to_percentage((self.min_color_temp_kelvin, self.max_color_temp_kelvin), color_temp)),
-            )
+            computed_color_temp = math.ceil(ranged_value_to_percentage((self.min_color_temp_kelvin, self.max_color_temp_kelvin), color_temp))
+
+        # If the device exposes an atomic combined turn-on for its main light, use it so
+        # brightness/color and the on-command are delivered in a single request. Sending
+        # them as separate sequential commands caused the light to intermittently fail to
+        # turn on (issue #846). Gated on the main light attribute so atmosphere/RGB lights
+        # (which reuse this entity with a different on attribute) keep their own behaviour.
+        if self._light_on_attr == "light_on" and isinstance(self.pydreo_device, PyDreoCeilingFan):
+            self.pydreo_device.turn_light_on(brightness=computed_brightness, color_temp=computed_color_temp)
+            return
+
+        # Handle brightness adjustment BEFORE turning on to avoid a momentary jump
+        # to the previous brightness value.
+        if computed_brightness is not None:
+            setattr(self.pydreo_device, self._brightness_attr, computed_brightness)
+
+        # Handle color temperature adjustment (also before turning on)
+        if computed_color_temp is not None:
+            setattr(self.pydreo_device, self._color_temp_attr, computed_color_temp)
 
         setattr(self.pydreo_device, self._light_on_attr, True)
 
