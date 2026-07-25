@@ -11,7 +11,8 @@ logger.setLevel(logging.DEBUG)
 
 LIGHT_KEY = "ledpotkepton"
 CM_MODE_KEY = "mode"
-COOK_TIME_REMAINING_KEY = "wkcountdown"
+COOK_TIME_ESTIMATED_KEY = "wkestdu"
+COOK_TIME_PASSED_KEY = "wkpdu"
 
 
 class TestPyDreoChefMaker(TestBase):
@@ -42,13 +43,30 @@ class TestPyDreoChefMaker(TestBase):
         assert cm.cook_time_remaining is not None
 
     def test_update_state_cook_time_remaining(self):
-        """Test update_state reads cook time remaining from state."""
+        """Remaining cook time is derived from estimated (wkestdu) minus elapsed (wkpdu)."""
         cm = self._load_chefmaker()
         state = {
-            COOK_TIME_REMAINING_KEY: {"state": 300},
+            COOK_TIME_ESTIMATED_KEY: {"state": 600},
+            COOK_TIME_PASSED_KEY: {"state": 120},
         }
         cm.update_state(state)
-        assert cm.cook_time_remaining == 300
+        assert cm.cook_time_remaining == 480
+
+    def test_cook_time_remaining_clamped_to_zero(self):
+        """Remaining cook time never goes negative when elapsed exceeds estimated."""
+        cm = self._load_chefmaker()
+        cm.update_state({
+            COOK_TIME_ESTIMATED_KEY: {"state": 300},
+            COOK_TIME_PASSED_KEY: {"state": 360},
+        })
+        assert cm.cook_time_remaining == 0
+
+    def test_cook_time_remaining_none_when_fields_absent(self):
+        """Remaining cook time is None when the device does not report the duration fields."""
+        cm = self._load_chefmaker()
+        cm._cook_time_estimated = None  # pylint: disable=protected-access
+        cm._cook_time_passed = None  # pylint: disable=protected-access
+        assert cm.cook_time_remaining is None
 
     def test_update_state_led(self):
         """Test update_state processes LED state from REST."""
@@ -63,7 +81,8 @@ class TestPyDreoChefMaker(TestBase):
             POWERON_KEY: {"state": True},
             LIGHT_KEY: {"state": 1},
             CM_MODE_KEY: {"state": "cooking"},
-            COOK_TIME_REMAINING_KEY: {"state": 1200},
+            COOK_TIME_ESTIMATED_KEY: {"state": 1500},
+            COOK_TIME_PASSED_KEY: {"state": 300},
         }
         cm.update_state(state)
         assert cm.is_on is True
@@ -148,6 +167,21 @@ class TestPyDreoChefMaker(TestBase):
         cm.handle_server_update({REPORTED_KEY: {LIGHT_KEY: 0}})
         assert cm.ledpotkepton is False
 
+    def test_handle_server_update_cook_time_remaining_785(self):
+        """Regression for #785: live diagnostics (wkestdu=360, wkpdu=0) yield remaining=360.
+
+        The device reports a static wkcountdown (300) that never counts down; remaining must be
+        derived from wkestdu minus wkpdu instead.  These values come from the real cooking-state
+        diagnostics attached to issue #329/#785.
+        """
+        cm = self._load_chefmaker()
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking", COOK_TIME_ESTIMATED_KEY: 360, COOK_TIME_PASSED_KEY: 0}})
+        assert cm.cook_time_remaining == 360
+
+        # A later update reporting more elapsed time must lower the remaining value.
+        cm.handle_server_update({REPORTED_KEY: {COOK_TIME_PASSED_KEY: 90}})
+        assert cm.cook_time_remaining == 270
+
     def test_handle_server_update_mode(self):
         """Test handle_server_update processes mode."""
         cm = self._load_chefmaker()
@@ -160,7 +194,7 @@ class TestPyDreoChefMaker(TestBase):
     def test_handle_server_update_combined(self):
         """Test handle_server_update processes multiple keys."""
         cm = self._load_chefmaker()
-        cm.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHT_KEY: 1, CM_MODE_KEY: "cooking", COOK_TIME_REMAINING_KEY: 900}})
+        cm.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHT_KEY: 1, CM_MODE_KEY: "cooking", COOK_TIME_ESTIMATED_KEY: 1000, COOK_TIME_PASSED_KEY: 100}})
         assert cm.is_on is True
         assert cm.ledpotkepton is True
         assert cm.mode == "cooking"
