@@ -15,7 +15,11 @@ if TYPE_CHECKING:
 
 LIGHT_KEY = "ledpotkepton"
 MODE_KEY = "mode"
-COOK_TIME_REMAINING_KEY = "wkcountdown"
+# The device does not report a live "remaining" value.  "wkcountdown" is a static configured
+# value (typically 300) that never changes during a cook, so remaining time is derived instead
+# from the estimated total duration minus the elapsed duration (see cook_time_remaining).
+COOK_TIME_ESTIMATED_KEY = "wkestdu"  # Estimated total cook duration in seconds.
+COOK_TIME_PASSED_KEY = "wkpdu"  # Elapsed cook duration in seconds.
 MODE_STANDBY = "standby"
 MODE_COOKING = "cooking"
 MODE_PAUSED = "ckpause"
@@ -39,7 +43,23 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._is_on = False
         self._ledpotkepton = 0
         self.mode = None
-        self.cook_time_remaining = None  # Remaining cook time in seconds from wkcountdown.
+        # Remaining cook time is derived from these two fields (see cook_time_remaining property).
+        self._cook_time_estimated = None  # wkestdu: estimated total cook duration in seconds.
+        self._cook_time_passed = None  # wkpdu: elapsed cook duration in seconds.
+
+    @property
+    def cook_time_remaining(self):
+        """Return the remaining cook time in seconds.
+
+        The device does not expose a live "remaining" field; "wkcountdown" is a static
+        configured value that never counts down.  Remaining time is therefore computed as
+        the estimated total duration (wkestdu) minus the elapsed duration (wkpdu), clamped
+        to a minimum of 0.  Returns None when the device has not reported these fields
+        (e.g. firmware that does not expose them), which keeps the sensor hidden.
+        """
+        if not isinstance(self._cook_time_estimated, int) or not isinstance(self._cook_time_passed, int):
+            return None
+        return max(0, self._cook_time_estimated - self._cook_time_passed)
 
     @property
     def is_on(self) -> bool:
@@ -93,7 +113,8 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._is_on = self.get_state_update_value(state, POWERON_KEY)
         self.set_mode_from_is_on()
         self._ledpotkepton = self.get_state_update_value(state, LIGHT_KEY)
-        self.cook_time_remaining = self.get_state_update_value(state, COOK_TIME_REMAINING_KEY)
+        self._cook_time_estimated = self.get_state_update_value(state, COOK_TIME_ESTIMATED_KEY)
+        self._cook_time_passed = self.get_state_update_value(state, COOK_TIME_PASSED_KEY)
 
         if self.is_on:
             self.mode = self.get_state_update_value(state, MODE_KEY)
@@ -130,11 +151,18 @@ class PyDreoChefMaker(PyDreoBaseDevice):
             )
             self.mode = val_mode
 
-        val_cook_time_remaining = self.get_server_update_key_value(message, COOK_TIME_REMAINING_KEY)
-        if isinstance(val_cook_time_remaining, int):
+        val_cook_time_estimated = self.get_server_update_key_value(message, COOK_TIME_ESTIMATED_KEY)
+        if isinstance(val_cook_time_estimated, int):
+            self._cook_time_estimated = val_cook_time_estimated
+
+        val_cook_time_passed = self.get_server_update_key_value(message, COOK_TIME_PASSED_KEY)
+        if isinstance(val_cook_time_passed, int):
+            self._cook_time_passed = val_cook_time_passed
+
+        if isinstance(val_cook_time_estimated, int) or isinstance(val_cook_time_passed, int):
             _LOGGER.debug(
-                "handle_server_update: cook_time_remaining: %s --> %s",
+                "handle_server_update: cook_time_remaining: estimated=%s passed=%s --> %s",
+                self._cook_time_estimated,
+                self._cook_time_passed,
                 self.cook_time_remaining,
-                val_cook_time_remaining,
             )
-            self.cook_time_remaining = val_cook_time_remaining
