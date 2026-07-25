@@ -42,6 +42,8 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
         # Original revision must NOT have the auto-silent remap flag set
         assert air_purifier._auto_mode_uses_auto_silent is False  # pylint: disable=protected-access
+        # And must not carry the HAP009S auto-regular command override
+        assert air_purifier._auto_mode_command_value is None  # pylint: disable=protected-access
 
         # Setting auto on the original revision must send "auto" unchanged
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -155,6 +157,33 @@ class TestPyDreoAirPurifier(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             air_purifier.preset_mode = "sleep"
             mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "sleep"})
+
+        # DR-HAP009S rejects plain "auto" and requires "auto-regular" (issue #860)
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+
+        # State updates reporting "auto-regular" must resolve back to preset_mode "auto"
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+        assert air_purifier.preset_mode == "auto"
+
+        # Other preset modes must be sent unchanged (no auto remap leakage)
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "turbo"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "turbo"})
+
+    def test_HAP009S_auto_regular_override_flag(self):  # pylint: disable=invalid-name
+        """DR-HAP009S must set the auto-regular command override and NOT the auto-silent flag."""
+        self.get_devices_file_name = "get_devices_HAP009S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP009S"
+        # pylint: disable=protected-access
+        assert air_purifier._auto_mode_command_value == "auto-regular"
+        assert air_purifier._auto_mode_uses_auto_silent is False
+        # pylint: enable=protected-access
 
     def test_air_purifier_preset_mode_variant_mapping(self):
         """Mode variants like auto-regular should still map to the base preset mode."""

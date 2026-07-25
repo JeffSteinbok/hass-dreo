@@ -293,3 +293,13 @@ class TestDreoAirPurifier(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("sleep")
                 mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "sleep"})
+
+            # Selecting "auto" must send "auto-regular" — the device rejects plain "auto" (issue #860)
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "auto-regular"})
+
+            # The device reports "auto-regular"; HA must surface it as the "auto" preset
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+            assert ha_fan.preset_mode == "auto"

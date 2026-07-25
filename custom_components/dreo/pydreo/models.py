@@ -215,6 +215,16 @@ def _hap003s_mcu_override(device) -> None:
         device._auto_mode_uses_auto_silent = True  # pylint: disable=protected-access
 
 
+def _hap009s_override(device) -> None:
+    """Remap the "auto" mode command to "auto-regular" for DR-HAP009S air purifiers.
+
+    The DR-HAP009S rejects the plain "auto" mode command ("instruction validate failed",
+    error 500003) and requires "auto-regular" instead (issue #860).  The device reports
+    "auto-regular" back as its state, which PyDreoFanBase.preset_mode normalizes to "auto".
+    """
+    device._auto_mode_command_value = "auto-regular"  # pylint: disable=protected-access
+
+
 def _hpf015s_mcu_override(device) -> None:
     """Widen vertical angle range to (-10, 90) for DR-HPF015S units with the SC95F8613B/GL MCU.
 
@@ -428,6 +438,8 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.AIR_PURIFIER,
         preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
         device_ranges={SPEED_RANGE: (1, 4)},
+        # The device rejects the plain "auto" mode command and requires "auto-regular" (issue #860).
+        override_fn=_hap009s_override,
     ),
     # Heaters
     "DR-HSH017BS": DreoHeaterDeviceDetails(
