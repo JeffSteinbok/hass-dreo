@@ -131,7 +131,7 @@ Sourced from GitHub issues, PRs, and contributed test data.
 
 | Model | GitHub User(s) | Evidence |
 |---|---|---|
-| DR-KCM001S | [@holstein13](https://github.com/holstein13), [@iRonin](https://github.com/iRonin), [@Ken7382](https://github.com/Ken7382), [@mattgphoto](https://github.com/mattgphoto) | [#169](https://github.com/JeffSteinbok/hass-dreo/issues/169), [#113](https://github.com/JeffSteinbok/hass-dreo/issues/113), [#329](https://github.com/JeffSteinbok/hass-dreo/issues/329), [#564](https://github.com/JeffSteinbok/hass-dreo/issues/564) |
+| DR-KCM001S | [@holstein13](https://github.com/holstein13), [@iRonin](https://github.com/iRonin), [@Ken7382](https://github.com/Ken7382), [@mattgphoto](https://github.com/mattgphoto) | [#169](https://github.com/JeffSteinbok/hass-dreo/issues/169), [#113](https://github.com/JeffSteinbok/hass-dreo/issues/113), [#329](https://github.com/JeffSteinbok/hass-dreo/issues/329), [#564](https://github.com/JeffSteinbok/hass-dreo/issues/564), [#863](https://github.com/JeffSteinbok/hass-dreo/issues/863) |
 
 ---
 
