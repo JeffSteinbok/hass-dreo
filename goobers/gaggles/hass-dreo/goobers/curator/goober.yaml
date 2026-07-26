@@ -1,0 +1,36 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Goober
+metadata:
+  name: curator
+spec:
+  gaggle: hass-dreo
+  role: curator
+  displayName: Curator
+  instructions: instructions.md
+  harness: copilot
+  model: auto
+  harnessOptions: {}
+  # Issues-only, no repo access (issue #25 scope) — enforced by capability
+  # non-injection (SEC-042/SEC-045): credentials for github:pr/repo:* are
+  # simply never materialized into this goober's run environment. agent:model
+  # sources the Copilot model token (COPILOT_GITHUB_TOKEN) distinct from the
+  # github tool's GH_TOKEN (issue #289 / multi-token creds §3.3), so the curate
+  # subprocess authenticates the model AND mutates issues at once.
+  capabilities:
+    - github:issues:write
+    - github:milestones:write
+    - agent:model
+  policyActions:
+    - assign-milestone
+    - close-issue
+    - comment-on-issue
+    - create-issue
+    - edit-issue
+    - label-issue
+  skills:
+    - triage
+  tools:
+    - github
+  scaleFactor: 1
+  workflows:
+    - backlog-curation

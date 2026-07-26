@@ -1,0 +1,37 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Goober
+metadata:
+  name: implementer
+spec:
+  gaggle: hass-dreo
+  role: implementer
+  displayName: Implementer
+  instructions: instructions.md
+  harness: copilot
+  model: auto
+  harnessOptions: {}
+  # Default per-attempt bound for this goober's agentic work, above the built-in
+  # 30m (#1070). The implementer drives both implementation.yaml and
+  # pr-remediation.yaml's `implement` stage — the biggest single-attempt tasks
+  # in the system — and 30m recurrently cut off legitimately-large items. A
+  # stage's own timeoutSeconds still overrides this if it needs to.
+  timeoutSeconds: 3600
+  # Implement-only: this stage never opens the PR or touches issues directly
+  # (those are separate deterministic stages in the implementation
+  # workflow) — repo:push covers the git side. agent:model sources the Copilot
+  # model token (COPILOT_GITHUB_TOKEN), distinct from repo:push's GH_TOKEN
+  # (issue #289 / multi-token creds §3.3).
+  capabilities:
+    - repo:push
+    - agent:model
+  policyActions:
+    - modify-repository
+  skills:
+    - implement
+    - run-tests
+  tools:
+    - shell
+  scaleFactor: 1
+  workflows:
+    - implementation
+    - pr-remediation

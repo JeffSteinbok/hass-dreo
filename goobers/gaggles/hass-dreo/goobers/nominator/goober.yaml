@@ -1,0 +1,35 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Goober
+metadata:
+  name: nominator
+spec:
+  gaggle: hass-dreo
+  role: nominator
+  displayName: Nominator
+  instructions: instructions.md
+  harness: copilot
+  model: auto
+  harnessOptions: {}
+  # Files issues from evidence only — never touches code or PRs. The separate
+  # approval authority is materialized only when the invoking workflow stage
+  # explicitly opts in; the checked-in work-nomination workflow does not.
+  capabilities:
+    - github:issues:write
+    - github:issues:approve
+    - telemetry:read
+    - agent:model
+  policyActions:
+    - comment-on-issue
+    - create-issue
+    - label-issue
+  conditionalPolicyActions:
+    # Enabled only when a workflow task deliberately opts into self-approval.
+    - approve-issue
+  skills:
+    - nomination
+  tools:
+    - github
+    - telemetry
+  scaleFactor: 1
+  workflows:
+    - work-nomination

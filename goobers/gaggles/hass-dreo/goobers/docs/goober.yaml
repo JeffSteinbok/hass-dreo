@@ -1,0 +1,22 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Goober
+metadata:
+  name: docs
+spec:
+  gaggle: hass-dreo
+  role: docs
+  displayName: Docs updater
+  instructions: instructions.md
+  harness: copilot
+  model: auto
+  harnessOptions: {}
+  capabilities:
+    - repo:push
+    - agent:model
+  policyActions:
+    - modify-repository
+  tools:
+    - shell
+  scaleFactor: 1
+  workflows:
+    - docs-updater

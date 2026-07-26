@@ -1,0 +1,94 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Workflow
+dslVersion: "1.4"
+metadata:
+  name: docs-updater
+spec:
+  gaggle: hass-dreo
+  displayName: Docs updater
+  # Inert until #1476: maintainers may run this workflow explicitly, but the
+  # checked-in definition must not create a production cron.
+  triggers:
+    - type: manual
+  readiness:
+    maxConcurrentRuns: 1
+    maxRunsPerHour: 1
+    maxOpenPRs: 1
+  docsRoots:
+    - docs
+    - README.md
+  start: signal-gather
+  tasks:
+    - name: signal-gather
+      type: deterministic
+      goal: Report recent code and documentation churn since docs were last refreshed.
+      run:
+        command: ["goobers", "docs-churn"]
+      inputs:
+        resultFile: "docs-churn.json"
+        sinceFloor: "168h"
+        bufferMultiplier: "3"
+        docsRoots: "docs,README.md"
+      next: update-docs
+
+    - name: update-docs
+      type: agentic
+      goober: docs
+      goal: >-
+        Use the churn digest to capture additive documentation drift in the
+        current tree, changing only the configured docs roots, and commit the
+        focused docs-only update. Do not redesign unrelated documentation.
+      inputs:
+        docsRoots: "docs,README.md"
+      capabilities:
+        - repo:push
+        - agent:model
+      policyActions:
+        - modify-repository
+      next: validate
+
+    - name: validate
+      type: deterministic
+      goal: Validate the docs-only change with the project's CI-equivalent before publication.
+      run:
+        command: ["make", "ci"]
+      next: docs-valid
+
+    - name: push-branch
+      type: deterministic
+      goal: Push the validated docs-updater branch to origin.
+      run:
+        command: ["goobers", "push-branch"]
+      capabilities:
+        - repo:push
+      policyActions:
+        - push-repository-branch
+      next: open-pr
+
+    - name: open-pr
+      type: deterministic
+      goal: Open the validated docs-only pull request.
+      run:
+        command: ["goobers", "open-pr"]
+      inputs:
+        title: "docs: refresh documentation"
+        runIdFooter: "true"
+        resultFile: "pr-result.json"
+        confineToDocsRoots: "true"
+        docsRoots: "docs,README.md"
+      capabilities:
+        - github:pr:write
+      policyActions:
+        - open-or-update-pr
+      expectedOutputs:
+        - pull-request-url
+        - prNumber
+
+  gates:
+    - name: docs-valid
+      evaluator: automated
+      automated:
+        check: status-equals
+      branches:
+        pass: push-branch
+        fail: "@abort"

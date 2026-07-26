@@ -1,0 +1,187 @@
+# INTENTIONAL LIVE DIVERGENCE:
+# The checked-in reference keeps the conservative 03:22/11:22/19:22 cadence,
+# maxConcurrentRuns=1, and maxRunsPerHour=1. Operator-tuned live cadence and
+# budget changes are deliberately not mirrored here.
+apiVersion: goobers.dev/v1alpha1
+kind: Workflow
+dslVersion: "1.4"
+metadata:
+  name: backlog-curation
+spec:
+  gaggle: hass-dreo
+  displayName: Backlog curation
+  # Producer/consumer hybrid (ARCHITECTURE.md §7, §12; WF-055, SCH-041): a cron
+  # trigger wakes this workflow; its own first stage queries + claims eligible
+  # items rather than being routed to by the scheduler's backlog-item trigger.
+  # 3x/day, spread across the day (03:22/11:22/19:22 local) — readiness adds a
+  # hard per-hour ceiling as a runaway guard (cadence + hourly cap together
+  # express the intended 3/day; a native maxRunsPerDay field exists too,
+  # #340, but this dogfood instance's own explicit low values are deliberate
+  # and don't need migrating just because a more direct knob now exists).
+  triggers:
+    - type: schedule
+      schedule: "22 3,11,19 * * *"
+  readiness:
+    maxConcurrentRuns: 1
+    maxRunsPerHour: 1
+  start: reconcile-backlog
+  tasks:
+    # Repair deterministic metadata drift first so this run's health snapshot
+    # includes any ready -> not-ready transitions the repair creates.
+    - name: reconcile-backlog
+      type: deterministic
+      goal: Reconcile drifted backlog labels and publish the actual correction count.
+      run:
+        command: ["goobers", "backlog-query", "--reconcile"]
+      inputs:
+        trustLabel: "goobers:approved"
+        staleAfterDays: "90"
+        staleAutoClose: "false"
+        resultFile: "backlog-reconciliation.json"
+      capabilities:
+        - github:issues:write
+      policyActions:
+        - claim-backlog-items
+      expectedOutputs:
+        - backlog-reconciliation
+      next: sample-ready-pool
+    - name: sample-ready-pool
+      type: deterministic
+      goal: Snapshot ready-pool depth and age before this curation pass.
+      run:
+        command: ["goobers", "backlog-health"]
+      inputs:
+        trustLabel: "goobers:approved"
+        readyLabel: "goobers:ready"
+        resultFile: "backlog-health.json"
+      capabilities:
+        - github:issues:write
+      expectedOutputs:
+        - backlog-health
+      next: query-backlog
+    # Built-in backlog-query stage kind (ARCHITECTURE.md §7, WF-055): queries
+    # the issues provider and claims candidates, honoring the untrusted-input
+    # eligibility gate (SEC-047) — only items carrying the maintainer-applied
+    # trust label are claimable. This is a public repo: goobers:approved is a
+    # hard gate, not a default to relax. Before selecting work, the stage
+    # reconciles drifted backlog labels against the claim ledger and live forge
+    # issue/child state; a clean backlog produces no mutations.
+    - name: query-backlog
+      type: deterministic
+      goal: Query the backlog for trust-labeled, uncurated items and claim them.
+      run:
+        command: ["goobers", "backlog-query", "--claim"]
+      inputs:
+        # Eligibility: only items a maintainer has explicitly approved
+        # (SEC-047). Backlog item text is untrusted data, never instructions —
+        # this label is the provider-permission-enforced gate on that
+        # untrusted input.
+        trustLabel: "goobers:approved"
+        # Idempotency: items already bearing either output marker are
+        # excluded, so a re-run over an already-curated backlog claims
+        # nothing.
+        excludeLabels: "goobers:ready,goobers:needs-human"
+        # Batch: claim up to 20 eligible items in one run (#236). backlog-query
+        # now honors maxItems (it was a dead input) and, for a batch, writes a
+        # claimed-items.json array.
+        maxItems: "20"
+        # Serves two purposes, both requiring the file be declared:
+        # (#236) lifts the claimed-items array into a journal artifact so it
+        # reaches the curator as a context pointer — without this input the file
+        # was written into the stage worktree and destroyed with it, so the
+        # curator received no list of what it owned; and (#233) lets shell.go
+        # read the file back to report ResultNoWork on an empty/fully-contested
+        # tick, so the runner can tell "genuinely nothing to do" from "claimed
+        # something" rather than relying on the exit code alone. Plural name:
+        # curation claims a batch (maxItems>1 → JSON array).
+        resultFile: "claimed-items.json"
+        # Deterministic staleness pre-pass: backlog-query computes each claimed
+        # item's age from issue creation + non-bot comments before writing its
+        # own claim breadcrumb. The structured signal travels in
+        # claimed-items.json; the curator does not estimate dates.
+        staleAfterDays: "90"
+        # Conservative default: a stale signal permits label + ask, never close.
+        # Set true explicitly to allow the curator to close a stale item.
+        staleAutoClose: "false"
+        # The dedicated first stage already reconciled and the health snapshot
+        # captured its transitions; avoid a second provider-wide sweep here.
+        reconcileMetadata: "false"
+      capabilities:
+        - github:issues:write
+        # Same open-PR eligibility backstop as implementation.yaml's
+        # query-backlog (issue #414) — a candidate here is pre-triage and
+        # unlikely to already have an open PR, but the check is defense in
+        # depth, not conditional on caller.
+        - github:pr:write
+      policyActions:
+        - claim-backlog-items
+      expectedOutputs:
+        - claimed-items
+      next: surface-duplicates
+    # Compare the claimed batch with every open issue and hand the curator a
+    # bounded, ranked candidate artifact. This stage is read-only: only the
+    # curator decides whether a pair is truly duplicate.
+    - name: surface-duplicates
+      type: deterministic
+      goal: Surface likely duplicate pairs across the open backlog for curator judgment.
+      run:
+        command: ["goobers", "backlog-dedupe"]
+      inputs:
+        resultFile: "dedupe-candidates.json"
+        maxCandidates: "20"
+      capabilities:
+        - github:issues:write
+      expectedOutputs:
+        - dedupe-candidates
+      next: curate
+    # Agentic curation: dedupe, prune stale, tag, split oversized items, maintain
+    # roadmap milestones, and synchronize tracking checklists.
+    # Issues-only — the curator goober is granted no repo capability (issue
+    # #25 scope: "touching issues only, never code").
+    - name: curate
+      type: agentic
+      goober: curator
+      goal: >-
+        Curate the claimed backlog items using each item's deterministic
+        staleness signal and the ranked duplicate candidates as evidence.
+        Unclaimed candidate members are read-only except for narrowly scoped
+        roadmap maintenance on directly linked tracking parents.
+        Dedupe, handle staleness, tag, split oversized items, maintain milestone
+        and tracking-parent organization, and mark each item goobers:ready or
+        goobers:needs-human. Explain every action in a comment.
+      capabilities:
+        - github:issues:write
+        - github:milestones:write
+        - agent:model
+      policyActions:
+        - assign-milestone
+        - close-issue
+        - comment-on-issue
+        - create-issue
+        - edit-issue
+        - label-issue
+      # Per-item details stay in issue comments. Agent-owned scalar action
+      # counts are journaled in outputs; deterministic reconciliation mutations
+      # and ready-label transitions are projected from provider-issued records.
+      next: release-claim
+    # Explicit release (issue #234): curation touches issues only — there is
+    # no CI-poll or reviewer loop, and it never opens a PR or closes the
+    # issue (ARCHITECTURE.md §12 lists reviewer gates as an
+    # *implementation*-workflow concern, not curation's) — so
+    # issue-close-out's release (implementation-only) never runs for it.
+    # Without this stage a curation run's claim sat held for the full lease
+    # (up to 6h, #235) even though curation's own work on the item finished
+    # immediately, locking implementation out of exactly the item curation
+    # just readied (#234). The issues capability lets release remove the
+    # provider-visible goobers:claimed mirror before freeing the ledger lease,
+    # so curation does not leak stale claim labels (#1003).
+    - name: release-claim
+      type: deterministic
+      goal: Clear the provider claim marker and release this run's claim ledger lease.
+      run:
+        command: ["goobers", "backlog-query", "--release"]
+      capabilities:
+        - github:issues:write
+      policyActions:
+        - release-backlog-claim
+      # Terminal: no `next`.

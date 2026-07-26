@@ -1,0 +1,30 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Goober
+metadata:
+  name: reviewer
+spec:
+  gaggle: hass-dreo
+  role: reviewer
+  displayName: Reviewer
+  instructions: instructions.md
+  harness: copilot
+  model: auto
+  harnessOptions: {}
+  # Pure evaluation: reviews evidence pointers and returns a Verdict. No
+  # write capability of any kind — it never mutates the repo, issue, or PR.
+  # agent:model is the sole grant: it sources the Copilot model token
+  # (COPILOT_GITHUB_TOKEN) so the reviewer's headless subprocess can
+  # authenticate the model, with no GH_TOKEN and no repo/issue/PR write (issue
+  # #294 / multi-token creds §3.3). As an agentic gate the reviewer has no
+  # stage-level capabilities, so the runner sources this grant from here.
+  capabilities:
+    - agent:model
+  skills:
+    - review
+  tools:
+    - shell
+  scaleFactor: 1
+  workflows:
+    - implementation
+    - merge-review
+    - pr-remediation

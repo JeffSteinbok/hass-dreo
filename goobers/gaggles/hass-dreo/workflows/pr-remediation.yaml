@@ -1,0 +1,638 @@
+# INTENTIONAL LIVE DIVERGENCE:
+# The checked-in reference keeps the hourly :37 cadence,
+# maxConcurrentRuns=1, and maxRunsPerHour=2. Operator-tuned live cadence and
+# budget changes are deliberately not mirrored here.
+apiVersion: goobers.dev/v1alpha1
+kind: Workflow
+dslVersion: "1.4"
+metadata:
+  name: pr-remediation
+spec:
+  gaggle: hass-dreo
+  displayName: PR remediation (rebase + finding-driven rework)
+  # The second executor at the whole-open-PR-set altitude (V0.5,
+  # docs/design/v0/pr-lifecycle-loop.md §2/§5): re-enters on an EXISTING PR
+  # merge-review flagged goobers:needs-remediation, rather than opening a new
+  # one, or whose CI is failing. update-behind-pr is the API-only entrypoint:
+  # it completes the mechanical stale-base case without a worktree and routes
+  # everything else to gather-pr-context (issue #362), which replaces
+  # implementation's query-backlog head. rebase-pr (issue #363, design doc §5
+  # D3) rebases and routes on the combination of rebase outcome + verdict
+  # findings; remediation-checkpoint (issue #364, design doc §6 D4/D5) runs on
+  # the "needs agent" branch to detect a stuck PR (same diff pushed twice, the
+  # liberal repass budget exhausted, or a rebase conflict inside a function a
+  # merged sibling substantially restructured) and escalate.
+  #
+  # The agentic implement/review/local-ci chain is WIRED (issue #392, design
+  # doc §10's "share the goober, copy the stage wiring"): implement, the
+  # review gate, local-ci and local-gate below are copied from
+  # implementation.yaml and reference the same implementer/reviewer goobers.
+  # They need no per-stage re-checkout of their own — an agentic stage and a
+  # gate evaluator have no way to do one anyway. gather-pr-context instead
+  # emits the runner's well-known `workspaceBranch` output (internal/runner's
+  # WorkspaceBranchOutput), which REBINDS the branch every later stage's
+  # worktree is provisioned on, for the rest of the run, to the PR's own head
+  # branch. That reuses the existing #133 continuity mechanism — a run's
+  # stages share one BRANCH, each in its own fresh worktree — rather than
+  # bolting a checkout onto each stage: the rebase rebase-pr performs but
+  # deliberately does not push on the substantive path survives into
+  # implement, and the reviewer gate's runner-computed `git diff base...HEAD`
+  # evidence is the PR's real diff.
+  #
+  # DOGFOOD GUARDRAIL: hourly, off a different minute than merge-review (#25
+  # past) so the two decider/executor cycles don't contend for the same PR
+  # mid-read; this instance's open-PR volume is low, so hourly is ample.
+  triggers:
+    # A due tick is sized to the unclaimed PRs that pass update-behind-pr's
+    # eligibility policy, then bounded by readiness below.
+    - type: schedule
+      schedule: "37 * * * *"
+      priority: 100
+  readiness:
+    maxConcurrentRuns: 1
+    maxRunsPerHour: 2
+  start: update-behind-pr
+  tasks:
+    # Cheap API-only lane (#720): this scratch stage selects by the same
+    # priority rules as gather-pr-context and uses GitHub's update-branch
+    # endpoint when the candidate is behind, mergeable, CI-clean, and carries
+    # no substantive finding. The behind-base fallback is lazy: only a crowned
+    # lander with live parked dependents is eligible, so siblings retain their
+    # blocker markers until their predecessor lands. It terminates after the
+    # provider mutation, so no repository worktree or rebase stage is
+    # provisioned for the mechanical-update case. Anything non-trivial falls
+    # through unchanged.
+    - name: update-behind-pr
+      type: deterministic
+      goal: Update a clean behind-base PR through the provider API, or route it to full remediation.
+      run:
+        command: ["goobers", "update-behind-pr"]
+        workspace: scratch
+      inputs:
+        resultFile: "update-behind-result.json"
+        # #941/PRR-6: the severity floor a finding must meet to count as
+        # substantive, shared with gather-pr-context's own minSeverity below
+        # so the two lanes agree on what "substantive" means. "info" is the
+        # liberal default (every substantive-classed finding counts,
+        # reproducing today's behavior).
+        minSeverity: "info"
+      capabilities:
+        - github:pr:write
+        - github:issues:write
+      policyActions:
+        - update-pr-branch
+        - clear-remediation
+      expectedOutputs:
+        - selectedNumber
+        - needsFullRemediation
+      next: update-behind-gate
+
+    # Full-remediation context stage (issue #362, design doc §5): select one open, goober-
+    # authored PR labeled needs-remediation or reporting failing CI, check out
+    # ITS branch into this
+    # run's worktree (replacing whatever branch the runner's worktree
+    # provisioning defaulted to), and load the merge-review Verdict + PR-
+    # thread comments + whether the base has advanced as context for the
+    # rebase + finding-driven routing stage that follows (#363). Selection
+    # shares pr-select's PR lease namespace so review and remediation cannot
+    # race on the same PR.
+    - name: gather-pr-context
+      type: deterministic
+      goal: Select a PR needing remediation, check out its branch, and emit the versioned remediation brief.
+      run:
+        command: ["goobers", "gather-pr-context"]
+      inputs:
+        resultFile: "remediation-brief.json"
+        # #941/PRR-6: applied at gate time (rebase-pr's decision reads the
+        # already-thresholded hasSubstantiveFindings this stage emits) — a
+        # sub-threshold finding stays visible in the full verdict this stage
+        # attaches to the brief, it just cannot by itself trigger the
+        # agentic chain. "info" is the liberal default.
+        minSeverity: "info"
+      capabilities:
+        - github:pr:write
+        - github:issues:write
+        - repo:push
+      expectedOutputs:
+        - selectedNumber
+        - head
+        - base
+        - isBehindBase
+        - hasSubstantiveFindings
+        - hasFailingCI
+        # The runner's branch-rebinding contract (#392): every stage after
+        # this one is provisioned on the PR's own head branch. Declared here
+        # so the stage-contract check enforces it — dropping it would not
+        # fail any test, it would silently hand implement/review/local-ci a
+        # pristine branch cut from main and remediate the wrong tree.
+        - workspaceBranch
+      next: gather-ci-failures
+
+    # PRR-2: enrich only a failing-CI brief with the provider's high-signal,
+    # bounded diagnostics. Passing CI is a journal-only no-op with no provider
+    # calls. Raw job logs have an explicit 0-byte bound; check summaries and
+    # annotations carry the failure reason without swamping agent context.
+    - name: gather-ci-failures
+      type: deterministic
+      goal: Add failing check names, conclusions, summaries, and annotations to the remediation brief.
+      run:
+        command: ["goobers", "gather-ci-failures"]
+        workspace: scratch
+      inputs:
+        resultFile: "remediation-brief.json"
+      capabilities:
+        - github:pr:write
+      expectedOutputs:
+        - selectedNumber
+        - head
+        - base
+        - isBehindBase
+        - hasSubstantiveFindings
+        - hasFailingCI
+        - workspaceBranch
+      next: rebase-pr
+
+    # Rebase-first, finding-driven routing (issue #363, design doc §5 D3): a
+    # clean rebase never suppresses a known substantive finding, and a rebase
+    # unresolved conflict is itself substantive. A conflict consisting only
+    # of distinct adjacent entries in an existing line-oriented list is
+    # combined deterministically before routing. Re-checks out the SAME PR
+    # branch gather-pr-context selected (each stage gets its own fresh worktree —
+    # see the file's own doc comment) before attempting anything.
+    #
+    #   rebase clean, no substantive finding or failing CI ->
+    #     force-with-lease push, clear the label, done (back to merge-review
+    #     next cycle) — rebase-gate's "pass" branch is terminal.
+    #   failing CI -> push a clean rebase to retrigger CI, then route to
+    #     remediation-checkpoint so a persistent failure cannot starve later
+    #     candidates.
+    #   unsafe rebase conflict, OR a substantive finding is present -> needs the
+    #     agentic chain — rebase-gate's "fail" branch routes to
+    #     remediation-checkpoint, which uses the PR's CURRENT diff (whatever
+    #     rebase-pr left pushed, unchanged on this path) to detect a stuck PR
+    #     BEFORE spending an agentic session on it, and then routes into
+    #     implement (#392).
+    #
+    # Every failure result sets needsAgent=true and preserves every declared
+    # output, using empty defaults when rebase evidence is unavailable. A gate
+    # never updates Task.InputsFrom's upstream-Outputs chain (only a task does —
+    # see apply-verdict's own doc comment for the established convention), so
+    # remediation-checkpoint (after rebase-gate) can only read these values if
+    # THIS stage emits them on both success and failure.
+    - name: rebase-pr
+      type: deterministic
+      goal: Rebase the selected PR onto its base; force-push and clear the label if clean, else defer to agentic remediation.
+      run:
+        command: ["goobers", "rebase-pr"]
+      inputsFrom:
+        selectedNumber: selectedNumber
+        head: head
+        base: base
+        hasSubstantiveFindings: hasSubstantiveFindings
+        hasFailingCI: hasFailingCI
+      inputs:
+        resultFile: "rebase-result.json"
+        # #941/PRR-6: which detected causes may trigger the agentic chain.
+        # The shipped default is fully liberal — every cause this stage can
+        # detect fires remediation, reproducing today's behavior exactly.
+        # behind-base and sibling-overlap are accepted vocabulary but cannot
+        # fire yet (see rebasepr.go's defaultRemediatePolicy doc comment).
+        remediate: "conflict,substantive,failing-ci,behind-base,sibling-overlap"
+      capabilities:
+        - repo:push
+        - github:issues:write
+      policyActions:
+        - rebase-pr
+        - clear-remediation
+      expectedOutputs:
+        - selectedNumber
+        - head
+        - needsAgent
+        - conflict
+        - conflictLocations
+        - attemptedHeadSha
+        - rebaseBaseSha
+        # #941/PRR-6: set when a detected cause exists but every one is
+        # excluded by the declared remediate policy — remediation-checkpoint
+        # reads these to escalate immediately instead of spending a repass
+        # budget on a cause the policy declined to touch.
+        - policyExcluded
+        - policyExcludedReason
+      next: rebase-gate
+
+    # D4/D5 loop-control (issue #364, design doc §6): runs only when
+    # rebase-pr couldn't finish the PR itself this cycle (rebase-gate's
+    # "fail" branch — conflict or a substantive finding). Checks out the
+    # PR's branch itself (its own fresh worktree, same reason as every
+    # other stage here), computes its current diff against base, and
+    # escalates (goobers:merge-escalated, clearing needs-remediation) if
+    # that diff is byte-identical to the immediately prior recorded cycle's
+    # (stuck, no progress), the liberal repass budget is exhausted, or a
+    # rebase conflict from this exact PR head lands inside a function a merged
+    # sibling substantially restructured. That structural case escalates on
+    # cycle one and includes both PRs' relevant hunks; otherwise this records
+    # the advanced cycle state as a new sticky comment.
+    - name: remediation-checkpoint
+      type: deterministic
+      goal: Detect a stuck PR (no-progress repeat or budget exhaustion) and escalate, or record the advanced cycle state.
+      run:
+        command: ["goobers", "remediation-checkpoint"]
+      inputsFrom:
+        selectedNumber: selectedNumber
+        conflict: conflict
+        conflictLocations: conflictLocations
+        attemptedHeadSha: attemptedHeadSha
+        rebaseBaseSha: rebaseBaseSha
+        # #941/PRR-6: rebase-pr's declared-policy exclusion — escalates this
+        # cycle immediately (like an explicit --escalate) instead of running
+        # the normal budget/no-progress checks, since no agent ever ran.
+        policyExcluded: policyExcluded
+        policyExcludedReason: policyExcludedReason
+      inputs:
+        resultFile: "checkpoint-result.json"
+        # #941/PRR-6: overrides D4's liberal per-PR repass budget
+        # (DefaultRemediationBudget=10). Unset/invalid falls back to that
+        # default.
+        maxCycles: "10"
+      capabilities:
+        - github:pr:write
+        - github:issues:write
+        - repo:push
+      policyActions:
+        - record-remediation-checkpoint
+        - escalate-pr
+      expectedOutputs:
+        # What checkpoint-gate branches on: "false" when this cycle escalated
+        # (budget exhausted / no-progress repeat) or the PR is no longer
+        # open, "true" when the agentic chain may proceed.
+        - continueRemediation
+        # Echoed forward for push-remediated, which sits past the agentic
+        # chain: a gate never updates the InputsFrom chain, and implement/
+        # local-ci each become the upstream in turn, so push-remediated
+        # re-derives from this stage's durable record rather than an input.
+        # headSha is the PR's remote tip BEFORE anything in this cycle
+        # pushes — push-remediated's force-with-lease expectation.
+        - selectedNumber
+        - head
+        - headSha
+      next: checkpoint-gate
+
+    # Reuse merge-review's sibling gatherer immediately before agentic work so
+    # the remediator sees every open sibling's files and deterministic overlap
+    # set. The command reuses the instance-wide per-head sibling memo; only its
+    # unrelated verdict-cache lookup is disabled. selectedNumber flows through
+    # checkpoint-gate from remediation-checkpoint.
+    - name: gather-sibling-context
+      type: deterministic
+      goal: Load the other open PRs' touched files and overlap with the PR being remediated.
+      run:
+        command: ["goobers", "gather-sibling-context", "--no-verdict-cache"]
+      inputsFrom:
+        selectedNumber: selectedNumber
+      inputs:
+        resultFile: "sibling-context.json"
+      capabilities:
+        - github:pr:write
+      policyActions:
+        - flag-scope-drift
+      expectedOutputs:
+        - selectedNumber
+      next: gather-review-threads
+
+    # PRR-3 / design doc D1: replace only the review-thread section of the
+    # versioned brief with native review bodies and anchored inline comments.
+    # Resolved and outdated state stay explicit so stale feedback does not burn
+    # another remediation cycle.
+    - name: gather-review-threads
+      type: deterministic
+      goal: Add native review bodies and anchored inline review threads to the remediation brief.
+      run:
+        command: ["goobers", "gather-review-threads"]
+        workspace: scratch
+      inputs:
+        resultFile: "remediation-brief.json"
+      capabilities:
+        - github:pr:write
+      next: gather-issue-context
+
+    # PRR-4 / design doc D1: enrich the versioned brief with every resolvable
+    # issue the PR declares through GitHub's closing-keyword grammar. Missing
+    # references produce an explicit empty section, so this optional evidence
+    # source never blocks remediation when there is no originating issue.
+    - name: gather-issue-context
+      type: deterministic
+      goal: Add the originating issue body and acceptance criteria to the remediation brief.
+      run:
+        command: ["goobers", "gather-issue-context"]
+        workspace: scratch
+      inputs:
+        resultFile: "remediation-brief.json"
+      capabilities:
+        - github:pr:write
+        - github:issues:write
+      next: implement
+
+    # Agentic rework in a worktree provisioned on the PR's own branch (see
+    # this file's top comment): the SAME implementer goober implementation.yaml
+    # uses, entered on an existing PR rather than a fresh issue. Scoped to
+    # repo:push only — it never talks to the issues or PR API, and it does not
+    # push either (push-remediated below owns that, exactly as push-branch
+    # does for implementation).
+    - name: implement
+      type: agentic
+      goober: implementer
+      goal: >-
+        Remediate this pull request. The worktree is already checked out on
+        the PR's own branch, rebased onto its base where that was possible.
+        Read the enriched remediation-brief.json from the attached context —
+        the gather-issue-context artifact, which supersedes the earlier
+        gather-pr-context, gather-review-threads, and gather-ci-failures
+        remediation-brief.json copies (ignore those). It contains the full
+        merge-review verdict, issue-level PR comments, failing check
+        summaries/annotations, the originating issue body and acceptance
+        criteria, native review bodies, and anchored inline review threads with
+        their resolved/outdated state. Also read the sibling PR file/overlap
+        context (sibling-context.json), plus any rebase conflict left to
+        resolve, and address EVERY
+        finding in the verdict: it is a checklist, and merge-review re-verifies
+        each item before the PR can become merge-ready, so a fix that only
+        addresses some of them just burns another cycle. In every successful
+        result, set outputs.findingResponses to a JSON-encoded array containing
+        exactly one object for each original merge-review verdict finding, in
+        this shape: {"finding": <1-based verdict order>, "disposition":
+        "addressed"|"declined", "detail": "<what changed, or why the finding
+        does not apply>"}. Emit "[]" when that verdict has no findings. This
+        is a scalar JSON string, not a structured output value; the later
+        respond-to-findings stage validates and publishes it. On a reviewer
+        repass, replace the whole array with an updated, complete account of
+        the original verdict — do not report only the new reviewer feedback.
+        If the rebase
+        conflicted, resolving it IS the work. Verify with fast, targeted tests
+        for what you changed, and commit to the PR's branch (push is a separate
+        deterministic stage — see push-remediated below). Do NOT run the full
+        `make ci` / `go test -race ./...` suite in-session — the deterministic
+        local-ci stage below owns that authoritatively (#724). On a repass,
+        first read the reviewer rationale or CI failure evidence attached as
+        context and address it before making further changes.
+      capabilities:
+        - repo:push
+        - agent:model
+      policyActions:
+        - modify-repository
+        - rework-pr
+      retry:
+        maxAttempts: 2
+        backoffSeconds: 15
+      expectedOutputs:
+        - findingResponses
+      # Deliberately NO onTimeout: salvage, unlike implementation's otherwise
+      # identical implement stage (#724). Salvage decides "was anything
+      # produced?" from `git diff <repoRef.branch>...HEAD` being non-empty,
+      # which holds on a run branch cut fresh from main but NOT here: this
+      # worktree is on the PR's own branch, so that diff is the PR's entire
+      # pre-existing content and is never empty. A session that timed out
+      # having committed nothing would salvage as success, be reviewed against
+      # the PR's original unfixed diff, and pass local-ci unchanged. Timing out
+      # here therefore takes the ordinary retry/fail path; nothing is lost,
+      # because the commits live on the PR's branch and the next cycle
+      # re-selects it. (push-remediated independently refuses to publish a
+      # branch that never moved, so this is defense in depth, not the only
+      # guard.)
+      next: validate-finding-responses
+
+    # Validate the model-authored scalar while the run can still repass into
+    # implement. The terminal responder repeats the same validation after
+    # publication as defense in depth, but discovering a count mismatch there
+    # is too late to repair it without losing the whole remediation cycle.
+    - name: validate-finding-responses
+      type: deterministic
+      goal: Validate that the implementer accounted for every original merge-review finding before review and publication.
+      run:
+        command: ["goobers", "respond-to-findings", "--check"]
+        workspace: scratch
+      inputs:
+        resultFile: "finding-response-validation.json"
+      capabilities:
+        - github:issues:write
+      policyActions:
+        - respond-to-findings
+      next: finding-responses-gate
+
+    # The merge tier from CONTRIBUTING.md's "Validation tier contract", run on
+    # the PR's branch carrying the rework.
+    - name: local-ci
+      type: deterministic
+      goal: Run the project's local CI-equivalent (build, lint, tests) in the worktree.
+      run:
+        command: ["make", "ci"]
+      retry:
+        maxAttempts: 1
+      next: local-gate
+
+    # Publish (issue #392, design doc §5's "re-push -> clear label"). The
+    # counterpart to implementation's push-branch: force-push-with-lease to
+    # the PR's own head instead of a plain push to a fresh run branch, then
+    # clear goobers:needs-remediation so merge-review re-evaluates the PR
+    # next cycle. Runs only after local-gate passes, so a broken build is
+    # never published — same ordering implementation.yaml uses.
+    - name: push-remediated
+      type: deterministic
+      goal: Force-push (with lease) the remediated branch to the PR and clear the needs-remediation label.
+      run:
+        command: ["goobers", "push-remediated"]
+      # Typed transient failures use the runner's separate bounded
+      # infrastructure allowance; keep policy failures fail-fast and wait out
+      # a typical merge-queue ownership window before that retry.
+      retry:
+        maxAttempts: 1
+        backoffSeconds: 120
+      inputs:
+        resultFile: "push-remediated-result.json"
+      capabilities:
+        - repo:push
+        - github:pr:write
+        - github:issues:write
+      policyActions:
+        - push-pr-branch
+        - clear-remediation
+      expectedOutputs:
+        - selectedNumber
+        - published
+        - head
+      next: respond-to-findings
+
+    # PRR-7 / design doc D3: publish the account only after the branch moved,
+    # so every "addressed" claim describes work that actually landed. The
+    # stage reads both the original verdict artifact and implement's structured
+    # scalar output from this run's journal, validates exact coverage, and
+    # records its complete response as the declared result-file artifact before
+    # the run terminates. It is deliberately self-contained: deleting this task
+    # and push-remediated's next restores the prior, still-functional silent
+    # terminal without changing any other stage.
+    - name: respond-to-findings
+      type: deterministic
+      goal: Post an auditable reply accounting for every original verdict finding after the remediated branch is published.
+      run:
+        command: ["goobers", "respond-to-findings"]
+        workspace: scratch
+      inputs:
+        resultFile: "remediation-response.json"
+      capabilities:
+        - github:issues:write
+      policyActions:
+        - respond-to-findings
+      expectedOutputs:
+        - selectedNumber
+        - sourceRunId
+        - findingCount
+        - posted
+      retry:
+        maxAttempts: 2
+        backoffSeconds: 5
+      # Terminal: the cycle's product — a republished PR plus its explicit
+      # finding-by-finding changelog — is back in merge-review's hands. This
+      # workflow never merges; merge-review owns that capability-gated path.
+
+    # Terminal @escalate for a reviewer "fail" verdict (design doc §4 D2:
+    # `fail` is a fundamentally wrong approach, and must NOT be burned on
+    # remediation budget the way `needs-changes` is). Escalating here parks
+    # the PR for a human immediately instead of letting it cycle up to the
+    # liberal D4 budget re-attempting an approach already judged wrong.
+    - name: park-escalated
+      type: deterministic
+      goal: Park a reviewer-rejected PR with the terminal escalation reason.
+      run:
+        command:
+          [
+            "goobers",
+            "remediation-checkpoint",
+            "--escalate",
+            "the in-run reviewer returned a terminal `fail` verdict on this remediation attempt — the approach itself was rejected, not just its details (design doc §4 D2)",
+          ]
+      capabilities:
+        - github:pr:write
+        - github:issues:write
+        - repo:push
+      policyActions:
+        - record-remediation-checkpoint
+        - escalate-pr
+      # @escalate, not @abort, for the same reason implementation.yaml's own
+      # park-escalated is: every escalation surface (`goobers run` exit 3,
+      # the read API's escalationCause, `goobers trace`) keys on
+      # PhaseEscalated, so collapsing this into an abort would make a
+      # reviewer-rejected remediation indistinguishable from an ordinary
+      # failure.
+      next: "@escalate"
+
+    - name: park-invalid-finding-responses
+      type: deterministic
+      goal: Park a PR whose implementer exhausted the finding-response validation repass budget.
+      run:
+        command:
+          [
+            "goobers",
+            "remediation-checkpoint",
+            "--escalate",
+            "the implementer exhausted the in-run repass budget without producing a complete response for every original merge-review finding",
+          ]
+      capabilities:
+        - github:pr:write
+        - github:issues:write
+        - repo:push
+      policyActions:
+        - record-remediation-checkpoint
+        - escalate-pr
+      next: "@escalate"
+
+  gates:
+    # A completed API update is terminal. Every confirmed conflict, substantive
+    # finding, failing check, or non-behind candidate enters the existing
+    # gather/rebase/agentic path without changing its semantics.
+    - name: update-behind-gate
+      evaluator: automated
+      automated:
+        check: output-equals
+        params:
+          key: needsFullRemediation
+          equals: "false"
+      branches:
+        pass: ""
+        fail: gather-pr-context
+
+    # Automated branch on rebase-pr's own needsAgent output (internal/
+    # gate's generic "output-equals" check — Inputs[params.key] compared to
+    # params.equals; no new check needed, this already existed for exactly
+    # this shape of custom-output branching).
+    - name: rebase-gate
+      evaluator: automated
+      automated:
+        check: output-equals
+        params:
+          key: needsAgent
+          equals: "false"
+      branches:
+        pass: ""
+        fail: remediation-checkpoint
+
+    # Loop-control decision (#392): remediation-checkpoint runs BEFORE the
+    # agentic chain so an exhausted budget or a no-progress repeat escalates
+    # without first spending an agentic session on a PR that cannot advance.
+    # Its "false" branch is terminal — the PR now carries
+    # goobers:merge-escalated and a human takes it from here.
+    - name: checkpoint-gate
+      evaluator: automated
+      automated:
+        check: output-equals
+        params:
+          key: continueRemediation
+          equals: "true"
+      branches:
+        pass: gather-sibling-context
+        fail: ""
+
+    # A malformed or partial finding account is repairable agent output, not a
+    # post-publication provider failure. Route its exact validation error back
+    # to the implementer before spending review/CI work or moving the PR branch.
+    # If that repass budget is exhausted, park the PR before escalating so it
+    # cannot remain labeled needs-remediation and be selected again.
+    - name: finding-responses-gate
+      evaluator: automated
+      automated:
+        check: status-equals
+      branches:
+        pass: review
+        fail: implement
+        escalate: park-invalid-finding-responses
+
+    # Agentic reviewer gate, the same shape and the same reviewer goober
+    # implementation.yaml uses. The runner computes `git diff base...HEAD` on
+    # the stage's worktree and attaches it as the reviewer's evidence — which
+    # is the PR's own diff here precisely because gather-pr-context rebound
+    # the workspace branch (#392). Verdicts map to branches exactly as they do
+    # at issue altitude (GT-002: never a silent pass).
+    - name: review
+      evaluator: agentic
+      agentic:
+        goober: reviewer
+        # #765: retry a transient reviewer-harness failure (a copilot session
+        # that wrote no verdict file) within this bound instead of failing the
+        # run on the first occurrence. Non-transient errors still fail fast.
+        retry:
+          maxAttempts: 2
+      branches:
+        pass: local-ci
+        needs-changes: implement
+        fail: park-escalated
+        escalate: park-escalated
+
+    # local-ci's ResultEnvelope.Status is flattened into this gate's
+    # Inputs[status] by the runner; "success" is status-equals' default
+    # expected value, so no params are needed.
+    - name: local-gate
+      evaluator: automated
+      automated:
+        check: status-equals
+      branches:
+        pass: push-remediated
+        fail: implement
+        escalate: park-escalated
