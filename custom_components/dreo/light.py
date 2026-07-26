@@ -626,7 +626,7 @@ class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=a
             if ATTR_BRIGHTNESS in kwargs and self._has_brightness:
                 brightness = kwargs[ATTR_BRIGHTNESS]
                 # Map HA brightness (1-255) to number of rgblevels:
-                desired_level = min(max(self._levels), max(1, round(brightness / 255 * (max(self._levels)))))
+                desired_level = min(max(self._levels), max(1, math.ceil(brightness / 255 * (max(self._levels)))))
             else:
                 # Default to full brightness
                 desired_level = max(self._levels)

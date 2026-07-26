@@ -91,7 +91,6 @@ class DreoDeviceDetails:
         cooking_range: dict = None,
         override_fn: Callable | None = None,
         ambient_light_levels: tuple | None = None,
-        rgbmode_options: list[str] = None,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -108,7 +107,6 @@ class DreoDeviceDetails:
         self.cooking_range = cooking_range
         self.override_fn = override_fn
         self.ambient_light_levels = ambient_light_levels
-        self.rgbmode_options = rgbmode_options
 
 
 @dataclass
