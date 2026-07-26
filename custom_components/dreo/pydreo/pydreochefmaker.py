@@ -51,20 +51,22 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._cook_time_begin = None  # wkbegin: epoch (seconds) at which the current cook began.
 
     @property
-    def cook_time_remaining(self):
+    def cook_time_remaining(self) -> "int | None":
         """Return the remaining cook time in seconds.
 
         The device does not expose a live "remaining" field.  On the DR-KCM001S it also never
         pushes an elapsed-duration field during a cook ("wkpdu" stays 0 the whole time - see
         #863), and "wkcountdown" is a static configured value.  It does, however, report the
         estimated total duration ("wkestdu") and the epoch timestamp at which the cook began
-        ("wkbegin"), so remaining time is derived as wkestdu - (now - wkbegin), clamped to a
-        minimum of 0.  Returns None when the device has not reported these fields (e.g. firmware
-        that does not expose them), which keeps the sensor hidden.
+        ("wkbegin"), so remaining time is derived as wkestdu - (now - wkbegin), clamped to the
+        range 0..wkestdu.  Returns None when the device has not reported these fields (e.g.
+        firmware that does not expose them), which keeps the sensor hidden.
         """
         if not isinstance(self._cook_time_estimated, int) or not isinstance(self._cook_time_begin, int):
             return None
-        elapsed = int(time.time()) - self._cook_time_begin
+        # Clamp elapsed to >= 0 so clock skew (wkbegin slightly ahead of local time) can never
+        # produce a remaining time greater than the estimated duration.
+        elapsed = max(0, int(time.time()) - self._cook_time_begin)
         return max(0, self._cook_time_estimated - elapsed)
 
     @property

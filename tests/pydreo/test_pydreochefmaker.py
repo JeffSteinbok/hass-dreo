@@ -229,6 +229,33 @@ class TestPyDreoChefMaker(TestBase):
         with patch(PATCH_TIME, return_value=wkbegin + 400):
             assert cm.cook_time_remaining == 0
 
+    def test_cook_time_remaining_stale_wkbegin_not_used_as_positive(self):
+        """A stale wkbegin from a previous cook must not yield a misleading remaining time.
+
+        The REST fixture (get_device_state_KCM001S_1.json) seeds wkbegin from a prior session
+        while wkestdu is 0.  When a new cook reports wkestdu before pushing a fresh wkbegin (as
+        seen in #863), the stale timestamp is far in the past, so elapsed is large and remaining
+        clamps to 0 rather than reporting a bogus value.
+        """
+        cm = self._load_chefmaker()
+        stale_begin = 1000
+        cm._cook_time_begin = stale_begin  # pylint: disable=protected-access
+
+        # New cook configured: wkestdu arrives, but wkbegin is still the stale value.
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "ckcfm", COOK_TIME_ESTIMATED_KEY: 300}})
+
+        # "now" is long after the stale begin -> elapsed huge -> clamped to 0 (not 300).
+        with patch(PATCH_TIME, return_value=stale_begin + 100000):
+            assert cm.cook_time_remaining == 0
+
+    def test_cook_time_remaining_clamped_when_wkbegin_ahead_of_clock(self):
+        """Clock skew (wkbegin ahead of local time) never exceeds the estimated duration."""
+        cm = self._load_chefmaker()
+        cm.handle_server_update({REPORTED_KEY: {COOK_TIME_ESTIMATED_KEY: 300, COOK_TIME_BEGIN_KEY: 2000}})
+        # Local clock is 50s behind the device's wkbegin -> elapsed clamped to 0 -> remaining == estimate.
+        with patch(PATCH_TIME, return_value=1950):
+            assert cm.cook_time_remaining == 300
+
     def test_handle_server_update_mode(self):
         """Test handle_server_update processes mode."""
         cm = self._load_chefmaker()
