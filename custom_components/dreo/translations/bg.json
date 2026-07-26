@@ -260,7 +260,9 @@
         "name": "Режим на ambient осветление",
         "state": {
           "humidity": "Влажност",
-          "color": "Цвят"
+          "color": "Цвят",
+          "breath": "Дишай",
+          "cycle": "циклично"
         }
       },
       "three_d_angle_preset": {

@@ -260,7 +260,9 @@
         "name": "Tryb światła otoczenia",
         "state": {
           "humidity": "Wilgotność",
-          "color": "Kolor"
+          "color": "Kolor",
+          "breath": "Oddychać",
+          "cycle": "cyklicznie"
         }
       },
       "three_d_angle_preset": {

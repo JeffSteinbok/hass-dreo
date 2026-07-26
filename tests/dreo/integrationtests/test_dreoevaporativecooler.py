@@ -10,7 +10,7 @@ from custom_components.dreo import select
 from custom_components.dreo import sensor
 from custom_components.dreo import switch
 from .imports import *  # pylint: disable=W0401,W0614
-from .integrationtestbase import IntegrationTestBase
+from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
 PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
 PATCH_SCHEDULE_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
@@ -51,7 +51,7 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
                 assert len(pydreo_ec.preset_modes) > 0
 
             numbers = number.get_entries([pydreo_ec])
-            self.verify_expected_entities(numbers, ["Target Humidity"])
+            self.verify_expected_entities(numbers, ["Ambient Light Threshold Low", "Ambient Light Threshold High", "Target Humidity"])
 
             sensors = sensor.get_entries([pydreo_ec])
             self.verify_expected_entities(sensors, ["Temperature", 'Target Humidity Reached', "Humidity", "Use since cleaning"])
@@ -93,7 +93,15 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
             numbers = number.get_entries([pydreo_ec])
             self.verify_expected_entities(
                 numbers,
-                ["Fog Level", "Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right", "Target Humidity"],
+                [
+                    "Ambient Light Threshold Low",
+                    "Ambient Light Threshold High",
+                    "Fog Level",
+                    "Horizontal Angle",
+                    "Horizontal Oscillation Angle Left",
+                    "Horizontal Oscillation Angle Right",
+                    "Target Humidity",
+                ],
             )
 
             sensors = sensor.get_entries([pydreo_ec])
@@ -107,6 +115,20 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
 
             selects = select.get_entries([pydreo_ec])
             self.verify_expected_entities(selects, ["Ambient Light Mode"])
+
+            # The Ambient Light Mode select exposes all four DR-HEC006S modes and can read/write
+            # each of them (regression: modes 2/3 previously rendered blank and were unselectable).
+            ambient_mode = next(s for s in selects if s.entity_description.key == "Ambient Light Mode")
+            assert ambient_mode.options == ["humidity", "color", "breath", "cycle"]
+            # Fixture reports rgbmode=0 -> "humidity".
+            assert ambient_mode.current_option == "humidity"
+            with patch(PATCH_SEND_COMMAND):
+                ambient_mode.select_option("breath")
+                assert pydreo_ec.rgbmode == 2
+                assert ambient_mode.current_option == "breath"
+                ambient_mode.select_option("cycle")
+                assert pydreo_ec.rgbmode == 3
+                assert ambient_mode.current_option == "cycle"
 
     def test_HEC005S_fog_level_range(self):  # pylint: disable=invalid-name
         """Load HEC005S and verify fog level slider range includes level 4."""

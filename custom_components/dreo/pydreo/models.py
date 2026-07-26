@@ -21,6 +21,7 @@ from .constant import (
     DreoACMode,
     DreoACFanMode,
     POWERON_KEY,
+    RGB_MODE_RANGE,
 )
 
 COOKING_MODES = [
@@ -575,6 +576,8 @@ SUPPORTED_DEVICES = {
     # DR-HEC006S is the TurboCool Misting Fan 516S.
     # controlsConf is empty so speed range and preset modes must be hardcoded.
     # DR-HEC006S has +/-75° oscillation range and the turbo-mode is 4
+    # DR-HEC006S supports rgbmode (0=humidity indicator, 1=fixed color, 2=breathing, 3=cycling),
+    # rgbcolor, and rgbth (humidity thresholds).  Brightness is low/mid/high.
     # Asymmetric horizontal oscillation is also supported with left/right angles
     "DR-HEC006S": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
@@ -584,7 +587,9 @@ SUPPORTED_DEVICES = {
             HORIZONTAL_ANGLE_RANGE: (-75, 75),
             "horizontal_osc_angle_left_range": (-75, 75),
             "horizontal_osc_angle_right_range": (-75, 75),
+            RGB_MODE_RANGE: (0, 3),
         },
+        ambient_light_levels=(0, 1, 2, 3),
     ),
     # DR-HEC005S is the TurboCool Misting Fan 765S.
     # It has 12 fan speeds and can expose an empty controlsConf.
