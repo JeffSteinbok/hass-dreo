@@ -3,16 +3,15 @@
 # This file has no secrets in it — `token.env` names an environment variable,
 # it does not hold a value — so it's safe to check in and copy verbatim.
 #
-# The instance (runtime state: instance.yaml, config/, runs/, workcopies/,
-# scheduler/, telemetry.db) is NOT this repo. Materialize it OUTSIDE the repo,
-# e.g. ~/goobers-instances/hass-dreo:
+# This repo's ./goobers directory IS the instance root. Runtime state
+# (instance.yaml, runs/, workcopies/, scheduler/, telemetry.db) is written
+# here but gitignored; the tracked definitions live under ./goobers/config,
+# which the daemon reads by default (WorkflowSource left unset). To run:
 #
-#   goobers init ~/goobers-instances/hass-dreo
-#   cp goobers/instance.yaml.example ~/goobers-instances/hass-dreo/instance.yaml
-#   # point the instance's workflowSource at this repo-relative config subtree
-#   goobers config materialize ~/goobers-instances/hass-dreo
-#   goobers validate  ~/goobers-instances/hass-dreo
-#   goobers up        ~/goobers-instances/hass-dreo
+#   cp goobers/instance.yaml.example goobers/instance.yaml
+#   export GOOBERS_GITHUB_TOKEN=...   # repo + issues + pull-requests scope
+#   goobers validate goobers
+#   goobers up       goobers
 #
 # See ./README.md for the full walkthrough.
 apiVersion: goobers.dev/v1alpha1

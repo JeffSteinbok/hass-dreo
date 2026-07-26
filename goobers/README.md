@@ -1,71 +1,76 @@
 # Goobers config for hass-dreo
 
-This directory is the **version-controlled config source** ("workforce as code")
-for running [Goobers](https://github.com/Agent-Clubhouse/Goobers) — a
-self-hosted agent-workforce platform — against this repo. It is a *repo-relative
-config subtree*, the same pattern Goobers itself dogfoods with its `selfhost/`
-directory. **No separate repo is required.**
+This directory is both the **version-controlled config source** ("workforce as
+code") *and* the **instance root** for running
+[Goobers](https://github.com/Agent-Clubhouse/Goobers) — a self-hosted
+agent-workforce platform — against this repo. The daemon runs in place
+(`goobers up goobers`); its runtime state is written here but gitignored.
+**No separate repo and no separate instance directory are required.**
 
 ## What lives here vs. what does NOT
 
 Goobers separates **definitions** (desired state — versioned and reviewed) from
-**runtime state** (observed execution — inspected, never committed).
+**runtime state** (observed execution — inspected, never committed). Both sit
+in this one directory; only the definitions are tracked.
 
-**In this directory (checked in):**
+**Tracked (checked in):**
 
 ```
 goobers/
-├── instance.yaml.example        # template; copy into the runtime instance
-├── manifest.yaml                # kind: Manifest — top-level desired state
-└── gaggles/
-    └── hass-dreo/
-        ├── gaggle.yaml          # kind: Gaggle — targets JeffSteinbok/hass-dreo
-        ├── goobers/             # the workforce (kind: Goober + persona)
-        │   ├── curator/         # triages issues -> goobers:ready
-        │   ├── nominator/       # nominates items into the ready pool
-        │   ├── implementer/     # claims a ready issue -> implements -> commits
-        │   ├── reviewer/        # reviews PRs, casts merge verdicts
-        │   └── docs/            # keeps README/docs current from code churn
-        └── workflows/           # kind: Workflow (state machines)
-            ├── backlog-curation.yaml
-            ├── work-nomination.yaml
-            ├── implementation.yaml
-            ├── merge-review.yaml
-            ├── pr-remediation.yaml
-            └── docs-updater.yaml
+├── instance.yaml.example        # template; copy → instance.yaml locally
+├── .gitignore                   # ignores the runtime state listed below
+├── README.md
+└── config/                      # the daemon reads defs straight from here
+    ├── manifest.yaml            # kind: Manifest — top-level desired state
+    └── gaggles/
+        └── hass-dreo/
+            ├── gaggle.yaml      # kind: Gaggle — targets JeffSteinbok/hass-dreo
+            ├── goobers/         # the workforce (kind: Goober + persona)
+            │   ├── curator/     # triages issues -> goobers:ready
+            │   ├── nominator/   # nominates items into the ready pool
+            │   ├── implementer/ # claims a ready issue -> implements -> commits
+            │   ├── reviewer/    # reviews PRs, casts merge verdicts
+            │   └── docs/        # keeps README/docs current from code churn
+            └── workflows/       # kind: Workflow (state machines)
+                ├── backlog-curation.yaml
+                ├── work-nomination.yaml
+                ├── implementation.yaml
+                ├── merge-review.yaml
+                ├── pr-remediation.yaml
+                └── docs-updater.yaml
 ```
 
-Each `goobers/<name>/` holds a `goober.yaml` (config) + `instructions.md`
-(persona). This is the full **V0 workforce**, adapted from Goobers' own
-`selfhost/` dogfood config.
+Each `config/gaggles/hass-dreo/goobers/<name>/` holds a `goober.yaml` (config)
++ `instructions.md` (persona). This is the full **V0 workforce**, adapted from
+Goobers' own `selfhost/` dogfood config. Definitions live under `config/`
+because that is where the daemon reads them by default (the instance's
+`WorkflowSource` is left unset).
 
-**NOT here (runtime state — materialized OUTSIDE the repo, e.g.
-`~/goobers-instances/hass-dreo/`):** `instance.yaml`, `config/`, `runs/`,
-`workcopies/`, `scheduler/`, `telemetry.db`. The runtime reads these definitions
-but never writes them back. Belt-and-suspenders `.gitignore` entries guard
-against anyone materializing an instance inside the tree.
+**Ignored (runtime state — the daemon materializes these here on `goobers up`,
+and `.gitignore` keeps them out of git):** `instance.yaml`, `runs/`,
+`workcopies/`, `scheduler/`, `telemetry.db*`. The runtime reads the definitions
+under `config/` but never writes them back.
 
 ## Setup
+
+Everything runs from `goobers/` as the instance root — no `goobers init`, no
+copying config elsewhere.
 
 1. Install the pinned `goobers` binary (see the project's
    [releases guide](https://github.com/Agent-Clubhouse/Goobers/blob/main/docs/guides/releases.md)),
    or build from source (`go build -o bin/goobers ./cmd/goobers`).
-2. Scaffold a runtime instance **outside** this repo and point it at this config
-   subtree:
+2. Create your local `instance.yaml` (gitignored) from the template:
    ```sh
-   goobers init ~/goobers-instances/hass-dreo
-   cp goobers/instance.yaml.example ~/goobers-instances/hass-dreo/instance.yaml
-   # set the instance's workflowSource to this repo's ./goobers directory
+   cp goobers/instance.yaml.example goobers/instance.yaml
    ```
 3. Provide credentials (never inline): `export GOOBERS_GITHUB_TOKEN=...`
    (repo + issues + pull-requests scope).
-4. Materialize, validate, run:
+4. Validate and run, pointing every command at this directory:
    ```sh
-   goobers config materialize ~/goobers-instances/hass-dreo
-   goobers validate           ~/goobers-instances/hass-dreo
-   goobers up                 ~/goobers-instances/hass-dreo   # daemon (all workflows)
+   goobers validate goobers
+   goobers up       goobers   # daemon (all workflows); creates runs/, workcopies/, ...
    # or trigger one workflow manually:
-   goobers run backlog-curation ~/goobers-instances/hass-dreo
+   goobers run backlog-curation goobers
    ```
 
 ## The workforce (V0 loop)
@@ -107,4 +112,4 @@ the trust gate.
   which need admin or **Developer Mode** enabled; the `ciCommand` also assumes a
   POSIX `sh` on PATH (use WSL/Git-Bash). Linux/macOS are the supported tiers.
 
-Always run `goobers validate` after editing anything here.
+Always run `goobers validate goobers` after editing anything here.

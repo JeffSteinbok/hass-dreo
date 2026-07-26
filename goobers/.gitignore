@@ -1,29 +1,27 @@
-# Goobers runtime state — belt-and-suspenders only.
+# Goobers in-repo instance: this directory (goobers/) IS the instance root.
 #
-# The runtime instance should be materialized OUTSIDE this repo (see README.md);
-# nothing generated at runtime is needed here. These patterns are deliberately
-# specific so they can NEVER shadow the checked-in config source
-# (manifest.yaml, gaggles/**/*.yaml, instructions.md, *.example, README.md).
+# TRACKED (definitions-as-code + docs):
+#   config/            — manifest.yaml + gaggles/**; the daemon reads defs
+#                        straight from here (WorkflowSource nil default)
+#   instance.yaml.example, README.md, .gitignore
+#
+# IGNORED (runtime state the daemon materializes on `goobers up goobers`):
+#   everything below. Patterns are anchored to this dir's root so they can
+#   NEVER shadow config/ or the tracked example/README.
 
-# Runtime instance-root files (a materialized instance writes these)
+# Instance-root runtime files
 /instance.yaml
 /telemetry.db
 /telemetry.db-shm
 /telemetry.db-wal
 
-# Runtime directories: top-level runs/workcopies aliases + scheduler ledger
+# Runtime directories: scheduler ledger + top-level runs/workcopies aliases
+# (single-gaggle instances create these as symlinks — Windows needs Dev Mode)
 /runs/
 /workcopies/
 /scheduler/
 
-# Per-gaggle runtime state — keeps gaggle.yaml, goobers/, and workflows/ tracked
-gaggles/*/runs/
-gaggles/*/workcopies/
-gaggles/*/.runs.*
-
-# NOTE: intentionally NOT ignoring `config/`. Our config source is laid out flat
-# (manifest.yaml + gaggles/ at the root of this directory, like Goobers'
-# config-examples/ and selfhost/). A materialized instance's `config/` is a copy
-# that belongs OUTSIDE the repo. If you ever adopt the concepts-doc layout that
-# nests definitions under config/, remove this note — do NOT add `config/` here,
-# or you will silently hide committed config.
+# Per-gaggle runtime state written under the materialized config tree, if any
+config/gaggles/*/runs/
+config/gaggles/*/workcopies/
+config/gaggles/*/.runs.*
