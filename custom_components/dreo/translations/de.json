@@ -260,7 +260,9 @@
         "name": "Umgebungslicht-Modus",
         "state": {
           "humidity": "Feuchtigkeit",
-          "color": "Farbe"
+          "color": "Farbe",
+          "breath": "Atmen",
+          "cycle": "Zyklus"
         }
       },
       "three_d_angle_preset": {

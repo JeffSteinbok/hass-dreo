@@ -260,7 +260,9 @@
         "name": "Modo de luz ambiental",
         "state": {
           "humidity": "Humedad",
-          "color": "Color"
+          "color": "Color",
+          "breath": "Respirar",
+          "cycle": "cíclicas"
         }
       },
       "three_d_angle_preset": {

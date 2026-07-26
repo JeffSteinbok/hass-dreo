@@ -40,7 +40,10 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         icon="mdi:weather-windy",
         options_list=["low", "medium", "high"],
         raw_values=[1, 2, 3],
-        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("mist_level"),
+        exists_fn=lambda device: (
+            device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
+            and device.is_feature_supported("mist_level")
+        ),
     ),
     DreoSelectEntityDescription(
         key="Ambient Light Mode",
@@ -48,7 +51,7 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         attr_name="rgbmode",
         icon="mdi:lightbulb-cog",
         options_list=["humidity", "color"],
-        raw_values=[0, 1],
+        raw_values=[0, 1, 2, 3],
         exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
         and device.is_feature_supported("rgbmode"),
     ),
