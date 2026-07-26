@@ -1,12 +1,29 @@
-# Goobers runtime state — belt-and-suspenders.
-# The instance should be materialized OUTSIDE this repo, but never commit
-# runtime state if someone materializes an instance inside this tree.
-# The versioned config source (manifest.yaml, gaggles/, *.example, README.md)
-# stays tracked.
-instance.yaml
-config/
-runs/
+# Goobers runtime state — belt-and-suspenders only.
+#
+# The runtime instance should be materialized OUTSIDE this repo (see README.md);
+# nothing generated at runtime is needed here. These patterns are deliberately
+# specific so they can NEVER shadow the checked-in config source
+# (manifest.yaml, gaggles/**/*.yaml, instructions.md, *.example, README.md).
+
+# Runtime instance-root files (a materialized instance writes these)
+/instance.yaml
+/telemetry.db
+/telemetry.db-shm
+/telemetry.db-wal
+
+# Runtime directories: top-level runs/workcopies aliases + scheduler ledger
+/runs/
+/workcopies/
+/scheduler/
+
+# Per-gaggle runtime state — keeps gaggle.yaml, goobers/, and workflows/ tracked
 gaggles/*/runs/
 gaggles/*/workcopies/
-scheduler/
-telemetry.db
+gaggles/*/.runs.*
+
+# NOTE: intentionally NOT ignoring `config/`. Our config source is laid out flat
+# (manifest.yaml + gaggles/ at the root of this directory, like Goobers'
+# config-examples/ and selfhost/). A materialized instance's `config/` is a copy
+# that belongs OUTSIDE the repo. If you ever adopt the concepts-doc layout that
+# nests definitions under config/, remove this note — do NOT add `config/` here,
+# or you will silently hide committed config.
