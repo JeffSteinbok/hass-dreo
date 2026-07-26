@@ -106,12 +106,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             self._rgb_mode_range = device_definition.device_ranges[RGB_MODE_RANGE]
         if self._rgb_mode_range is not None:
             if self._rgb_mode_range[1] == 3:
-                self.rgbmode_options = [
-                    ("humidity"),
-                    ("color"),
-                    ("breath"),
-                    ("cycle"),
-                ]
+                self.rgbmode_options = ["humidity", "color", "breath", "cycle"]
 
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         # Not needed atm
@@ -167,8 +162,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
         self._send_command(HUMIDITY_TARGET_KEY, value)
 
     @property
-    # use property mist_level to show select-box in UI, but keep fog_level commands
-    def mist_level(self) -> int | None:
+    def fog_level(self) -> int | None:
         """Return the misting level."""
         return self._fog_level
 
@@ -180,9 +174,8 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             return range_from_definition
         return (1, 3)
 
-    @mist_level.setter
-    # use property mist_level to show select-box in UI, but keep fog_level commands
-    def mist_level(self, value: int) -> None:
+    @fog_level.setter
+    def fog_level(self, value: int) -> None:
         """Set the misting level."""
         level = int(value)
         min_level, max_level = self.fog_level_range
@@ -305,7 +298,7 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
             self._rgbbri = level
             self._send_command(RGB_BRI, level)
             return
-    if self._rgb_light_on == desired_on:
+        if self._rgb_light_on == desired_on:
             _LOGGER.debug("rgblevel: rgblevel - value already %s, skipping command", desired_on)
             return
         self._rgb_light_on = desired_on

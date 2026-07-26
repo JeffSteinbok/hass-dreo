@@ -116,7 +116,7 @@ Sourced from GitHub issues, PRs, and contributed test data.
 | Model | GitHub User(s) | Evidence |
 |---|---|---|
 | DR-HEC002S | [@antz29](https://github.com/antz29), [@obol2](https://github.com/obol2), [@sbR569](https://github.com/sbR569) | [#285](https://github.com/JeffSteinbok/hass-dreo/issues/285), [#290](https://github.com/JeffSteinbok/hass-dreo/issues/290), [#291](https://github.com/JeffSteinbok/hass-dreo/issues/291) |
-| DR-HEC006S | [@Achronite](https://github.com/Achronite), [@stripedew](https://github.com/stripedew) | [#742](https://github.com/JeffSteinbok/hass-dreo/issues/742), [#701](https://github.com/JeffSteinbok/hass-dreo/issues/701), [filter](https://github.com/JeffSteinbok/hass-dreo/issues?q=DR-HEC006S) |
+| DR-HEC006S | [@Achronite](https://github.com/Achronite), [@stripedew](https://github.com/stripedew), [@harrymayr](https://github.com/harrymayr) | [#742](https://github.com/JeffSteinbok/hass-dreo/issues/742), [#701](https://github.com/JeffSteinbok/hass-dreo/issues/701), [#841](https://github.com/JeffSteinbok/hass-dreo/pull/841), [filter](https://github.com/JeffSteinbok/hass-dreo/issues?q=DR-HEC006S) |
 
 ## Dehumidifiers (DR-HDH)
 

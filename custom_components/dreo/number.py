@@ -161,13 +161,8 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         min_value=0,
         max_value=100,
         step=1,
-        exists_fn=lambda device: (
-            (
-                device.type
-                in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
-            )
-            and device.is_feature_supported("rgbth")
-        ),
+        exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
+        and device.is_feature_supported("rgbth"),
     ),
     DreoNumberEntityDescription(
         key="Ambient Light Threshold High",
@@ -177,13 +172,8 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         min_value=0,
         max_value=100,
         step=1,
-        exists_fn=lambda device: (
-            (
-                device.type
-                in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
-            )
-            and device.is_feature_supported("rgbth")
-        ),
+        exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
+        and device.is_feature_supported("rgbth"),
     ),
 )
 

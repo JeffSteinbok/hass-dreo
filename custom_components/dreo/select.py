@@ -40,10 +40,7 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         icon="mdi:weather-windy",
         options_list=["low", "medium", "high"],
         raw_values=[1, 2, 3],
-        exists_fn=lambda device: (
-            device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
-            and device.is_feature_supported("mist_level")
-        ),
+        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("mist_level"),
     ),
     DreoSelectEntityDescription(
         key="Ambient Light Mode",
@@ -51,7 +48,7 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         attr_name="rgbmode",
         icon="mdi:lightbulb-cog",
         options_list=["humidity", "color"],
-        raw_values=[0, 1, 2, 3],
+        raw_values=[0, 1],
         exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
         and device.is_feature_supported("rgbmode"),
     ),
@@ -106,13 +103,23 @@ class DreoSelectHA(DreoBaseDeviceHA, SelectEntity):
         self._attr_unique_id = f"{super().unique_id}-{description.key}"
         self._attr_options = self._get_device_options()
 
-    def _get_device_options(self) -> list[str]:
-        """Return current options list for this select."""
+    def _dynamic_options(self) -> list[str] | None:
+        """Return the device-provided options list, if any.
+
+        When a device exposes a `{attr_name}_options` list, the raw device value is treated
+        as the index into that list.  This lets a single entity description adapt to devices
+        that support a different number of options (e.g. DR-HEC006S exposes four ambient light
+        modes while humidifiers expose two).
+        """
         options_attr_name = f"{self.entity_description.attr_name}_options"
         options = getattr(self.device, options_attr_name, None)
         if isinstance(options, list) and len(options) > 0:
             return options
-        return self.entity_description.options_list
+        return None
+
+    def _get_device_options(self) -> list[str]:
+        """Return current options list for this select."""
+        return self._dynamic_options() or self.entity_description.options_list
 
     @property
     def options(self) -> list[str]:
@@ -126,6 +133,15 @@ class DreoSelectHA(DreoBaseDeviceHA, SelectEntity):
         raw = getattr(self.device, self.entity_description.attr_name)
         if raw is None:
             return None
+        # For int-coded selects (those declaring raw_values), a device-provided options list
+        # means the raw value is the index into that list.  This lets one entity adapt to a
+        # variable number of options (e.g. DR-HEC006S exposes four ambient light modes).
+        dynamic = self._dynamic_options()
+        if dynamic is not None and len(self.entity_description.raw_values) > 0:
+            try:
+                return dynamic[int(raw)]
+            except (ValueError, IndexError):
+                return None
         if len(self.entity_description.raw_values) == 0:
             return str(raw)
         try:
@@ -136,6 +152,14 @@ class DreoSelectHA(DreoBaseDeviceHA, SelectEntity):
 
     def select_option(self, option: str) -> None:
         """Set a new option."""
+        # For int-coded selects with a device-provided options list, the list index is the raw value.
+        dynamic = self._dynamic_options()
+        if dynamic is not None and len(self.entity_description.raw_values) > 0:
+            try:
+                setattr(self.device, self.entity_description.attr_name, dynamic.index(option))
+            except ValueError:
+                return
+            return
         if len(self.entity_description.raw_values) == 0:
             setattr(self.device, self.entity_description.attr_name, option)
             return

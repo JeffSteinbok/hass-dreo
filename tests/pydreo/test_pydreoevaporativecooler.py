@@ -18,6 +18,8 @@ from custom_components.dreo.pydreo.pydreoevaporativecooler import (
     RGB_ON_KEY,
     RGB_COLOR,
     RGB_MODE,
+    RGB_BRI,
+    RGB_TH,
     WATER_LEVEL_STATUS_KEY,
     WORKTIME_KEY,
 )
@@ -313,9 +315,13 @@ class TestPyDreoEvaporativeCooler(TestBase):
             ec_fan.display_light = False
             mock_send_command.assert_called_once_with(ec_fan, {LIGHTON_KEY: False})
 
+        # DR-HEC006S maps rgblevel onto rgbon + rgbbri: turning the light on at level 1
+        # sends both the power (rgbon) and brightness (rgbbri) commands.
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.rgblevel = 1
-            mock_send_command.assert_called_once_with(ec_fan, {RGB_ON_KEY: True})
+            mock_send_command.assert_any_call(ec_fan, {RGB_ON_KEY: True})
+            mock_send_command.assert_any_call(ec_fan, {RGB_BRI: 1})
+            assert mock_send_command.call_count == 2
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ec_fan.rgbmode = 1
@@ -406,7 +412,8 @@ class TestPyDreoEvaporativeCooler(TestBase):
         assert ec_fan.display_light is False
 
         ec_fan.handle_server_update({REPORTED_KEY: {RGB_ON_KEY: True}})
-        assert ec_fan.rgblevel == 1
+        # DR-HEC006S reports rgbbri=3 in the fixture, so rgblevel reflects that brightness once on.
+        assert ec_fan.rgblevel == 3
 
         ec_fan.handle_server_update({REPORTED_KEY: {RGB_MODE: 1}})
         assert ec_fan.rgbmode == 1
@@ -452,3 +459,91 @@ class TestPyDreoEvaporativeCooler(TestBase):
 
         with pytest.raises(ValueError):
             ec_fan.fog_level = 5
+
+    def test_HEC006S_rgbbri_brightness(self):  # pylint: disable=invalid-name
+        """DR-HEC006S maps ambient light brightness onto the rgbbri field."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        # Fixture: rgbbri=3, rgbon=false -> compatibility level reports 0 while the light is off.
+        assert ec_fan._rgbbri == 3
+        assert ec_fan._rgb_light_on is False
+        assert ec_fan.rgblevel == 0
+
+        # Turning on at a new brightness sends both rgbon and rgbbri.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgblevel = 2
+            mock_send_command.assert_any_call(ec_fan, {RGB_ON_KEY: True})
+            mock_send_command.assert_any_call(ec_fan, {RGB_BRI: 2})
+            assert mock_send_command.call_count == 2
+        assert ec_fan.rgblevel == 2
+
+        # Turning off sends only rgbon False and leaves rgbbri untouched.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgblevel = 0
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_ON_KEY: False})
+        assert ec_fan._rgbbri == 2
+        assert ec_fan.rgblevel == 0
+
+        # Re-enabling at the same brightness only needs to toggle rgbon back on.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgblevel = 2
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_ON_KEY: True})
+
+    def test_HEC006S_rgbth_thresholds(self):  # pylint: disable=invalid-name
+        """DR-HEC006S exposes ambient light humidity thresholds via rgbth ('low,high')."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        # Fixture rgbth = "30,70".
+        assert ec_fan.rgbth == "30,70"
+        assert ec_fan.rgbth_low == 30
+        assert ec_fan.rgbth_high == 70
+
+        # Setting the low threshold preserves the high value and sends the combined payload.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgbth_low = 40
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_TH: "40,70"})
+        assert ec_fan.rgbth_low == 40
+
+        # Setting the high threshold preserves the low value.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgbth_high = 80
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_TH: "40,80"})
+        assert ec_fan.rgbth_high == 80
+
+        # rgbth is also updated from WebSocket reports.
+        ec_fan.handle_server_update({REPORTED_KEY: {RGB_TH: "25,65"}})
+        assert ec_fan.rgbth_low == 25
+        assert ec_fan.rgbth_high == 65
+
+    def test_HEC006S_rgbmode_options_and_selection(self):  # pylint: disable=invalid-name
+        """DR-HEC006S advertises four ambient light modes and can select each one."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        assert ec_fan.rgbmode_options == ["humidity", "color", "breath", "cycle"]
+
+        # Modes 2 (breath) and 3 (cycle) round-trip through the setter.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ec_fan.rgbmode = 2
+            mock_send_command.assert_called_once_with(ec_fan, {RGB_MODE: 2})
+        assert ec_fan.rgbmode == 2
+
+        ec_fan.handle_server_update({REPORTED_KEY: {RGB_MODE: 3}})
+        assert ec_fan.rgbmode == 3
+
+    def test_HEC006S_rgbbri_from_server_update(self):  # pylint: disable=invalid-name
+        """rgbbri brightness is updated from WebSocket reports."""
+        self.get_devices_file_name = "get_devices_HEC006S.json"
+        self.pydreo_manager.load_devices()
+        ec_fan: PyDreoEvaporativeCooler = self.pydreo_manager.devices[0]
+
+        ec_fan.handle_server_update({REPORTED_KEY: {RGB_ON_KEY: True, RGB_BRI: 1}})
+        assert ec_fan.rgblevel == 1
+        ec_fan.handle_server_update({REPORTED_KEY: {RGB_BRI: 3}})
+        assert ec_fan.rgblevel == 3
+
