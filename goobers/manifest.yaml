@@ -1,0 +1,25 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Manifest
+metadata:
+  name: hass-dreo
+  # The pre-GA DSL is preview and must be acknowledged at instance scope.
+  annotations:
+    goobers.dev/allow-preview-features: "true"
+spec:
+  instance:
+    name: hass-dreo
+    environment: dev
+  # Named, reusable connection. Credentials are always references — never
+  # inline tokens (CFG-009, SEC-010). At tiers 1-2, secretRef.name is a label
+  # only; the actual token source (env var or file) is declared per-repo in
+  # this instance's instance.yaml, never here (keep keyVault empty locally).
+  connections:
+    - name: hass-dreo-repo-token
+      type: repo
+      provider: github
+      secretRef:
+        name: hass-dreo-repo-token
+  # Gaggles included in this instance's desired state. Each must have a
+  # Gaggle object under gaggles/<name>/.
+  gaggles:
+    - hass-dreo

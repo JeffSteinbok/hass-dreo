@@ -1,0 +1,116 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Workflow
+dslVersion: "1.4"
+metadata:
+  name: implementation
+spec:
+  gaggle: hass-dreo
+  displayName: Implementation (issue -> PR)
+  # Starter linear flow: claim one ready, trust-approved issue, implement it in
+  # an isolated worktree, run this gaggle's local CI (ruff + pytest via
+  # gaggle.yaml `ciCommand`), push the branch, and open a PR.
+  #
+  # This is intentionally minimal — it omits the reviewer verdict gate, the
+  # bounded CI-poll repass loop, and escalation/merge policy of the flagship
+  # workflow. Graduate to the full gated version with `goobers init --guided`
+  # or by adapting config-examples/gaggles/acme-web/workflows/implementation.yaml
+  # once the loop is proven out on this repo.
+  triggers:
+    - type: schedule
+      schedule: "3,18,33,48 * * * *"
+  readiness:
+    maxConcurrentRuns: 1
+    maxRunsPerHour: 4
+  start: query-backlog
+  tasks:
+    # Built-in backlog-query stage: claims exactly one item carrying both the
+    # trust label and the ready marker. Narrowed to one item — each run
+    # produces one PR.
+    - name: query-backlog
+      type: deterministic
+      goal: Claim one ready, trust-approved issue to implement.
+      run:
+        command: ["goobers", "backlog-query", "--claim"]
+      inputs:
+        trustLabel: "goobers:approved"
+        requireLabels: "goobers:ready"
+        maxItems: "1"
+        resultFile: "claimed-item.json"
+      capabilities:
+        - github:issues:write
+        - github:pr:write
+      policyActions:
+        - claim-backlog-items
+      expectedOutputs:
+        - claimed-item
+      next: implement
+
+    # Agentic implementation in a fresh, isolated worktree. Scoped to repo:push
+    # only — this stage never talks to the issues or PR API. The implementer
+    # commits to the run branch; publishing is the separate push-branch stage.
+    - name: implement
+      type: agentic
+      goober: coder
+      goal: >-
+        Implement the claimed issue end to end: read the issue and its
+        acceptance criteria, plan, implement, verify with fast, targeted tests
+        for what you changed, and commit to the run's branch. Do NOT run the
+        full ruff+pytest suite in-session — the deterministic local-ci stage
+        below owns that authoritatively.
+      capabilities:
+        - repo:push
+      policyActions:
+        - modify-repository
+      retry:
+        maxAttempts: 2
+        backoffSeconds: 15
+      onTimeout: salvage
+      expectedOutputs:
+        - changed-files
+      next: local-ci
+
+    # `make ci`-equivalent, run on the implementation branch after syncing base.
+    # This gaggle declares `ciCommand: ["sh", "-c", "ruff check . && pytest"]`
+    # (gaggle.yaml), so at runtime this stage runs that suite instead of the
+    # command declared here (MGV-1/#1009) — the declaration below is the
+    # fallback for a gaggle that declares no ciCommand.
+    - name: local-ci
+      type: deterministic
+      goal: Run the project's local CI-equivalent (lint + tests) in the worktree.
+      run:
+        command: ["make", "ci"]
+        syncBase: true
+      retry:
+        maxAttempts: 1
+      next: push-branch
+
+    # Deterministic branch push: the implementer commits but never pushes — this
+    # stage publishes the run branch to origin through the credential seam,
+    # authenticated per-invocation, never persisted to disk. Runs after local-ci
+    # passes so a broken build is never published.
+    - name: push-branch
+      type: deterministic
+      goal: Push the run's branch to origin.
+      run:
+        command: ["goobers", "push-branch"]
+      capabilities:
+        - repo:push
+      policyActions:
+        - push-repository-branch
+      next: open-pr
+
+    - name: open-pr
+      type: deterministic
+      goal: Open the PR for the run's branch.
+      run:
+        command: ["goobers", "open-pr"]
+      inputs:
+        runIdFooter: "true"
+        resultFile: "pr-result.json"
+      capabilities:
+        - github:pr:write
+      policyActions:
+        - open-or-update-pr
+      expectedOutputs:
+        - pull-request-url
+      # Terminal: no `next`. Issue in, PR out.

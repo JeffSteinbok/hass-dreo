@@ -1,0 +1,39 @@
+apiVersion: goobers.dev/v1alpha1
+kind: Gaggle
+metadata:
+  name: hass-dreo
+spec:
+  displayName: hass-dreo
+  # The project codebase this gaggle works on.
+  project:
+    provider: github
+    owner: JeffSteinbok
+    name: hass-dreo
+    branch: main
+    connectionRef: hass-dreo-repo-token
+  # The singleton backlog this gaggle draws work from (GAG-004). Only issues
+  # carrying every label below are considered; scope the workforce narrowly to
+  # start rather than draining the whole issue tracker.
+  backlog:
+    provider: github
+    project: JeffSteinbok/hass-dreo
+    labels:
+      - goobers
+    connectionRef: hass-dreo-repo-token
+  # Per-gaggle isolation boundary (SEC-001/002). `namespace` is required and
+  # must be unique per gaggle; `identityRef` (Azure workload identity) is a
+  # tier-3 concern, omitted for local tier-1.
+  isolation:
+    namespace: gaggle-hass-dreo
+  # Per-gaggle CI command (MGV-1/#1009): this is a Python stack, so the
+  # deterministic `local-ci` stage runs this suite in place of the workflow's
+  # Go default `["make", "ci"]`. Mirrors this repo's CI gates (ruff + pytest).
+  # A non-zero exit fails the gate and only ever fails this gaggle's own PRs.
+  ciCommand: ["sh", "-c", "ruff check . && pytest"]
+  # Runner capabilities every run of this gaggle needs (RRQ-1/#1101), matched
+  # at schedule time against the runner's advertised set (instance.yaml
+  # `runner.capabilities`). Uncomment once the daemon host advertises it, e.g.
+  # `runner: {capabilities: [python@3.13]}` in instance.yaml — otherwise runs
+  # are refused to schedule with a missing-capability diagnostic.
+  # requiredCapabilities:
+  #   - python@3.13

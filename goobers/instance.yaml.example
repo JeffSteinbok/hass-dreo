@@ -1,0 +1,48 @@
+# Template instance.yaml for the hass-dreo Goobers instance.
+#
+# This file has no secrets in it — `token.env` names an environment variable,
+# it does not hold a value — so it's safe to check in and copy verbatim.
+#
+# The instance (runtime state: instance.yaml, config/, runs/, workcopies/,
+# scheduler/, telemetry.db) is NOT this repo. Materialize it OUTSIDE the repo,
+# e.g. ~/goobers-instances/hass-dreo:
+#
+#   goobers init ~/goobers-instances/hass-dreo
+#   cp goobers/instance.yaml.example ~/goobers-instances/hass-dreo/instance.yaml
+#   # point the instance's workflowSource at this repo-relative config subtree
+#   goobers config materialize ~/goobers-instances/hass-dreo
+#   goobers validate  ~/goobers-instances/hass-dreo
+#   goobers up        ~/goobers-instances/hass-dreo
+#
+# See ./README.md for the full walkthrough.
+apiVersion: goobers.dev/v1alpha1
+kind: Instance
+repos:
+  - provider: github
+    owner: JeffSteinbok
+    name: hass-dreo
+    # Never an inline token (CFG-009, SEC-010) — set the GOOBERS_GITHUB_TOKEN
+    # environment variable before starting the instance. Needs repo + issues +
+    # pull-requests scope for the claim -> implement -> PR loop.
+    token:
+      env: GOOBERS_GITHUB_TOKEN
+# Agentic goobers use the current user's stored Copilot CLI sign-in when no
+# agent:model credential is configured. For a headless service/CI account,
+# uncomment the agent:model entry and set a separate token with Copilot
+# Requests: Read-only.
+credentials: []
+  # - capability: agent:model
+  #   token:
+  #     env: GOOBERS_COPILOT_TOKEN
+telemetry:
+  enabled: true
+# Instance-level ceilings on top of each workflow's own `readiness` block.
+runConditions:
+  maxParallelRuns: 1
+  claimsLockTimeout: 30s
+# Optional runner block. `capabilities` are the toolchains this runner
+# advertises as preinstalled (RRQ-1). Uncomment (and the matching
+# requiredCapabilities in gaggle.yaml) once this host actually has Python 3.13
+# + ruff + pytest on the daemon's PATH.
+# runner:
+#   capabilities: [python@3.13]

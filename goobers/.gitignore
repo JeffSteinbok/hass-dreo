@@ -1,0 +1,12 @@
+# Goobers runtime state — belt-and-suspenders.
+# The instance should be materialized OUTSIDE this repo, but never commit
+# runtime state if someone materializes an instance inside this tree.
+# The versioned config source (manifest.yaml, gaggles/, *.example, README.md)
+# stays tracked.
+instance.yaml
+config/
+runs/
+gaggles/*/runs/
+gaggles/*/workcopies/
+scheduler/
+telemetry.db
