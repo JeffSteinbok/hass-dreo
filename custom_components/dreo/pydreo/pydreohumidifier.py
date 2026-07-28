@@ -507,6 +507,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def rgbth_low(self, value: int) -> None:
         """Set low humidity threshold for ambient light."""
         high = self.rgbth_high if self.rgbth_high is not None else 0
+        # in the App the minimal allowed difference is 5
+        if value >= high - 5:
+            raise ValueError(f"Low humidity threshold {value} must be less than high threshold {high}")
         payload = f"{int(value)},{high}"
         if self._rgbth == payload:
             return
@@ -528,6 +531,9 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def rgbth_high(self, value: int) -> None:
         """Set high humidity threshold for ambient light."""
         low = self.rgbth_low if self.rgbth_low is not None else 0
+        # in the App the minimal allowed difference is 5
+        if value <= low + 5:
+            raise ValueError(f"High humidity threshold {value} must be greater than low threshold {low}")
         payload = f"{low},{int(value)}"
         if self._rgbth == payload:
             return
