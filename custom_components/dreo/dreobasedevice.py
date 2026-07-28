@@ -41,6 +41,9 @@ class DreoBaseDeviceHA(Entity):
     def should_poll(self):
         return False
 
+    def _handle_device_update(self) -> None:
+        """Hook for subclasses to react to push updates before HA state write."""
+
     async def async_added_to_hass(self):
         """Register callbacks."""
 
@@ -49,6 +52,7 @@ class DreoBaseDeviceHA(Entity):
         # to update the state in HA.
         @callback
         def update_state():
+            self._handle_device_update()
             # Tell HA we're ready to update
             self.schedule_update_ha_state(True)
 

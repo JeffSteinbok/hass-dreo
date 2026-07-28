@@ -1,13 +1,15 @@
 """Tests for the Dreo Sensor entity."""
 
-from unittest.mock import patch
+import asyncio
+from unittest.mock import MagicMock, patch
 
-from homeassistant.const import UnitOfTime
 from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.const import UnitOfTime
 
 from custom_components.dreo import sensor
 from custom_components.dreo.sensor import DreoSensorHA, DreoSensorEntityDescription, SENSORS
 from custom_components.dreo.pydreo.constant import DreoDeviceType
+from custom_components.dreo.pydreo.pydreochefmaker import MODE_COOKING, MODE_COMPLETE
 
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
@@ -190,3 +192,41 @@ class TestDreoSensorHA(TestDeviceBase):
         target_reached = next(e for e in entities if e.entity_description.key == "Target Humidity Reached")
         assert target_reached.native_value == "yes"
         assert target_reached.native_value in target_reached._attr_options
+
+    def test_chefmaker_cook_time_remaining_starts_and_stops_refresh_timer(self):
+        """Cook-time sensor starts periodic refresh in cooking mode and stops after completion."""
+        device = self.create_mock_device(
+            name="Chef Maker",
+            serial_number="CM001",
+            type=DreoDeviceType.CHEF_MAKER,
+            features={"mode": MODE_COOKING, "cook_time_remaining": 120},
+        )
+        entity = DreoSensorHA(device, next(defn for defn in SENSORS if defn.key == "Cook time remaining"))
+        entity.hass = MagicMock()
+        stop_timer = MagicMock()
+        with patch("custom_components.dreo.sensor.async_track_time_interval", return_value=stop_timer) as mock_interval:
+            asyncio.run(entity.async_added_to_hass())
+            mock_interval.assert_called_once()
+            assert entity._cook_time_refresh_unsub is stop_timer  # pylint: disable=protected-access
+            update_callback = device.add_attr_callback.call_args_list[0][0][0]
+            device.mode = MODE_COMPLETE
+            update_callback()
+            stop_timer.assert_called_once()
+            assert entity._cook_time_refresh_unsub is None  # pylint: disable=protected-access
+
+    def test_chefmaker_cook_time_remaining_timer_tick_writes_state(self):
+        """Periodic timer writes HA state while still in cooking mode."""
+        device = self.create_mock_device(
+            name="Chef Maker",
+            serial_number="CM001",
+            type=DreoDeviceType.CHEF_MAKER,
+            features={"mode": MODE_COOKING, "cook_time_remaining": 120},
+        )
+        entity = DreoSensorHA(device, next(defn for defn in SENSORS if defn.key == "Cook time remaining"))
+        entity.hass = MagicMock()
+        entity.async_write_ha_state = MagicMock()
+
+        with patch("custom_components.dreo.sensor.async_track_time_interval", return_value=MagicMock()):
+            asyncio.run(entity.async_added_to_hass())
+            entity._async_handle_cook_time_refresh(None)  # pylint: disable=protected-access
+            entity.async_write_ha_state.assert_called_once()

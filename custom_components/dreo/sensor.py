@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import timedelta
 import logging
 
 from homeassistant.const import UnitOfTime
+from homeassistant.helpers.event import async_track_time_interval
 
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
@@ -48,6 +50,7 @@ from .pydreo.pydreohumidifier import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+COOK_TIME_REMAINING_REFRESH_INTERVAL = timedelta(seconds=5)
 
 
 @dataclass
@@ -230,6 +233,7 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
     def __init__(self, pyDreoDevice: PyDreoBaseDevice, description: DreoSensorEntityDescription) -> None:
         super().__init__(pyDreoDevice)
         self.device = pyDreoDevice
+        self._cook_time_refresh_unsub: Callable[[], None] | None = None
 
         # Note this is a "magic" HA property.  Don't rename
         self.entity_description = description
@@ -250,6 +254,46 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
     def __repr__(self):
         # Representation string of object.
         return f"<{self.__class__.__name__}:{self.entity_description}"
+
+    def _is_chefmaker_cook_time_remaining_sensor(self) -> bool:
+        """Return True for the ChefMaker cook-time-remaining sensor."""
+        return self.entity_description.key == "Cook time remaining" and self.device.type in {DreoDeviceType.CHEF_MAKER}
+
+    def _sync_cook_time_refresh_timer(self) -> None:
+        """Start/stop periodic state refresh while a cook is active."""
+        if not self._is_chefmaker_cook_time_remaining_sensor():
+            return
+
+        if self.device.mode == MODE_COOKING and self._cook_time_refresh_unsub is None:
+            self._cook_time_refresh_unsub = async_track_time_interval(
+                self.hass, self._async_handle_cook_time_refresh, COOK_TIME_REMAINING_REFRESH_INTERVAL
+            )
+        elif self.device.mode != MODE_COOKING and self._cook_time_refresh_unsub is not None:
+            self._cook_time_refresh_unsub()
+            self._cook_time_refresh_unsub = None
+
+    @callback
+    def _handle_device_update(self) -> None:
+        """React to device push updates before writing HA state."""
+        self._sync_cook_time_refresh_timer()
+
+    @callback
+    def _async_handle_cook_time_refresh(self, _time) -> None:
+        """Refresh computed remaining cook time while the cook is active."""
+        self._sync_cook_time_refresh_timer()
+        if self._cook_time_refresh_unsub is not None:
+            self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """Register callbacks and initialize cook timer tracking."""
+        await super().async_added_to_hass()
+        self._sync_cook_time_refresh_timer()
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unregister periodic callbacks."""
+        if self._cook_time_refresh_unsub is not None:
+            self._cook_time_refresh_unsub()
+            self._cook_time_refresh_unsub = None
 
     @property
     def native_value(self) -> StateType:
