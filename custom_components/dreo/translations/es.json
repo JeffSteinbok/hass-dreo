@@ -160,14 +160,15 @@
         "name": "Estado",
         "state": {
           "standby": "Espera",
+          "ckcfm": "Configurando",
           "cooking": "Cocinando",
           "off": "Apagado",
           "ckpause": "Pausa",
           "ckcomplete": "Completado"
         }
       },
-      "cook_time_remaining": {
-        "name": "Tiempo de cocción restante"
+      "cook_end_time": {
+        "name": "Fin de cocción"
       },
       "pm25": {
         "name": "PM2.5"

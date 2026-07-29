@@ -1,8 +1,8 @@
 """Tests for the Dreo Sensor entity."""
 
+from datetime import datetime, timezone
 from unittest.mock import patch
 
-from homeassistant.const import UnitOfTime
 from homeassistant.components.sensor import SensorDeviceClass
 
 from custom_components.dreo import sensor
@@ -146,23 +146,36 @@ class TestDreoSensorHA(TestDeviceBase):
         keys = [e.entity_description.key for e in entities]
         assert "Status" in keys
 
-    def test_sensor_chefmaker_cook_time_remaining(self):
-        """Test ChefMaker cook time remaining sensor creation."""
+    def test_sensor_chefmaker_cook_end_time(self):
+        """Test ChefMaker cook end time sensor creation."""
+        end_time = datetime(2026, 7, 28, 12, 0, tzinfo=timezone.utc)
         device = self.create_mock_device(
             name="Chef Maker",
             serial_number="CM001",
             type=DreoDeviceType.CHEF_MAKER,
-            features={"cook_time_remaining": 600},
+            features={"cook_end_time": end_time},
         )
 
         entities = sensor.get_entries([device])
-        cook_time_sensors = [e for e in entities if e.entity_description.key == "Cook time remaining"]
-        assert len(cook_time_sensors) == 1
-        cook_time_sensor = cook_time_sensors[0]
-        assert cook_time_sensor.native_value == 600
-        assert cook_time_sensor.entity_description.device_class == SensorDeviceClass.DURATION
-        assert cook_time_sensor.entity_description.native_unit_of_measurement == UnitOfTime.SECONDS
-        
+        cook_end_sensors = [e for e in entities if e.entity_description.key == "Cook end time"]
+        assert len(cook_end_sensors) == 1
+        cook_end_sensor = cook_end_sensors[0]
+        assert cook_end_sensor.native_value == end_time
+        assert cook_end_sensor.entity_description.device_class == SensorDeviceClass.TIMESTAMP
+
+    def test_sensor_chefmaker_cook_end_time_present_when_idle(self):
+        """The cook end time sensor exists for any ChefMaker and is None (unknown) while idle."""
+        device = self.create_mock_device(
+            name="Chef Maker",
+            serial_number="CM001",
+            type=DreoDeviceType.CHEF_MAKER,
+            features={"mode": "standby", "cook_end_time": None},
+        )
+
+        entities = sensor.get_entries([device])
+        cook_end_sensors = [e for e in entities if e.entity_description.key == "Cook end time"]
+        assert len(cook_end_sensors) == 1
+        assert cook_end_sensors[0].native_value is None
     def test_sensor_filter_life(self):
         """Test Filter Life sensor creation for humidifiers."""
         device = self.create_mock_device(name="Test Humidifier", serial_number="HUM001", type="Humidifier", features={"filtertime": 75})

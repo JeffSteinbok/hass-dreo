@@ -160,14 +160,15 @@
         "name": "Status",
         "state": {
           "standby": "Bereitschaft",
+          "ckcfm": "Konfigurieren",
           "cooking": "Kochen",
           "off": "Aus",
           "ckpause": "Pause",
           "ckcomplete": "Fertig"
         }
       },
-      "cook_time_remaining": {
-        "name": "Verbleibende Garzeit"
+      "cook_end_time": {
+        "name": "Garzeit-Ende"
       },
       "pm25": {
         "name": "Feinstaub"

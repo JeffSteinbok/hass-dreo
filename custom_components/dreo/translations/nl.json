@@ -160,14 +160,15 @@
         "name": "Status",
         "state": {
           "standby": "Stand-by",
+          "ckcfm": "Configureren",
           "cooking": "Koken",
           "off": "Uit",
           "ckpause": "Pauze",
           "ckcomplete": "Voltooid"
         }
       },
-      "cook_time_remaining": {
-        "name": "Resterende kooktijd"
+      "cook_end_time": {
+        "name": "Einde kooktijd"
       },
       "pm25": {
         "name": "PM2.5"

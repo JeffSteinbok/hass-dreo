@@ -2,6 +2,7 @@
 
 # pylint: disable=used-before-assignment
 import logging
+from datetime import datetime, timezone
 from unittest.mock import patch
 from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
@@ -14,8 +15,10 @@ CM_MODE_KEY = "mode"
 COOK_TIME_ESTIMATED_KEY = "wkestdu"
 COOK_TIME_BEGIN_KEY = "wkbegin"
 
-# Patch target for time.time() inside the chefmaker module so cook-time math is deterministic.
-PATCH_TIME = "custom_components.dreo.pydreo.pydreochefmaker.time.time"
+
+def _end_time(begin: int, estimated: int) -> datetime:
+    """Expected cook end time as a timezone-aware UTC timestamp (wkbegin + wkestdu)."""
+    return datetime.fromtimestamp(begin + estimated, tz=timezone.utc)
 
 
 class TestPyDreoChefMaker(TestBase):
@@ -43,37 +46,46 @@ class TestPyDreoChefMaker(TestBase):
         # After load_devices, update_state should have been called
         assert cm.is_on is False  # from device state file
         assert cm.mode == "standby" or cm.mode == "off"
-        assert cm.cook_time_remaining is not None
+        # Device is idle (not cooking) in the fixture, so no cook end time is exposed.
+        assert cm.cook_end_time is None
 
-    def test_update_state_cook_time_remaining(self):
-        """Remaining cook time is derived from estimated (wkestdu) minus elapsed time since wkbegin."""
+    def test_cook_end_time_when_cooking(self):
+        """Cook end time is wkbegin + wkestdu, exposed as a timezone-aware UTC timestamp."""
         cm = self._load_chefmaker()
-        state = {
-            COOK_TIME_ESTIMATED_KEY: {"state": 600},
-            COOK_TIME_BEGIN_KEY: {"state": 1000},
-        }
-        cm.update_state(state)
-        # 120 seconds have elapsed since the cook began: 600 - 120 = 480 remaining.
-        with patch(PATCH_TIME, return_value=1120):
-            assert cm.cook_time_remaining == 480
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking", COOK_TIME_ESTIMATED_KEY: 600, COOK_TIME_BEGIN_KEY: 1000}})
+        assert cm.cook_end_time == _end_time(1000, 600)
 
-    def test_cook_time_remaining_clamped_to_zero(self):
-        """Remaining cook time never goes negative when the cook has run past its estimate."""
+    def test_cook_end_time_when_paused(self):
+        """Cook end time is still exposed while a cook is paused (ckpause)."""
         cm = self._load_chefmaker()
-        cm.update_state({
-            COOK_TIME_ESTIMATED_KEY: {"state": 300},
-            COOK_TIME_BEGIN_KEY: {"state": 1000},
-        })
-        # 360 seconds elapsed against a 300 second estimate -> clamped to 0.
-        with patch(PATCH_TIME, return_value=1360):
-            assert cm.cook_time_remaining == 0
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "ckpause", COOK_TIME_ESTIMATED_KEY: 300, COOK_TIME_BEGIN_KEY: 2000}})
+        assert cm.cook_end_time == _end_time(2000, 300)
 
-    def test_cook_time_remaining_none_when_fields_absent(self):
-        """Remaining cook time is None when the device does not report the duration fields."""
+    def test_cook_end_time_none_when_not_cooking(self):
+        """Cook end time is None outside the active cooking/paused modes, even with valid fields.
+
+        Gating on the active modes is what prevents a stale wkbegin left over from a previous cook
+        from surfacing while the next cook is still configuring (see #864/#868).
+        """
         cm = self._load_chefmaker()
+        cm.handle_server_update({REPORTED_KEY: {COOK_TIME_ESTIMATED_KEY: 300, COOK_TIME_BEGIN_KEY: 1000}})
+        for mode in ("standby", "ckcfm", "ckcomplete", "off"):
+            cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: mode}})
+            assert cm.cook_end_time is None, f"expected None for mode {mode}"
+
+    def test_cook_end_time_none_when_estimated_zero(self):
+        """Cook end time is None when the estimated duration is 0 (e.g. reported at power-off)."""
+        cm = self._load_chefmaker()
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking", COOK_TIME_ESTIMATED_KEY: 0, COOK_TIME_BEGIN_KEY: 1000}})
+        assert cm.cook_end_time is None
+
+    def test_cook_end_time_none_when_fields_absent(self):
+        """Cook end time is None when the device has not reported the duration fields."""
+        cm = self._load_chefmaker()
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking"}})
         cm._cook_time_estimated = None  # pylint: disable=protected-access
         cm._cook_time_begin = None  # pylint: disable=protected-access
-        assert cm.cook_time_remaining is None
+        assert cm.cook_end_time is None
 
     def test_update_state_led(self):
         """Test update_state processes LED state from REST."""
@@ -94,9 +106,8 @@ class TestPyDreoChefMaker(TestBase):
         cm.update_state(state)
         assert cm.is_on is True
         assert cm.mode == "cooking"
-        # 300 seconds elapsed since the cook began: 1500 - 300 = 1200 remaining.
-        with patch(PATCH_TIME, return_value=1300):
-            assert cm.cook_time_remaining == 1200
+        # Cook end time is wkbegin + wkestdu = 1000 + 1500 = 2500.
+        assert cm.cook_end_time == _end_time(1000, 1500)
 
     def test_update_state_mode_when_off(self):
         """Test update_state sets mode from power state when device is off."""
@@ -176,94 +187,90 @@ class TestPyDreoChefMaker(TestBase):
         cm.handle_server_update({REPORTED_KEY: {LIGHT_KEY: 0}})
         assert cm.ledpotkepton is False
 
-    def test_handle_server_update_cook_time_remaining_785(self):
-        """Regression for #785: remaining time counts down instead of showing a static value.
+    def test_handle_server_update_cook_end_time_785(self):
+        """Regression for #785: a real end time is exposed instead of a static wkcountdown.
 
-        The device reports a static wkcountdown (300) that never counts down; remaining must be
-        derived from the estimated total duration (wkestdu) and the cook start timestamp (wkbegin)
-        instead.
+        The device reports a static wkcountdown (300) that never counts down; the end time must be
+        derived from the estimated total duration (wkestdu) and the cook start timestamp (wkbegin).
         """
         cm = self._load_chefmaker()
         cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking", COOK_TIME_ESTIMATED_KEY: 360, COOK_TIME_BEGIN_KEY: 1000}})
-        # Just after the cook begins the full estimate remains.
-        with patch(PATCH_TIME, return_value=1000):
-            assert cm.cook_time_remaining == 360
+        assert cm.cook_end_time == _end_time(1000, 360)
 
-        # As real time advances the remaining value must decrease.
-        with patch(PATCH_TIME, return_value=1090):
-            assert cm.cook_time_remaining == 270
-
-    def test_handle_server_update_cook_time_remaining_863(self):
+    def test_handle_server_update_cook_end_time_863(self):
         """Regression for #863: DR-KCM001S never pushes wkpdu during a cook.
 
         Captured from the debug log attached to issue #863 for a real 300 second cook:
-          - wkestdu = 300 is reported when the cook is configured.
+          - wkestdu = 300 is reported when the cook is configured (mode ckcfm).
           - wkbegin = 1785039118 (epoch seconds) is reported ~21s later at cook start.
           - No wkpdu / wkcountdown is ever pushed during the cook.
-        With the old wkestdu - wkpdu logic the sensor stayed pinned at 300; deriving from wkbegin
-        makes it count down and reach 0 by completion (device hit ckcomplete ~298.6s later).
+        The end time must resolve to wkbegin + wkestdu once the cook is underway.
         """
         cm = self._load_chefmaker()
         wkbegin = 1785039118
 
-        # Cook configured: estimate reported before wkbegin arrives.
+        # Cook configured: estimate reported before wkbegin arrives, still in ckcfm -> no end time.
         cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "ckcfm", COOK_TIME_ESTIMATED_KEY: 300}})
+        assert cm.cook_end_time is None
+
         # Cook starts: wkbegin arrives, then mode -> cooking.
         cm.handle_server_update({REPORTED_KEY: {COOK_TIME_BEGIN_KEY: wkbegin}})
         cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking"}})
+        assert cm.cook_end_time == _end_time(wkbegin, 300)
 
-        # At cook start the full duration remains.
-        with patch(PATCH_TIME, return_value=wkbegin):
-            assert cm.cook_time_remaining == 300
+    def test_handle_server_update_cook_end_time_868(self):
+        """Regression for #868: the end time is stable and correct without any further pushes.
 
-        # Midway through the cook it has counted down.
-        with patch(PATCH_TIME, return_value=wkbegin + 120):
-            assert cm.cook_time_remaining == 180
+        The device sent nothing between the "cooking" report and "ckcomplete" ~179s later, which
+        froze the old ticking duration sensor.  A timestamp end time is written once and needs no
+        further pushes; the frontend counts down on its own.  Reading the property repeatedly must
+        return the same absolute end time (it does not depend on the local wall clock).
+        """
+        cm = self._load_chefmaker()
+        wkbegin = 1785220828
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking", COOK_TIME_ESTIMATED_KEY: 180, COOK_TIME_BEGIN_KEY: wkbegin}})
+        expected = _end_time(wkbegin, 180)
+        assert cm.cook_end_time == expected
+        assert cm.cook_end_time == expected  # stable across reads, no drift
 
-        # By the time the device reports ckcomplete (~300s later) it has reached 0.
-        with patch(PATCH_TIME, return_value=wkbegin + 300):
-            assert cm.cook_time_remaining == 0
+        # On completion the device reports ckcomplete then standby with wkestdu: 0.
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "ckcomplete"}})
+        assert cm.cook_end_time is None
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "standby", COOK_TIME_ESTIMATED_KEY: 0}})
+        assert cm.cook_end_time is None
 
-        # On power-off the device reports wkestdu: 0, which also yields 0.
-        cm.handle_server_update({REPORTED_KEY: {COOK_TIME_ESTIMATED_KEY: 0}})
-        with patch(PATCH_TIME, return_value=wkbegin + 400):
-            assert cm.cook_time_remaining == 0
+    def test_cook_end_time_stale_wkbegin_not_exposed_during_configuring(self):
+        """Regression for #864: a stale wkbegin from a previous cook must not surface an end time.
 
-    def test_cook_time_remaining_stale_wkbegin_not_used_as_positive(self):
-        """A stale wkbegin from a previous cook must not yield a misleading remaining time.
-
-        The REST fixture (get_device_state_KCM001S_1.json) seeds wkbegin from a prior session
-        while wkestdu is 0.  When a new cook reports wkestdu before pushing a fresh wkbegin (as
-        seen in #863), the stale timestamp is far in the past, so elapsed is large and remaining
-        clamps to 0 rather than reporting a bogus value.
+        The REST fixture (get_device_state_KCM001S_1.json) seeds wkbegin from a prior session.
+        When a new cook reports wkestdu while still configuring (mode ckcfm) before pushing a fresh
+        wkbegin, gating on the active cooking/paused modes keeps cook_end_time None rather than
+        exposing a bogus timestamp built from the stale wkbegin.
         """
         cm = self._load_chefmaker()
         stale_begin = 1000
         cm._cook_time_begin = stale_begin  # pylint: disable=protected-access
 
-        # New cook configured: wkestdu arrives, but wkbegin is still the stale value.
+        # New cook configured: wkestdu arrives, but wkbegin is still the stale value and mode ckcfm.
         cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "ckcfm", COOK_TIME_ESTIMATED_KEY: 300}})
+        assert cm.cook_end_time is None
 
-        # "now" is long after the stale begin -> elapsed huge -> clamped to 0 (not 300).
-        with patch(PATCH_TIME, return_value=stale_begin + 100000):
-            assert cm.cook_time_remaining == 0
-
-    def test_cook_time_remaining_clamped_when_wkbegin_ahead_of_clock(self):
-        """Clock skew (wkbegin ahead of local time) never exceeds the estimated duration."""
-        cm = self._load_chefmaker()
-        cm.handle_server_update({REPORTED_KEY: {COOK_TIME_ESTIMATED_KEY: 300, COOK_TIME_BEGIN_KEY: 2000}})
-        # Local clock is 50s behind the device's wkbegin -> elapsed clamped to 0 -> remaining == estimate.
-        with patch(PATCH_TIME, return_value=1950):
-            assert cm.cook_time_remaining == 300
+        # Once a fresh wkbegin arrives and the cook starts, the end time is correct.
+        fresh_begin = 1785039118
+        cm.handle_server_update({REPORTED_KEY: {COOK_TIME_BEGIN_KEY: fresh_begin, CM_MODE_KEY: "cooking"}})
+        assert cm.cook_end_time == _end_time(fresh_begin, 300)
 
     def test_handle_server_update_mode(self):
-        """Test handle_server_update processes mode."""
+        """Test handle_server_update processes mode, including the ckcfm configuring mode (#868)."""
         cm = self._load_chefmaker()
         cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "cooking"}})
         assert cm.mode == "cooking"
 
         cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "ckpause"}})
         assert cm.mode == "ckpause"
+
+        cm.handle_server_update({REPORTED_KEY: {CM_MODE_KEY: "ckcfm"}})
+        assert cm.mode == "ckcfm"
 
     def test_handle_server_update_combined(self):
         """Test handle_server_update processes multiple keys."""
@@ -272,6 +279,5 @@ class TestPyDreoChefMaker(TestBase):
         assert cm.is_on is True
         assert cm.ledpotkepton is True
         assert cm.mode == "cooking"
-        # 100 seconds elapsed since the cook began: 1000 - 100 = 900 remaining.
-        with patch(PATCH_TIME, return_value=1100):
-            assert cm.cook_time_remaining == 900
+        # Cook end time is wkbegin + wkestdu = 1000 + 1000 = 2000.
+        assert cm.cook_end_time == _end_time(1000, 1000)

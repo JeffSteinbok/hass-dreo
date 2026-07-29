@@ -2,6 +2,7 @@
 
 # pylint: disable=used-before-assignment
 import logging
+from datetime import datetime, timezone
 from unittest.mock import patch
 from custom_components.dreo import switch
 from custom_components.dreo import number
@@ -47,4 +48,14 @@ class TestDreoChefMaker(IntegrationTestBase):
 
             # Check to see what sensors are added to chef makers
             sensors = sensor.get_entries([pydreo_chef_maker])
-            self.verify_expected_entities(sensors, ["Cook time remaining", "Status"])
+            self.verify_expected_entities(sensors, ["Cook end time", "Status"])
+
+            # The "Cook end time" sensor is a TIMESTAMP sensor that is present regardless of
+            # cook state; it reports None (unknown) while the device is idle.
+            cook_end_time_sensor = self.get_entity_by_key(sensors, "Cook end time")
+            assert cook_end_time_sensor is not None
+            assert cook_end_time_sensor.native_value is None
+
+            # Once a cook is underway the sensor reports the absolute finish time (wkbegin + wkestdu).
+            pydreo_chef_maker.handle_server_update({"reported": {"mode": "cooking", "wkestdu": 300, "wkbegin": 1785039118}})
+            assert cook_end_time_sensor.native_value == datetime.fromtimestamp(1785039118 + 300, tz=timezone.utc)

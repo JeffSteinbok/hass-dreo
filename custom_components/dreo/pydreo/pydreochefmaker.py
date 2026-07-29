@@ -1,7 +1,7 @@
 """Support for Dreo ChefMaker devices."""
 
 import logging
-import time
+from datetime import datetime, timezone
 from typing import Dict, TYPE_CHECKING
 
 from .constant import (
@@ -18,12 +18,13 @@ LIGHT_KEY = "ledpotkepton"
 MODE_KEY = "mode"
 # The device does not report a live "remaining" value, and on the DR-KCM001S it never pushes an
 # elapsed-duration field ("wkpdu" stays 0 for the whole cook - see #863).  "wkcountdown" is a
-# static configured value (typically 300) that never changes either.  Remaining time is therefore
-# derived from the estimated total duration and the epoch timestamp at which the cook began
-# (see cook_time_remaining).
+# static configured value (typically 300) that never changes either.  Instead the device reports
+# the estimated total duration ("wkestdu") and the epoch timestamp at which the cook began
+# ("wkbegin"), from which the absolute cook end time is derived (see cook_end_time).
 COOK_TIME_ESTIMATED_KEY = "wkestdu"  # Estimated total cook duration in seconds.
 COOK_TIME_BEGIN_KEY = "wkbegin"  # Epoch (seconds) at which the current cook began.
 MODE_STANDBY = "standby"
+MODE_CONFIGURING = "ckcfm"  # Transient "configuring" mode reported before a cook starts (see #868).
 MODE_COOKING = "cooking"
 MODE_PAUSED = "ckpause"
 MODE_COMPLETE = "ckcomplete"
@@ -46,28 +47,35 @@ class PyDreoChefMaker(PyDreoBaseDevice):
         self._is_on = False
         self._ledpotkepton = 0
         self.mode = None
-        # Remaining cook time is derived from these two fields (see cook_time_remaining property).
+        # Cook end time is derived from these two fields (see cook_end_time property).
         self._cook_time_estimated = None  # wkestdu: estimated total cook duration in seconds.
         self._cook_time_begin = None  # wkbegin: epoch (seconds) at which the current cook began.
 
     @property
-    def cook_time_remaining(self) -> "int | None":
-        """Return the remaining cook time in seconds.
+    def cook_end_time(self) -> "datetime | None":
+        """Return the absolute time at which the current cook is expected to finish.
 
-        The device does not expose a live "remaining" field.  On the DR-KCM001S it also never
-        pushes an elapsed-duration field during a cook ("wkpdu" stays 0 the whole time - see
-        #863), and "wkcountdown" is a static configured value.  It does, however, report the
-        estimated total duration ("wkestdu") and the epoch timestamp at which the cook began
-        ("wkbegin"), so remaining time is derived as wkestdu - (now - wkbegin), clamped to the
-        range 0..wkestdu.  Returns None when the device has not reported these fields (e.g.
-        firmware that does not expose them), which keeps the sensor hidden.
+        The device does not expose a live "remaining" field, and on the DR-KCM001S it never pushes
+        an elapsed-duration field during a cook ("wkpdu" stays 0 the whole time - see #863), nor
+        does it push anything at all between the "cooking" and "ckcomplete" reports (see #868).  A
+        ticking duration sensor would therefore freeze between pushes.  Instead we expose the cook
+        end time as a timezone-aware timestamp derived from the estimated total duration
+        ("wkestdu") and the epoch at which the cook began ("wkbegin"): wkbegin + wkestdu.  This is
+        written once per cook, so it never clutters history with synthetic state changes, and the
+        Home Assistant frontend renders it as a live relative countdown on its own.
+
+        Returns None unless a cook is actively in progress (mode cooking or paused) with valid
+        duration/begin fields.  Gating on the active modes avoids surfacing a stale "wkbegin" left
+        over from a previous cook while the next cook is still configuring (mode "ckcfm"), the
+        stale-timestamp scenario guarded against in #864.
         """
+        if self._mode not in (MODE_COOKING, MODE_PAUSED):
+            return None
         if not isinstance(self._cook_time_estimated, int) or not isinstance(self._cook_time_begin, int):
             return None
-        # Clamp elapsed to >= 0 so clock skew (wkbegin slightly ahead of local time) can never
-        # produce a remaining time greater than the estimated duration.
-        elapsed = max(0, int(time.time()) - self._cook_time_begin)
-        return max(0, self._cook_time_estimated - elapsed)
+        if self._cook_time_estimated <= 0:
+            return None
+        return datetime.fromtimestamp(self._cook_time_begin + self._cook_time_estimated, tz=timezone.utc)
 
     @property
     def is_on(self) -> bool:
@@ -169,8 +177,8 @@ class PyDreoChefMaker(PyDreoBaseDevice):
 
         if isinstance(val_cook_time_estimated, int) or isinstance(val_cook_time_begin, int):
             _LOGGER.debug(
-                "handle_server_update: cook_time_remaining: estimated=%s begin=%s --> %s",
+                "handle_server_update: cook_end_time: estimated=%s begin=%s --> %s",
                 self._cook_time_estimated,
                 self._cook_time_begin,
-                self.cook_time_remaining,
+                self.cook_end_time,
             )

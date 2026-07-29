@@ -171,14 +171,15 @@
         "name": "Status",
         "state": {
           "standby": "Standby",
+          "ckcfm": "Configuring",
           "cooking": "Cooking",
           "off": "Off",
           "ckpause": "Paused",
           "ckcomplete": "Complete"
         }
       },
-      "cook_time_remaining": {
-        "name": "Cook Time Remaining"
+      "cook_end_time": {
+        "name": "Cook End Time"
       },
       "pm25": {
         "name": "PM2.5"
