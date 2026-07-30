@@ -534,7 +534,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         value = int(value)
         if low is not None and value < low + 5:
             raise ValueError(f"High humidity threshold {value} must be at least 5 greater than low threshold {low}")
-        payload = f"{value},{low if low is not None else 0}"
+        payload = f"{low if low is not None else 0},{value}"
         if self._rgbth == payload:
             return
         self._rgbth = payload  # optimistic update
