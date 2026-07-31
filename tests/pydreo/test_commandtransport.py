@@ -881,3 +881,167 @@ class TestCommandTransport:
             assert "accessToken=token_v2" in captured_urls[1]
 
         asyncio.run(_test())
+
+    def test_start_websocket_clears_loop_on_normal_exit(self):
+        """Test that _start_websocket clears _loop via finally block on normal exit."""
+
+        async def _test():
+            callback = MagicMock()
+            transport = CommandTransport(callback)
+            transport._api_server_region = "us"
+            transport._token = "test_token"
+            transport._signal_close = True  # Exit immediately
+
+            async def mock_connect(url):
+                yield AsyncMock()
+
+            with patch("custom_components.dreo.pydreo.commandtransport.websockets.connect", side_effect=mock_connect):
+                await transport._start_websocket()
+
+            # Loop must be None after _start_websocket exits
+            assert transport._loop is None
+
+        asyncio.run(_test())
+
+    def test_start_websocket_clears_loop_on_unhandled_exception(self):
+        """Test that _start_websocket clears _loop even when a BaseException escapes."""
+
+        async def _test():
+            callback = MagicMock()
+            transport = CommandTransport(callback)
+            transport._api_server_region = "us"
+            transport._token = "test_token"
+            transport._auto_reconnect = True
+
+            # Simulate an unhandled BaseException (not caught by except Exception)
+            async def mock_connect(url):
+                raise BaseException("simulated crash")  # noqa: TRY301 - intentional
+                yield  # pylint: disable=unreachable
+
+            with patch("custom_components.dreo.pydreo.commandtransport.websockets.connect", side_effect=mock_connect):
+                with pytest.raises(BaseException, match="simulated crash"):
+                    await transport._start_websocket()
+
+            # Loop must still be cleared by the finally block
+            assert transport._loop is None
+            assert transport._ws is None
+
+        asyncio.run(_test())
+
+    def test_ws_handler_done_task_cancelled_does_not_raise(self):
+        """Test that _ws_handler handles CancelledError from task.exception() gracefully."""
+
+        async def _test():
+            callback = MagicMock()
+            transport = CommandTransport(callback)
+
+            mock_ws = AsyncMock()
+
+            # Create a real task that gets cancelled so task.exception() raises CancelledError
+            async def long_running():
+                await asyncio.sleep(100)
+
+            async def quick_consumer(ws):
+                pass
+
+            async def mock_ping_handler(ws):
+                # This task will end up in "done" but in a cancelled state.
+                # We simulate this by cancelling the task from the outside.
+                await asyncio.sleep(100)
+
+            with patch.object(transport, "_ws_consumer_handler", side_effect=quick_consumer):
+                with patch.object(transport, "_ws_ping_handler", side_effect=mock_ping_handler):
+                    # Should complete without raising CancelledError
+                    await transport._ws_handler(mock_ws)
+
+        asyncio.run(_test())
+
+    def test_send_message_restarts_dead_thread(self):
+        """Test that send_message auto-restarts transport when thread has died."""
+        callback = MagicMock()
+        transport = CommandTransport(callback)
+
+        # Simulate a dead thread (transport enabled but thread is not alive)
+        transport._transport_enabled = True
+        transport._api_server_region = "us"
+        transport._token = "test_token"
+
+        dead_thread = MagicMock()
+        dead_thread.is_alive.return_value = False
+        transport._event_thread = dead_thread
+
+        # _loop is None (as it would be after thread death with finally block)
+        transport._loop = None
+
+        mock_ws = AsyncMock()
+        mock_ws.closed = False
+
+        restart_called = [False]
+
+        def fake_start_transport(region, token):
+            restart_called[0] = True
+            # Simulate the new thread starting and setting up the loop
+            loop = asyncio.new_event_loop()
+            transport._loop = loop
+            transport._ws_send_lock = asyncio.Lock()
+            transport._ws = mock_ws
+
+            def run_loop():
+                loop.run_forever()
+
+            t = threading.Thread(target=run_loop, daemon=True)
+            t.start()
+            transport._event_thread = t
+
+        with patch.object(transport, "start_transport", side_effect=fake_start_transport):
+            transport.send_message({"command": "test"})
+
+        assert restart_called[0] is True
+        mock_ws.send.assert_called_once_with({"command": "test"})
+
+        # Cleanup
+        if transport._loop:
+            transport._loop.call_soon_threadsafe(transport._loop.stop)
+
+    def test_send_message_no_restart_when_transport_disabled(self):
+        """Test that send_message does not try to restart when transport is disabled."""
+        callback = MagicMock()
+        transport = CommandTransport(callback)
+
+        transport._transport_enabled = False
+        transport._loop = None
+
+        dead_thread = MagicMock()
+        dead_thread.is_alive.return_value = False
+        transport._event_thread = dead_thread
+
+        with patch.object(transport, "start_transport") as mock_start:
+            with pytest.raises(RuntimeError, match="Command transport disabled"):
+                transport.send_message({"command": "test"})
+
+        # start_transport should NOT be called when transport is disabled
+        mock_start.assert_not_called()
+
+    def test_send_message_raises_if_restart_fails(self):
+        """Test that send_message raises if loop is still unavailable after restart attempt."""
+        callback = MagicMock()
+        transport = CommandTransport(callback)
+
+        transport._transport_enabled = True
+        transport._api_server_region = "us"
+        transport._token = "test_token"
+        transport._loop = None
+
+        dead_thread = MagicMock()
+        dead_thread.is_alive.return_value = False
+        transport._event_thread = dead_thread
+
+        def fake_start_transport(region, token):
+            # Simulate start_transport that doesn't actually initialize the loop
+            pass
+
+        with patch.object(transport, "start_transport", side_effect=fake_start_transport):
+            with patch("time.sleep"):  # Skip sleep delay in test
+                with patch("time.monotonic", side_effect=[0, 10]):  # Immediately expire deadline
+                    with pytest.raises(RuntimeError, match="WebSocket event loop not available"):
+                        transport.send_message({"command": "test"})
