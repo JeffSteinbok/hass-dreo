@@ -85,7 +85,15 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
     UnitOfTemperature,
-    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
 )
 
 from homeassistant.helpers import entity_platform
+
+try:
+    from homeassistant.const import UnitOfDensity
+
+    MICROGRAMS_PER_CUBIC_METER = UnitOfDensity.MICROGRAMS_PER_CUBIC_METER
+except ImportError:
+    from homeassistant.const import CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
+    MICROGRAMS_PER_CUBIC_METER = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER

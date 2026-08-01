@@ -6,6 +6,7 @@ from unittest.mock import patch
 from homeassistant.components.sensor import SensorDeviceClass
 
 from custom_components.dreo import sensor
+from custom_components.dreo.haimports import MICROGRAMS_PER_CUBIC_METER
 from custom_components.dreo.sensor import DreoSensorHA, DreoSensorEntityDescription, SENSORS
 from custom_components.dreo.pydreo.constant import DreoDeviceType
 
@@ -117,8 +118,8 @@ class TestDreoSensorHA(TestDeviceBase):
         device = self.create_mock_device(name="Test Purifier", serial_number="PUR001", type="Air Purifier", features={"pm25": 15})
 
         entities = sensor.get_entries([device])
-        keys = [e.entity_description.key for e in entities]
-        assert "pm25" in keys
+        pm25_sensor = next(e for e in entities if e.entity_description.key == "pm25")
+        assert pm25_sensor.native_unit_of_measurement == MICROGRAMS_PER_CUBIC_METER
 
     def test_sensor_multiple_devices(self):
         """Test get_entries with multiple devices."""
