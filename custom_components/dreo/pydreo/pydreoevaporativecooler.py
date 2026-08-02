@@ -351,8 +351,11 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @rgbth_low.setter
     def rgbth_low(self, value: int) -> None:
         """Set low humidity threshold for ambient light."""
-        high = self.rgbth_high if self.rgbth_high is not None else 0
-        payload = f"{int(value)},{high}"
+        high = self.rgbth_high
+        value = int(value)
+        if high is not None and value > high - 5:
+            raise ValueError(f"Low humidity threshold {value} must be at least 5 less than high threshold {high}")
+        payload = f"{value},{high if high is not None else 0}"
         if self._rgbth == payload:
             return
         self._rgbth = payload  # optimistic update
@@ -372,8 +375,11 @@ class PyDreoEvaporativeCooler(PyDreoFanBase):
     @rgbth_high.setter
     def rgbth_high(self, value: int) -> None:
         """Set high humidity threshold for ambient light."""
-        low = self.rgbth_low if self.rgbth_low is not None else 0
-        payload = f"{low},{int(value)}"
+        low = self.rgbth_low
+        value = int(value)
+        if low is not None and value < low + 5:
+            raise ValueError(f"High humidity threshold {value} must be at least 5 greater than low threshold {low}")
+        payload = f"{low if low is not None else 0},{value}"
         if self._rgbth == payload:
             return
         self._rgbth = payload  # optimistic update
