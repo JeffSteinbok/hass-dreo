@@ -39,11 +39,10 @@ _LOGGER = logging.getLogger(__name__)
 _FIXEDCONF_OPTIMISTIC_METHODS = frozenset({"control-reply"})
 
 # Default: no inter-command settle (most air circulators handle rapid fixedconf).
-# Models known to lock pan/tilt when commands stack get a longer interval.
+# Models that need a longer interval declare fixed_conf_settle_seconds in
+# SUPPORTED_DEVICES (models.py) device_ranges.
 _FIXEDCONF_SETTLE_SECONDS_DEFAULT = 0.0
-_FIXEDCONF_SETTLE_SECONDS_BY_MODEL: dict[str, float] = {
-    "DR-HPF017S": 8.0,  # 517S: stacking moves can require app recalibration
-}
+_FIXEDCONF_SETTLE_SECONDS_KEY = "fixed_conf_settle_seconds"
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -101,10 +100,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._fixed_conf_at_command: str | None = None
         self._fixed_conf_lock = threading.Lock()
         self._last_fixed_conf_command_time: float | None = None
-        # Model-specific settle; overridable (e.g. set to 0 in unit tests).
-        model = details.get("model") or getattr(self, "_model", None)
-        self._fixed_conf_settle_seconds: float = _FIXEDCONF_SETTLE_SECONDS_BY_MODEL.get(
-            model, _FIXEDCONF_SETTLE_SECONDS_DEFAULT
+        # Model-specific settle from SUPPORTED_DEVICES; overridable in unit tests.
+        settle = None
+        if device_definition.device_ranges is not None:
+            settle = device_definition.device_ranges.get(_FIXEDCONF_SETTLE_SECONDS_KEY)
+        self._fixed_conf_settle_seconds: float = (
+            float(settle) if settle is not None else _FIXEDCONF_SETTLE_SECONDS_DEFAULT
         )
 
         self._horizontally_oscillating = None
