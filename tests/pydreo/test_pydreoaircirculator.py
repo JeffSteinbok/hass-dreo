@@ -35,6 +35,8 @@ class TestPyDreoAirCirculator(TestBase):
 
     def _exercise_all_settable_properties(self, fan: PyDreoAirCirculator):
         """Exercise all writable air-circulator properties supported by a model."""
+        # Disable fixedconf settle delay so unit tests do not sleep between angle sets.
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
         _ = fan.speed_range
         _ = fan.preset_modes
         _ = fan.is_on
@@ -1374,6 +1376,7 @@ class TestPyDreoAirCirculator(TestBase):
         self.get_devices_file_name = "get_devices_HAF004S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "10,20"}})
         assert fan.vertical_angle == 10
         assert fan.horizontal_angle == 20
@@ -1398,12 +1401,68 @@ class TestPyDreoAirCirculator(TestBase):
         self.get_devices_file_name = "get_devices_HPF025S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-30,20"}})
         assert fan.vertical_angle_range == (-30, 90)
         assert fan.vertical_angle == -30
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = -25
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "-25,20"})
+
+    def test_fixed_conf_ignores_optimistic_control_reply(self):  # pylint: disable=invalid-name
+        """control-reply must not overwrite real fixedconf position state."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+
+        # Cloud echoes the requested value; device has not moved yet.
+        fan.handle_server_update({"method": "control-reply", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+
+        # Authoritative device report applies.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == 35
+        assert fan.horizontal_angle == -55
+
+    def test_fixed_conf_logs_when_device_rejects_command(self):  # pylint: disable=invalid-name
+        """When device report does not match commanded fixedconf, keep reported position."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 35
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "35,-55"})
+
+        # Device rejects move and reports previous position.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+
+    def test_fixed_conf_settle_delay_between_commands(self):  # pylint: disable=invalid-name
+        """Second fixedconf command waits for settle interval after the first."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 2.0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with patch(PATCH_SEND_COMMAND), patch("custom_components.dreo.pydreo.pydreoaircirculator.time.sleep") as mock_sleep:
+            fan.vertical_angle = 30
+            mock_sleep.assert_not_called()  # first command has nothing to wait for
+
+            # Simulate that the first command just finished (device report applied).
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
+            fan.horizontal_angle = -20
+            mock_sleep.assert_called_once()
+            waited = mock_sleep.call_args[0][0]
+            assert 1.5 <= waited <= 2.0
 
     def test_horizontal_oscillation_angle_property(self):  # pylint: disable=invalid-name
         """Test horizontal_oscillation_angle property and setter."""

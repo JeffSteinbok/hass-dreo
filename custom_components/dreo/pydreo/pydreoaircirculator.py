@@ -1,6 +1,8 @@
 """Dreo API for controling fans."""
 
 import logging
+import threading
+import time
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
@@ -30,6 +32,16 @@ from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(__name__)
+
+# Cloud control-reply echoes the requested fixedconf immediately. Some devices
+# (notably DR-HPF017S / 517S) then report the real encoder position and may
+# reject the move. Treat only non-control-reply updates as authoritative.
+_FIXEDCONF_OPTIMISTIC_METHODS = frozenset({"control-reply"})
+
+# Minimum time between fixedconf commands. Stacking pan/tilt moves before the
+# previous move finishes can lock the positioning subsystem on some models
+# (e.g. DR-HPF017S / 517S) until recalibration.
+_FIXEDCONF_SETTLE_SECONDS = 8.0
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -81,6 +93,13 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._cruise_conf = None
         self._fixed_conf = None
         self._angle_preset_options: list[str] = []
+        # Last fixedconf value we commanded (for reject detection / logging)
+        self._last_commanded_fixed_conf: str | None = None
+        self._fixed_conf_lock = threading.Lock()
+        self._last_fixed_conf_command_time: float | None = None
+        # Overridable (e.g. set to 0 in unit tests). Production default allows
+        # the pan/tilt motors time to finish before another fixedconf is sent.
+        self._fixed_conf_settle_seconds: float = _FIXEDCONF_SETTLE_SECONDS
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
@@ -463,6 +482,49 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if normalized is not None and normalized not in self._angle_preset_options:
             self._angle_preset_options.append(normalized)
 
+    def _wait_for_fixed_conf_settle(self) -> None:
+        """Block until enough time has passed since the last fixedconf command."""
+        settle = self._fixed_conf_settle_seconds
+        if settle <= 0 or self._last_fixed_conf_command_time is None:
+            return
+
+        elapsed = time.monotonic() - self._last_fixed_conf_command_time
+        remaining = settle - elapsed
+        if remaining <= 0:
+            return
+
+        _LOGGER.debug(
+            "_set_fixed_conf: waiting %.1fs for previous angle move to settle (interval=%.1fs)",
+            remaining,
+            settle,
+        )
+        time.sleep(remaining)
+
+    def _set_fixed_conf(self, value: str) -> None:
+        """Send a fixedconf command (vertical,horizontal).
+
+        Serializes fixed-angle commands and enforces a settle interval so rapid
+        successive HA updates cannot stack while the motor is still moving.
+        Some models (e.g. DR-HPF017S) accept the cloud command then report the
+        previous encoder position when the move is rejected or the positioning
+        subsystem needs recalibration.
+        """
+        normalized = self._normalize_fixed_conf(value)
+        if normalized is None:
+            raise ValueError(f"Invalid fixedconf format: {value}")
+
+        with self._fixed_conf_lock:
+            if self._normalize_fixed_conf(self._fixed_conf) == normalized:
+                _LOGGER.debug("_set_fixed_conf: value already %s, skipping command", normalized)
+                return
+
+            self._wait_for_fixed_conf_settle()
+
+            self._last_commanded_fixed_conf = normalized
+            _LOGGER.debug("_set_fixed_conf: commanding fixedconf %s", normalized)
+            self._send_command(FIXEDCONF_KEY, normalized)
+            self._last_fixed_conf_command_time = time.monotonic()
+
     @property
     def angle_preset(self) -> str | None:
         """Get the current 3D angle preset value."""
@@ -479,7 +541,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self.angle_preset == normalized:
             _LOGGER.debug("angle_preset: Angle preset value already %s, skipping command", normalized)
             return
-        self._send_command(FIXEDCONF_KEY, normalized)
+        self._set_fixed_conf(normalized)
 
     @property
     def angle_preset_options(self) -> list[str]:
@@ -506,7 +568,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
             if current_value == new_value:
                 _LOGGER.debug("horizontal_angle: horizontal_angle - value already %s, skipping command", new_value)
                 return
-            self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{new_value}")
+            self._set_fixed_conf(f"{self._fixed_conf.split(',')[0]},{new_value}")
 
     @property
     def vertical_angle(self) -> int:
@@ -526,7 +588,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
             if current_value == new_value:
                 _LOGGER.debug("vertical_angle: vertical_angle - value already %s, skipping command", new_value)
                 return
-            self._send_command(FIXEDCONF_KEY, f"{new_value},{self._fixed_conf.split(',')[1]}")
+            self._set_fixed_conf(f"{new_value},{self._fixed_conf.split(',')[1]}")
 
     @property
     def horizontal_oscillation_angle(self) -> int:
@@ -769,8 +831,39 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
-            self._fixed_conf = val_fixed_conf
-            self._add_angle_preset_option(self._fixed_conf)
+            method = message.get("method")
+            # control-reply echoes the requested value from the cloud and is not
+            # reliable for actual motor position. Prefer device "report" updates.
+            if method in _FIXEDCONF_OPTIMISTIC_METHODS:
+                _LOGGER.debug(
+                    "fixedconf: Ignoring optimistic %s value %s (waiting for device report)",
+                    method,
+                    val_fixed_conf,
+                )
+            else:
+                previous = self._fixed_conf
+                self._fixed_conf = val_fixed_conf
+                self._add_angle_preset_option(self._fixed_conf)
+                commanded = self._last_commanded_fixed_conf
+                normalized_reported = self._normalize_fixed_conf(val_fixed_conf)
+                if (
+                    commanded is not None
+                    and normalized_reported is not None
+                    and normalized_reported != commanded
+                ):
+                    _LOGGER.warning(
+                        "fixedconf: Device did not apply commanded angle %s; reported %s "
+                        "(was %s). On DR-HPF017S / 517S this often means the pan/tilt "
+                        "subsystem needs recalibration in the Dreo app.",
+                        commanded,
+                        normalized_reported,
+                        previous,
+                    )
+                    # Clear so we only warn once per failed command
+                    self._last_commanded_fixed_conf = None
+                elif commanded is not None and normalized_reported == commanded:
+                    _LOGGER.debug("fixedconf: Device confirmed angle %s", commanded)
+                    self._last_commanded_fixed_conf = None
 
         val_horiz_osc_angle = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
         if isinstance(val_horiz_osc_angle, int):
