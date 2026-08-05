@@ -1376,7 +1376,8 @@ class TestPyDreoAirCirculator(TestBase):
         self.get_devices_file_name = "get_devices_HAF004S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
-        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
+        # Generic models use zero settle by default.
+        assert fan._fixed_conf_settle_seconds == 0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "10,20"}})
         assert fan.vertical_angle == 10
         assert fan.horizontal_angle == 20
@@ -1401,7 +1402,6 @@ class TestPyDreoAirCirculator(TestBase):
         self.get_devices_file_name = "get_devices_HPF025S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
-        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-30,20"}})
         assert fan.vertical_angle_range == (-30, 90)
         assert fan.vertical_angle == -30
@@ -1429,27 +1429,69 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.horizontal_angle == -55
 
     def test_fixed_conf_logs_when_device_rejects_command(self):  # pylint: disable=invalid-name
-        """When device report does not match commanded fixedconf, keep reported position."""
+        """Snap-back to pre-command position is treated as a rejected move."""
         self.get_devices_file_name = "get_devices_HAF004S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
-        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = 35
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "35,-55"})
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+        assert fan._fixed_conf_at_command == "-10,-55"  # pylint: disable=protected-access
 
-        # Device rejects move and reports previous position.
+        # Device rejects move and reports previous position (snap-back).
         fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
         assert fan.vertical_angle == -10
         assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
 
-    def test_fixed_conf_settle_delay_between_commands(self):  # pylint: disable=invalid-name
-        """Second fixedconf command waits for settle interval after the first."""
+    def test_fixed_conf_intermediate_report_is_not_reject(self):  # pylint: disable=invalid-name
+        """Mid-move encoder reports must not clear pending command or warn as reject."""
         self.get_devices_file_name = "get_devices_HAF004S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.vertical_angle = 35
+
+        # Intermediate position while traveling toward 35.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "10,-55"}})
+        assert fan.vertical_angle == 10
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+
+        # Final confirmation.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == 35
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+
+    def test_HPF017S_uses_fixed_conf_settle_delay(self):  # pylint: disable=invalid-name
+        """DR-HPF017S enables settle delay; other models default to zero."""
+        self.get_devices_file_name = "get_devices_HPF017S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HPF017S"
+        assert fan._fixed_conf_settle_seconds == 8.0  # pylint: disable=protected-access
+
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        with patch(PATCH_SEND_COMMAND), patch("custom_components.dreo.pydreo.pydreoaircirculator.time.sleep") as mock_sleep:
+            fan.vertical_angle = 30
+            mock_sleep.assert_not_called()  # first command has nothing to wait for
+
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
+            fan.horizontal_angle = -20
+            mock_sleep.assert_called_once()
+            waited = mock_sleep.call_args[0][0]
+            assert 7.0 <= waited <= 8.0
+
+    def test_fixed_conf_settle_delay_between_commands(self):  # pylint: disable=invalid-name
+        """Settle delay can be forced for testing even on models that default to zero."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert fan._fixed_conf_settle_seconds == 0  # pylint: disable=protected-access
         fan._fixed_conf_settle_seconds = 2.0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
 
