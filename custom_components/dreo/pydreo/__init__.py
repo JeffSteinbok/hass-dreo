@@ -464,7 +464,14 @@ class PyDreo:  # pylint: disable=function-redefined
             self._transport.start_transport(self.api_server_region, self.token)
 
     def stop_transport(self) -> None:
-        """Close down the transport socket"""
+        """Close down the transport socket and dispose device resources."""
+        # Cancel device-owned timers/workers before tearing down the WebSocket so
+        # delayed callbacks cannot run after unload.
+        for device in list(self.devices):
+            try:
+                device.dispose()
+            except Exception as ex:  # pylint: disable=broad-except
+                _LOGGER.debug("stop_transport: dispose failed for %s: %s", device, ex)
         if not self.debug_test_mode:
             self._transport.stop_transport()
 

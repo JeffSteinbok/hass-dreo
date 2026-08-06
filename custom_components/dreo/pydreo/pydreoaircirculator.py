@@ -104,6 +104,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
         # Latest desired fixedconf when settle delays a send (coalesces rapid HA updates).
         self._pending_fixed_conf: str | None = None
         self._fixed_conf_timer: threading.Timer | None = None
+        # Set by dispose() so a Timer that already fired cannot send after unload.
+        self._fixed_conf_disposed: bool = False
         # Model-specific settle from SUPPORTED_DEVICES; overridable in unit tests.
         settle = None
         if device_definition.device_ranges is not None:
@@ -511,6 +513,21 @@ class PyDreoAirCirculator(PyDreoFanBase):
             timer.cancel()
             self._fixed_conf_timer = None
 
+    def dispose(self) -> None:
+        """Cancel delayed fixedconf work on integration unload / transport stop.
+
+        threading.Timer is intentionally used here because pydreo is a pure-Python
+        library with no Home Assistant ``hass`` reference. Callers (HA unload via
+        ``PyDreo.stop_transport``) must invoke this so timers cannot fire after
+        teardown. Daemon timers alone do not protect runtime unload.
+        """
+        with self._fixed_conf_lock:
+            self._fixed_conf_disposed = True
+            self._pending_fixed_conf = None
+            self._cancel_fixed_conf_timer_locked()
+            self._clear_in_flight_fixed_conf()
+            _LOGGER.debug("dispose: cancelled fixedconf timer for %s", self.name)
+
     def _clear_in_flight_fixed_conf(self) -> None:
         """Clear tracking state for an in-flight fixedconf command."""
         self._last_commanded_fixed_conf = None
@@ -571,6 +588,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     def _dispatch_fixed_conf_locked(self, normalized: str) -> None:
         """Send fixedconf immediately. Caller must hold ``_fixed_conf_lock``."""
+        if self._fixed_conf_disposed:
+            _LOGGER.debug("_set_fixed_conf: disposed; skipping send of %s", normalized)
+            return
         # If a previous command never confirmed, surface that before sending again.
         self._maybe_log_fixed_conf_reject(
             self._normalize_fixed_conf(self._fixed_conf), self._fixed_conf
@@ -587,6 +607,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
         """Background timer: send the latest pending fixedconf after settle."""
         with self._fixed_conf_lock:
             self._fixed_conf_timer = None
+            if self._fixed_conf_disposed:
+                _LOGGER.debug("_set_fixed_conf: disposed; dropping timer callback")
+                return
             pending = self._pending_fixed_conf
             if pending is None:
                 return
@@ -610,12 +633,19 @@ class PyDreoAirCirculator(PyDreoFanBase):
         latest desired command via ``threading.Timer`` when a previous move
         still needs to settle. The lock is only held for brief state updates,
         never across a sleep.
+
+        Timers are pure-Python (no ``hass`` handle) and must be cancelled via
+        ``dispose()`` on integration unload (wired through ``PyDreo.stop_transport``).
         """
         normalized = self._normalize_fixed_conf(value)
         if normalized is None:
             raise ValueError(f"Invalid fixedconf format: {value}")
 
         with self._fixed_conf_lock:
+            if self._fixed_conf_disposed:
+                _LOGGER.debug("_set_fixed_conf: disposed; ignoring command %s", normalized)
+                return
+
             if self._normalize_fixed_conf(self._fixed_conf) == normalized:
                 # Already at target; drop any stale delayed send of this value.
                 if self._pending_fixed_conf == normalized:

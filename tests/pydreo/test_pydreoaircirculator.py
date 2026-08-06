@@ -1630,6 +1630,52 @@ class TestPyDreoAirCirculator(TestBase):
         sent = [call.args[1][FIXEDCONF_KEY] for call in mock_send_command.call_args_list]
         assert len(set(sent)) == 2
 
+    def test_fixed_conf_dispose_cancels_pending_timer(self):  # pylint: disable=invalid-name
+        """dispose() cancels settle timers so unload cannot fire delayed sends."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with (
+            patch(PATCH_SEND_COMMAND) as mock_send_command,
+            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
+        ):
+            mock_timer = mock_timer_cls.return_value
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+
+            fan.horizontal_angle = -20
+            mock_timer_cls.assert_called_once()
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+            assert fan._fixed_conf_timer is mock_timer  # pylint: disable=protected-access
+
+            fan.dispose()
+            mock_timer.cancel.assert_called()
+            assert fan._fixed_conf_disposed is True  # pylint: disable=protected-access
+            assert fan._pending_fixed_conf is None  # pylint: disable=protected-access
+            assert fan._fixed_conf_timer is None  # pylint: disable=protected-access
+            assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+
+            # Timer callback after dispose must not send.
+            callback = mock_timer_cls.call_args[0][1]
+            callback()
+            assert mock_send_command.call_count == 1
+
+            # Further setters after dispose are ignored.
+            fan.vertical_angle = 45
+            assert mock_send_command.call_count == 1
+
+    def test_stop_transport_disposes_devices(self):  # pylint: disable=invalid-name
+        """PyDreo.stop_transport disposes devices before tearing down transport."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        with patch.object(fan, "dispose") as mock_dispose:
+            self.pydreo_manager.stop_transport()
+            mock_dispose.assert_called_once()
+
     def test_horizontal_oscillation_angle_property(self):  # pylint: disable=invalid-name
         """Test horizontal_oscillation_angle property and setter."""
         self.get_devices_file_name = "get_devices_HAF001S.json"
