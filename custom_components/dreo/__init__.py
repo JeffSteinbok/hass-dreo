@@ -33,7 +33,10 @@ def _install_ha_call_later_scheduler(
     from homeassistant.core import callback as ha_callback  # pylint: disable=C0415
     from homeassistant.helpers.event import async_call_later  # pylint: disable=C0415
 
-    active_cancel_handles: set[Callable[[], None]] = set()
+    # List (not set): async_call_later unsub callables are hashable, but a list
+    # avoids any set/hash edge cases and keeps cancellation order stable. All
+    # mutations run under active_lock (may be touched from executor + loop).
+    active_cancel_handles: list[Callable[[], None]] = []
     active_lock = threading.Lock()
 
     def schedule_call_later(delay: float, work: Callable[[], None]) -> Callable[[], None]:
@@ -51,7 +54,10 @@ def _install_ha_call_later_scheduler(
             with active_lock:
                 cancel_handle = cancel_handle_box[0]
                 if cancel_handle is not None:
-                    active_cancel_handles.discard(cancel_handle)
+                    try:
+                        active_cancel_handles.remove(cancel_handle)
+                    except ValueError:
+                        pass
                     cancel_handle_box[0] = None
             if cancelled.is_set():
                 return
@@ -65,7 +71,7 @@ def _install_ha_call_later_scheduler(
             cancel_handle = async_call_later(hass, delay, _on_timer)
             cancel_handle_box[0] = cancel_handle
             with active_lock:
-                active_cancel_handles.add(cancel_handle)
+                active_cancel_handles.append(cancel_handle)
 
         hass.loop.call_soon_threadsafe(_schedule_on_loop)
 
@@ -78,9 +84,15 @@ def _install_ha_call_later_scheduler(
                     return
                 try:
                     cancel_handle()
+                except Exception as ex:  # pylint: disable=broad-except
+                    # Teardown race: handle may already be invalid.
+                    _LOGGER.debug("schedule_call_later.cancel: handle failed: %s", ex)
                 finally:
                     with active_lock:
-                        active_cancel_handles.discard(cancel_handle)
+                        try:
+                            active_cancel_handles.remove(cancel_handle)
+                        except ValueError:
+                            pass
                     cancel_handle_box[0] = None
 
             try:
@@ -102,7 +114,11 @@ def _install_ha_call_later_scheduler(
                 cancel_handle()
             except Exception as ex:  # pylint: disable=broad-except
                 # Unload must finish even if a handle is already dead; log and continue.
-                _LOGGER.debug("_cancel_all_pending: cancel_handle failed: %s", ex)
+                _LOGGER.debug(
+                    "_cancel_all_pending: cancel_handle failed (%s): %s",
+                    type(ex).__name__,
+                    ex,
+                )
         pydreo_manager.set_schedule_call_later(None)
 
     config_entry.async_on_unload(_cancel_all_pending)

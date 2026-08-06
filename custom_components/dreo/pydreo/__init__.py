@@ -494,6 +494,13 @@ class PyDreo:  # pylint: disable=function-redefined
     def schedule_call_later(self, delay: float, work: Callable[[], None]) -> Callable[[], None]:
         """Schedule ``work`` after ``delay`` seconds; return a cancel function.
 
+        Contract (``ScheduleCallLater``):
+            ``(delay_seconds: float, work: Callable[[], None]) -> cancel: Callable[[], None]``
+            - ``cancel()`` is idempotent when possible and must not raise to callers
+              in normal use (host/teardown paths may still swallow cancel errors).
+            - ``work`` may run on a background/executor thread; it must not assume
+              it is on the HA event loop.
+
         Prefer the host scheduler when installed so Home Assistant owns lifecycle
         (event-loop timers cancelled on unload). Without a host scheduler (unit
         tests / standalone library use), fall back to a daemon ``threading.Timer``.

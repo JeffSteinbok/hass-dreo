@@ -430,3 +430,53 @@ class TestPyDreoHandleCommandAck:
 
         pydreo._handle_command_ack("SN123", "control-report", {"poweron": True})
         assert pydreo._ack_received is False
+
+
+class TestPyDreoScheduleCallLater:
+    """Test schedule_call_later host install and Timer fallback."""
+
+    def test_timer_fallback_runs_work_and_cancel_is_callable(self):
+        """Without a host scheduler, Timer fallback returns a cancel callable."""
+        pydreo = PyDreo("user", "pass", redact=False)
+        assert pydreo._schedule_call_later is None  # pylint: disable=protected-access
+
+        work = MagicMock()
+        with patch("custom_components.dreo.pydreo.threading.Timer") as mock_timer_cls:
+            mock_timer = mock_timer_cls.return_value
+            cancel = pydreo.schedule_call_later(2.5, work)
+
+            mock_timer_cls.assert_called_once_with(2.5, work)
+            assert mock_timer.daemon is True
+            mock_timer.start.assert_called_once()
+            assert callable(cancel)
+            assert cancel is mock_timer.cancel
+
+            cancel()
+            mock_timer.cancel.assert_called_once()
+
+    def test_host_scheduler_used_when_installed(self):
+        """Installed host scheduler is preferred over Timer fallback."""
+        pydreo = PyDreo("user", "pass", redact=False)
+        host_cancel = MagicMock(name="host_cancel")
+        host_scheduler = MagicMock(return_value=host_cancel)
+        pydreo.set_schedule_call_later(host_scheduler)
+
+        work = MagicMock()
+        with patch("custom_components.dreo.pydreo.threading.Timer") as mock_timer_cls:
+            cancel = pydreo.schedule_call_later(1.0, work)
+            host_scheduler.assert_called_once_with(1.0, work)
+            assert cancel is host_cancel
+            mock_timer_cls.assert_not_called()
+
+    def test_clearing_host_scheduler_restores_timer_fallback(self):
+        """set_schedule_call_later(None) restores Timer fallback."""
+        pydreo = PyDreo("user", "pass", redact=False)
+        pydreo.set_schedule_call_later(MagicMock())
+        pydreo.set_schedule_call_later(None)
+
+        work = MagicMock()
+        with patch("custom_components.dreo.pydreo.threading.Timer") as mock_timer_cls:
+            mock_timer = mock_timer_cls.return_value
+            cancel = pydreo.schedule_call_later(0.1, work)
+            mock_timer_cls.assert_called_once()
+            assert cancel is mock_timer.cancel

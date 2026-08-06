@@ -526,7 +526,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 cancel()
             except Exception as ex:  # pylint: disable=broad-except
                 # Cleanup path: cancel may race unload/loop close; never raise here.
-                _LOGGER.debug("_cancel_fixed_conf_timer_locked: cancel failed: %s", ex)
+                _LOGGER.debug(
+                    "_cancel_fixed_conf_timer_locked: cancel failed (%s): %s",
+                    type(ex).__name__,
+                    ex,
+                )
 
     def dispose(self) -> None:
         """Cancel delayed fixedconf work on integration unload / transport stop.
