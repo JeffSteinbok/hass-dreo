@@ -1,11 +1,103 @@
 """Dreo HomeAssistant Integration."""
 
+from __future__ import annotations
+
 import logging
+import threading
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .const import DOMAIN, PYDREO_MANAGER, DREO_PLATFORMS, CONF_AUTO_RECONNECT, DEBUG_TEST_MODE
 
+if TYPE_CHECKING:
+    from .pydreo import PyDreo
+
 _LOGGER = logging.getLogger(__name__)
+
+
+def _install_ha_call_later_scheduler(
+    hass: HomeAssistant,
+    pydreo_manager: "PyDreo",
+    config_entry: ConfigEntry,
+) -> None:
+    """Route PyDreo delayed work through HA ``async_call_later``.
+
+    Entity setters run on executor threads, so scheduling hops to the event loop
+    via ``call_soon_threadsafe``. The settle callback itself runs in an executor
+    job so websocket ``_send_command`` never blocks the event loop.
+
+    Active unsubs are tracked and cancelled on config-entry unload (in addition
+    to per-device ``dispose()`` via ``stop_transport``).
+    """
+    from homeassistant.helpers.event import async_call_later  # pylint: disable=C0415
+
+    active_unsubs: set[Callable[[], None]] = set()
+    active_lock = threading.Lock()
+
+    def schedule_call_later(delay: float, callback: Callable[[], None]) -> Callable[[], None]:
+        """Schedule callback after delay; return a thread-safe cancel function."""
+        cancelled = threading.Event()
+        unsub_box: list[Callable[[], None] | None] = [None]
+
+        @callback
+        def _on_timer(_now) -> None:
+            with active_lock:
+                unsub = unsub_box[0]
+                if unsub is not None:
+                    active_unsubs.discard(unsub)
+                    unsub_box[0] = None
+            if cancelled.is_set():
+                return
+            # Keep sync device I/O off the event loop.
+            hass.async_add_executor_job(callback)
+
+        def _schedule_on_loop() -> None:
+            if cancelled.is_set():
+                return
+            unsub = async_call_later(hass, delay, _on_timer)
+            unsub_box[0] = unsub
+            with active_lock:
+                active_unsubs.add(unsub)
+
+        hass.loop.call_soon_threadsafe(_schedule_on_loop)
+
+        def cancel() -> None:
+            cancelled.set()
+
+            def _cancel_on_loop() -> None:
+                unsub = unsub_box[0]
+                if unsub is None:
+                    return
+                try:
+                    unsub()
+                finally:
+                    with active_lock:
+                        active_unsubs.discard(unsub)
+                    unsub_box[0] = None
+
+            try:
+                hass.loop.call_soon_threadsafe(_cancel_on_loop)
+            except RuntimeError:
+                # Event loop already closed during shutdown.
+                pass
+
+        return cancel
+
+    pydreo_manager.set_schedule_call_later(schedule_call_later)
+
+    def _cancel_all_pending() -> None:
+        with active_lock:
+            pending = list(active_unsubs)
+            active_unsubs.clear()
+        for unsub in pending:
+            try:
+                unsub()
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.debug("_cancel_all_pending: unsub failed", exc_info=True)
+        pydreo_manager.set_schedule_call_later(None)
+
+    config_entry.async_on_unload(_cancel_all_pending)
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
@@ -39,6 +131,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     else:
         pydreo_manager = PyDreo(username, password, region=region)
         pydreo_manager.auto_reconnect = auto_reconnect
+
+    # Prefer HA event-loop timers over raw threading.Timer for delayed device work.
+    _install_ha_call_later_scheduler(hass, pydreo_manager, config_entry)
 
     login = await hass.async_add_executor_job(pydreo_manager.login)
 

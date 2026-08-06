@@ -8,7 +8,7 @@ import sys
 
 import json
 from itertools import chain
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 from asyncio.exceptions import CancelledError
 
 from .constant import *
@@ -92,6 +92,11 @@ class PyDreo:  # pylint: disable=function-redefined
         self._pending_command_device: Optional[str] = None
         self._pending_command_params: Optional[dict] = None
         self._ack_received: bool = False
+
+        # Host-provided delayed scheduler: (delay_seconds, callback) -> cancel_fn.
+        # Home Assistant installs async_call_later; unit tests may inject a mock.
+        # When unset, schedule_call_later falls back to threading.Timer.
+        self._schedule_call_later: Callable[[float, Callable[[], None]], Callable[[], None]] | None = None
 
         if self.debug_test_mode:
             _LOGGER.error("__init__: Debug Test Mode is enabled!")
@@ -458,6 +463,32 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.error("_re_login: Re-login failed")
         return False
 
+    def set_schedule_call_later(
+        self,
+        schedule_call_later: Callable[[float, Callable[[], None]], Callable[[], None]] | None,
+    ) -> None:
+        """Install a host delayed-call scheduler (e.g. HA ``async_call_later``).
+
+        The callable signature is ``(delay_seconds, callback) -> cancel_fn``.
+        Pass ``None`` to restore the standalone ``threading.Timer`` fallback.
+        """
+        self._schedule_call_later = schedule_call_later
+
+    def schedule_call_later(self, delay: float, callback: Callable[[], None]) -> Callable[[], None]:
+        """Schedule ``callback`` after ``delay`` seconds; return a cancel function.
+
+        Prefer the host scheduler when installed so Home Assistant owns lifecycle
+        (event-loop timers cancelled on unload). Without a host scheduler (unit
+        tests / standalone library use), fall back to a daemon ``threading.Timer``.
+        """
+        if self._schedule_call_later is not None:
+            return self._schedule_call_later(delay, callback)
+
+        timer = threading.Timer(delay, callback)
+        timer.daemon = True
+        timer.start()
+        return timer.cancel
+
     def start_transport(self) -> None:
         """Initialize the websocket and start transport"""
         if not self.debug_test_mode:
@@ -465,8 +496,8 @@ class PyDreo:  # pylint: disable=function-redefined
 
     def stop_transport(self) -> None:
         """Close down the transport socket and dispose device resources."""
-        # Cancel device-owned timers/workers before tearing down the WebSocket so
-        # delayed callbacks cannot run after unload.
+        # Cancel device-owned delayed work before tearing down the WebSocket so
+        # callbacks cannot run after unload.
         for device in list(self.devices):
             try:
                 device.dispose()

@@ -3,7 +3,7 @@
 import logging
 import threading
 import time
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Callable, Dict
 
 from .constant import (
     HORIZONTAL_OSCILLATION_KEY,
@@ -103,8 +103,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._last_fixed_conf_command_time: float | None = None
         # Latest desired fixedconf when settle delays a send (coalesces rapid HA updates).
         self._pending_fixed_conf: str | None = None
-        self._fixed_conf_timer: threading.Timer | None = None
-        # Set by dispose() so a Timer that already fired cannot send after unload.
+        # Cancel handle from PyDreo.schedule_call_later (HA async_call_later or Timer).
+        self._fixed_conf_cancel: Callable[[], None] | None = None
+        # Set by dispose() so a delayed callback cannot send after unload.
         self._fixed_conf_disposed: bool = False
         # Model-specific settle from SUPPORTED_DEVICES; overridable in unit tests.
         settle = None
@@ -508,25 +509,28 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     def _cancel_fixed_conf_timer_locked(self) -> None:
         """Cancel any scheduled delayed fixedconf send. Caller holds the lock."""
-        timer = self._fixed_conf_timer
-        if timer is not None:
-            timer.cancel()
-            self._fixed_conf_timer = None
+        cancel = self._fixed_conf_cancel
+        if cancel is not None:
+            self._fixed_conf_cancel = None
+            try:
+                cancel()
+            except Exception as ex:  # pylint: disable=broad-except
+                _LOGGER.debug("_cancel_fixed_conf_timer_locked: cancel failed: %s", ex)
 
     def dispose(self) -> None:
         """Cancel delayed fixedconf work on integration unload / transport stop.
 
-        threading.Timer is intentionally used here because pydreo is a pure-Python
-        library with no Home Assistant ``hass`` reference. Callers (HA unload via
-        ``PyDreo.stop_transport``) must invoke this so timers cannot fire after
-        teardown. Daemon timers alone do not protect runtime unload.
+        Delayed settle work is scheduled via ``PyDreo.schedule_call_later``. In
+        Home Assistant that is ``async_call_later`` (wired in the integration
+        setup); cancel handles are also cleared on config-entry unload. Callers
+        must still invoke dispose so device-level pending state is cleared.
         """
         with self._fixed_conf_lock:
             self._fixed_conf_disposed = True
             self._pending_fixed_conf = None
             self._cancel_fixed_conf_timer_locked()
             self._clear_in_flight_fixed_conf()
-            _LOGGER.debug("dispose: cancelled fixedconf timer for %s", self.name)
+            _LOGGER.debug("dispose: cancelled fixedconf settle for %s", self.name)
 
     def _clear_in_flight_fixed_conf(self) -> None:
         """Clear tracking state for an in-flight fixedconf command."""
@@ -604,11 +608,15 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._last_fixed_conf_command_time = time.monotonic()
 
     def _on_fixed_conf_settle_timer(self) -> None:
-        """Background timer: send the latest pending fixedconf after settle."""
+        """Delayed callback: send the latest pending fixedconf after settle.
+
+        Invoked by the host scheduler (HA ``async_call_later`` via executor, or
+        the standalone Timer fallback). Safe to call from a worker thread.
+        """
         with self._fixed_conf_lock:
-            self._fixed_conf_timer = None
+            self._fixed_conf_cancel = None
             if self._fixed_conf_disposed:
-                _LOGGER.debug("_set_fixed_conf: disposed; dropping timer callback")
+                _LOGGER.debug("_set_fixed_conf: disposed; dropping settle callback")
                 return
             pending = self._pending_fixed_conf
             if pending is None:
@@ -630,12 +638,10 @@ class PyDreoAirCirculator(PyDreoFanBase):
         while the motor is still moving.
 
         Settle is non-blocking: setters return immediately and schedule the
-        latest desired command via ``threading.Timer`` when a previous move
-        still needs to settle. The lock is only held for brief state updates,
-        never across a sleep.
-
-        Timers are pure-Python (no ``hass`` handle) and must be cancelled via
-        ``dispose()`` on integration unload (wired through ``PyDreo.stop_transport``).
+        latest desired command via ``PyDreo.schedule_call_later`` when a previous
+        move still needs to settle. Under Home Assistant that uses
+        ``async_call_later`` (event-loop lifecycle); elsewhere a Timer fallback
+        is used. The lock is only held for brief state updates, never across a wait.
         """
         normalized = self._normalize_fixed_conf(value)
         if normalized is None:
@@ -671,10 +677,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 self._fixed_conf_settle_seconds,
             )
             self._cancel_fixed_conf_timer_locked()
-            timer = threading.Timer(remaining, self._on_fixed_conf_settle_timer)
-            timer.daemon = True
-            self._fixed_conf_timer = timer
-            timer.start()
+            # Schedule outside the pure-Python Timer path when HA installed a host
+            # scheduler; keep the cancel handle for dispose / coalescing.
+            self._fixed_conf_cancel = self._dreo.schedule_call_later(
+                remaining, self._on_fixed_conf_settle_timer
+            )
 
     @property
     def angle_preset(self) -> str | None:

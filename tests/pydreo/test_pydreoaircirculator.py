@@ -33,6 +33,34 @@ AIRCIRCULATOR_EXHAUSTIVE_MODELS = [
 class TestPyDreoAirCirculator(TestBase):
     """Test PyDreoAirCirculator class."""
 
+    def _install_manual_scheduler(self) -> list[dict]:
+        """Install a test scheduler that records delayed work for manual firing.
+
+        Returns a list of dicts with keys: delay, callback, cancelled.
+        """
+        scheduled: list[dict] = []
+
+        def schedule_call_later(delay: float, callback) -> callable:
+            entry = {"delay": delay, "callback": callback, "cancelled": False}
+            scheduled.append(entry)
+
+            def cancel() -> None:
+                entry["cancelled"] = True
+
+            return cancel
+
+        self.pydreo_manager.set_schedule_call_later(schedule_call_later)
+        return scheduled
+
+    @staticmethod
+    def _fire_last_scheduled(scheduled: list[dict]) -> None:
+        """Fire the most recent non-cancelled scheduled callback."""
+        for entry in reversed(scheduled):
+            if not entry["cancelled"]:
+                entry["callback"]()
+                return
+        raise AssertionError("No non-cancelled scheduled callback to fire")
+
     def _exercise_all_settable_properties(self, fan: PyDreoAirCirculator):
         """Exercise all writable air-circulator properties supported by a model."""
         # Disable fixedconf settle delay so unit tests do not sleep between angle sets.
@@ -1474,31 +1502,23 @@ class TestPyDreoAirCirculator(TestBase):
         fan = self.pydreo_manager.devices[0]
         assert fan.model == "DR-HPF017S"
         assert fan._fixed_conf_settle_seconds == 8.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
 
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
-        with (
-            patch(PATCH_SEND_COMMAND) as mock_send_command,
-            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
-        ):
-            mock_timer = mock_timer_cls.return_value
-
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = 30
-            mock_timer_cls.assert_not_called()  # first command has nothing to wait for
+            assert not scheduled  # first command has nothing to wait for
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
 
             fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
             fan.horizontal_angle = -20
             # Second command is scheduled non-blocking, not sent immediately.
-            mock_timer_cls.assert_called_once()
-            delay = mock_timer_cls.call_args[0][0]
-            assert 7.0 <= delay <= 8.0
-            mock_timer.start.assert_called_once()
+            assert len(scheduled) == 1
+            assert 7.0 <= scheduled[0]["delay"] <= 8.0
             assert mock_send_command.call_count == 1
             assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
 
-            # Fire the timer callback to deliver the delayed send.
-            callback = mock_timer_cls.call_args[0][1]
-            callback()
+            self._fire_last_scheduled(scheduled)
             assert mock_send_command.call_count == 2
             mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
             assert fan._pending_fixed_conf is None  # pylint: disable=protected-access
@@ -1510,29 +1530,22 @@ class TestPyDreoAirCirculator(TestBase):
         fan = self.pydreo_manager.devices[0]
         assert fan._fixed_conf_settle_seconds == 0  # pylint: disable=protected-access
         fan._fixed_conf_settle_seconds = 2.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
 
-        with (
-            patch(PATCH_SEND_COMMAND) as mock_send_command,
-            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
-        ):
-            mock_timer = mock_timer_cls.return_value
-
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = 30
-            mock_timer_cls.assert_not_called()  # first command has nothing to wait for
+            assert not scheduled  # first command has nothing to wait for
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
 
             # Simulate that the first command just finished (device report applied).
             fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
             fan.horizontal_angle = -20
-            mock_timer_cls.assert_called_once()
-            delay = mock_timer_cls.call_args[0][0]
-            assert 1.5 <= delay <= 2.0
-            mock_timer.start.assert_called_once()
+            assert len(scheduled) == 1
+            assert 1.5 <= scheduled[0]["delay"] <= 2.0
             assert mock_send_command.call_count == 1
 
-            callback = mock_timer_cls.call_args[0][1]
-            callback()
+            self._fire_last_scheduled(scheduled)
             mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
 
     def test_fixed_conf_coalesces_pending_during_settle(self):  # pylint: disable=invalid-name
@@ -1541,28 +1554,24 @@ class TestPyDreoAirCirculator(TestBase):
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
         fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
 
-        with (
-            patch(PATCH_SEND_COMMAND) as mock_send_command,
-            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
-        ):
-            first_timer = mock_timer_cls.return_value
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = 30
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
 
             # Second and third updates while settle is active: coalesce to latest.
             fan.horizontal_angle = -10
             fan.horizontal_angle = -20
-            assert mock_timer_cls.call_count == 2  # rescheduled for each pending update
-            assert first_timer.cancel.call_count >= 1
+            assert len(scheduled) == 2  # rescheduled for each pending update
+            assert scheduled[0]["cancelled"] is True
+            assert scheduled[1]["cancelled"] is False
             assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
             # Still only the first command was sent; setters returned without blocking.
             assert mock_send_command.call_count == 1
 
-            # Last scheduled callback delivers the coalesced target.
-            callback = mock_timer_cls.call_args[0][1]
-            callback()
+            self._fire_last_scheduled(scheduled)
             assert mock_send_command.call_count == 2
             mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
 
@@ -1572,12 +1581,10 @@ class TestPyDreoAirCirculator(TestBase):
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
         fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
 
-        with (
-            patch(PATCH_SEND_COMMAND) as mock_send_command,
-            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
-        ):
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = 30
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
             # Device has not reported yet; reported state is still 0,0.
@@ -1586,8 +1593,7 @@ class TestPyDreoAirCirculator(TestBase):
             fan.horizontal_angle = -20
             # Without pending/commanded base, this would incorrectly queue "0,-20".
             assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
-            callback = mock_timer_cls.call_args[0][1]
-            callback()
+            self._fire_last_scheduled(scheduled)
             mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
 
     def test_fixed_conf_concurrent_setters_serialize(self):  # pylint: disable=invalid-name
@@ -1631,36 +1637,32 @@ class TestPyDreoAirCirculator(TestBase):
         assert len(set(sent)) == 2
 
     def test_fixed_conf_dispose_cancels_pending_timer(self):  # pylint: disable=invalid-name
-        """dispose() cancels settle timers so unload cannot fire delayed sends."""
+        """dispose() cancels settle work so unload cannot fire delayed sends."""
         self.get_devices_file_name = "get_devices_HAF004S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
         fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
 
-        with (
-            patch(PATCH_SEND_COMMAND) as mock_send_command,
-            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
-        ):
-            mock_timer = mock_timer_cls.return_value
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = 30
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
 
             fan.horizontal_angle = -20
-            mock_timer_cls.assert_called_once()
+            assert len(scheduled) == 1
             assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
-            assert fan._fixed_conf_timer is mock_timer  # pylint: disable=protected-access
+            assert fan._fixed_conf_cancel is not None  # pylint: disable=protected-access
 
             fan.dispose()
-            mock_timer.cancel.assert_called()
+            assert scheduled[0]["cancelled"] is True
             assert fan._fixed_conf_disposed is True  # pylint: disable=protected-access
             assert fan._pending_fixed_conf is None  # pylint: disable=protected-access
-            assert fan._fixed_conf_timer is None  # pylint: disable=protected-access
+            assert fan._fixed_conf_cancel is None  # pylint: disable=protected-access
             assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
 
-            # Timer callback after dispose must not send.
-            callback = mock_timer_cls.call_args[0][1]
-            callback()
+            # Callback after dispose must not send (even if fire is attempted).
+            scheduled[0]["callback"]()
             assert mock_send_command.call_count == 1
 
             # Further setters after dispose are ignored.
