@@ -30,35 +30,42 @@ def _install_ha_call_later_scheduler(
     Active unsubs are tracked and cancelled on config-entry unload (in addition
     to per-device ``dispose()`` via ``stop_transport``).
     """
+    from homeassistant.core import callback as ha_callback  # pylint: disable=C0415
     from homeassistant.helpers.event import async_call_later  # pylint: disable=C0415
 
-    active_unsubs: set[Callable[[], None]] = set()
+    active_cancel_handles: set[Callable[[], None]] = set()
     active_lock = threading.Lock()
 
-    def schedule_call_later(delay: float, callback: Callable[[], None]) -> Callable[[], None]:
-        """Schedule callback after delay; return a thread-safe cancel function."""
-        cancelled = threading.Event()
-        unsub_box: list[Callable[[], None] | None] = [None]
+    def schedule_call_later(delay: float, work: Callable[[], None]) -> Callable[[], None]:
+        """Schedule ``work`` after delay; return a thread-safe cancel function.
 
-        @callback
+        Parameter is named ``work`` (not ``callback``) so it does not shadow the
+        Home Assistant ``@ha_callback`` / ``@callback`` decorator used below.
+        """
+        cancelled = threading.Event()
+        # Filled on the event loop when async_call_later returns its unsub handle.
+        cancel_handle_box: list[Callable[[], None] | None] = [None]
+
+        @ha_callback
         def _on_timer(_now) -> None:
             with active_lock:
-                unsub = unsub_box[0]
-                if unsub is not None:
-                    active_unsubs.discard(unsub)
-                    unsub_box[0] = None
+                cancel_handle = cancel_handle_box[0]
+                if cancel_handle is not None:
+                    active_cancel_handles.discard(cancel_handle)
+                    cancel_handle_box[0] = None
             if cancelled.is_set():
                 return
-            # Keep sync device I/O off the event loop.
-            hass.async_add_executor_job(callback)
+            # Device I/O (_send_command / websockets) is synchronous — run off the
+            # event loop so settle work never blocks HA.
+            hass.async_add_executor_job(work)
 
         def _schedule_on_loop() -> None:
             if cancelled.is_set():
                 return
-            unsub = async_call_later(hass, delay, _on_timer)
-            unsub_box[0] = unsub
+            cancel_handle = async_call_later(hass, delay, _on_timer)
+            cancel_handle_box[0] = cancel_handle
             with active_lock:
-                active_unsubs.add(unsub)
+                active_cancel_handles.add(cancel_handle)
 
         hass.loop.call_soon_threadsafe(_schedule_on_loop)
 
@@ -66,15 +73,15 @@ def _install_ha_call_later_scheduler(
             cancelled.set()
 
             def _cancel_on_loop() -> None:
-                unsub = unsub_box[0]
-                if unsub is None:
+                cancel_handle = cancel_handle_box[0]
+                if cancel_handle is None:
                     return
                 try:
-                    unsub()
+                    cancel_handle()
                 finally:
                     with active_lock:
-                        active_unsubs.discard(unsub)
-                    unsub_box[0] = None
+                        active_cancel_handles.discard(cancel_handle)
+                    cancel_handle_box[0] = None
 
             try:
                 hass.loop.call_soon_threadsafe(_cancel_on_loop)
@@ -88,13 +95,13 @@ def _install_ha_call_later_scheduler(
 
     def _cancel_all_pending() -> None:
         with active_lock:
-            pending = list(active_unsubs)
-            active_unsubs.clear()
-        for unsub in pending:
+            pending = list(active_cancel_handles)
+            active_cancel_handles.clear()
+        for cancel_handle in pending:
             try:
-                unsub()
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.debug("_cancel_all_pending: unsub failed", exc_info=True)
+                cancel_handle()
+            except Exception as ex:  # pylint: disable=broad-except
+                _LOGGER.debug("_cancel_all_pending: cancel_handle failed: %s", ex, exc_info=True)
         pydreo_manager.set_schedule_call_later(None)
 
     config_entry.async_on_unload(_cancel_all_pending)

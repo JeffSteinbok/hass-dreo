@@ -581,9 +581,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         # Reported position equals pre-command position and is not the target → reject.
         _LOGGER.warning(
-            "fixedconf: Device did not apply commanded angle %s; reported %s "
+            "fixedconf: %s (%s) did not apply commanded angle %s; reported %s "
             "(was %s). On DR-HPF017S / 517S this often means the pan/tilt "
             "subsystem needs recalibration in the Dreo app.",
+            self.name,
+            self.serial_number,
             commanded,
             reported,
             previous,

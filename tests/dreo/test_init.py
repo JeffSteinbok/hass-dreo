@@ -431,6 +431,55 @@ class TestInit:
         assert "dreo" not in mock_hass.data
         mock_hass.config_entries.async_unload_platforms.assert_called_once()
 
+    def test_ha_call_later_scheduler_does_not_shadow_callback_decorator(self):
+        """HA schedule_call_later must not name-shadow @callback; work must run via executor."""
+        from custom_components.dreo import _install_ha_call_later_scheduler
+
+        mock_hass = MagicMock()
+        # call_soon_threadsafe runs the scheduled function immediately (same thread).
+        mock_hass.loop.call_soon_threadsafe = lambda fn, *args: fn(*args)
+        mock_hass.async_add_executor_job = MagicMock()
+
+        installed_scheduler = {}
+
+        mock_pydreo = MagicMock()
+
+        def capture_scheduler(fn):
+            installed_scheduler["fn"] = fn
+
+        mock_pydreo.set_schedule_call_later = capture_scheduler
+
+        mock_entry = MagicMock()
+        mock_entry.async_on_unload = MagicMock()
+
+        timer_callbacks = []
+
+        def fake_async_call_later(_hass, delay, action):
+            timer_callbacks.append((delay, action))
+            cancel_handle = MagicMock(name="cancel_handle")
+            return cancel_handle
+
+        work = MagicMock(name="work")
+
+        with patch("homeassistant.helpers.event.async_call_later", side_effect=fake_async_call_later):
+            _install_ha_call_later_scheduler(mock_hass, mock_pydreo, mock_entry)
+
+            assert "fn" in installed_scheduler
+            schedule_call_later = installed_scheduler["fn"]
+
+            # Must not raise TypeError from treating `work` as the @callback decorator.
+            cancel = schedule_call_later(1.5, work)
+            assert callable(cancel)
+            assert len(timer_callbacks) == 1
+            assert timer_callbacks[0][0] == 1.5
+
+            # Fire the HA timer callback; work should land in the executor, not run inline.
+            timer_callbacks[0][1](None)
+            mock_hass.async_add_executor_job.assert_called_once_with(work)
+
+            cancel()
+            mock_entry.async_on_unload.assert_called_once()
+
     def test_remove_config_entry_device(self):
         """Test async_remove_config_entry_device always returns True."""
         from custom_components.dreo import async_remove_config_entry_device
