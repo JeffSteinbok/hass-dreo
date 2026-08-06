@@ -1438,7 +1438,7 @@ class TestPyDreoAirCirculator(TestBase):
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "-25,20"})
 
     def test_fixed_conf_ignores_optimistic_control_reply(self):  # pylint: disable=invalid-name
-        """control-reply must not overwrite real fixedconf position state."""
+        """control-reply / control-report must not overwrite real fixedconf position."""
         self.get_devices_file_name = "get_devices_HAF004S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
@@ -1446,15 +1446,27 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.vertical_angle == -10
         assert fan.horizontal_angle == -55
 
-        # Cloud echoes the requested value; device has not moved yet.
+        with patch(PATCH_SEND_COMMAND):
+            fan.vertical_angle = 35
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+
+        # Cloud ACK paths echo the requested value; device has not moved yet.
         fan.handle_server_update({"method": "control-reply", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
         assert fan.vertical_angle == -10
         assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
 
-        # Authoritative device report applies.
+        # control-report is also an optimistic ACK path (PyDreo._ACK_METHOD_NAMES).
+        fan.handle_server_update({"method": "control-report", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+
+        # Authoritative device report applies and can clear in-flight tracking.
         fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
         assert fan.vertical_angle == 35
         assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
 
     def test_fixed_conf_logs_when_device_rejects_command(self):  # pylint: disable=invalid-name
         """Snap-back to pre-command position is treated as a rejected move."""
@@ -1841,11 +1853,16 @@ class TestPyDreoAirCirculator(TestBase):
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
             assert fan.fixed_conf_settle_pending is False
 
-            # Optimistic control-reply must not move state.
+            # Optimistic ACK paths must not move state or clear in-flight.
             fan.handle_server_update(
                 {"method": "control-reply", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}}
             )
             assert fan.vertical_angle == 0
+            fan.handle_server_update(
+                {"method": "control-report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}}
+            )
+            assert fan.vertical_angle == 0
+            assert fan.fixed_conf_commanded == "30,0"
 
             # Authoritative mid-move + final reports (canned encoder path).
             fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "15,0"}})
