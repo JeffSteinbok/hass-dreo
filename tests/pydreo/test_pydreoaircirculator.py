@@ -1702,6 +1702,57 @@ class TestPyDreoAirCirculator(TestBase):
             scheduled[0]["callback"]()
             assert mock_send_command.call_count == 1
 
+    def test_HPF017S_canned_websocket_path_and_settle_ui(self):  # pylint: disable=invalid-name
+        """HPF017S fixture: settle pending UI + canned report sequence end-to-end."""
+        self.get_devices_file_name = "get_devices_HPF017S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HPF017S"
+        assert fan.is_feature_supported("fixed_conf_settle_pending")
+        assert fan.fixed_conf_settle_pending is False
+        scheduled = self._install_manual_scheduler()
+
+        # Initial device state from canned fixture path (report style updates).
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        assert fan.vertical_angle == 0
+        assert fan.horizontal_angle == 0
+
+        ui_ticks: list[bool] = []
+        fan.add_attr_callback(lambda: ui_ticks.append(fan.fixed_conf_settle_pending))
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+            assert fan.fixed_conf_settle_pending is False
+
+            # Optimistic control-reply must not move state.
+            fan.handle_server_update(
+                {"method": "control-reply", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}}
+            )
+            assert fan.vertical_angle == 0
+
+            # Authoritative mid-move + final reports (canned encoder path).
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "15,0"}})
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
+            assert fan.vertical_angle == 30
+
+            fan.horizontal_angle = -20
+            assert fan.fixed_conf_settle_pending is True
+            assert fan.fixed_conf_pending_target == "30,-20"
+            assert len(scheduled) == 1
+            assert mock_send_command.call_count == 1
+            assert True in ui_ticks  # UI notified when settle queued
+
+            self._fire_last_scheduled(scheduled)
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+            assert fan.fixed_conf_settle_pending is False
+            assert fan.fixed_conf_pending_target is None
+            assert False in ui_ticks  # UI notified when settle cleared
+
+            # Device confirms second move.
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,-20"}})
+            assert fan.horizontal_angle == -20
+
     def test_horizontal_oscillation_angle_property(self):  # pylint: disable=invalid-name
         """Test horizontal_oscillation_angle property and setter."""
         self.get_devices_file_name = "get_devices_HAF001S.json"
