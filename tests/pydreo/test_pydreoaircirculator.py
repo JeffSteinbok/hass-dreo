@@ -1495,6 +1495,29 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.vertical_angle == 35
         assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
 
+    def test_fixed_conf_send_failure_clears_in_flight_state(self):  # pylint: disable=invalid-name
+        """If _send_command raises, commanded tracking must not stay stuck."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        ui_ticks: list[str | None] = []
+        fan.add_attr_callback(lambda: ui_ticks.append(fan.fixed_conf_commanded))
+
+        with patch(PATCH_SEND_COMMAND, side_effect=RuntimeError("transport down")):
+            with pytest.raises(RuntimeError, match="transport down"):
+                fan.vertical_angle = 30
+
+        assert fan.fixed_conf_commanded is None
+        assert fan.fixed_conf_pending_target is None
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+        assert fan._fixed_conf_at_command is None  # pylint: disable=protected-access
+        # UI notified with cleared commanded state.
+        assert None in ui_ticks
+        debug = fan.fixed_conf_debug_state
+        assert debug["commanded"] is None
+        assert debug["settle_pending"] is False
+
     def test_fixed_conf_confirm_and_reject_notify_ui(self):  # pylint: disable=invalid-name
         """Confirm/reject clear commanded tracking and push HA callbacks."""
         self.get_devices_file_name = "get_devices_HAF004S.json"

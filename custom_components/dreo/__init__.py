@@ -23,12 +23,17 @@ def _install_ha_call_later_scheduler(
 ) -> None:
     """Route PyDreo delayed work through HA ``async_call_later``.
 
-    Entity setters run on executor threads, so scheduling hops to the event loop
-    via ``call_soon_threadsafe``. The settle callback itself runs in an executor
-    job so websocket ``_send_command`` never blocks the event loop.
-
-    Active unsubs are tracked and cancelled on config-entry unload (in addition
-    to per-device ``dispose()`` via ``stop_transport``).
+    Lifecycle (maintainers)
+    -----------------------
+    - **Install**: called once from ``async_setup_entry`` after ``PyDreo`` is
+      constructed. Failures are caught by setup and fall back to Timer.
+    - **Schedule**: may be invoked from HA **executor** threads (entity setters).
+      Posts onto the **event loop** via ``call_soon_threadsafe`` →
+      ``async_call_later``; when due, ``work`` runs in an **executor job** so
+      device I/O never blocks the loop.
+    - **Cancel**: device ``dispose()`` / ``stop_transport`` and this function's
+      returned cancel handles; ``config_entry.async_on_unload`` cancels any
+      remaining handles and clears the host scheduler on integration unload.
     """
     from homeassistant.core import callback as ha_callback  # pylint: disable=C0415
     from homeassistant.helpers.event import async_call_later  # pylint: disable=C0415
@@ -106,6 +111,9 @@ def _install_ha_call_later_scheduler(
     pydreo_manager.set_schedule_call_later(schedule_call_later)
 
     def _cancel_all_pending() -> None:
+        # Integration unload: cancel every outstanding settle timer, then drop
+        # the host scheduler so any late schedule_call_later uses Timer (or no-ops
+        # after devices are disposed).
         with active_lock:
             pending = list(active_cancel_handles)
             active_cancel_handles.clear()

@@ -689,7 +689,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
         return self._clear_in_flight_fixed_conf()
 
     def _dispatch_fixed_conf_locked(self, normalized: str) -> None:
-        """Send fixedconf immediately. Caller must hold ``_fixed_conf_lock``."""
+        """Send fixedconf immediately. Caller must hold ``_fixed_conf_lock``.
+
+        On send failure, clears in-flight tracking so diagnostics do not show a
+        command as outstanding when it never left the client.
+        """
         if self._fixed_conf_disposed:
             _LOGGER.debug("_set_fixed_conf: disposed; skipping send of %s", normalized)
             return
@@ -702,7 +706,19 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._last_commanded_fixed_conf = normalized
         self._pending_fixed_conf = None
         _LOGGER.debug("_set_fixed_conf: commanding fixedconf %s", normalized)
-        self._send_command(FIXEDCONF_KEY, normalized)
+        try:
+            self._send_command(FIXEDCONF_KEY, normalized)
+        except Exception as ex:
+            # Avoid stuck commanded/pending diagnostics if I/O fails mid-send.
+            _LOGGER.error(
+                "_set_fixed_conf: send failed for %s on %s (%s): %s",
+                normalized,
+                self.name,
+                type(ex).__name__,
+                ex,
+            )
+            self._clear_in_flight_fixed_conf()
+            raise
         self._last_fixed_conf_command_time = time.monotonic()
 
     def _on_fixed_conf_settle_timer(self) -> None:
@@ -712,24 +728,29 @@ class PyDreoAirCirculator(PyDreoFanBase):
         the standalone Timer fallback). Safe to call from a worker thread.
         """
         notify = False
-        with self._fixed_conf_lock:
-            self._fixed_conf_cancel = None
-            if self._fixed_conf_disposed:
-                _LOGGER.debug("_set_fixed_conf: disposed; dropping settle callback")
-                return
-            pending = self._pending_fixed_conf
-            if pending is None:
-                return
-            if self._normalize_fixed_conf(self._fixed_conf) == pending:
-                _LOGGER.debug(
-                    "_set_fixed_conf: pending %s already reported; skipping delayed send",
-                    pending,
-                )
-                self._pending_fixed_conf = None
-                notify = True
-            else:
-                self._dispatch_fixed_conf_locked(pending)
-                notify = True
+        try:
+            with self._fixed_conf_lock:
+                self._fixed_conf_cancel = None
+                if self._fixed_conf_disposed:
+                    _LOGGER.debug("_set_fixed_conf: disposed; dropping settle callback")
+                    return
+                pending = self._pending_fixed_conf
+                if pending is None:
+                    return
+                if self._normalize_fixed_conf(self._fixed_conf) == pending:
+                    _LOGGER.debug(
+                        "_set_fixed_conf: pending %s already reported; skipping delayed send",
+                        pending,
+                    )
+                    self._pending_fixed_conf = None
+                    notify = True
+                else:
+                    self._dispatch_fixed_conf_locked(pending)
+                    notify = True
+        except Exception:
+            # Dispatch cleared in-flight on send failure; still refresh diagnostics.
+            self._notify_fixed_conf_ui()
+            raise
         if notify:
             self._notify_fixed_conf_ui()
 
@@ -751,41 +772,46 @@ class PyDreoAirCirculator(PyDreoFanBase):
             raise ValueError(f"Invalid fixedconf format: {value}")
 
         notify = False
-        with self._fixed_conf_lock:
-            if self._fixed_conf_disposed:
-                _LOGGER.debug("_set_fixed_conf: disposed; ignoring command %s", normalized)
-                return
+        try:
+            with self._fixed_conf_lock:
+                if self._fixed_conf_disposed:
+                    _LOGGER.debug("_set_fixed_conf: disposed; ignoring command %s", normalized)
+                    return
 
-            if self._normalize_fixed_conf(self._fixed_conf) == normalized:
-                # Already at target; drop any stale delayed send of this value.
-                if self._pending_fixed_conf == normalized:
-                    self._pending_fixed_conf = None
-                    self._cancel_fixed_conf_timer_locked()
-                    notify = True
-                _LOGGER.debug("_set_fixed_conf: value already %s, skipping command", normalized)
-            else:
-                # Always keep the latest desired target (coalesce rapid updates).
-                self._pending_fixed_conf = normalized
-                remaining = self._remaining_fixed_conf_settle_seconds()
-                if remaining <= 0:
-                    self._cancel_fixed_conf_timer_locked()
-                    self._dispatch_fixed_conf_locked(normalized)
-                    notify = True
+                if self._normalize_fixed_conf(self._fixed_conf) == normalized:
+                    # Already at target; drop any stale delayed send of this value.
+                    if self._pending_fixed_conf == normalized:
+                        self._pending_fixed_conf = None
+                        self._cancel_fixed_conf_timer_locked()
+                        notify = True
+                    _LOGGER.debug("_set_fixed_conf: value already %s, skipping command", normalized)
                 else:
-                    # Schedule a single delayed send of the latest pending value.
-                    # Do not block the caller (HA entity setters / executor threads).
-                    _LOGGER.debug(
-                        "_set_fixed_conf: scheduling fixedconf %s in %.1fs (interval=%.1fs)",
-                        normalized,
-                        remaining,
-                        self._fixed_conf_settle_seconds,
-                    )
-                    self._cancel_fixed_conf_timer_locked()
-                    # Host scheduler (HA async_call_later) or Timer fallback.
-                    self._fixed_conf_cancel = self._dreo.schedule_call_later(
-                        remaining, self._on_fixed_conf_settle_timer
-                    )
-                    notify = True
+                    # Always keep the latest desired target (coalesce rapid updates).
+                    self._pending_fixed_conf = normalized
+                    remaining = self._remaining_fixed_conf_settle_seconds()
+                    if remaining <= 0:
+                        self._cancel_fixed_conf_timer_locked()
+                        self._dispatch_fixed_conf_locked(normalized)
+                        notify = True
+                    else:
+                        # Schedule a single delayed send of the latest pending value.
+                        # Do not block the caller (HA entity setters / executor threads).
+                        _LOGGER.debug(
+                            "_set_fixed_conf: scheduling fixedconf %s in %.1fs (interval=%.1fs)",
+                            normalized,
+                            remaining,
+                            self._fixed_conf_settle_seconds,
+                        )
+                        self._cancel_fixed_conf_timer_locked()
+                        # Host scheduler (HA async_call_later) or Timer fallback.
+                        self._fixed_conf_cancel = self._dreo.schedule_call_later(
+                            remaining, self._on_fixed_conf_settle_timer
+                        )
+                        notify = True
+        except Exception:
+            # Send failed after clearing in-flight; refresh diagnostics for HA.
+            self._notify_fixed_conf_ui()
+            raise
         if notify:
             self._notify_fixed_conf_ui()
 
