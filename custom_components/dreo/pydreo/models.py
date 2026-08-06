@@ -370,8 +370,9 @@ SUPPORTED_DEVICES = {
     "DR-HPF017S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         preset_modes=[("normal", 1), ("auto", 2), ("sleep", 3), ("natural", 4), ("turbo", 5), ("custom", 6)],
-        # fixed_conf_settle_seconds: stacking pan/tilt moves can require app recalibration
-        # if successive fixedconf commands arrive before the previous move finishes.
+        # fixed_conf_settle_seconds (float, seconds): minimum gap between fixedconf
+        # commands. Stacking pan/tilt moves before the previous move finishes can
+        # require app recalibration on this model. 0 = no settle (default for others).
         device_ranges={
             SPEED_RANGE: (1, 12),
             HORIZONTAL_ANGLE_RANGE: (-75, 75),

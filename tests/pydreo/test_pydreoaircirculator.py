@@ -1476,15 +1476,32 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan._fixed_conf_settle_seconds == 8.0  # pylint: disable=protected-access
 
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
-        with patch(PATCH_SEND_COMMAND), patch("custom_components.dreo.pydreo.pydreoaircirculator.time.sleep") as mock_sleep:
+        with (
+            patch(PATCH_SEND_COMMAND) as mock_send_command,
+            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
+        ):
+            mock_timer = mock_timer_cls.return_value
+
             fan.vertical_angle = 30
-            mock_sleep.assert_not_called()  # first command has nothing to wait for
+            mock_timer_cls.assert_not_called()  # first command has nothing to wait for
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
 
             fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
             fan.horizontal_angle = -20
-            mock_sleep.assert_called_once()
-            waited = mock_sleep.call_args[0][0]
-            assert 7.0 <= waited <= 8.0
+            # Second command is scheduled non-blocking, not sent immediately.
+            mock_timer_cls.assert_called_once()
+            delay = mock_timer_cls.call_args[0][0]
+            assert 7.0 <= delay <= 8.0
+            mock_timer.start.assert_called_once()
+            assert mock_send_command.call_count == 1
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+
+            # Fire the timer callback to deliver the delayed send.
+            callback = mock_timer_cls.call_args[0][1]
+            callback()
+            assert mock_send_command.call_count == 2
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+            assert fan._pending_fixed_conf is None  # pylint: disable=protected-access
 
     def test_fixed_conf_settle_delay_between_commands(self):  # pylint: disable=invalid-name
         """Settle delay can be forced for testing even on models that default to zero."""
@@ -1495,16 +1512,123 @@ class TestPyDreoAirCirculator(TestBase):
         fan._fixed_conf_settle_seconds = 2.0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
 
-        with patch(PATCH_SEND_COMMAND), patch("custom_components.dreo.pydreo.pydreoaircirculator.time.sleep") as mock_sleep:
+        with (
+            patch(PATCH_SEND_COMMAND) as mock_send_command,
+            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
+        ):
+            mock_timer = mock_timer_cls.return_value
+
             fan.vertical_angle = 30
-            mock_sleep.assert_not_called()  # first command has nothing to wait for
+            mock_timer_cls.assert_not_called()  # first command has nothing to wait for
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
 
             # Simulate that the first command just finished (device report applied).
             fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
             fan.horizontal_angle = -20
-            mock_sleep.assert_called_once()
-            waited = mock_sleep.call_args[0][0]
-            assert 1.5 <= waited <= 2.0
+            mock_timer_cls.assert_called_once()
+            delay = mock_timer_cls.call_args[0][0]
+            assert 1.5 <= delay <= 2.0
+            mock_timer.start.assert_called_once()
+            assert mock_send_command.call_count == 1
+
+            callback = mock_timer_cls.call_args[0][1]
+            callback()
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+
+    def test_fixed_conf_coalesces_pending_during_settle(self):  # pylint: disable=invalid-name
+        """Rapid updates during settle keep only the latest target and do not sleep."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with (
+            patch(PATCH_SEND_COMMAND) as mock_send_command,
+            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
+        ):
+            first_timer = mock_timer_cls.return_value
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+
+            # Second and third updates while settle is active: coalesce to latest.
+            fan.horizontal_angle = -10
+            fan.horizontal_angle = -20
+            assert mock_timer_cls.call_count == 2  # rescheduled for each pending update
+            assert first_timer.cancel.call_count >= 1
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+            # Still only the first command was sent; setters returned without blocking.
+            assert mock_send_command.call_count == 1
+
+            # Last scheduled callback delivers the coalesced target.
+            callback = mock_timer_cls.call_args[0][1]
+            callback()
+            assert mock_send_command.call_count == 2
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+
+    def test_fixed_conf_axis_compose_uses_pending_not_stale_report(self):  # pylint: disable=invalid-name
+        """Horizontal update while vertical is pending must keep the commanded vertical."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with (
+            patch(PATCH_SEND_COMMAND) as mock_send_command,
+            patch("custom_components.dreo.pydreo.pydreoaircirculator.threading.Timer") as mock_timer_cls,
+        ):
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+            # Device has not reported yet; reported state is still 0,0.
+            assert fan.vertical_angle == 0
+
+            fan.horizontal_angle = -20
+            # Without pending/commanded base, this would incorrectly queue "0,-20".
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+            callback = mock_timer_cls.call_args[0][1]
+            callback()
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+
+    def test_fixed_conf_concurrent_setters_serialize(self):  # pylint: disable=invalid-name
+        """Concurrent axis setters serialize via the lock and coalesce safely."""
+        import threading as threading_mod
+
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        errors: list[BaseException] = []
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            def set_vertical():
+                try:
+                    fan.vertical_angle = 30
+                except BaseException as exc:  # pylint: disable=broad-except
+                    errors.append(exc)
+
+            def set_horizontal():
+                try:
+                    fan.horizontal_angle = -20
+                except BaseException as exc:  # pylint: disable=broad-except
+                    errors.append(exc)
+
+            threads = [
+                threading_mod.Thread(target=set_vertical),
+                threading_mod.Thread(target=set_horizontal),
+            ]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join(timeout=5)
+                assert not thread.is_alive()
+
+        assert not errors
+        # Both commands should have been issued (order depends on scheduling).
+        assert mock_send_command.call_count == 2
+        sent = [call.args[1][FIXEDCONF_KEY] for call in mock_send_command.call_args_list]
+        assert len(set(sent)) == 2
 
     def test_horizontal_oscillation_angle_property(self):  # pylint: disable=invalid-name
         """Test horizontal_oscillation_angle property and setter."""

@@ -98,8 +98,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._last_commanded_fixed_conf: str | None = None
         # Position reported when the last fixedconf command was sent (reject = snap-back)
         self._fixed_conf_at_command: str | None = None
+        # Serialize fixedconf command state; never sleep while holding this lock.
         self._fixed_conf_lock = threading.Lock()
         self._last_fixed_conf_command_time: float | None = None
+        # Latest desired fixedconf when settle delays a send (coalesces rapid HA updates).
+        self._pending_fixed_conf: str | None = None
+        self._fixed_conf_timer: threading.Timer | None = None
         # Model-specific settle from SUPPORTED_DEVICES; overridable in unit tests.
         settle = None
         if device_definition.device_ranges is not None:
@@ -489,28 +493,41 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if normalized is not None and normalized not in self._angle_preset_options:
             self._angle_preset_options.append(normalized)
 
-    def _wait_for_fixed_conf_settle(self) -> None:
-        """Block until enough time has passed since the last fixedconf command."""
+    def _remaining_fixed_conf_settle_seconds(self) -> float:
+        """Seconds left in the settle window since the last fixedconf send.
+
+        Caller must hold ``_fixed_conf_lock``.
+        """
         settle = self._fixed_conf_settle_seconds
         if settle <= 0 or self._last_fixed_conf_command_time is None:
-            return
+            return 0.0
+        remaining = settle - (time.monotonic() - self._last_fixed_conf_command_time)
+        return remaining if remaining > 0 else 0.0
 
-        elapsed = time.monotonic() - self._last_fixed_conf_command_time
-        remaining = settle - elapsed
-        if remaining <= 0:
-            return
+    def _cancel_fixed_conf_timer_locked(self) -> None:
+        """Cancel any scheduled delayed fixedconf send. Caller holds the lock."""
+        timer = self._fixed_conf_timer
+        if timer is not None:
+            timer.cancel()
+            self._fixed_conf_timer = None
 
-        _LOGGER.debug(
-            "_set_fixed_conf: waiting %.1fs for previous angle move to settle (interval=%.1fs)",
-            remaining,
-            settle,
-        )
-        time.sleep(remaining)
-
-    def _clear_pending_fixed_conf(self) -> None:
+    def _clear_in_flight_fixed_conf(self) -> None:
         """Clear tracking state for an in-flight fixedconf command."""
         self._last_commanded_fixed_conf = None
         self._fixed_conf_at_command = None
+
+    def _base_fixed_conf_for_axis_update(self) -> str | None:
+        """Best-known fixedconf when composing a single-axis update.
+
+        Prefer a pending delayed target, then the last commanded value, then the
+        last device-reported position so rapid HA axis updates do not clobber
+        each other while waiting for a device report.
+        """
+        return (
+            self._pending_fixed_conf
+            or self._last_commanded_fixed_conf
+            or self._normalize_fixed_conf(self._fixed_conf)
+        )
 
     def _maybe_log_fixed_conf_reject(self, reported: str | None, previous: str | None) -> None:
         """Log a reject only when the device snaps back to the pre-command position.
@@ -518,6 +535,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
         Intermediate encoder reports while the head is still traveling are common
         and must not be treated as failures. A true reject (seen on DR-HPF017S)
         reports the same fixedconf that was current when the command was sent.
+
+        Caller must hold ``_fixed_conf_lock`` when shared state may race with
+        timers or setters.
         """
         commanded = self._last_commanded_fixed_conf
         if commanded is None or reported is None:
@@ -525,7 +545,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         if reported == commanded:
             _LOGGER.debug("fixedconf: Device confirmed angle %s", commanded)
-            self._clear_pending_fixed_conf()
+            self._clear_in_flight_fixed_conf()
             return
 
         # Still moving toward target (or to some other intermediate position).
@@ -547,7 +567,37 @@ class PyDreoAirCirculator(PyDreoFanBase):
             reported,
             previous,
         )
-        self._clear_pending_fixed_conf()
+        self._clear_in_flight_fixed_conf()
+
+    def _dispatch_fixed_conf_locked(self, normalized: str) -> None:
+        """Send fixedconf immediately. Caller must hold ``_fixed_conf_lock``."""
+        # If a previous command never confirmed, surface that before sending again.
+        self._maybe_log_fixed_conf_reject(
+            self._normalize_fixed_conf(self._fixed_conf), self._fixed_conf
+        )
+
+        self._fixed_conf_at_command = self._normalize_fixed_conf(self._fixed_conf)
+        self._last_commanded_fixed_conf = normalized
+        self._pending_fixed_conf = None
+        _LOGGER.debug("_set_fixed_conf: commanding fixedconf %s", normalized)
+        self._send_command(FIXEDCONF_KEY, normalized)
+        self._last_fixed_conf_command_time = time.monotonic()
+
+    def _on_fixed_conf_settle_timer(self) -> None:
+        """Background timer: send the latest pending fixedconf after settle."""
+        with self._fixed_conf_lock:
+            self._fixed_conf_timer = None
+            pending = self._pending_fixed_conf
+            if pending is None:
+                return
+            if self._normalize_fixed_conf(self._fixed_conf) == pending:
+                _LOGGER.debug(
+                    "_set_fixed_conf: pending %s already reported; skipping delayed send",
+                    pending,
+                )
+                self._pending_fixed_conf = None
+                return
+            self._dispatch_fixed_conf_locked(pending)
 
     def _set_fixed_conf(self, value: str) -> None:
         """Send a fixedconf command (vertical,horizontal).
@@ -555,6 +605,11 @@ class PyDreoAirCirculator(PyDreoFanBase):
         Serializes fixed-angle commands. On models that need it (e.g. DR-HPF017S),
         enforces a settle interval so rapid successive HA updates cannot stack
         while the motor is still moving.
+
+        Settle is non-blocking: setters return immediately and schedule the
+        latest desired command via ``threading.Timer`` when a previous move
+        still needs to settle. The lock is only held for brief state updates,
+        never across a sleep.
         """
         normalized = self._normalize_fixed_conf(value)
         if normalized is None:
@@ -562,20 +617,34 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         with self._fixed_conf_lock:
             if self._normalize_fixed_conf(self._fixed_conf) == normalized:
+                # Already at target; drop any stale delayed send of this value.
+                if self._pending_fixed_conf == normalized:
+                    self._pending_fixed_conf = None
+                    self._cancel_fixed_conf_timer_locked()
                 _LOGGER.debug("_set_fixed_conf: value already %s, skipping command", normalized)
                 return
 
-            self._wait_for_fixed_conf_settle()
-            # If a previous command never confirmed, surface that before sending again.
-            self._maybe_log_fixed_conf_reject(
-                self._normalize_fixed_conf(self._fixed_conf), self._fixed_conf
-            )
+            # Always keep the latest desired target (coalesce rapid updates).
+            self._pending_fixed_conf = normalized
+            remaining = self._remaining_fixed_conf_settle_seconds()
+            if remaining <= 0:
+                self._cancel_fixed_conf_timer_locked()
+                self._dispatch_fixed_conf_locked(normalized)
+                return
 
-            self._fixed_conf_at_command = self._normalize_fixed_conf(self._fixed_conf)
-            self._last_commanded_fixed_conf = normalized
-            _LOGGER.debug("_set_fixed_conf: commanding fixedconf %s", normalized)
-            self._send_command(FIXEDCONF_KEY, normalized)
-            self._last_fixed_conf_command_time = time.monotonic()
+            # Schedule a single delayed send of the latest pending value.
+            # Do not block the caller (HA entity setters / executor threads).
+            _LOGGER.debug(
+                "_set_fixed_conf: scheduling fixedconf %s in %.1fs (interval=%.1fs)",
+                normalized,
+                remaining,
+                self._fixed_conf_settle_seconds,
+            )
+            self._cancel_fixed_conf_timer_locked()
+            timer = threading.Timer(remaining, self._on_fixed_conf_settle_timer)
+            timer.daemon = True
+            self._fixed_conf_timer = timer
+            timer.start()
 
     @property
     def angle_preset(self) -> str | None:
@@ -616,11 +685,17 @@ class PyDreoAirCirculator(PyDreoFanBase):
         elif self._fixed_conf is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
             new_value = int(value)
-            current_value = int(self._fixed_conf.split(",")[1])
+            with self._fixed_conf_lock:
+                base = self._base_fixed_conf_for_axis_update()
+            if base is None:
+                return
+            current_value = int(base.split(",")[1])
             if current_value == new_value:
                 _LOGGER.debug("horizontal_angle: horizontal_angle - value already %s, skipping command", new_value)
                 return
-            self._set_fixed_conf(f"{self._fixed_conf.split(',')[0]},{new_value}")
+            # Compose against pending/commanded/reported base so a vertical set
+            # still in-flight is not overwritten by a horizontal update.
+            self._set_fixed_conf(f"{base.split(',')[0]},{new_value}")
 
     @property
     def vertical_angle(self) -> int:
@@ -636,11 +711,15 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self._fixed_conf is not None:
             # Note that HA seems to send this in as a float, we need to convert to int just in case
             new_value = int(value)
-            current_value = int(self._fixed_conf.split(",")[0])
+            with self._fixed_conf_lock:
+                base = self._base_fixed_conf_for_axis_update()
+            if base is None:
+                return
+            current_value = int(base.split(",")[0])
             if current_value == new_value:
                 _LOGGER.debug("vertical_angle: vertical_angle - value already %s, skipping command", new_value)
                 return
-            self._set_fixed_conf(f"{new_value},{self._fixed_conf.split(',')[1]}")
+            self._set_fixed_conf(f"{new_value},{base.split(',')[1]}")
 
     @property
     def horizontal_oscillation_angle(self) -> int:
@@ -893,12 +972,20 @@ class PyDreoAirCirculator(PyDreoFanBase):
                     val_fixed_conf,
                 )
             else:
-                previous = self._fixed_conf
-                self._fixed_conf = val_fixed_conf
-                self._add_angle_preset_option(self._fixed_conf)
-                self._maybe_log_fixed_conf_reject(
-                    self._normalize_fixed_conf(val_fixed_conf), previous
-                )
+                with self._fixed_conf_lock:
+                    previous = self._fixed_conf
+                    self._fixed_conf = val_fixed_conf
+                    self._add_angle_preset_option(self._fixed_conf)
+                    self._maybe_log_fixed_conf_reject(
+                        self._normalize_fixed_conf(val_fixed_conf), previous
+                    )
+                    # If the device already reports the delayed target, drop the timer.
+                    if (
+                        self._pending_fixed_conf is not None
+                        and self._normalize_fixed_conf(val_fixed_conf) == self._pending_fixed_conf
+                    ):
+                        self._pending_fixed_conf = None
+                        self._cancel_fixed_conf_timer_locked()
 
         val_horiz_osc_angle = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
         if isinstance(val_horiz_osc_angle, int):

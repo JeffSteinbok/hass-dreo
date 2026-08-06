@@ -133,3 +133,7 @@ ignore
 # Mac-specific files
 **/.DS_Store
 custom_components/dreo/e2e_test_data/
+
+# uv package lock (project uses requirements*.txt / setuptools, not uv lock tracking)
+uv.lock
+
