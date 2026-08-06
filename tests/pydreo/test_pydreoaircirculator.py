@@ -1495,6 +1495,36 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.vertical_angle == 35
         assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
 
+    def test_fixed_conf_confirm_and_reject_notify_ui(self):  # pylint: disable=invalid-name
+        """Confirm/reject clear commanded tracking and push HA callbacks."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        ui_ticks: list[str | None] = []
+        fan.add_attr_callback(lambda: ui_ticks.append(fan.fixed_conf_commanded))
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.vertical_angle = 35
+        assert fan.fixed_conf_commanded == "35,0"
+        ui_ticks.clear()
+
+        # Confirm: commanded cleared and UI notified.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,0"}})
+        assert fan.fixed_conf_commanded is None
+        assert None in ui_ticks
+
+        ui_ticks.clear()
+        with patch(PATCH_SEND_COMMAND):
+            fan.horizontal_angle = -20
+        assert fan.fixed_conf_commanded == "35,-20"
+        ui_ticks.clear()
+
+        # Reject (snap-back): commanded cleared and UI notified.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,0"}})
+        assert fan.fixed_conf_commanded is None
+        assert None in ui_ticks
+
     def test_HPF017S_uses_fixed_conf_settle_delay(self):  # pylint: disable=invalid-name
         """DR-HPF017S enables settle delay; other models default to zero."""
         self.get_devices_file_name = "get_devices_HPF017S.json"

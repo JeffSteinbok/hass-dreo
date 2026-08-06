@@ -611,10 +611,18 @@ class PyDreoAirCirculator(PyDreoFanBase):
             _LOGGER.debug("dispose: cancelled fixedconf settle for %s", self.name)
         self._notify_fixed_conf_ui()
 
-    def _clear_in_flight_fixed_conf(self) -> None:
-        """Clear tracking state for an in-flight fixedconf command."""
+    def _clear_in_flight_fixed_conf(self) -> bool:
+        """Clear tracking state for an in-flight fixedconf command.
+
+        Returns True if commanded/at-command tracking was non-empty (UI should refresh).
+        Caller must hold ``_fixed_conf_lock``.
+        """
+        changed = (
+            self._last_commanded_fixed_conf is not None or self._fixed_conf_at_command is not None
+        )
         self._last_commanded_fixed_conf = None
         self._fixed_conf_at_command = None
+        return changed
 
     def _base_fixed_conf_for_axis_update(self) -> str | None:
         """Best-known fixedconf when composing a single-axis update.
@@ -629,24 +637,29 @@ class PyDreoAirCirculator(PyDreoFanBase):
             or self._normalize_fixed_conf(self._fixed_conf)
         )
 
-    def _maybe_log_fixed_conf_reject(self, reported: str | None, previous: str | None) -> None:
+    def _maybe_log_fixed_conf_reject(self, reported: str | None, previous: str | None) -> bool:
         """Log a reject only when the device snaps back to the pre-command position.
 
         Intermediate encoder reports while the head is still traveling are common
         and must not be treated as failures. A true reject (seen on DR-HPF017S)
         reports the same fixedconf that was current when the command was sent.
 
+        On confirm or reject, clears in-flight commanded tracking.
+
+        Returns True when diagnostic state changed (commanded cleared) so the
+        caller can invoke ``_notify_fixed_conf_ui()`` outside the lock. Callers
+        must not forget notify when this returns True.
+
         Caller must hold ``_fixed_conf_lock`` when shared state may race with
         timers or setters.
         """
         commanded = self._last_commanded_fixed_conf
         if commanded is None or reported is None:
-            return
+            return False
 
         if reported == commanded:
             _LOGGER.debug("fixedconf: Device confirmed angle %s", commanded)
-            self._clear_in_flight_fixed_conf()
-            return
+            return self._clear_in_flight_fixed_conf()
 
         # Still moving toward target (or to some other intermediate position).
         if self._fixed_conf_at_command is None or reported != self._fixed_conf_at_command:
@@ -656,7 +669,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 commanded,
                 self._fixed_conf_at_command,
             )
-            return
+            return False
 
         # Reported position equals pre-command position and is not the target → reject.
         # Intentionally no auto-retry: a true reject often means the pan/tilt
@@ -673,7 +686,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
             reported,
             previous,
         )
-        self._clear_in_flight_fixed_conf()
+        return self._clear_in_flight_fixed_conf()
 
     def _dispatch_fixed_conf_locked(self, normalized: str) -> None:
         """Send fixedconf immediately. Caller must hold ``_fixed_conf_lock``."""
@@ -1123,14 +1136,17 @@ class PyDreoAirCirculator(PyDreoFanBase):
                     val_fixed_conf,
                 )
             else:
+                # Centralize UI refresh: confirm/reject clear commanded via
+                # _maybe_log_fixed_conf_reject; pending clear when report matches queue.
                 notify_settle = False
                 with self._fixed_conf_lock:
                     previous = self._fixed_conf
                     self._fixed_conf = val_fixed_conf
                     self._add_angle_preset_option(self._fixed_conf)
-                    self._maybe_log_fixed_conf_reject(
+                    if self._maybe_log_fixed_conf_reject(
                         self._normalize_fixed_conf(val_fixed_conf), previous
-                    )
+                    ):
+                        notify_settle = True
                     # If the device already reports the delayed target, drop the timer.
                     if (
                         self._pending_fixed_conf is not None

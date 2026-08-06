@@ -36,8 +36,9 @@ class DreoNumberEntityDescription(NumberEntityDescription):
 NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
     # Diagnostic: runtime-tune fixedconf settle for models that declare it
     # (e.g. DR-HPF017S). Disabled by default; pair with Angle settle pending.
+    # key is snake_case so unique_id tokens stay machine-friendly.
     DreoNumberEntityDescription(
-        key="Fixed conf settle seconds",
+        key="fixed_conf_settle_seconds",
         translation_key="fixed_conf_settle_seconds",
         attr_name="fixed_conf_settle_seconds",
         icon="mdi:timer-outline",
