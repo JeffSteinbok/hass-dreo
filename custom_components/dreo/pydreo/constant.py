@@ -33,6 +33,9 @@ MUTEON_KEY = "muteon"
 PM25_KEY = "pm25"
 LOCATEMEON_KEY = "locatemeon"
 FIXEDCONF_KEY = "fixedconf"
+# device_ranges key (float seconds): min gap between fixedconf commands for models
+# that need pan/tilt settle (e.g. DR-HPF017S). Omit or 0 = no settle delay.
+FIXEDCONF_SETTLE_SECONDS_KEY = "fixed_conf_settle_seconds"
 DEVON_KEY = "devon"
 TIMERON_KEY = "timeron"
 COOLDOWN_KEY = "cooldown"

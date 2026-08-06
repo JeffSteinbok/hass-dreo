@@ -101,7 +101,8 @@ def _install_ha_call_later_scheduler(
             try:
                 cancel_handle()
             except Exception as ex:  # pylint: disable=broad-except
-                _LOGGER.debug("_cancel_all_pending: cancel_handle failed: %s", ex, exc_info=True)
+                # Unload must finish even if a handle is already dead; log and continue.
+                _LOGGER.debug("_cancel_all_pending: cancel_handle failed: %s", ex)
         pydreo_manager.set_schedule_call_later(None)
 
     config_entry.async_on_unload(_cancel_all_pending)

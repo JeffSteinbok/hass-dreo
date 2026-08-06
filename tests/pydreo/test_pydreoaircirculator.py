@@ -1678,6 +1678,30 @@ class TestPyDreoAirCirculator(TestBase):
             self.pydreo_manager.stop_transport()
             mock_dispose.assert_called_once()
 
+    def test_fixed_conf_unload_clears_host_scheduler_after_schedule(self):  # pylint: disable=invalid-name
+        """Clearing the host scheduler after schedule models unload race safely."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            fan.horizontal_angle = -20
+            assert len(scheduled) == 1
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+
+            # Simulate HA unload clearing the host scheduler while a cancel handle remains.
+            self.pydreo_manager.set_schedule_call_later(None)
+            fan.dispose()
+            assert scheduled[0]["cancelled"] is True
+            assert fan._fixed_conf_disposed is True  # pylint: disable=protected-access
+
+            scheduled[0]["callback"]()
+            assert mock_send_command.call_count == 1
+
     def test_horizontal_oscillation_angle_property(self):  # pylint: disable=invalid-name
         """Test horizontal_oscillation_angle property and setter."""
         self.get_devices_file_name = "get_devices_HAF001S.json"

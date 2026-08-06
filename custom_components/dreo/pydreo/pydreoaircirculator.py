@@ -15,6 +15,7 @@ from .constant import (
     MIN_OSC_ANGLE_DIFFERENCE,
     OSCMODE_KEY,
     FIXEDCONF_KEY,
+    FIXEDCONF_SETTLE_SECONDS_KEY,
     OscillationMode,
     HORIZONTAL_ANGLE_RANGE,
     VERTICAL_ANGLE_RANGE,
@@ -39,17 +40,26 @@ _LOGGER = logging.getLogger(__name__)
 _FIXEDCONF_OPTIMISTIC_METHODS = frozenset({"control-reply"})
 
 # Default: no inter-command settle (most air circulators handle rapid fixedconf).
-# Models that need a longer interval declare fixed_conf_settle_seconds in
-# SUPPORTED_DEVICES (models.py) device_ranges.
+# Models that need a longer interval set FIXEDCONF_SETTLE_SECONDS_KEY (float seconds)
+# in SUPPORTED_DEVICES device_ranges (models.py).
 _FIXEDCONF_SETTLE_SECONDS_DEFAULT = 0.0
-_FIXEDCONF_SETTLE_SECONDS_KEY = "fixed_conf_settle_seconds"
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
 
 class PyDreoAirCirculator(PyDreoFanBase):
-    """Base class for Dreo Fan API Calls."""
+    """Base class for Dreo Fan API Calls.
+
+    Fixedconf settle threading (HA)
+    --------------------------------
+    Angle setters run on HA **executor** threads. When a model needs settle
+    delay, ``_set_fixed_conf`` records the latest target and schedules send via
+    ``PyDreo.schedule_call_later`` (HA: event-loop ``async_call_later``, then
+    the settle body runs again on an **executor**). Shared fixedconf state is
+    guarded by ``_fixed_conf_lock``; the lock is never held across waits.
+    ``dispose()`` / unload cancel outstanding schedules.
+    """
 
     @staticmethod
     def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:
@@ -110,7 +120,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         # Model-specific settle from SUPPORTED_DEVICES; overridable in unit tests.
         settle = None
         if device_definition.device_ranges is not None:
-            settle = device_definition.device_ranges.get(_FIXEDCONF_SETTLE_SECONDS_KEY)
+            settle = device_definition.device_ranges.get(FIXEDCONF_SETTLE_SECONDS_KEY)
         self._fixed_conf_settle_seconds: float = (
             float(settle) if settle is not None else _FIXEDCONF_SETTLE_SECONDS_DEFAULT
         )
@@ -515,6 +525,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
             try:
                 cancel()
             except Exception as ex:  # pylint: disable=broad-except
+                # Cleanup path: cancel may race unload/loop close; never raise here.
                 _LOGGER.debug("_cancel_fixed_conf_timer_locked: cancel failed: %s", ex)
 
     def dispose(self) -> None:
@@ -581,9 +592,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         # Reported position equals pre-command position and is not the target → reject.
         _LOGGER.warning(
-            "fixedconf: %s (%s) did not apply commanded angle %s; reported %s "
-            "(was %s). On DR-HPF017S / 517S this often means the pan/tilt "
-            "subsystem needs recalibration in the Dreo app.",
+            "fixedconf: %s (%s) rejected angle %s (reported %s, was %s). "
+            "Recalibrate pan/tilt in the Dreo app (device settings / calibration), "
+            "then reload this integration if Home Assistant stays out of sync.",
             self.name,
             self.serial_number,
             commanded,
