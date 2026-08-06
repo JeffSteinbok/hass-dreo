@@ -40,11 +40,13 @@ This document lists all Dreo device models that have been tested and confirmed t
   (`fixed_conf_settle_seconds` in device model metadata; empirically tuned to this
   model’s motor travel — other models can set their own independently). This
   prevents rapid horizontal/vertical angle updates from stacking while the head
-  is moving. Enable the diagnostic **Angle settle pending** binary sensor to see
-  when a second axis update is queued. Rejected angle commands are logged (no
-  auto-retry): recalibrate pan/tilt in the Dreo app (device settings /
-  calibration), then reload this integration if Home Assistant stays out of sync.
-  Other air-circulator models default to no settle delay.
+  is moving. Enable diagnostic entities to self-tune: **Angle settle pending**
+  (shows reported / commanded / pending_target / settle_remaining_seconds) and
+  **Angle settle delay** (runtime-tunable seconds; session-only until reload).
+  Rejected angle commands are logged (no auto-retry): recalibrate pan/tilt in the
+  Dreo app (device settings / calibration), then reload this integration if Home
+  Assistant stays out of sync. Other air-circulator models default to no settle
+  delay.
 - DR-HPF020S
 - DR-HPF025S
 

@@ -550,6 +550,51 @@ class PyDreoAirCirculator(PyDreoFanBase):
                 return self._pending_fixed_conf
             return None
 
+    @property
+    def fixed_conf_settle_seconds(self) -> float:
+        """Inter-command settle delay in seconds (0 = no delay).
+
+        Runtime-tunable for diagnostics: faster motors may use a lower value;
+        increase if mid-move rejects appear under rapid dual-axis updates.
+        """
+        return self._fixed_conf_settle_seconds
+
+    @fixed_conf_settle_seconds.setter
+    def fixed_conf_settle_seconds(self, value: float) -> None:
+        """Set settle delay (seconds). Clamped to >= 0."""
+        self._fixed_conf_settle_seconds = max(0.0, float(value))
+        self._notify_fixed_conf_ui()
+
+    @property
+    def fixed_conf_commanded(self) -> str | None:
+        """Last fixedconf value commanded to the device (may still be in flight)."""
+        with self._fixed_conf_lock:
+            return self._last_commanded_fixed_conf
+
+    @property
+    def fixed_conf_reported(self) -> str | None:
+        """Last device-reported fixedconf (authoritative encoder position)."""
+        return self._normalize_fixed_conf(self._fixed_conf)
+
+    @property
+    def fixed_conf_debug_state(self) -> dict:
+        """Diagnostic snapshot: reported / commanded / pending / settle timing."""
+        with self._fixed_conf_lock:
+            pending = (
+                self._pending_fixed_conf
+                if self._pending_fixed_conf is not None and self._fixed_conf_cancel is not None
+                else None
+            )
+            remaining = self._remaining_fixed_conf_settle_seconds()
+            return {
+                "reported": self._normalize_fixed_conf(self._fixed_conf),
+                "commanded": self._last_commanded_fixed_conf,
+                "pending_target": pending,
+                "settle_seconds": self._fixed_conf_settle_seconds,
+                "settle_remaining_seconds": round(remaining, 3) if remaining > 0 else 0.0,
+                "settle_pending": pending is not None,
+            }
+
     def dispose(self) -> None:
         """Cancel delayed fixedconf work on integration unload / transport stop.
 
@@ -738,7 +783,13 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     @angle_preset.setter
     def angle_preset(self, value: str) -> None:
-        """Set the current 3D angle preset value."""
+        """Set the current 3D angle preset value.
+
+        Angle presets are the device's fixedconf string (vertical,horizontal).
+        Delegate to ``_set_fixed_conf`` so presets share settle delay, command
+        coalescing, reject detection, and lock serialization with the horizontal
+        / vertical angle number entities — not a separate code path.
+        """
         if self._fixed_conf is None:
             raise NotImplementedError("3D angle presets are not supported on this device model.")
         normalized = self._normalize_fixed_conf(value)
@@ -952,9 +1003,21 @@ class PyDreoAirCirculator(PyDreoFanBase):
             return self._atm_light_on is not None
         if feature == "angle_preset":
             return self._fixed_conf is not None
-        if feature == "fixed_conf_settle_pending":
-            # Diagnostic settle UI only for models that can queue angle commands.
-            return self._fixed_conf is not None and self._fixed_conf_settle_seconds > 0
+        if feature in {
+            "fixed_conf_settle_pending",
+            "fixed_conf_settle_seconds",
+            "fixed_conf_debug_state",
+        }:
+            # Diagnostic settle UI for models that can queue angle commands.
+            # Feature stays available after runtime settle is tuned to 0 so the
+            # diagnostic number entity remains usable for self-tuning.
+            return self._fixed_conf is not None and (
+                self._fixed_conf_settle_seconds > 0
+                or (
+                    self._device_definition.device_ranges is not None
+                    and FIXEDCONF_SETTLE_SECONDS_KEY in self._device_definition.device_ranges
+                )
+            )
         return super().is_feature_supported(feature)
 
     @property

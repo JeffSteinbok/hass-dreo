@@ -1636,6 +1636,64 @@ class TestPyDreoAirCirculator(TestBase):
         sent = [call.args[1][FIXEDCONF_KEY] for call in mock_send_command.call_args_list]
         assert len(set(sent)) == 2
 
+    def test_fixed_conf_rapid_concurrent_stress_coalesces(self):  # pylint: disable=invalid-name
+        """Hundreds of rapid concurrent axis updates must not corrupt lock/coalesce state."""
+        import threading as threading_mod
+
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.fixed_conf_settle_seconds = 5.0
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        errors: list[BaseException] = []
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            # Seed one in-flight command so subsequent updates enter settle path.
+            fan.vertical_angle = 10
+            assert mock_send_command.call_count == 1
+
+            def hammer(n: int) -> None:
+                try:
+                    # Alternate axes with unique values so coalesce must keep latest.
+                    if n % 2 == 0:
+                        fan.vertical_angle = 10 + (n % 40)
+                    else:
+                        fan.horizontal_angle = -1 * (n % 40)
+                except BaseException as exc:  # pylint: disable=broad-except
+                    errors.append(exc)
+
+            threads = [threading_mod.Thread(target=hammer, args=(i,)) for i in range(200)]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join(timeout=10)
+                assert not thread.is_alive()
+
+            assert not errors
+            # First send + only delayed (coalesced) path — never unbounded sends.
+            assert mock_send_command.call_count == 1
+            assert fan.fixed_conf_settle_pending is True
+            pending = fan.fixed_conf_pending_target
+            assert pending is not None
+            # Pending target is a valid fixedconf string and debug state stays consistent.
+            parts = pending.split(",")
+            assert len(parts) == 2
+            debug = fan.fixed_conf_debug_state
+            assert debug["pending_target"] == pending
+            assert debug["settle_pending"] is True
+            assert debug["settle_seconds"] == 5.0
+            assert debug["commanded"] == "10,0"
+            assert debug["reported"] == "0,0"
+            # Every scheduled entry was cancelled or is the latest active schedule.
+            active = [e for e in scheduled if not e["cancelled"]]
+            assert len(active) == 1
+            # Fire latest; single delayed send of the coalesced target.
+            self._fire_last_scheduled(scheduled)
+            assert mock_send_command.call_count == 2
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: pending})
+            assert fan.fixed_conf_settle_pending is False
+
     def test_fixed_conf_dispose_cancels_pending_timer(self):  # pylint: disable=invalid-name
         """dispose() cancels settle work so unload cannot fire delayed sends."""
         self.get_devices_file_name = "get_devices_HAF004S.json"
@@ -1709,6 +1767,11 @@ class TestPyDreoAirCirculator(TestBase):
         fan = self.pydreo_manager.devices[0]
         assert fan.model == "DR-HPF017S"
         assert fan.is_feature_supported("fixed_conf_settle_pending")
+        assert fan.is_feature_supported("fixed_conf_settle_seconds")
+        assert fan.fixed_conf_settle_seconds == 8.0
+        # Runtime tune (diagnostic number entity uses this property).
+        fan.fixed_conf_settle_seconds = 6.0
+        assert fan.fixed_conf_settle_seconds == 6.0
         assert fan.fixed_conf_settle_pending is False
         scheduled = self._install_manual_scheduler()
 

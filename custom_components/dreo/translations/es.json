@@ -209,6 +209,9 @@
       }
     },
     "number": {
+      "fixed_conf_settle_seconds": {
+        "name": "Angle settle delay"
+      },
       "horizontal_angle": {
         "name": "Ángulo horizontal"
       },

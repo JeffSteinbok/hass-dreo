@@ -134,8 +134,13 @@ class DreoBinarySensorHA(DreoBaseDeviceHA, BinarySensorEntity):
     @property
     def extra_state_attributes(self) -> dict:
         if self.entity_description.key == "fixed_conf_settle_pending":
+            debug = getattr(self.device, "fixed_conf_debug_state", None)
+            if isinstance(debug, dict):
+                return debug
             return {
+                "reported": getattr(self.device, "fixed_conf_reported", None),
+                "commanded": getattr(self.device, "fixed_conf_commanded", None),
                 "pending_target": getattr(self.device, "fixed_conf_pending_target", None),
-                "settle_seconds": getattr(self.device, "_fixed_conf_settle_seconds", None),
+                "settle_seconds": getattr(self.device, "fixed_conf_settle_seconds", None),
             }
         return {"water_level": getattr(self.device, "water_level", None)}
