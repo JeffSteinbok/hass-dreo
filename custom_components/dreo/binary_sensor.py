@@ -116,7 +116,11 @@ class DreoBinarySensorHA(DreoBaseDeviceHA, BinarySensorEntity):
         # on/off state text are localized from the translations/*.json files.
         self._attr_has_entity_name = True
         del self._attr_name
-        self._attr_unique_id = f"{super().unique_id}-{description.key}"
+        self._attr_unique_id = (
+            f"{super().unique_id}-water-empty"
+            if description.key == "water_empty"
+            else f"{super().unique_id}-{description.key}"
+        )
         if description.entity_category is not None:
             self._attr_entity_category = description.entity_category
         self._attr_entity_registry_enabled_default = description.entity_registry_enabled_default
