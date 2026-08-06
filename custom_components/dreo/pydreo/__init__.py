@@ -117,6 +117,8 @@ class PyDreo:  # pylint: disable=function-redefined
 
         # Host-provided delayed scheduler; see ScheduleCallLater / class docstring.
         self._schedule_call_later: ScheduleCallLater | None = None
+        # Log once if delayed work falls back to threading.Timer (no host scheduler).
+        self._logged_timer_fallback: bool = False
 
         if self.debug_test_mode:
             _LOGGER.error("__init__: Debug Test Mode is enabled!")
@@ -513,6 +515,14 @@ class PyDreo:  # pylint: disable=function-redefined
         """
         if self._schedule_call_later is not None:
             return self._schedule_call_later(delay, work)
+
+        if not self._logged_timer_fallback:
+            self._logged_timer_fallback = True
+            _LOGGER.warning(
+                "schedule_call_later: no host scheduler installed; using "
+                "threading.Timer fallback (HA should install async_call_later at "
+                "setup — check logs if this appears under Home Assistant)"
+            )
 
         timer = threading.Timer(delay, work)
         timer.daemon = True

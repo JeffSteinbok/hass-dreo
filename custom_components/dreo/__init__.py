@@ -157,7 +157,19 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         pydreo_manager.auto_reconnect = auto_reconnect
 
     # Prefer HA event-loop timers over raw threading.Timer for delayed device work.
-    _install_ha_call_later_scheduler(hass, pydreo_manager, config_entry)
+    try:
+        _install_ha_call_later_scheduler(hass, pydreo_manager, config_entry)
+        _LOGGER.debug(
+            "async_setup_entry: installed HA async_call_later scheduler for PyDreo"
+        )
+    except Exception as ex:  # pylint: disable=broad-except
+        # Integration continues with threading.Timer fallback; surface clearly.
+        _LOGGER.warning(
+            "async_setup_entry: failed to install HA call_later scheduler "
+            "(%s: %s); delayed fixedconf settle will use threading.Timer fallback",
+            type(ex).__name__,
+            ex,
+        )
 
     login = await hass.async_add_executor_job(pydreo_manager.login)
 

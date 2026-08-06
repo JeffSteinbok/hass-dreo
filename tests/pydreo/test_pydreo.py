@@ -450,9 +450,14 @@ class TestPyDreoScheduleCallLater:
             mock_timer.start.assert_called_once()
             assert callable(cancel)
             assert cancel is mock_timer.cancel
+            assert pydreo._logged_timer_fallback is True  # pylint: disable=protected-access
 
             cancel()
             mock_timer.cancel.assert_called_once()
+
+            # Second schedule should not re-log; still uses Timer.
+            pydreo.schedule_call_later(1.0, work)
+            assert mock_timer_cls.call_count == 2
 
     def test_host_scheduler_used_when_installed(self):
         """Installed host scheduler is preferred over Timer fallback."""

@@ -619,7 +619,9 @@ class PyDreoAirCirculator(PyDreoFanBase):
         _LOGGER.warning(
             "fixedconf: %s (%s) rejected angle %s (reported %s, was %s). "
             "Recalibrate pan/tilt in the Dreo app (device settings / calibration), "
-            "then reload this integration if Home Assistant stays out of sync.",
+            "then reload this Home Assistant integration if entities stay out of sync. "
+            "Model notes: https://github.com/JeffSteinbok/hass-dreo/blob/main/SUPPORTED_MODELS.md "
+            "(see DR-HPF017S / air circulators).",
             self.name,
             self.serial_number,
             commanded,

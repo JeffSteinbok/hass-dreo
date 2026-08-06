@@ -480,6 +480,48 @@ class TestInit:
             cancel()
             mock_entry.async_on_unload.assert_called_once()
 
+    def test_ha_scheduler_install_failure_is_logged_and_setup_continues(self):
+        """Scheduler install failures must warn and not block setup (Timer fallback)."""
+        from custom_components.dreo import async_setup_entry
+        from custom_components.dreo.pydreo.constant import DreoDeviceType
+        from homeassistant.const import Platform
+
+        mock_hass = MagicMock()
+        mock_hass.data = {}
+        mock_hass.async_add_executor_job = AsyncMock(side_effect=[True, True])
+        mock_hass.config_entries = MagicMock()
+        mock_hass.config_entries.async_forward_entry_setups = AsyncMock()
+
+        mock_entry = MagicMock()
+        mock_entry.data = {"username": "test@example.com", "password": "password"}
+        mock_entry.options = {}
+        mock_entry.add_update_listener = MagicMock(return_value=MagicMock())
+        mock_entry.async_on_unload = MagicMock()
+
+        mock_device = MagicMock()
+        mock_device.type = DreoDeviceType.TOWER_FAN
+
+        mock_pydreo = MagicMock()
+        mock_pydreo.devices = [mock_device]
+        mock_pydreo.start_transport = MagicMock()
+        mock_pydreo.auto_reconnect = True
+
+        with (
+            patch("custom_components.dreo.pydreo.PyDreo", return_value=mock_pydreo),
+            patch(
+                "custom_components.dreo._install_ha_call_later_scheduler",
+                side_effect=RuntimeError("boom"),
+            ),
+            patch("custom_components.dreo._LOGGER") as mock_logger,
+        ):
+            result = asyncio.run(async_setup_entry(mock_hass, mock_entry))
+
+        assert result is True
+        assert Platform.FAN in mock_hass.data["dreo"]["platforms"]
+        warning_msgs = " ".join(str(c) for c in mock_logger.warning.call_args_list)
+        assert "failed to install HA call_later scheduler" in warning_msgs
+        assert "threading.Timer fallback" in warning_msgs
+
     def test_remove_config_entry_device(self):
         """Test async_remove_config_entry_device always returns True."""
         from custom_components.dreo import async_remove_config_entry_device
