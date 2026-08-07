@@ -33,7 +33,7 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
-from homeassistant.helpers.entity import DeviceInfo, Entity, EntityDescription
+from homeassistant.helpers.entity import DeviceInfo, Entity, EntityCategory, EntityDescription
 
 from homeassistant.util.percentage import int_states_in_range, percentage_to_ranged_value, ranged_value_to_percentage
 

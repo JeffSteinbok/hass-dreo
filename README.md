@@ -94,6 +94,23 @@ Depending on your device model and capabilities, the integration creates the fol
 - **Switch** - Individual device features (child lock, oscillation, mute, etc.)
 - **Sensor** - Temperature, humidity, and other sensor readings
 - **Number** - Adjustable numeric settings
+- **Binary sensor** - Status flags (e.g. water empty; diagnostic settle-pending for some air circulators)
+
+### Air circulator pan/tilt (fixedconf) notes
+
+Some air circulators (notably **DR-HPF017S**) rate-limit successive pan/tilt (`fixedconf`)
+commands so rapid horizontal/vertical updates do not stack while the head is moving.
+See **[SUPPORTED_MODELS.md](SUPPORTED_MODELS.md)** for the model-specific settle delay.
+
+**Diagnostic entities** (disabled by default; enable under the device’s entity list):
+
+| Entity | Purpose |
+|--------|---------|
+| **Angle settle pending** | On while a second angle command is queued; attributes show `reported`, `commanded`, `pending_target`, and settle timing |
+| **Angle settle delay** | Runtime-tunable settle seconds for self-tuning (session-only until reload) |
+
+If logs show a **rejected angle** command, recalibrate pan/tilt in the Dreo app (device
+settings / calibration), then reload this integration if Home Assistant stays out of sync.
 
 ## Installation
 

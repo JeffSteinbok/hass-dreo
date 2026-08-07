@@ -38,6 +38,13 @@
           "off": "OK",
           "on": "Leeg"
         }
+      },
+      "fixed_conf_settle_pending": {
+        "name": "Angle settle pending",
+        "state": {
+          "off": "Idle",
+          "on": "Waiting"
+        }
       }
     },
     "fan": {
@@ -202,6 +209,9 @@
       }
     },
     "number": {
+      "fixed_conf_settle_seconds": {
+        "name": "Angle settle delay"
+      },
       "horizontal_angle": {
         "name": "Horizontale hoek"
       },

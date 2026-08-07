@@ -1,7 +1,9 @@
 """Dreo API for controling fans."""
 
 import logging
-from typing import TYPE_CHECKING, Dict
+import threading
+import time
+from typing import TYPE_CHECKING, Callable, Dict
 
 from .constant import (
     HORIZONTAL_OSCILLATION_KEY,
@@ -13,6 +15,7 @@ from .constant import (
     MIN_OSC_ANGLE_DIFFERENCE,
     OSCMODE_KEY,
     FIXEDCONF_KEY,
+    FIXEDCONF_SETTLE_SECONDS_KEY,
     OscillationMode,
     HORIZONTAL_ANGLE_RANGE,
     VERTICAL_ANGLE_RANGE,
@@ -31,12 +34,33 @@ from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(__name__)
 
+# Cloud control-reply / control-report can echo the requested fixedconf as an
+# optimistic ACK (see PyDreo._ACK_METHOD_NAMES). Some devices (notably
+# DR-HPF017S / 517S) then report the real encoder position and may reject the
+# move. Treat only non-optimistic updates (e.g. method "report") as authoritative.
+_FIXEDCONF_OPTIMISTIC_METHODS = frozenset({"control-reply", "control-report"})
+
+# Default: no inter-command settle (most air circulators handle rapid fixedconf).
+# Models that need a longer interval set FIXEDCONF_SETTLE_SECONDS_KEY (float seconds)
+# in SUPPORTED_DEVICES device_ranges (models.py).
+_FIXEDCONF_SETTLE_SECONDS_DEFAULT = 0.0
+
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
 
 class PyDreoAirCirculator(PyDreoFanBase):
-    """Base class for Dreo Fan API Calls."""
+    """Base class for Dreo Fan API Calls.
+
+    Fixedconf settle threading (HA)
+    --------------------------------
+    Angle setters run on HA **executor** threads. When a model needs settle
+    delay, ``_set_fixed_conf`` records the latest target and schedules send via
+    ``PyDreo.schedule_call_later`` (HA: event-loop ``async_call_later``, then
+    the settle body runs again on an **executor**). Shared fixedconf state is
+    guarded by ``_fixed_conf_lock``; the lock is never held across waits.
+    ``dispose()`` / unload cancel outstanding schedules.
+    """
 
     @staticmethod
     def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:
@@ -81,6 +105,26 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._cruise_conf = None
         self._fixed_conf = None
         self._angle_preset_options: list[str] = []
+        # Last fixedconf value we commanded (for reject detection / logging)
+        self._last_commanded_fixed_conf: str | None = None
+        # Position reported when the last fixedconf command was sent (reject = snap-back)
+        self._fixed_conf_at_command: str | None = None
+        # Serialize fixedconf command state; never sleep while holding this lock.
+        self._fixed_conf_lock = threading.Lock()
+        self._last_fixed_conf_command_time: float | None = None
+        # Latest desired fixedconf when settle delays a send (coalesces rapid HA updates).
+        self._pending_fixed_conf: str | None = None
+        # Cancel handle from PyDreo.schedule_call_later (HA async_call_later or Timer).
+        self._fixed_conf_cancel: Callable[[], None] | None = None
+        # Set by dispose() so a delayed callback cannot send after unload.
+        self._fixed_conf_disposed: bool = False
+        # Model-specific settle from SUPPORTED_DEVICES; overridable in unit tests.
+        settle = None
+        if device_definition.device_ranges is not None:
+            settle = device_definition.device_ranges.get(FIXEDCONF_SETTLE_SECONDS_KEY)
+        self._fixed_conf_settle_seconds: float = (
+            float(settle) if settle is not None else _FIXEDCONF_SETTLE_SECONDS_DEFAULT
+        )
 
         self._horizontally_oscillating = None
         self._vertically_oscillating = None
@@ -463,6 +507,315 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if normalized is not None and normalized not in self._angle_preset_options:
             self._angle_preset_options.append(normalized)
 
+    def _remaining_fixed_conf_settle_seconds(self) -> float:
+        """Seconds left in the settle window since the last fixedconf send.
+
+        Caller must hold ``_fixed_conf_lock``.
+        """
+        settle = self._fixed_conf_settle_seconds
+        if settle <= 0 or self._last_fixed_conf_command_time is None:
+            return 0.0
+        remaining = settle - (time.monotonic() - self._last_fixed_conf_command_time)
+        return remaining if remaining > 0 else 0.0
+
+    def _cancel_fixed_conf_timer_locked(self) -> None:
+        """Cancel any scheduled delayed fixedconf send. Caller holds the lock."""
+        cancel = self._fixed_conf_cancel
+        if cancel is not None:
+            self._fixed_conf_cancel = None
+            try:
+                cancel()
+            except Exception as ex:  # pylint: disable=broad-except
+                # Cleanup path: cancel may race unload/loop close; never raise here.
+                _LOGGER.debug(
+                    "_cancel_fixed_conf_timer_locked: cancel failed (%s): %s",
+                    type(ex).__name__,
+                    ex,
+                )
+
+    def _notify_fixed_conf_ui(self) -> None:
+        """Push settle-state changes to HA (must not hold ``_fixed_conf_lock``)."""
+        self._do_callbacks()
+
+    @property
+    def fixed_conf_settle_pending(self) -> bool:
+        """True while a fixedconf command is queued waiting for settle delay."""
+        with self._fixed_conf_lock:
+            return self._pending_fixed_conf is not None and self._fixed_conf_cancel is not None
+
+    @property
+    def fixed_conf_pending_target(self) -> str | None:
+        """Queued fixedconf target (vertical,horizontal), or None if not settling."""
+        with self._fixed_conf_lock:
+            if self._pending_fixed_conf is not None and self._fixed_conf_cancel is not None:
+                return self._pending_fixed_conf
+            return None
+
+    @property
+    def fixed_conf_settle_seconds(self) -> float:
+        """Inter-command settle delay in seconds (0 = no delay).
+
+        Runtime-tunable for diagnostics: faster motors may use a lower value;
+        increase if mid-move rejects appear under rapid dual-axis updates.
+        """
+        return self._fixed_conf_settle_seconds
+
+    @fixed_conf_settle_seconds.setter
+    def fixed_conf_settle_seconds(self, value: float) -> None:
+        """Set settle delay (seconds). Clamped to >= 0."""
+        self._fixed_conf_settle_seconds = max(0.0, float(value))
+        self._notify_fixed_conf_ui()
+
+    @property
+    def fixed_conf_commanded(self) -> str | None:
+        """Last fixedconf value commanded to the device (may still be in flight)."""
+        with self._fixed_conf_lock:
+            return self._last_commanded_fixed_conf
+
+    @property
+    def fixed_conf_reported(self) -> str | None:
+        """Last device-reported fixedconf (authoritative encoder position)."""
+        return self._normalize_fixed_conf(self._fixed_conf)
+
+    @property
+    def fixed_conf_debug_state(self) -> dict:
+        """Diagnostic snapshot: reported / commanded / pending / settle timing."""
+        with self._fixed_conf_lock:
+            pending = (
+                self._pending_fixed_conf
+                if self._pending_fixed_conf is not None and self._fixed_conf_cancel is not None
+                else None
+            )
+            remaining = self._remaining_fixed_conf_settle_seconds()
+            return {
+                "reported": self._normalize_fixed_conf(self._fixed_conf),
+                "commanded": self._last_commanded_fixed_conf,
+                "pending_target": pending,
+                "settle_seconds": self._fixed_conf_settle_seconds,
+                "settle_remaining_seconds": round(remaining, 3) if remaining > 0 else 0.0,
+                "settle_pending": pending is not None,
+            }
+
+    def dispose(self) -> None:
+        """Cancel delayed fixedconf work on integration unload / transport stop.
+
+        Delayed settle work is scheduled via ``PyDreo.schedule_call_later``. In
+        Home Assistant that is ``async_call_later`` (wired in the integration
+        setup); cancel handles are also cleared on config-entry unload. Callers
+        must still invoke dispose so device-level pending state is cleared.
+        """
+        with self._fixed_conf_lock:
+            self._fixed_conf_disposed = True
+            self._pending_fixed_conf = None
+            self._cancel_fixed_conf_timer_locked()
+            self._clear_in_flight_fixed_conf()
+            _LOGGER.debug("dispose: cancelled fixedconf settle for %s", self.name)
+        self._notify_fixed_conf_ui()
+
+    def _clear_in_flight_fixed_conf(self) -> bool:
+        """Clear tracking state for an in-flight fixedconf command.
+
+        Returns True if commanded/at-command tracking was non-empty (UI should refresh).
+        Caller must hold ``_fixed_conf_lock``.
+        """
+        changed = (
+            self._last_commanded_fixed_conf is not None or self._fixed_conf_at_command is not None
+        )
+        self._last_commanded_fixed_conf = None
+        self._fixed_conf_at_command = None
+        return changed
+
+    def _base_fixed_conf_for_axis_update(self) -> str | None:
+        """Best-known fixedconf when composing a single-axis update.
+
+        Prefer a pending delayed target, then the last commanded value, then the
+        last device-reported position so rapid HA axis updates do not clobber
+        each other while waiting for a device report.
+        """
+        return (
+            self._pending_fixed_conf
+            or self._last_commanded_fixed_conf
+            or self._normalize_fixed_conf(self._fixed_conf)
+        )
+
+    def _maybe_log_fixed_conf_reject(self, reported: str | None, previous: str | None) -> bool:
+        """Log a reject only when the device snaps back to the pre-command position.
+
+        Intermediate encoder reports while the head is still traveling are common
+        and must not be treated as failures. A true reject (seen on DR-HPF017S)
+        reports the same fixedconf that was current when the command was sent.
+
+        On confirm or reject, clears in-flight commanded tracking.
+
+        Returns True when diagnostic state changed (commanded cleared) so the
+        caller can invoke ``_notify_fixed_conf_ui()`` outside the lock. Callers
+        must not forget notify when this returns True.
+
+        Caller must hold ``_fixed_conf_lock`` when shared state may race with
+        timers or setters.
+        """
+        commanded = self._last_commanded_fixed_conf
+        if commanded is None or reported is None:
+            return False
+
+        if reported == commanded:
+            _LOGGER.debug("fixedconf: Device confirmed angle %s", commanded)
+            return self._clear_in_flight_fixed_conf()
+
+        # Still moving toward target (or to some other intermediate position).
+        if self._fixed_conf_at_command is None or reported != self._fixed_conf_at_command:
+            _LOGGER.debug(
+                "fixedconf: intermediate report %s while commanding %s (started at %s)",
+                reported,
+                commanded,
+                self._fixed_conf_at_command,
+            )
+            return False
+
+        # Reported position equals pre-command position and is not the target → reject.
+        # Intentionally no auto-retry: a true reject often means the pan/tilt
+        # subsystem needs app-side recalibration; retrying would spam the device.
+        _LOGGER.warning(
+            "fixedconf: %s (%s) rejected angle %s (reported %s, was %s). "
+            "Recalibrate pan/tilt in the Dreo app (device settings / calibration), "
+            "then reload this Home Assistant integration if entities stay out of sync. "
+            "Model notes: https://github.com/JeffSteinbok/hass-dreo/blob/main/SUPPORTED_MODELS.md "
+            "(see DR-HPF017S / air circulators).",
+            self.name,
+            self.serial_number,
+            commanded,
+            reported,
+            previous,
+        )
+        return self._clear_in_flight_fixed_conf()
+
+    def _dispatch_fixed_conf_locked(self, normalized: str) -> None:
+        """Send fixedconf immediately. Caller must hold ``_fixed_conf_lock``.
+
+        On send failure, clears in-flight tracking so diagnostics do not show a
+        command as outstanding when it never left the client.
+        """
+        if self._fixed_conf_disposed:
+            _LOGGER.debug("_set_fixed_conf: disposed; skipping send of %s", normalized)
+            return
+        # If a previous command never confirmed, surface that before sending again.
+        self._maybe_log_fixed_conf_reject(
+            self._normalize_fixed_conf(self._fixed_conf), self._fixed_conf
+        )
+
+        self._fixed_conf_at_command = self._normalize_fixed_conf(self._fixed_conf)
+        self._last_commanded_fixed_conf = normalized
+        self._pending_fixed_conf = None
+        _LOGGER.debug("_set_fixed_conf: commanding fixedconf %s", normalized)
+        try:
+            self._send_command(FIXEDCONF_KEY, normalized)
+        except Exception as ex:
+            # Avoid stuck commanded/pending diagnostics if I/O fails mid-send.
+            _LOGGER.error(
+                "_set_fixed_conf: send failed for %s on %s (%s): %s",
+                normalized,
+                self.name,
+                type(ex).__name__,
+                ex,
+            )
+            self._clear_in_flight_fixed_conf()
+            raise
+        self._last_fixed_conf_command_time = time.monotonic()
+
+    def _on_fixed_conf_settle_timer(self) -> None:
+        """Delayed callback: send the latest pending fixedconf after settle.
+
+        Invoked by the host scheduler (HA ``async_call_later`` via executor, or
+        the standalone Timer fallback). Safe to call from a worker thread.
+        """
+        notify = False
+        try:
+            with self._fixed_conf_lock:
+                self._fixed_conf_cancel = None
+                if self._fixed_conf_disposed:
+                    _LOGGER.debug("_set_fixed_conf: disposed; dropping settle callback")
+                    return
+                pending = self._pending_fixed_conf
+                if pending is None:
+                    return
+                if self._normalize_fixed_conf(self._fixed_conf) == pending:
+                    _LOGGER.debug(
+                        "_set_fixed_conf: pending %s already reported; skipping delayed send",
+                        pending,
+                    )
+                    self._pending_fixed_conf = None
+                    notify = True
+                else:
+                    self._dispatch_fixed_conf_locked(pending)
+                    notify = True
+        except Exception:
+            # Dispatch cleared in-flight on send failure; still refresh diagnostics.
+            self._notify_fixed_conf_ui()
+            raise
+        if notify:
+            self._notify_fixed_conf_ui()
+
+    def _set_fixed_conf(self, value: str) -> None:
+        """Send a fixedconf command (vertical,horizontal).
+
+        Serializes fixed-angle commands. On models that need it (e.g. DR-HPF017S),
+        enforces a settle interval so rapid successive HA updates cannot stack
+        while the motor is still moving.
+
+        Settle is non-blocking: setters return immediately and schedule the
+        latest desired command via ``PyDreo.schedule_call_later`` when a previous
+        move still needs to settle. Under Home Assistant that uses
+        ``async_call_later`` (event-loop lifecycle); elsewhere a Timer fallback
+        is used. The lock is only held for brief state updates, never across a wait.
+        """
+        normalized = self._normalize_fixed_conf(value)
+        if normalized is None:
+            raise ValueError(f"Invalid fixedconf format: {value}")
+
+        notify = False
+        try:
+            with self._fixed_conf_lock:
+                if self._fixed_conf_disposed:
+                    _LOGGER.debug("_set_fixed_conf: disposed; ignoring command %s", normalized)
+                    return
+
+                if self._normalize_fixed_conf(self._fixed_conf) == normalized:
+                    # Already at target; drop any stale delayed send of this value.
+                    if self._pending_fixed_conf == normalized:
+                        self._pending_fixed_conf = None
+                        self._cancel_fixed_conf_timer_locked()
+                        notify = True
+                    _LOGGER.debug("_set_fixed_conf: value already %s, skipping command", normalized)
+                else:
+                    # Always keep the latest desired target (coalesce rapid updates).
+                    self._pending_fixed_conf = normalized
+                    remaining = self._remaining_fixed_conf_settle_seconds()
+                    if remaining <= 0:
+                        self._cancel_fixed_conf_timer_locked()
+                        self._dispatch_fixed_conf_locked(normalized)
+                        notify = True
+                    else:
+                        # Schedule a single delayed send of the latest pending value.
+                        # Do not block the caller (HA entity setters / executor threads).
+                        _LOGGER.debug(
+                            "_set_fixed_conf: scheduling fixedconf %s in %.1fs (interval=%.1fs)",
+                            normalized,
+                            remaining,
+                            self._fixed_conf_settle_seconds,
+                        )
+                        self._cancel_fixed_conf_timer_locked()
+                        # Host scheduler (HA async_call_later) or Timer fallback.
+                        self._fixed_conf_cancel = self._dreo.schedule_call_later(
+                            remaining, self._on_fixed_conf_settle_timer
+                        )
+                        notify = True
+        except Exception:
+            # Send failed after clearing in-flight; refresh diagnostics for HA.
+            self._notify_fixed_conf_ui()
+            raise
+        if notify:
+            self._notify_fixed_conf_ui()
+
     @property
     def angle_preset(self) -> str | None:
         """Get the current 3D angle preset value."""
@@ -470,7 +823,13 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
     @angle_preset.setter
     def angle_preset(self, value: str) -> None:
-        """Set the current 3D angle preset value."""
+        """Set the current 3D angle preset value.
+
+        Angle presets are the device's fixedconf string (vertical,horizontal).
+        Delegate to ``_set_fixed_conf`` so presets share settle delay, command
+        coalescing, reject detection, and lock serialization with the horizontal
+        / vertical angle number entities — not a separate code path.
+        """
         if self._fixed_conf is None:
             raise NotImplementedError("3D angle presets are not supported on this device model.")
         normalized = self._normalize_fixed_conf(value)
@@ -479,7 +838,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self.angle_preset == normalized:
             _LOGGER.debug("angle_preset: Angle preset value already %s, skipping command", normalized)
             return
-        self._send_command(FIXEDCONF_KEY, normalized)
+        self._set_fixed_conf(normalized)
 
     @property
     def angle_preset_options(self) -> list[str]:
@@ -502,11 +861,17 @@ class PyDreoAirCirculator(PyDreoFanBase):
         elif self._fixed_conf is not None:
             # Note that HA seems to send this in as a float, so we need to convert to int just in case
             new_value = int(value)
-            current_value = int(self._fixed_conf.split(",")[1])
+            with self._fixed_conf_lock:
+                base = self._base_fixed_conf_for_axis_update()
+            if base is None:
+                return
+            current_value = int(base.split(",")[1])
             if current_value == new_value:
                 _LOGGER.debug("horizontal_angle: horizontal_angle - value already %s, skipping command", new_value)
                 return
-            self._send_command(FIXEDCONF_KEY, f"{self._fixed_conf.split(',')[0]},{new_value}")
+            # Compose against pending/commanded/reported base so a vertical set
+            # still in-flight is not overwritten by a horizontal update.
+            self._set_fixed_conf(f"{base.split(',')[0]},{new_value}")
 
     @property
     def vertical_angle(self) -> int:
@@ -522,11 +887,15 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self._fixed_conf is not None:
             # Note that HA seems to send this in as a float, we need to convert to int just in case
             new_value = int(value)
-            current_value = int(self._fixed_conf.split(",")[0])
+            with self._fixed_conf_lock:
+                base = self._base_fixed_conf_for_axis_update()
+            if base is None:
+                return
+            current_value = int(base.split(",")[0])
             if current_value == new_value:
                 _LOGGER.debug("vertical_angle: vertical_angle - value already %s, skipping command", new_value)
                 return
-            self._send_command(FIXEDCONF_KEY, f"{new_value},{self._fixed_conf.split(',')[1]}")
+            self._set_fixed_conf(f"{new_value},{base.split(',')[1]}")
 
     @property
     def horizontal_oscillation_angle(self) -> int:
@@ -674,6 +1043,21 @@ class PyDreoAirCirculator(PyDreoFanBase):
             return self._atm_light_on is not None
         if feature == "angle_preset":
             return self._fixed_conf is not None
+        if feature in {
+            "fixed_conf_settle_pending",
+            "fixed_conf_settle_seconds",
+            "fixed_conf_debug_state",
+        }:
+            # Diagnostic settle UI for models that can queue angle commands.
+            # Feature stays available after runtime settle is tuned to 0 so the
+            # diagnostic number entity remains usable for self-tuning.
+            return self._fixed_conf is not None and (
+                self._fixed_conf_settle_seconds > 0
+                or (
+                    self._device_definition.device_ranges is not None
+                    and FIXEDCONF_SETTLE_SECONDS_KEY in self._device_definition.device_ranges
+                )
+            )
         return super().is_feature_supported(feature)
 
     @property
@@ -769,8 +1153,37 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
-            self._fixed_conf = val_fixed_conf
-            self._add_angle_preset_option(self._fixed_conf)
+            method = message.get("method")
+            # control-reply / control-report may echo the requested value as an
+            # ACK and are not reliable for actual motor position. Prefer "report".
+            if method in _FIXEDCONF_OPTIMISTIC_METHODS:
+                _LOGGER.debug(
+                    "fixedconf: Ignoring optimistic %s value %s (waiting for device report)",
+                    method,
+                    val_fixed_conf,
+                )
+            else:
+                # Centralize UI refresh: confirm/reject clear commanded via
+                # _maybe_log_fixed_conf_reject; pending clear when report matches queue.
+                notify_settle = False
+                with self._fixed_conf_lock:
+                    previous = self._fixed_conf
+                    self._fixed_conf = val_fixed_conf
+                    self._add_angle_preset_option(self._fixed_conf)
+                    if self._maybe_log_fixed_conf_reject(
+                        self._normalize_fixed_conf(val_fixed_conf), previous
+                    ):
+                        notify_settle = True
+                    # If the device already reports the delayed target, drop the timer.
+                    if (
+                        self._pending_fixed_conf is not None
+                        and self._normalize_fixed_conf(val_fixed_conf) == self._pending_fixed_conf
+                    ):
+                        self._pending_fixed_conf = None
+                        self._cancel_fixed_conf_timer_locked()
+                        notify_settle = True
+                if notify_settle:
+                    self._notify_fixed_conf_ui()
 
         val_horiz_osc_angle = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY)
         if isinstance(val_horiz_osc_angle, int):

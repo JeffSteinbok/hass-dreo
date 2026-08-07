@@ -8,7 +8,7 @@ import sys
 
 import json
 from itertools import chain
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple, TypeAlias
 from asyncio.exceptions import CancelledError
 
 from .constant import *
@@ -34,6 +34,10 @@ _COMMAND_ACK_TIMEOUT = 2  # seconds to wait for server to confirm command
 _ACK_METHOD_NAMES = {"control-report", "control-reply"}  # consider fast server reply and later device confirmation as ack
 _MAX_COMMAND_RETRIES = 2  # retry failed commands up to this many times
 
+# Host delayed scheduler: (delay_seconds, work) -> cancel_fn.
+# Home Assistant installs async_call_later; tests inject a manual scheduler.
+ScheduleCallLater: TypeAlias = Callable[[float, Callable[[], None]], Callable[[], None]]
+
 _DREO_DEVICE_TYPE_TO_CLASS = {
     DreoDeviceType.TOWER_FAN: PyDreoTowerFan,
     DreoDeviceType.AIR_CIRCULATOR: PyDreoAirCirculator,
@@ -49,7 +53,25 @@ _DREO_DEVICE_TYPE_TO_CLASS = {
 
 
 class PyDreo:  # pylint: disable=function-redefined
-    """Dreo API functions."""
+    """Dreo API functions.
+
+    Threading model (when used under Home Assistant)
+    ------------------------------------------------
+    - HA entity setters (``set_native_value``, select, etc.) are **sync** and HA
+      typically runs them on **executor threads**, not the event loop.
+    - ``schedule_call_later`` posts delayed work onto the **HA event loop**
+      (``async_call_later``) via a host-installed scheduler, then the settle
+      callback re-enters an **executor job** so ``_send_command`` / websocket
+      I/O never blocks the loop.
+    - WebSocket receive/dispatch runs on the **transport thread** (or its
+      callbacks); device state updates may therefore race with setters and are
+      protected by per-device locks where needed (e.g. fixedconf).
+    - On unload, ``stop_transport`` calls ``device.dispose()`` and the HA
+      config-entry unload path cancels outstanding scheduled handles.
+
+    Without a host scheduler (standalone library / unit tests), delayed work
+    falls back to ``threading.Timer`` (daemon).
+    """
 
     def __init__(
         self,
@@ -92,6 +114,11 @@ class PyDreo:  # pylint: disable=function-redefined
         self._pending_command_device: Optional[str] = None
         self._pending_command_params: Optional[dict] = None
         self._ack_received: bool = False
+
+        # Host-provided delayed scheduler; see ScheduleCallLater / class docstring.
+        self._schedule_call_later: ScheduleCallLater | None = None
+        # Log once if delayed work falls back to threading.Timer (no host scheduler).
+        self._logged_timer_fallback: bool = False
 
         if self.debug_test_mode:
             _LOGGER.error("__init__: Debug Test Mode is enabled!")
@@ -458,13 +485,65 @@ class PyDreo:  # pylint: disable=function-redefined
         _LOGGER.error("_re_login: Re-login failed")
         return False
 
+    def set_schedule_call_later(self, schedule_call_later: ScheduleCallLater | None) -> None:
+        """Install a host delayed-call scheduler (e.g. HA ``async_call_later``).
+
+        See ``ScheduleCallLater`` for the callable shape. Pass ``None`` to restore
+        the standalone ``threading.Timer`` fallback.
+        """
+        self._schedule_call_later = schedule_call_later
+
+    def schedule_call_later(self, delay: float, work: Callable[[], None]) -> Callable[[], None]:
+        """Schedule ``work`` after ``delay`` seconds; return a cancel function.
+
+        Contract (``ScheduleCallLater``):
+            ``(delay_seconds: float, work: Callable[[], None]) -> cancel: Callable[[], None]``
+            - ``cancel()`` is idempotent when possible and must not raise to callers
+              in normal use (host/teardown paths may still swallow cancel errors).
+            - ``work`` may run on a background/executor thread; it must not assume
+              it is on the HA event loop.
+
+        Prefer the host scheduler when installed so Home Assistant owns lifecycle
+        (event-loop timers cancelled on unload). Without a host scheduler (unit
+        tests / standalone library use), fall back to a daemon ``threading.Timer``.
+
+        Parameter is named ``work`` (not ``callback``) so HA host wiring can use
+        ``@callback`` / ``@ha_callback`` without name shadowing.
+
+        Threading: may be called from HA executor threads (entity setters). The
+        host implementation must be thread-safe when posting onto the event loop.
+        """
+        if self._schedule_call_later is not None:
+            return self._schedule_call_later(delay, work)
+
+        if not self._logged_timer_fallback:
+            self._logged_timer_fallback = True
+            _LOGGER.warning(
+                "schedule_call_later: no host scheduler installed; using "
+                "threading.Timer fallback (HA should install async_call_later at "
+                "setup — check logs if this appears under Home Assistant)"
+            )
+
+        timer = threading.Timer(delay, work)
+        timer.daemon = True
+        timer.start()
+        return timer.cancel
+
     def start_transport(self) -> None:
         """Initialize the websocket and start transport"""
         if not self.debug_test_mode:
             self._transport.start_transport(self.api_server_region, self.token)
 
     def stop_transport(self) -> None:
-        """Close down the transport socket"""
+        """Close down the transport socket and dispose device resources."""
+        # Cancel device-owned delayed work before tearing down the WebSocket so
+        # callbacks cannot run after unload.
+        for device in list(self.devices):
+            try:
+                device.dispose()
+            except Exception as ex:  # pylint: disable=broad-except
+                # Teardown must continue even if one device fails to dispose.
+                _LOGGER.debug("stop_transport: dispose failed for %s: %s", device, ex)
         if not self.debug_test_mode:
             self._transport.stop_transport()
 

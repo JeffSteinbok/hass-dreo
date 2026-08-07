@@ -182,6 +182,14 @@ class PyDreoBaseDevice:
         if connected_val is not None:
             self._connected = connected_val
 
+    def dispose(self) -> None:
+        """Release device-owned resources (timers, workers, etc.).
+
+        Called when the PyDreo manager tears down (integration unload). Subclasses
+        that schedule background work should override and cancel it here so
+        callbacks cannot run against torn-down state.
+        """
+
     def add_attr_callback(self, cb):
         """Add a callback to be called by _do_callbacks."""
         with self._lock:

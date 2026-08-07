@@ -33,8 +33,38 @@ AIRCIRCULATOR_EXHAUSTIVE_MODELS = [
 class TestPyDreoAirCirculator(TestBase):
     """Test PyDreoAirCirculator class."""
 
+    def _install_manual_scheduler(self) -> list[dict]:
+        """Install a test scheduler that records delayed work for manual firing.
+
+        Returns a list of dicts with keys: delay, callback, cancelled.
+        """
+        scheduled: list[dict] = []
+
+        def schedule_call_later(delay: float, callback) -> callable:
+            entry = {"delay": delay, "callback": callback, "cancelled": False}
+            scheduled.append(entry)
+
+            def cancel() -> None:
+                entry["cancelled"] = True
+
+            return cancel
+
+        self.pydreo_manager.set_schedule_call_later(schedule_call_later)
+        return scheduled
+
+    @staticmethod
+    def _fire_last_scheduled(scheduled: list[dict]) -> None:
+        """Fire the most recent non-cancelled scheduled callback."""
+        for entry in reversed(scheduled):
+            if not entry["cancelled"]:
+                entry["callback"]()
+                return
+        raise AssertionError("No non-cancelled scheduled callback to fire")
+
     def _exercise_all_settable_properties(self, fan: PyDreoAirCirculator):
         """Exercise all writable air-circulator properties supported by a model."""
+        # Disable fixedconf settle delay so unit tests do not sleep between angle sets.
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
         _ = fan.speed_range
         _ = fan.preset_modes
         _ = fan.is_on
@@ -1374,6 +1404,8 @@ class TestPyDreoAirCirculator(TestBase):
         self.get_devices_file_name = "get_devices_HAF004S.json"
         self.pydreo_manager.load_devices()
         fan = self.pydreo_manager.devices[0]
+        # Generic models use zero settle by default.
+        assert fan._fixed_conf_settle_seconds == 0  # pylint: disable=protected-access
         fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "10,20"}})
         assert fan.vertical_angle == 10
         assert fan.horizontal_angle == 20
@@ -1404,6 +1436,455 @@ class TestPyDreoAirCirculator(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.vertical_angle = -25
             mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "-25,20"})
+
+    def test_fixed_conf_ignores_optimistic_control_reply(self):  # pylint: disable=invalid-name
+        """control-reply / control-report must not overwrite real fixedconf position."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.vertical_angle = 35
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+
+        # Cloud ACK paths echo the requested value; device has not moved yet.
+        fan.handle_server_update({"method": "control-reply", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+
+        # control-report is also an optimistic ACK path (PyDreo._ACK_METHOD_NAMES).
+        fan.handle_server_update({"method": "control-report", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+
+        # Authoritative device report applies and can clear in-flight tracking.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == 35
+        assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+
+    def test_fixed_conf_logs_when_device_rejects_command(self):  # pylint: disable=invalid-name
+        """Snap-back to pre-command position is treated as a rejected move."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 35
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "35,-55"})
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+        assert fan._fixed_conf_at_command == "-10,-55"  # pylint: disable=protected-access
+
+        # Device rejects move and reports previous position (snap-back).
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+        assert fan.vertical_angle == -10
+        assert fan.horizontal_angle == -55
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+
+    def test_fixed_conf_intermediate_report_is_not_reject(self):  # pylint: disable=invalid-name
+        """Mid-move encoder reports must not clear pending command or warn as reject."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "-10,-55"}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.vertical_angle = 35
+
+        # Intermediate position while traveling toward 35.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "10,-55"}})
+        assert fan.vertical_angle == 10
+        assert fan._last_commanded_fixed_conf == "35,-55"  # pylint: disable=protected-access
+
+        # Final confirmation.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,-55"}})
+        assert fan.vertical_angle == 35
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+
+    def test_fixed_conf_send_failure_clears_in_flight_state(self):  # pylint: disable=invalid-name
+        """If _send_command raises, commanded tracking must not stay stuck."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        ui_ticks: list[str | None] = []
+        fan.add_attr_callback(lambda: ui_ticks.append(fan.fixed_conf_commanded))
+
+        with patch(PATCH_SEND_COMMAND, side_effect=RuntimeError("transport down")):
+            with pytest.raises(RuntimeError, match="transport down"):
+                fan.vertical_angle = 30
+
+        assert fan.fixed_conf_commanded is None
+        assert fan.fixed_conf_pending_target is None
+        assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+        assert fan._fixed_conf_at_command is None  # pylint: disable=protected-access
+        # UI notified with cleared commanded state.
+        assert None in ui_ticks
+        debug = fan.fixed_conf_debug_state
+        assert debug["commanded"] is None
+        assert debug["settle_pending"] is False
+
+    def test_fixed_conf_confirm_and_reject_notify_ui(self):  # pylint: disable=invalid-name
+        """Confirm/reject clear commanded tracking and push HA callbacks."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        ui_ticks: list[str | None] = []
+        fan.add_attr_callback(lambda: ui_ticks.append(fan.fixed_conf_commanded))
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.vertical_angle = 35
+        assert fan.fixed_conf_commanded == "35,0"
+        ui_ticks.clear()
+
+        # Confirm: commanded cleared and UI notified.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,0"}})
+        assert fan.fixed_conf_commanded is None
+        assert None in ui_ticks
+
+        ui_ticks.clear()
+        with patch(PATCH_SEND_COMMAND):
+            fan.horizontal_angle = -20
+        assert fan.fixed_conf_commanded == "35,-20"
+        ui_ticks.clear()
+
+        # Reject (snap-back): commanded cleared and UI notified.
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "35,0"}})
+        assert fan.fixed_conf_commanded is None
+        assert None in ui_ticks
+
+    def test_HPF017S_uses_fixed_conf_settle_delay(self):  # pylint: disable=invalid-name
+        """DR-HPF017S enables settle delay; other models default to zero."""
+        self.get_devices_file_name = "get_devices_HPF017S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HPF017S"
+        assert fan._fixed_conf_settle_seconds == 8.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
+
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            assert not scheduled  # first command has nothing to wait for
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
+            fan.horizontal_angle = -20
+            # Second command is scheduled non-blocking, not sent immediately.
+            assert len(scheduled) == 1
+            assert 7.0 <= scheduled[0]["delay"] <= 8.0
+            assert mock_send_command.call_count == 1
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+
+            self._fire_last_scheduled(scheduled)
+            assert mock_send_command.call_count == 2
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+            assert fan._pending_fixed_conf is None  # pylint: disable=protected-access
+
+    def test_fixed_conf_settle_delay_between_commands(self):  # pylint: disable=invalid-name
+        """Settle delay can be forced for testing even on models that default to zero."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert fan._fixed_conf_settle_seconds == 0  # pylint: disable=protected-access
+        fan._fixed_conf_settle_seconds = 2.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            assert not scheduled  # first command has nothing to wait for
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+
+            # Simulate that the first command just finished (device report applied).
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
+            fan.horizontal_angle = -20
+            assert len(scheduled) == 1
+            assert 1.5 <= scheduled[0]["delay"] <= 2.0
+            assert mock_send_command.call_count == 1
+
+            self._fire_last_scheduled(scheduled)
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+
+    def test_fixed_conf_coalesces_pending_during_settle(self):  # pylint: disable=invalid-name
+        """Rapid updates during settle keep only the latest target and do not sleep."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+
+            # Second and third updates while settle is active: coalesce to latest.
+            fan.horizontal_angle = -10
+            fan.horizontal_angle = -20
+            assert len(scheduled) == 2  # rescheduled for each pending update
+            assert scheduled[0]["cancelled"] is True
+            assert scheduled[1]["cancelled"] is False
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+            # Still only the first command was sent; setters returned without blocking.
+            assert mock_send_command.call_count == 1
+
+            self._fire_last_scheduled(scheduled)
+            assert mock_send_command.call_count == 2
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+
+    def test_fixed_conf_axis_compose_uses_pending_not_stale_report(self):  # pylint: disable=invalid-name
+        """Horizontal update while vertical is pending must keep the commanded vertical."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+            # Device has not reported yet; reported state is still 0,0.
+            assert fan.vertical_angle == 0
+
+            fan.horizontal_angle = -20
+            # Without pending/commanded base, this would incorrectly queue "0,-20".
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+            self._fire_last_scheduled(scheduled)
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+
+    def test_fixed_conf_concurrent_setters_serialize(self):  # pylint: disable=invalid-name
+        """Concurrent axis setters serialize via the lock and coalesce safely."""
+        import threading as threading_mod
+
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        errors: list[BaseException] = []
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            def set_vertical():
+                try:
+                    fan.vertical_angle = 30
+                except BaseException as exc:  # pylint: disable=broad-except
+                    errors.append(exc)
+
+            def set_horizontal():
+                try:
+                    fan.horizontal_angle = -20
+                except BaseException as exc:  # pylint: disable=broad-except
+                    errors.append(exc)
+
+            threads = [
+                threading_mod.Thread(target=set_vertical),
+                threading_mod.Thread(target=set_horizontal),
+            ]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join(timeout=5)
+                assert not thread.is_alive()
+
+        assert not errors
+        # Both commands should have been issued (order depends on scheduling).
+        assert mock_send_command.call_count == 2
+        sent = [call.args[1][FIXEDCONF_KEY] for call in mock_send_command.call_args_list]
+        assert len(set(sent)) == 2
+
+    def test_fixed_conf_rapid_concurrent_stress_coalesces(self):  # pylint: disable=invalid-name
+        """Hundreds of rapid concurrent axis updates must not corrupt lock/coalesce state."""
+        import threading as threading_mod
+
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan.fixed_conf_settle_seconds = 5.0
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        errors: list[BaseException] = []
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            # Seed one in-flight command so subsequent updates enter settle path.
+            fan.vertical_angle = 10
+            assert mock_send_command.call_count == 1
+
+            def hammer(n: int) -> None:
+                try:
+                    # Alternate axes with unique values so coalesce must keep latest.
+                    if n % 2 == 0:
+                        fan.vertical_angle = 10 + (n % 40)
+                    else:
+                        fan.horizontal_angle = -1 * (n % 40)
+                except BaseException as exc:  # pylint: disable=broad-except
+                    errors.append(exc)
+
+            threads = [threading_mod.Thread(target=hammer, args=(i,)) for i in range(200)]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join(timeout=10)
+                assert not thread.is_alive()
+
+            assert not errors
+            # First send + only delayed (coalesced) path — never unbounded sends.
+            assert mock_send_command.call_count == 1
+            assert fan.fixed_conf_settle_pending is True
+            pending = fan.fixed_conf_pending_target
+            assert pending is not None
+            # Pending target is a valid fixedconf string and debug state stays consistent.
+            parts = pending.split(",")
+            assert len(parts) == 2
+            debug = fan.fixed_conf_debug_state
+            assert debug["pending_target"] == pending
+            assert debug["settle_pending"] is True
+            assert debug["settle_seconds"] == 5.0
+            assert debug["commanded"] == "10,0"
+            assert debug["reported"] == "0,0"
+            # Every scheduled entry was cancelled or is the latest active schedule.
+            active = [e for e in scheduled if not e["cancelled"]]
+            assert len(active) == 1
+            # Fire latest; single delayed send of the coalesced target.
+            self._fire_last_scheduled(scheduled)
+            assert mock_send_command.call_count == 2
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: pending})
+            assert fan.fixed_conf_settle_pending is False
+
+    def test_fixed_conf_dispose_cancels_pending_timer(self):  # pylint: disable=invalid-name
+        """dispose() cancels settle work so unload cannot fire delayed sends."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+
+            fan.horizontal_angle = -20
+            assert len(scheduled) == 1
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+            assert fan._fixed_conf_cancel is not None  # pylint: disable=protected-access
+
+            fan.dispose()
+            assert scheduled[0]["cancelled"] is True
+            assert fan._fixed_conf_disposed is True  # pylint: disable=protected-access
+            assert fan._pending_fixed_conf is None  # pylint: disable=protected-access
+            assert fan._fixed_conf_cancel is None  # pylint: disable=protected-access
+            assert fan._last_commanded_fixed_conf is None  # pylint: disable=protected-access
+
+            # Callback after dispose must not send (even if fire is attempted).
+            scheduled[0]["callback"]()
+            assert mock_send_command.call_count == 1
+
+            # Further setters after dispose are ignored.
+            fan.vertical_angle = 45
+            assert mock_send_command.call_count == 1
+
+    def test_stop_transport_disposes_devices(self):  # pylint: disable=invalid-name
+        """PyDreo.stop_transport disposes devices before tearing down transport."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        with patch.object(fan, "dispose") as mock_dispose:
+            self.pydreo_manager.stop_transport()
+            mock_dispose.assert_called_once()
+
+    def test_fixed_conf_unload_clears_host_scheduler_after_schedule(self):  # pylint: disable=invalid-name
+        """Clearing the host scheduler after schedule models unload race safely."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 5.0  # pylint: disable=protected-access
+        scheduled = self._install_manual_scheduler()
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            fan.horizontal_angle = -20
+            assert len(scheduled) == 1
+            assert fan._pending_fixed_conf == "30,-20"  # pylint: disable=protected-access
+
+            # Simulate HA unload clearing the host scheduler while a cancel handle remains.
+            self.pydreo_manager.set_schedule_call_later(None)
+            fan.dispose()
+            assert scheduled[0]["cancelled"] is True
+            assert fan._fixed_conf_disposed is True  # pylint: disable=protected-access
+
+            scheduled[0]["callback"]()
+            assert mock_send_command.call_count == 1
+
+    def test_HPF017S_canned_websocket_path_and_settle_ui(self):  # pylint: disable=invalid-name
+        """HPF017S fixture: settle pending UI + canned report sequence end-to-end."""
+        self.get_devices_file_name = "get_devices_HPF017S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert fan.model == "DR-HPF017S"
+        assert fan.is_feature_supported("fixed_conf_settle_pending")
+        assert fan.is_feature_supported("fixed_conf_settle_seconds")
+        assert fan.fixed_conf_settle_seconds == 8.0
+        # Runtime tune (diagnostic number entity uses this property).
+        fan.fixed_conf_settle_seconds = 6.0
+        assert fan.fixed_conf_settle_seconds == 6.0
+        assert fan.fixed_conf_settle_pending is False
+        scheduled = self._install_manual_scheduler()
+
+        # Initial device state from canned fixture path (report style updates).
+        fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        assert fan.vertical_angle == 0
+        assert fan.horizontal_angle == 0
+
+        ui_ticks: list[bool] = []
+        fan.add_attr_callback(lambda: ui_ticks.append(fan.fixed_conf_settle_pending))
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+            assert fan.fixed_conf_settle_pending is False
+
+            # Optimistic ACK paths must not move state or clear in-flight.
+            fan.handle_server_update(
+                {"method": "control-reply", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}}
+            )
+            assert fan.vertical_angle == 0
+            fan.handle_server_update(
+                {"method": "control-report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}}
+            )
+            assert fan.vertical_angle == 0
+            assert fan.fixed_conf_commanded == "30,0"
+
+            # Authoritative mid-move + final reports (canned encoder path).
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "15,0"}})
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,0"}})
+            assert fan.vertical_angle == 30
+
+            fan.horizontal_angle = -20
+            assert fan.fixed_conf_settle_pending is True
+            assert fan.fixed_conf_pending_target == "30,-20"
+            assert len(scheduled) == 1
+            assert mock_send_command.call_count == 1
+            assert True in ui_ticks  # UI notified when settle queued
+
+            self._fire_last_scheduled(scheduled)
+            mock_send_command.assert_called_with(fan, {FIXEDCONF_KEY: "30,-20"})
+            assert fan.fixed_conf_settle_pending is False
+            assert fan.fixed_conf_pending_target is None
+            assert False in ui_ticks  # UI notified when settle cleared
+
+            # Device confirms second move.
+            fan.handle_server_update({"method": "report", REPORTED_KEY: {FIXEDCONF_KEY: "30,-20"}})
+            assert fan.horizontal_angle == -20
 
     def test_horizontal_oscillation_angle_property(self):  # pylint: disable=invalid-name
         """Test horizontal_oscillation_angle property and setter."""

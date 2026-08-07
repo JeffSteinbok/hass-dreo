@@ -67,6 +67,16 @@ BINARY_SENSORS: tuple[DreoBinarySensorEntityDescription, ...] = (
         value_fn=_water_empty_value,
         exists_fn=_water_empty_exists,
     ),
+    # Diagnostic: models with fixedconf settle (e.g. DR-HPF017S) queue axis
+    # updates while the head is moving; enable this entity to observe the queue.
+    DreoBinarySensorEntityDescription(
+        key="fixed_conf_settle_pending",
+        translation_key="fixed_conf_settle_pending",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=False,
+        value_fn=lambda device: bool(getattr(device, "fixed_conf_settle_pending", False)),
+        exists_fn=lambda device: device.is_feature_supported("fixed_conf_settle_pending"),
+    ),
 )
 
 
@@ -106,7 +116,14 @@ class DreoBinarySensorHA(DreoBaseDeviceHA, BinarySensorEntity):
         # on/off state text are localized from the translations/*.json files.
         self._attr_has_entity_name = True
         del self._attr_name
-        self._attr_unique_id = f"{super().unique_id}-water-empty"
+        self._attr_unique_id = (
+            f"{super().unique_id}-water-empty"
+            if description.key == "water_empty"
+            else f"{super().unique_id}-{description.key}"
+        )
+        if description.entity_category is not None:
+            self._attr_entity_category = description.entity_category
+        self._attr_entity_registry_enabled_default = description.entity_registry_enabled_default
 
     @property
     def is_on(self) -> bool | None:
@@ -114,8 +131,20 @@ class DreoBinarySensorHA(DreoBaseDeviceHA, BinarySensorEntity):
 
     @property
     def icon(self) -> str:
+        if self.entity_description.key == "fixed_conf_settle_pending":
+            return "mdi:timer-sand" if self.is_on else "mdi:timer-sand-complete"
         return "mdi:water-remove" if self.is_on else "mdi:water-check"
 
     @property
     def extra_state_attributes(self) -> dict:
+        if self.entity_description.key == "fixed_conf_settle_pending":
+            debug = getattr(self.device, "fixed_conf_debug_state", None)
+            if isinstance(debug, dict):
+                return debug
+            return {
+                "reported": getattr(self.device, "fixed_conf_reported", None),
+                "commanded": getattr(self.device, "fixed_conf_commanded", None),
+                "pending_target": getattr(self.device, "fixed_conf_pending_target", None),
+                "settle_seconds": getattr(self.device, "fixed_conf_settle_seconds", None),
+            }
         return {"water_level": getattr(self.device, "water_level", None)}
