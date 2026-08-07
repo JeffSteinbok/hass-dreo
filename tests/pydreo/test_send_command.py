@@ -115,6 +115,26 @@ class TestSendCommand(TestBase):
             fan.is_on = True
             # No valid ACK (wrong method) - should have exhausted all retries
 
+    def test_control_reply_is_not_applied_as_state(self):
+        """control-reply echoes what the server ACCEPTED, not what the device did.
+
+        It must feed the ack machinery only. Applying it as device state corrupted
+        the local cache whenever the device did not follow through (field-observed:
+        HA showed a light on that never physically turned on).
+        """
+        fan = self._load_fan()
+        initial = bool(fan.is_on)
+
+        self.pydreo_manager._transport_consume_message(
+            {"devicesn": fan.serial_number, "method": "control-reply", "reported": {POWERON_KEY: not initial}}
+        )
+        assert bool(fan.is_on) is initial  # unchanged: reply is not device state
+
+        self.pydreo_manager._transport_consume_message(
+            {"devicesn": fan.serial_number, "method": "control-report", "reported": {POWERON_KEY: not initial}}
+        )
+        assert bool(fan.is_on) is (not initial)  # device-confirmed state applies
+
     def test_command_slot_serializes_commands(self):
         """Test that only one command can be in-flight at a time."""
         fan = self._load_fan()

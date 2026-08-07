@@ -38,6 +38,12 @@ _MAX_COMMAND_RETRIES = 2  # retry failed commands up to this many times
 # Home Assistant installs async_call_later; tests inject a manual scheduler.
 ScheduleCallLater: TypeAlias = Callable[[float, Callable[[], None]], Callable[[], None]]
 
+# control-reply is the server echoing what it ACCEPTED, not what the device did:
+# it is unicast to the issuing connection and arrives before (or without) any
+# device execution. Applying it as device state corrupts the local cache when the
+# device doesn't follow through. Only these methods carry actual device state.
+_STATE_METHOD_NAMES = {"report", "control-report"}
+
 _DREO_DEVICE_TYPE_TO_CLASS = {
     DreoDeviceType.TOWER_FAN: PyDreoTowerFan,
     DreoDeviceType.AIR_CIRCULATOR: PyDreoAirCirculator,
@@ -563,6 +569,11 @@ class PyDreo:  # pylint: disable=function-redefined
 
         # Existing device update handling
         if message_device_sn in self._device_list_by_sn:
+            if message_method is not None and message_method not in _STATE_METHOD_NAMES:
+                # control-reply (and any other non-state method) feeds the ack
+                # machinery above but must never be applied as device state.
+                _LOGGER.debug("_transport_consume_message: %s is not a state method; not applying as state", message_method)
+                return
             device = self._device_list_by_sn[message_device_sn]
             device.handle_server_update_base(message)
         else:
