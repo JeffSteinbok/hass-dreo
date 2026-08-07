@@ -3,7 +3,7 @@ name: Puppets
 on:
   # Stagger the minute across repositories to spread API and model traffic.
   schedule:
-    - cron: "0 16 * * *"
+    - cron: "0 4,10,16,22 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
