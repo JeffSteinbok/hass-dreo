@@ -213,8 +213,8 @@ class PyDreoCeilingFan(PyDreoFanBase):
             params[LIGHTON_KEY] = True
 
         if params:
-            _LOGGER.debug("turn_light_on: sending combined command %s", params)
-            self._dreo.send_command(self, params)
+            _LOGGER.debug("turn_light_on: enqueueing combined command %s", params)
+            self._send_command_batch(params)
 
     @property
     def atm_light_on(self) -> bool | None:

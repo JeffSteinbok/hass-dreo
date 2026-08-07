@@ -2,12 +2,14 @@
 
 import logging
 import threading
+import time
 from unittest.mock import patch, MagicMock
 import pytest
 from .imports import *  # pylint: disable=W0401,W0614
-from .testbase import TestBase, PATCH_SEND_COMMAND, PATCH_BASE_PATH
+from .testbase import TestBase, PATCH_SEND_COMMAND, PATCH_BASE_PATH, wait_for
 
 from custom_components.dreo.pydreo import PyDreo
+from custom_components.dreo.pydreo.commandoutbox import OutboxTiming
 from custom_components.dreo.pydreo.pydreobasedevice import PyDreoBaseDevice
 
 logger = logging.getLogger(__name__)
@@ -134,6 +136,24 @@ class TestSendCommand(TestBase):
             {"devicesn": fan.serial_number, "method": "control-report", "reported": {POWERON_KEY: not initial}}
         )
         assert bool(fan.is_on) is (not initial)  # device-confirmed state applies
+
+    def test_device_batches_near_simultaneous_commands(self):
+        """Every device type routes commands through its outbox: two setters
+        inside the quiet period merge into ONE multi-key send (the hardware
+        silently drops a second command arriving <~250 ms after the first)."""
+        self.get_devices_file_name = "get_devices_HTF005S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._outbox.timing = OutboxTiming(quiet_period=0.03, max_wait=0.12, min_interval=0.0)
+
+        sends = []
+        with patch(PATCH_SEND_COMMAND, side_effect=lambda _d, p: sends.append(p)):
+            fan._send_command(POWERON_KEY, True)
+            fan._send_command(WINDLEVEL_KEY, 3)
+            assert wait_for(lambda: len(sends) >= 1), "batch never flushed"
+            time.sleep(0.15)  # several quiet periods: a second send would have fired by now
+
+        assert sends == [{POWERON_KEY: True, WINDLEVEL_KEY: 3}]
 
     def test_command_slot_serializes_commands(self):
         """Test that only one command can be in-flight at a time."""

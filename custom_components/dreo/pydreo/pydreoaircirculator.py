@@ -29,6 +29,7 @@ from .constant import (
     HBODYCNT_KEY,
 )
 
+from .commandoutbox import OutboxTiming
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
@@ -61,6 +62,13 @@ class PyDreoAirCirculator(PyDreoFanBase):
     guarded by ``_fixed_conf_lock``; the lock is never held across waits.
     ``dispose()`` / unload cancel outstanding schedules.
     """
+
+    # Opt out of command batching: ``_set_fixed_conf`` clears its in-flight
+    # tracking in an ``except`` around ``_send_command`` and re-raises, which
+    # only works while the send is synchronous. This class also paces itself
+    # already via the fixedconf settle delay, so it gains nothing from the
+    # outbox. See commandoutbox.OutboxTiming.
+    _COMMAND_TIMING = OutboxTiming.IMMEDIATE
 
     @staticmethod
     def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:

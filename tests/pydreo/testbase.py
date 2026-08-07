@@ -3,9 +3,12 @@
 # pylint: disable=W0201
 import logging
 import os
+import time
 from typing import Optional
 from unittest.mock import patch
 import pytest
+from custom_components.dreo.pydreo.commandoutbox import OutboxTiming
+from custom_components.dreo.pydreo.pydreobasedevice import PyDreoBaseDevice
 from .imports import *  # pylint: disable=W0401,W0614
 from . import defaults
 from . import call_json
@@ -19,6 +22,16 @@ PATCH_SEND_COMMAND = f"{PATCH_BASE_PATH}.PyDreo.send_command"
 PATCH_CALL_DREO_API = f"{PATCH_BASE_PATH}.PyDreo.call_dreo_api"
 
 Defaults = defaults.Defaults
+
+
+def wait_for(predicate, timeout: float = 2.0) -> bool:
+    """Poll until predicate() is true (scheduler tests must not rely on fixed sleeps)."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.005)
+    return False
 
 
 class TestBase:
@@ -63,8 +76,56 @@ class TestBase:
         self.pydreo_manager.token = Defaults.token
         self.pydreo_manager.account_id = Defaults.account_id
         caplog.set_level(logging.DEBUG)
+        # Send commands synchronously and unpaced in tests (batching and
+        # pacing protect real hardware, not mocks).
+        self._orig_command_timing = PyDreoBaseDevice._COMMAND_TIMING
+        PyDreoBaseDevice._COMMAND_TIMING = OutboxTiming.IMMEDIATE
         yield
+        PyDreoBaseDevice._COMMAND_TIMING = self._orig_command_timing
+        # Cancel deferred work (outbox flushes, verification timers) before
+        # the API mock goes away, or a late timer would attempt a real call.
+        for device in self.pydreo_manager.devices:
+            device.dispose()
         self.mock_api_call.stop()
+
+    wait_for = staticmethod(wait_for)
+
+    def install_manual_scheduler(self) -> list[dict]:
+        """Install a test scheduler that records delayed work for manual firing.
+
+        Delayed work goes through ``PyDreo.schedule_call_later``; replacing it
+        makes anything time-based (command-outbox flushes, ceiling-fan state
+        verification) deterministic instead of slept-on.
+
+        Returns a list of dicts with keys: delay, callback, cancelled.
+        """
+        scheduled: list[dict] = []
+
+        def schedule_call_later(delay: float, callback) -> callable:
+            entry = {"delay": delay, "callback": callback, "cancelled": False}
+            scheduled.append(entry)
+
+            def cancel() -> None:
+                entry["cancelled"] = True
+
+            return cancel
+
+        self.pydreo_manager.set_schedule_call_later(schedule_call_later)
+        return scheduled
+
+    @staticmethod
+    def fire_last_scheduled(scheduled: list[dict]) -> None:
+        """Fire the most recent non-cancelled scheduled callback."""
+        for entry in reversed(scheduled):
+            if not entry["cancelled"]:
+                entry["callback"]()
+                return
+        raise AssertionError("No non-cancelled scheduled callback to fire")
+
+    @staticmethod
+    def pending_scheduled(scheduled: list[dict]) -> list[dict]:
+        """The scheduled entries that have not been cancelled."""
+        return [entry for entry in scheduled if not entry["cancelled"]]
 
     def call_dreo_api(self, api: str, json_object: Optional[dict] = None):
         """Call Dreo REST API"""

@@ -7,6 +7,8 @@ from typing import Optional
 from unittest.mock import patch
 from homeassistant.helpers.entity import Entity
 import pytest
+from custom_components.dreo.pydreo.commandoutbox import OutboxTiming
+from custom_components.dreo.pydreo.pydreobasedevice import PyDreoBaseDevice
 from .imports import *  # pylint: disable=W0401,W0614
 from . import defaults
 from . import call_json
@@ -63,7 +65,16 @@ class IntegrationTestBase:
         self.pydreo_manager.token = Defaults.token
         self.pydreo_manager.account_id = Defaults.account_id
         caplog.set_level(logging.DEBUG)
+        # Send commands synchronously and unpaced in tests (batching and
+        # pacing protect real hardware, not mocks).
+        self._orig_command_timing = PyDreoBaseDevice._COMMAND_TIMING
+        PyDreoBaseDevice._COMMAND_TIMING = OutboxTiming.IMMEDIATE
         yield
+        PyDreoBaseDevice._COMMAND_TIMING = self._orig_command_timing
+        # Cancel deferred work (outbox flushes, verification timers) before
+        # the API mock goes away, or a late timer would attempt a real call.
+        for device in self.pydreo_manager.devices:
+            device.dispose()
         self.mock_api_call.stop()
 
     def call_dreo_api(self, api: str, json_object: Optional[dict] = None):
