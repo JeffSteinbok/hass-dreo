@@ -102,9 +102,10 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
                 with patch(PATCH_SEND_COMMAND) as mock_send_command:
                     # Brightness is converted from HA's 0-255 scale to device's 1-100 scale
-                    # 128/255 * 100 = ~50.2, which gets rounded to 50
+                    # 128/255 * 100 = ~50.2, which gets rounded to 50. lighton rides along:
+                    # skipping it on a cached "already on" strands the light on a stale cache.
                     light_switch.turn_on(brightness=128)
-                    mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
+                    mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50, LIGHTON_KEY: True})
 
     def test_HCF001S_light_atomic_turn_on(self):  # pylint: disable=invalid-name
         """Issue #846: turning the light on together with a brightness change (as Adaptive
@@ -132,11 +133,13 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 light_switch.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
 
-            # If the light is already on and brightness is unchanged, no command is sent.
+            # Light already on and brightness unchanged: lighton is STILL sent. A
+            # same-value skip on a stale cache made the light unreachable in the
+            # field; a redundant lighton is a harmless no-op that self-heals it.
             pydreo_fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True, BRIGHTNESS_KEY: 50}})
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 light_switch.turn_on(brightness=128)  # still 50 on device scale
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
 
     def test_HCF002S(self):  # pylint: disable=invalid-name
         """Load fan and test sending commands."""
@@ -154,18 +157,17 @@ class TestDreoCeilingFan(IntegrationTestBase):
             assert ha_fan.speed_count == 12
             assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto"]
 
-            # Test fan commands
+            # Test fan commands. Fixture is gated off (poweron False): turning the
+            # fan on must be one atomic command that opens the gate and explicitly
+            # forces the other loads off (poweron alone re-energises retained loads).
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True, POWERON_KEY: True, LIGHTON_KEY: False, ATMON_KEY: False})
 
-            # Test preset modes (it will also turn on the fan if off)
+            # Test preset modes (fan is now on after the wake above, so only mode is sent)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("auto")
-                # Should call both fanon and mode since fan is currently off
-                assert mock_send_command.call_count == 2
-                # Check the last call was setting mode to 5 (auto)
-                mock_send_command.assert_any_call(pydreo_fan, {MODE_KEY: 5})
+                mock_send_command.assert_called_once_with(pydreo_fan, {MODE_KEY: 5})
 
             # Check switches
             switches = switch.get_entries([pydreo_fan])
@@ -223,37 +225,47 @@ class TestDreoCeilingFan(IntegrationTestBase):
             main_light = self.get_entity_by_key(lights, "Light")
             assert main_light is not None
 
+            # Fixture is gated off (poweron False): waking the main light must be one
+            # atomic command opening the gate and forcing the other loads off.
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 main_light.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True})
+                mock_send_command.assert_called_once_with(pydreo_fan, {LIGHTON_KEY: True, POWERON_KEY: True, FANON_KEY: False, ATMON_KEY: False})
             pydreo_fan.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True}})
 
-            # Setting brightness while light is already on must send only the brightness command
+            # Setting brightness while the light is already on resends lighton too -
+            # no same-value skips on load keys (a stale-cache skip strands the entity).
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 main_light.turn_on(brightness=128)
-                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
+                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50, LIGHTON_KEY: True})
 
             # ---- RGBIC atmosphere light (preset-based, not direct RGB) ----
             rgbic_light = self.get_entity_by_key(lights, "RGBIC Light")
             assert rgbic_light is not None
             # RGBIC preset device - rgb_color is not supported
             assert rgbic_light.rgb_color is None
-            # atmon=true in initial state, so the RGBIC light should be "on"
+            # atmon was retained True in the fixture, but the device was gated off and
+            # the main-light wake above explicitly forced atmon off - so the RGBIC
+            # light reads OFF here. The device then reports it back on.
+            assert rgbic_light.is_on is False
+            pydreo_fan.handle_server_update({REPORTED_KEY: {ATMON_KEY: True}})
             assert rgbic_light.is_on is True
             # RGBIC light should have effect list with presets
             assert rgbic_light.effect_list == ["Preset 1", "Preset 2", "Preset 3", "Preset 4"]
             # Current preset is 0, so effect should be "Preset 1"
             assert rgbic_light.effect == "Preset 1"
 
-            # atmon is already True, so turn_on() sends no commands
+            # Redundant same-value sends are no longer skipped (a stale-cache skip
+            # made entities unreachable on units that stop reporting load keys), so
+            # turn_on() re-sends atmon - a hardware-validated no-op on the device.
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgbic_light.turn_on()
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: True})
 
-            # Setting effect must send rgbpresetsel command
+            # Setting effect sends the (redundant) atmon plus the rgbpresetsel command
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgbic_light.turn_on(effect="Preset 3")
-                mock_send_command.assert_called_once_with(pydreo_fan, {RGBPRESETSEL_KEY: 2})
+                assert mock_send_command.call_count == 2
+                mock_send_command.assert_any_call(pydreo_fan, {RGBPRESETSEL_KEY: 2})
 
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S fan and test sending commands."""
@@ -340,9 +352,10 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 # Brightness is converted from HA's 0-255 scale to device's 1-100 scale
-                # 128/255 * 100 = ~50.2, which gets rounded to 50
+                # 128/255 * 100 = ~50.2, which gets rounded to 50. lighton rides along:
+                # skipping it on a cached "already on" strands the light on a stale cache.
                 light_switch.turn_on(brightness=128)
-                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50})
+                mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50, LIGHTON_KEY: True})
             pydreo_fan.handle_server_update({REPORTED_KEY: {BRIGHTNESS_KEY: 51}})
 
             # Test color temperature if supported
@@ -375,10 +388,12 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
             pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True}})
 
-            # turn_on when already on should NOT send redundant command
+            # Redundant same-value sends are no longer skipped: a skip decided on a
+            # stale cache made entities permanently unreachable, and redundant
+            # commands are hardware-validated no-ops.
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_on()
-                mock_send_command.assert_not_called()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_off()
@@ -436,18 +451,19 @@ class TestDreoCeilingFan(IntegrationTestBase):
             assert ha_fan.speed_count == 12
             assert ha_fan.preset_modes == ["normal", "natural", "sleep", "reverse"]
 
+            # Fixture is gated off (poweron False): the implicit fan turn-on inside
+            # set_preset_mode must be the atomic wake command.
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("reverse")
                 assert mock_send_command.call_count == 2
-                mock_send_command.assert_any_call(pydreo_fan, {FANON_KEY: True})
+                mock_send_command.assert_any_call(pydreo_fan, {FANON_KEY: True, POWERON_KEY: True, LIGHTON_KEY: False, ATMON_KEY: False})
                 mock_send_command.assert_any_call(pydreo_fan, {MODE_KEY: 4})
             pydreo_fan.handle_server_update({REPORTED_KEY: {MODE_KEY: 4}})
 
+            # Fan is now on (optimistic state from the wake above): only speed is sent.
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)
-                assert mock_send_command.call_count == 2
-                mock_send_command.assert_any_call(pydreo_fan, {FANON_KEY: True})
-                mock_send_command.assert_any_call(pydreo_fan, {WINDLEVEL_KEY: 12})
+                mock_send_command.assert_called_once_with(pydreo_fan, {WINDLEVEL_KEY: 12})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
 
             # ---- RGBIC atmosphere light (preset-based, with direct RGB colour write) ----
@@ -465,7 +481,11 @@ class TestDreoCeilingFan(IntegrationTestBase):
             # Initial rgbpresetsel=0 → "Preset 1"
             assert rgbic_light.effect == "Preset 1"
 
-            # atmon=true in test data, so RGBIC light is on
+            # atmon was retained True in the fixture but the device was gated off,
+            # and the fan wake above explicitly forced atmon off. The device then
+            # reports it back on.
+            assert rgbic_light.is_on is False
+            pydreo_fan.handle_server_update({REPORTED_KEY: {ATMON_KEY: True}})
             assert rgbic_light.is_on is True
 
             # Selecting a preset must send RGBPRESETSEL_KEY (not RGBEFFECTID_KEY)

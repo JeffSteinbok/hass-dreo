@@ -30,7 +30,34 @@ if TYPE_CHECKING:
 
 
 class PyDreoCeilingFan(PyDreoFanBase):
-    """Base class for Dreo Fan API Calls."""
+    """Base class for Dreo Fan API Calls.
+
+    Ceiling fans expose several independent loads (fan motor, main light, atmosphere
+    light) behind a single whole-device power gate:
+
+        ``<load>_is_on = poweron AND <load>on``
+
+    Protocol behaviour (reverse-engineered against DR-HCF002S hardware):
+
+    * Load keys (``fanon``/``lighton``/``atmon``) are RETAINED across a gate close;
+      ``poweron: False`` extinguishes everything physically without reporting the
+      load keys, and ``poweron: True`` re-energises every retained-on load.
+    * A load command sent while the gate is closed registers logically but does
+      nothing physically, so waking a single load requires one atomic command that
+      opens the gate and explicitly forces every other load off.
+    * The device never closes the gate itself: turning off the last active load
+      leaves ``poweron: True``, so the off command must close the gate too.
+    * WebSocket messages carry net deltas only, and some units stop reporting
+      individual load keys entirely (observed: ``lighton`` on a DR-HCF002S) while
+      control keeps working - state can therefore never rely on load-key echoes.
+    """
+
+    # Load key -> attribute holding the RETAINED (ungated) value.
+    _LOAD_ATTRS = {
+        FANON_KEY: "_fanon",
+        LIGHTON_KEY: "_light_on",
+        ATMON_KEY: "_atm_light_on",
+    }
 
     @staticmethod
     def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:
@@ -67,6 +94,8 @@ class PyDreoCeilingFan(PyDreoFanBase):
             self._preset_modes = self.parse_preset_modes(details)
 
         self._fan_speed = None
+        self._poweron: bool = None  # whole-device gate; None until first seen
+        self._fanon: bool = None  # retained fan-motor state
         self._light_on: bool = None
         self._brightness: int = None
         self._color_temp: int = None
@@ -120,31 +149,126 @@ class PyDreoCeilingFan(PyDreoFanBase):
         _LOGGER.debug("parse_preset_modes: Detected preset modes - %s", preset_modes)
         return preset_modes
 
-    @PyDreoFanBase.is_on.setter
+    # ------------------------------------------------------------------
+    # The power gate
+    # ------------------------------------------------------------------
+
+    def _gated(self, load_value: bool | None) -> bool | None:
+        """Apply the whole-device power gate to a retained load value.
+
+        Returns None when the load itself is unsupported (feature detection relies
+        on that). Models without a poweron key (e.g. DR-HCF001S) have no gate and
+        report the load value directly.
+        """
+        if load_value is None:
+            return None
+        if self._poweron is None:
+            return load_value
+        return bool(self._poweron) and bool(load_value)
+
+    def _apply_optimistic_state(self, params: dict) -> None:
+        """Fold keys we are sending into local state.
+
+        Some units stop emitting control-reports for individual load keys while
+        control keeps working (observed with lighton on a DR-HCF002S), so waiting
+        for an echo would leave the cache permanently stale. Our own writes plus
+        REST refreshes are the source of truth instead. The outbox applies this at
+        submit time, so the entity reflects intent immediately and
+        ``_finalize_command_params`` reads post-batch load states.
+        """
+        for key, val in params.items():
+            if key == POWERON_KEY:
+                self._poweron = val
+            elif key in self._LOAD_ATTRS:
+                setattr(self, self._LOAD_ATTRS[key], val)
+        self._is_on = bool(self.is_on)
+
+    def _finalize_command_params(self, params: dict) -> dict:
+        """Derive whole-device gate keys for a merged batch just before sending.
+
+        Optimistic state already reflects the batch (applied at submit), so the
+        retained load attributes ARE the post-batch load states.
+
+        No same-value skip guards anywhere in this path: redundant sends are
+        harmless no-ops, while a skip on a stale cache makes the entity
+        permanently unreachable.
+        """
+        batch_loads = {key: params[key] for key in self._LOAD_ATTRS if key in params}
+        if not batch_loads or POWERON_KEY in params:
+            # Nothing to gate: a parameter-only batch (e.g. Adaptive Lighting
+            # adjusting colortemp while the light is off) must never wake the
+            # device - and an explicit poweron is the caller's intent.
+            return params
+
+        if self._poweron is False and any(batch_loads.values()):
+            final = params | {POWERON_KEY: True, **self._loads_to_force_off(params)}
+            _LOGGER.debug("_finalize_command_params: %s + wake keys -> %s", params, final)
+            return final
+
+        if self._poweron and not self._any_load_retained_on():
+            # The device never closes the gate itself; the last load-off must.
+            final = params | {POWERON_KEY: False}
+            _LOGGER.debug("_finalize_command_params: %s + gate close -> %s", params, final)
+            return final
+
+        return params
+
+    def _loads_to_force_off(self, params: dict) -> dict:
+        """Supported loads absent from the batch, to force off during a wake.
+
+        ``poweron: True`` alone re-energises every retained-on load (a light
+        press would restart the fan), so waking one load means explicitly
+        extinguishing the others. Batch keys are the caller's intent and are
+        never overridden - a co-arriving ``atmon: True`` survives the wake.
+        """
+        return {
+            load_key: False
+            for load_key, attr in self._LOAD_ATTRS.items()
+            if load_key not in params and getattr(self, attr) is not None
+        }
+
+    def _any_load_retained_on(self) -> bool:
+        """True if any supported load is retained on; unknown (None) counts as off."""
+        return any(getattr(self, attr) for attr in self._LOAD_ATTRS.values())
+
+    def _set_load(self, load_key: str, value: bool) -> None:
+        """Switch one load on/off.
+
+        Just submits the raw key; ``_finalize_command_params`` derives any gate
+        keys from the merged batch at send time, so near-simultaneous setters
+        (a scene or linked wall switches switching light and RGB together)
+        coalesce into one correct command instead of racing each other.
+        """
+        self._send_command_batch({load_key: bool(value)})
+
+    # ------------------------------------------------------------------
+    # Properties and setters
+    # ------------------------------------------------------------------
+
+    @property
+    def is_on(self) -> bool | None:
+        """Returns True if the fan motor is running (device powered AND fan on)."""
+        return self._gated(self._fanon)
+
+    @is_on.setter
     def is_on(self, value: bool):
-        """Set if the fan is on or off"""
+        """Turn the fan motor on or off."""
         _LOGGER.debug("is_on: is_on.setter - %s", value)
-        if self._is_on == value:
-            _LOGGER.debug("is_on: is_on - value already %s, skipping command", value)
-            return
-        self._send_command(FANON_KEY, value)
+        self._set_load(FANON_KEY, bool(value))
 
     @property
     def light_on(self) -> bool | None:
-        """Returns `True` if the device light is on, `False` otherwise."""
-        return self._light_on
+        """Returns True if the main light is on (device powered AND light on)."""
+        return self._gated(self._light_on)
 
     @light_on.setter
     def light_on(self, value: bool):
-        """Set if the fan is on or off"""
+        """Turn the main light on or off."""
         _LOGGER.debug("light_on: light_on.setter - %s", value)
         if self._light_on is None:
             _LOGGER.error("light_on: Light control not supported by this fan model.")
             return
-        if self._light_on == value:
-            _LOGGER.debug("light_on: light_on - value already %s, skipping command", value)
-            return
-        self._send_command(LIGHTON_KEY, value)
+        self._set_load(LIGHTON_KEY, bool(value))
 
     @property
     def oscillating(self) -> bool:
@@ -191,47 +315,40 @@ class PyDreoCeilingFan(PyDreoFanBase):
     def turn_light_on(self, brightness: int | None = None, color_temp: int | None = None) -> None:
         """Turn the main light on, optionally setting brightness and/or color temperature.
 
-        Sends a single combined control command instead of separate brightness, color
-        temperature and on commands so the device receives the whole desired state
-        atomically. Adaptive Lighting and similar integrations send brightness/color
-        together with the on command; issuing them as separate sequential commands
-        caused the light to intermittently fail to turn on (issue #846).
+        Submits all keys as one batch so the device receives the whole desired
+        state atomically. Adaptive Lighting and similar integrations send
+        brightness/color together with the on command; issuing them as separate
+        sequential commands caused the light to intermittently fail to turn on
+        (issue #846). ``lighton`` is always included - skipping it when the
+        cache already says on would make the light unreachable on a stale cache.
         """
         if self._light_on is None:
             _LOGGER.error("turn_light_on: Light control not supported by this fan model.")
             return
 
         params: dict = {}
-
         if brightness is not None and self._brightness is not None and self._brightness != brightness:
             params[BRIGHTNESS_KEY] = brightness
-
         if color_temp is not None and self._color_temp is not None and self._color_temp != color_temp:
             params[COLORTEMP_KEY] = color_temp
+        params[LIGHTON_KEY] = True
 
-        if not self._light_on:
-            params[LIGHTON_KEY] = True
-
-        if params:
-            _LOGGER.debug("turn_light_on: enqueueing combined command %s", params)
-            self._send_command_batch(params)
+        _LOGGER.debug("turn_light_on: enqueueing combined command %s", params)
+        self._send_command_batch(params)
 
     @property
     def atm_light_on(self) -> bool | None:
-        """Returns True if the atmosphere light is on, False otherwise."""
-        return self._atm_light_on
+        """Returns True if the atmosphere light is on (device powered AND atm on)."""
+        return self._gated(self._atm_light_on)
 
     @atm_light_on.setter
     def atm_light_on(self, value: bool):
-        """Set if the atmosphere light is on or off"""
+        """Turn the atmosphere light on or off."""
         _LOGGER.debug("atm_light_on: atm_light_on.setter - %s", value)
         if self._atm_light_on is None:
             _LOGGER.error("atm_light_on: Atmosphere light not supported by this fan model.")
             return
-        if self._atm_light_on == value:
-            _LOGGER.debug("atm_light_on: atm_light_on - value already %s, skipping command", value)
-            return
-        self._send_command(ATMON_KEY, value)
+        self._set_load(ATMON_KEY, bool(value))
 
     @property
     def atm_brightness(self) -> int | None:
@@ -334,6 +451,15 @@ class PyDreoCeilingFan(PyDreoFanBase):
         """Returns the valid range (min, max) of RGBIC effect indices, or None."""
         return self._rgb_effect_range
 
+    # ------------------------------------------------------------------
+    # Incoming state (REST payloads and WebSocket deltas)
+    # ------------------------------------------------------------------
+
+    def _apply_rest_power_state(self, state: dict) -> None:
+        """Apply the REST payload's gate and load keys to the retained cache."""
+        for key, attr in ((POWERON_KEY, "_poweron"), *self._LOAD_ATTRS.items()):
+            setattr(self, attr, self.get_state_update_value(state, key))
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: Processing state")
@@ -343,24 +469,16 @@ class PyDreoCeilingFan(PyDreoFanBase):
         if self._fan_speed is None:
             _LOGGER.error("update_state: Unable to get fan speed from state. Check debug logs for more information.")
 
-        # Ceiling fans report both poweron (whole-device power) and fanon (fan motor).
-        # poweron=False means the device is entirely off and takes priority over fanon.
-        # When poweron is True (or absent), fanon reflects the actual fan motor state.
-        poweron_val = self.get_state_update_value(state, POWERON_KEY)
-        fanon_val = self.get_state_update_value(state, FANON_KEY)
-        if poweron_val is not None:
-            if not poweron_val:
-                self._is_on = False
-            elif fanon_val is not None:
-                self._is_on = fanon_val
-        elif fanon_val is not None:
-            self._is_on = fanon_val
+        # The gate model: retained load values are stored raw, and the properties
+        # apply `poweron AND <load>`. The device retains load states across a gate
+        # close (REST reports e.g. poweron=False with fanon=True), so gating at
+        # read time replaces any priority juggling between the keys here.
+        self._apply_rest_power_state(state)
+        self._is_on = bool(self.is_on)
 
-        self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
         self._brightness = self.get_state_update_value(state, BRIGHTNESS_KEY)
         self._color_temp = self.get_state_update_value(state, COLORTEMP_KEY)
 
-        self._atm_light_on = self.get_state_update_value(state, ATMON_KEY)
         self._atm_brightness = self.get_state_update_value(state, ATMBRI_KEY)
         self._atm_color = self.get_state_update_value(state, ATMCOLOR_KEY)
         self._atm_mode = self.get_state_update_value(state, ATMMODE_KEY)
@@ -419,20 +537,26 @@ class PyDreoCeilingFan(PyDreoFanBase):
             self._rgb_effect_id = val_rgb_effect_id
 
     def _handle_power_state_update(self, message):
-        """Override power state handling for ceiling fans"""
-        val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        """Ceiling fans: update the retained load values and the power gate.
+
+        Messages are net deltas - only changed keys appear. Retained values are
+        stored raw; the properties apply the gate, so a `poweron: False` shows all
+        loads off without destroying their retained values (which is exactly what
+        the hardware does), and a bare `poweron: True` re-lights whatever was
+        retained on. No ordering games needed: the gated result is the same
+        whichever key is processed first.
+        """
         val_fan_on = self.get_server_update_key_value(message, FANON_KEY)
-
-        # Handle fanon first (fan motor state)
         if isinstance(val_fan_on, bool):
-            self._is_on = val_fan_on
-            _LOGGER.debug("_handle_power_state_update: Fan state updated from fanon: %s", val_fan_on)
+            self._fanon = val_fan_on
+            _LOGGER.debug("_handle_power_state_update: fanon -> %s", val_fan_on)
 
-        # poweron=False always takes priority: entire device off means fan is off too
-        if val_poweron is False:
-            self._is_on = False
-            self._light_on = False
-            _LOGGER.debug("_handle_power_state_update: Device powered off - fan and light off")
+        val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
+        if isinstance(val_poweron, bool):
+            self._poweron = val_poweron
+            _LOGGER.debug("_handle_power_state_update: poweron (gate) -> %s", val_poweron)
+
+        self._is_on = bool(self.is_on)
 
     def is_feature_supported(self, feature: str) -> bool:
         """Check if this ceiling fan supports a specific feature"""
