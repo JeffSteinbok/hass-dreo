@@ -456,6 +456,13 @@ SUPPORTED_DEVICES = {
         # The device rejects the plain "auto" mode command and requires "auto-regular" (issue #860).
         override_fn=_hap009s_override,
     ),
+    # DR-HAP008S diagnostics report an empty controlsConf object. Hardcode its known fan
+    # capabilities so Home Assistant can create the primary fan entity.
+    "DR-HAP008S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_PURIFIER,
+        preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
+        device_ranges={SPEED_RANGE: (1, 4)},
+    ),
     # Heaters
     "DR-HSH017BS": DreoHeaterDeviceDetails(
         device_ranges={ECOLEVEL_RANGE: (41, 85)},

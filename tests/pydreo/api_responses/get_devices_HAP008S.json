@@ -1,0 +1,40 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1834678463454253099",
+        "sn": "HAP008S_1",
+        "brand": "Dreo",
+        "model": "DR-HAP008S",
+        "productId": "**REDACTED**",
+        "productName": "Air Purifier",
+        "deviceName": "DEBUGTEST - Air Purifier - DR-HAP008S",
+        "shared": false,
+        "series": null,
+        "seriesName": "338S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        }
+      }
+    ]
+  }
+}

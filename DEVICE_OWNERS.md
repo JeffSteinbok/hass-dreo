@@ -102,6 +102,7 @@ Sourced from GitHub issues, PRs, and contributed test data.
 | DR-HAP002S | [@cameronbowe](https://github.com/cameronbowe), [@CSSGeek94](https://github.com/CSSGeek94), [@Monsterray](https://github.com/Monsterray) | [#63](https://github.com/JeffSteinbok/hass-dreo/issues/63), [#260](https://github.com/JeffSteinbok/hass-dreo/issues/260), [#76](https://github.com/JeffSteinbok/hass-dreo/issues/76) |
 | DR-HAP003S | [@nertwork](https://github.com/nertwork), [@UberMentch](https://github.com/UberMentch) | [#22](https://github.com/JeffSteinbok/hass-dreo/issues/22), [#149](https://github.com/JeffSteinbok/hass-dreo/issues/149), [#784](https://github.com/JeffSteinbok/hass-dreo/pull/784), [#818](https://github.com/JeffSteinbok/hass-dreo/pull/818) |
 | DR-HAP005S | [@TheShai1](https://github.com/TheShai1), [@calpay2000-afk](https://github.com/calpay2000-afk) | [#282](https://github.com/JeffSteinbok/hass-dreo/issues/282), [#612](https://github.com/JeffSteinbok/hass-dreo/issues/612) |
+| DR-HAP008S | [@peschelnet](https://github.com/peschelnet) | [#877](https://github.com/JeffSteinbok/hass-dreo/issues/877) |
 
 ## Floor Fans (DR-HAF)
 
