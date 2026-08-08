@@ -723,3 +723,207 @@ class TestPyDreoCeilingFan(TestBase):
         assert sends == [{LIGHTON_KEY: True}, {ATMON_KEY: True}]
         gap = send_times[1] - send_times[0]
         assert gap >= 0.18, f"sends not paced: gap={gap:.3f}s"
+
+    def test_every_command_schedules_state_verification(self):
+        """Field regression: a silently dropped command left HA and the device
+        divergent forever. Every sent command must (re)schedule the debounced
+        REST verification."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        scheduled = self.install_manual_scheduler()
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.light_on = True
+            assert len(scheduled) == 1
+            assert scheduled[0]["delay"] == fan._STATE_VERIFY_DELAY  # pylint: disable=protected-access
+            fan.brightness = 42  # parameter commands are paced/verified too
+
+        # Debounce: the second command replaced (not duplicated) the request.
+        assert len(scheduled) == 2
+        assert scheduled[0]["cancelled"] is True, "first verification should have been superseded"
+        assert self.pending_scheduled(scheduled) == [scheduled[1]]
+
+    def test_gate_open_schedules_state_verification(self):
+        """A WS gate-open must schedule a REST verification: some units never report the
+        load keys, so the WS stream alone cannot be trusted after a gate event."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        scheduled = self.install_manual_scheduler()
+
+        assert not scheduled
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+        assert len(self.pending_scheduled(scheduled)) == 1
+        assert scheduled[0]["delay"] == fan._STATE_VERIFY_DELAY  # pylint: disable=protected-access
+
+        # Firing it pulls REST state and notifies HA entities.
+        with patch.object(self.pydreo_manager, "load_device_state", return_value=True) as mock_load:
+            self.fire_last_scheduled(scheduled)
+            mock_load.assert_called_once_with(fan)
+
+    def test_dispose_cancels_pending_verification(self):
+        """On unload the pending verification must be cancelled, or a delayed
+        REST call would run against a torn-down integration."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        scheduled = self.install_manual_scheduler()
+
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+        assert len(self.pending_scheduled(scheduled)) == 1
+
+        fan.dispose()
+        assert self.pending_scheduled(scheduled) == []
+
+        # And nothing schedules again afterwards.
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+        assert self.pending_scheduled(scheduled) == []
+
+    @staticmethod
+    def _rest_state(ts: float, **values):
+        """Build a REST-shaped state dict with per-key device timestamps."""
+        return {key: {"state": val, "timestamp": ts} for key, val in values.items()}
+
+    def test_stale_rest_readback_does_not_revert_gate(self):
+        """Field regression: Dreo's cloud REST lags the device by seconds. A readback
+        that fired 4s after a gate close read the PRE-close state, re-opened the
+        gate in cache, and the user's next wake command went out without gate
+        keys - leaving the room dark. REST values whose device timestamps predate
+        our last local write must not overwrite the gate/load cache."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: False, FANON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.light_on = False  # last load off -> closes the gate, stamps _last_local_write
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: False, POWERON_KEY: False})
+        assert fan._poweron is False  # pylint: disable=protected-access
+
+        # Cloud lag: REST still shows the PRE-close state with older timestamps.
+        stale = self._rest_state(time.time() - 30, poweron=True, lighton=True, fanon=False, atmon=False)
+        stale["windlevel"] = {"state": 5, "timestamp": time.time() - 30}
+        fan.update_state(stale)
+
+        assert fan._poweron is False, "stale REST re-opened the gate in cache"  # pylint: disable=protected-access
+        assert fan._light_on is False  # pylint: disable=protected-access
+        assert fan._rest_readback_stale is True  # pylint: disable=protected-access
+
+        # The next wake must still derive gate keys from the (correct) closed-gate cache.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.light_on = True
+            mock_send_command.assert_called_once_with(fan, {LIGHTON_KEY: True, POWERON_KEY: True, FANON_KEY: False, ATMON_KEY: False})
+
+    def test_fresh_rest_readback_applies_and_resets(self):
+        """REST values stamped after our last write are authoritative and apply."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: False, FANON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.light_on = False
+
+        fresh = self._rest_state(time.time() + 5, poweron=True, lighton=True, fanon=False, atmon=False)
+        fresh["windlevel"] = {"state": 5, "timestamp": time.time() + 5}
+        fan.update_state(fresh)
+
+        assert fan._rest_readback_stale is False  # pylint: disable=protected-access
+        assert fan._poweron is True  # pylint: disable=protected-access
+        assert fan._light_on is True  # pylint: disable=protected-access
+
+    def test_rest_without_timestamps_applies_as_before(self):
+        """Payloads without per-key timestamps (unusual models) keep old behavior."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: False, FANON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.light_on = False
+
+        fan.update_state({"poweron": True, "lighton": True, "fanon": False, "atmon": False, "windlevel": 5})
+        assert fan._rest_readback_stale is False  # pylint: disable=protected-access
+        assert fan._poweron is True  # pylint: disable=protected-access
+
+    def test_stale_readback_retries_then_accepts(self):
+        """The verification retries while REST lags, then lifts the guard and accepts REST
+        as truth (a genuinely dropped command leaves REST older than our write
+        forever - self-heal must still work)."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: False, FANON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.light_on = False
+
+        stale = self._rest_state(time.time() - 30, poweron=True, lighton=True, fanon=False, atmon=False)
+        stale["windlevel"] = {"state": 5, "timestamp": time.time() - 30}
+
+        def fake_load(device):
+            device.update_state(stale)
+            return True
+
+        scheduled = self.install_manual_scheduler()
+
+        with patch.object(self.pydreo_manager, "load_device_state", side_effect=fake_load) as mock_load:
+            for expected_retry in (1, 2, 3):
+                fan._verify_state()  # pylint: disable=protected-access
+                assert fan._stale_readback_retries == expected_retry  # pylint: disable=protected-access
+                assert fan._poweron is False, "stale retry must not apply REST"  # pylint: disable=protected-access
+                # Each stale read must queue another attempt rather than give up.
+                assert len(self.pending_scheduled(scheduled)) == 1
+                self.pending_scheduled(scheduled)[0]["cancelled"] = True  # consume it
+
+            # Retry cap reached: the guard lifts and this read accepts REST.
+            fan._verify_state()  # pylint: disable=protected-access
+
+        assert fan._poweron is True  # pylint: disable=protected-access
+        assert fan._stale_readback_retries == 0  # pylint: disable=protected-access
+        # 3 stale retries + the capped read + the guard-lifted accepting read.
+        assert mock_load.call_count == 5
+
+    def test_noop_readback_with_old_timestamps_is_not_stale(self):
+        """Field regression: the device only refreshes a key's timestamp when the
+        VALUE changes, so a no-op batch (e.g. Adaptive Lighting re-sending
+        lighton:True to an already-lit fan) leaves old stamps everywhere. A
+        readback that AGREES with the cache is never stale, whatever its
+        timestamps - flagging it burned the whole retry budget every AL tick."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: True, FANON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.light_on = True  # no-op write; stamps _last_local_write
+
+        old = self._rest_state(time.time() - 3600, poweron=True, lighton=True, fanon=False, atmon=True)
+        old["windlevel"] = {"state": 5, "timestamp": time.time() - 3600}
+        fan.update_state(old)
+
+        assert fan._rest_readback_stale is False  # pylint: disable=protected-access
+        assert fan._poweron is True and fan._light_on is True  # pylint: disable=protected-access
+
+    def test_mixed_readback_skips_only_contradicting_stale_keys(self):
+        """Per-key granularity: agreeing keys apply even with old stamps, while a
+        contradicting key with a pre-write stamp is kept optimistic."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: True, FANON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.light_on = False  # changes lighton; poweron stays True (atm still on)
+
+        # REST lags: lighton still True (contradicts, old ts) but the rest agree.
+        mixed = self._rest_state(time.time() - 30, poweron=True, lighton=True, fanon=False, atmon=True)
+        mixed["windlevel"] = {"state": 5, "timestamp": time.time() - 30}
+        fan.update_state(mixed)
+
+        assert fan._light_on is False, "stale contradicting key must stay optimistic"  # pylint: disable=protected-access
+        assert fan._poweron is True and fan._atm_light_on is True  # pylint: disable=protected-access
+        assert fan._rest_readback_stale is True  # pylint: disable=protected-access

@@ -1,6 +1,8 @@
 """Dreo API for controling fans."""
 
 import logging
+import time
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
@@ -18,6 +20,7 @@ from .constant import (
     RGBPRESETSEL_KEY,
     RGBPRESETNUM_KEY,
     RGBEFFECTID_KEY,
+    TIMESTAMP_KEY,
 )
 
 from .pydreofanbase import PyDreoFanBase
@@ -59,6 +62,21 @@ class PyDreoCeilingFan(PyDreoFanBase):
         ATMON_KEY: "_atm_light_on",
     }
 
+    # Seconds to wait after our own command burst or a gate-open before
+    # verifying state via REST; lets the device's trailing deltas land first
+    # and debounces a burst into a single verification. Dreo's cloud REST
+    # state lags the device by several seconds (field-observed: a readback
+    # 4 s after a gate close returned the PRE-close state, re-opened the gate
+    # in cache, and the user's next wake command went out without gate keys),
+    # so this must sit beyond that ingest lag.
+    _STATE_VERIFY_DELAY = 10.0
+
+    # A verification whose REST payload predates our last local write is
+    # retried this many times before being accepted as truth. Retrying covers
+    # cloud ingest lag; the final acceptance keeps silently-dropped commands
+    # self-healing (a drop leaves REST legitimately older than our write).
+    _STATE_VERIFY_MAX_STALE_RETRIES = 3
+
     @staticmethod
     def _clamp_rgb_tuple(rgb: tuple) -> tuple[int, int, int]:
         """Clamp RGB tuple values to 0-255 integers."""
@@ -99,6 +117,16 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._light_on: bool = None
         self._brightness: int = None
         self._color_temp: int = None
+
+        # Cancel handle from PyDreo.schedule_call_later (HA async_call_later or Timer).
+        self._state_verify_cancel: Callable[[], None] | None = None
+        # Set by dispose() so a delayed verification cannot read after unload.
+        self._state_verify_disposed: bool = False
+        # Wall-clock time of our last optimistic write; REST payloads whose
+        # per-key device timestamps predate this are stale (cloud ingest lag).
+        self._last_local_write: float = 0.0
+        self._rest_readback_stale = False
+        self._stale_readback_retries = 0
 
         self._atm_light_on: bool = None
         self._atm_brightness: int = None
@@ -182,6 +210,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
             elif key in self._LOAD_ATTRS:
                 setattr(self, self._LOAD_ATTRS[key], val)
         self._is_on = bool(self.is_on)
+        self._last_local_write = time.time()
 
     def _finalize_command_params(self, params: dict) -> dict:
         """Derive whole-device gate keys for a merged batch just before sending.
@@ -456,9 +485,52 @@ class PyDreoCeilingFan(PyDreoFanBase):
     # ------------------------------------------------------------------
 
     def _apply_rest_power_state(self, state: dict) -> None:
-        """Apply the REST payload's gate and load keys to the retained cache."""
+        """Apply the REST payload's gate and load keys, skipping stale contradictions.
+
+        Dreo's cloud REST state lags the device by several seconds (observed
+        well past 10 s), so a readback inside that window carries PRE-command
+        values; applying them would revert the retained cache and the next
+        command would derive its gate keys from state that no longer exists
+        (field-observed: off-then-quickly-on left the room dark because a
+        stale readback re-opened the gate in cache and the wake keys were
+        skipped).
+
+        Per key: a REST value that AGREES with the cache is never dangerous
+        and always applies; a value that CONTRADICTS the cache applies only if
+        stamped after our last local write (a genuine external change). A
+        contradiction with an older stamp is either cloud lag or a dropped
+        command - it is kept optimistic here and the verification retry loop
+        disambiguates.
+        """
+        stale_keys = []
         for key, attr in ((POWERON_KEY, "_poweron"), *self._LOAD_ATTRS.items()):
-            setattr(self, attr, self.get_state_update_value(state, key))
+            rest_val = self.get_state_update_value(state, key)
+            if rest_val != getattr(self, attr) and self._predates_our_last_write(state, key):
+                stale_keys.append(key)
+                continue
+            setattr(self, attr, rest_val)
+        self._rest_readback_stale = bool(stale_keys)
+        if stale_keys:
+            _LOGGER.debug(
+                "_apply_rest_power_state: %s REST contradicts local state with pre-write timestamps for %s; keeping optimistic values (cloud lag or dropped command)",
+                self.name,
+                stale_keys,
+            )
+
+    def _predates_our_last_write(self, state: dict, key: str) -> bool:
+        """True if the REST entry for ``key`` is stamped before our last local write.
+
+        The device refreshes a key's timestamp ONLY when its value changes (a
+        no-op write keeps the old stamp), so a stamp is meaningful solely for a
+        value that CONTRADICTS the local cache - old stamps on agreeing values
+        are routine. Entries without a timestamp never count as predating
+        (models that omit stamps keep the old always-apply behaviour).
+        """
+        if not self._last_local_write:
+            return False
+        entry = state.get(key)
+        ts = entry.get(TIMESTAMP_KEY) if isinstance(entry, dict) else None
+        return isinstance(ts, (int, float)) and ts < self._last_local_write
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -553,10 +625,115 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
         val_poweron = self.get_server_update_key_value(message, POWERON_KEY)
         if isinstance(val_poweron, bool):
+            gate_opened = val_poweron and self._poweron is False
             self._poweron = val_poweron
             _LOGGER.debug("_handle_power_state_update: poweron (gate) -> %s", val_poweron)
+            if gate_opened:
+                # Gate-open re-energises retained loads, but some units never
+                # report load keys (observed: lighton on a DR-HCF002S), so pull
+                # the truth via REST once the trailing deltas have landed.
+                self._schedule_state_verification()
 
         self._is_on = bool(self.is_on)
+
+    # ------------------------------------------------------------------
+    # State verification (after every command and every gate-open)
+    # ------------------------------------------------------------------
+
+    def _on_command_sent(self) -> None:
+        """Verify every command burst against REST truth.
+
+        The hardware drops rapid commands silently and some units never report
+        certain load keys, so a debounced REST readback after each send is the
+        only reliable confirmation.
+        """
+        self._stale_readback_retries = 0
+        self._schedule_state_verification()
+
+    def _schedule_state_verification(self) -> None:
+        """(Re)schedule a one-shot REST state verification, debounced.
+
+        Called after every command we send (our optimistic state must be
+        verified - the hardware can silently drop a command) and on gate-open
+        (external changes may be invisible - some units never report certain
+        load keys). Rescheduling on each call collapses a burst into a single
+        verification after the burst quietens.
+
+        Delayed work goes through the host scheduler (HA ``async_call_later``)
+        so the integration owns its lifecycle and cancels it on unload.
+        """
+        with self._lock:
+            if self._state_verify_disposed:
+                return
+            self._cancel_state_verification_locked()
+            self._state_verify_cancel = self._dreo.schedule_call_later(self._STATE_VERIFY_DELAY, self._verify_state)
+
+    def _cancel_state_verification_locked(self) -> None:
+        """Cancel a pending verification, if any. Caller must hold ``_lock``."""
+        if self._state_verify_cancel is None:
+            return
+        try:
+            self._state_verify_cancel()
+        except Exception as ex:  # pylint: disable=broad-except
+            # Teardown race: the handle may already be invalid.
+            _LOGGER.debug("_cancel_state_verification: handle failed for %s: %s", self.name, ex)
+        self._state_verify_cancel = None
+
+    def _verify_state(self) -> None:
+        """Refresh state via REST; WS deltas may be incomplete on some units.
+
+        A readback whose gate/load keys predate our last write is cloud ingest
+        lag, not device truth - update_state keeps the optimistic values and we
+        retry after another delay. If REST stays older than our write past the
+        retry cap, the command was genuinely dropped and REST IS the truth, so
+        the guard is lifted for one final accepting read (self-heal).
+
+        Runs on whichever thread the host scheduler dispatches to (an HA
+        executor thread), never the event loop - it makes a blocking REST call.
+        """
+        with self._lock:
+            # This scheduled verification is now running; its handle is spent.
+            self._state_verify_cancel = None
+            if self._state_verify_disposed:
+                return
+        if self._outbox.busy:
+            # A batch is still queued or in flight; a REST readback now would
+            # see pre-batch state and briefly revert optimistic values. Try
+            # again after the next quiet stretch.
+            self._schedule_state_verification()
+            return
+        try:
+            if self._dreo.load_device_state(self):
+                if self._rest_readback_stale:
+                    if self._stale_readback_retries < self._STATE_VERIFY_MAX_STALE_RETRIES:
+                        self._stale_readback_retries += 1
+                        _LOGGER.debug(
+                            "_verify_state: %s REST still behind our last write; retry %d/%d",
+                            self.name,
+                            self._stale_readback_retries,
+                            self._STATE_VERIFY_MAX_STALE_RETRIES,
+                        )
+                        self._schedule_state_verification()
+                        return
+                    _LOGGER.warning(
+                        "_verify_state: %s REST stayed behind our last write after %d retries; accepting REST as truth (command was likely dropped)",
+                        self.name,
+                        self._STATE_VERIFY_MAX_STALE_RETRIES,
+                    )
+                    self._last_local_write = 0.0
+                    self._dreo.load_device_state(self)
+                self._stale_readback_retries = 0
+                _LOGGER.debug("_verify_state: REST verification complete for %s", self.name)
+                self._do_callbacks()
+        except Exception as ex:  # pylint: disable=broad-except
+            _LOGGER.debug("_verify_state: verification failed for %s: %s", self.name, ex)
+
+    def dispose(self) -> None:
+        """Also cancel the pending state verification (transport going away)."""
+        super().dispose()
+        with self._lock:
+            self._state_verify_disposed = True
+            self._cancel_state_verification_locked()
 
     def is_feature_supported(self, feature: str) -> bool:
         """Check if this ceiling fan supports a specific feature"""
