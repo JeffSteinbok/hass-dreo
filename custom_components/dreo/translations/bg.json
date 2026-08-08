@@ -45,6 +45,9 @@
           "off": "Idle",
           "on": "Waiting"
         }
+      },
+      "main_power": {
+        "name": "Основно захранване"
       }
     },
     "fan": {

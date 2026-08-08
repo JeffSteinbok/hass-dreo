@@ -73,6 +73,12 @@ class TestDreoHumidifier(IntegrationTestBase):
             # Check to see what binary sensors are added - water empty
             binary_sensors = binary_sensor.get_entries([pydreo_humidifier])
             assert len(binary_sensors) == 1
+            # The unique_id predates the key-derived default and must never change:
+            # a new one would orphan every existing water-empty entity in users'
+            # registries. Pinned by unique_id_suffix in the descriptor.
+            assert binary_sensors[0].unique_id.endswith("-water-empty")
+            assert binary_sensors[0].icon == "mdi:water-check"
+            assert "water_level" in binary_sensors[0].extra_state_attributes
 
     def test_HHM014S(self):  # pylint: disable=invalid-name
         """Load HHM014S humidifier and test sending commands."""

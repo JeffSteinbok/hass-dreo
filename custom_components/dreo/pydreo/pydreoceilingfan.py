@@ -181,6 +181,32 @@ class PyDreoCeilingFan(PyDreoFanBase):
     # The power gate
     # ------------------------------------------------------------------
 
+    @property
+    def poweron(self) -> bool | None:
+        """The whole-device power gate, or None on models without one (DR-HCF001S).
+
+        Read-only, by deliberate contrast with the read-write ``poweron`` on
+        heaters and air conditioners (where it simply is the device's on/off).
+        Here the gate is derived per command by ``_finalize_command_params`` from
+        the merged batch, and setting it directly would fight that: in
+        particular ``poweron: True`` with every load off is the firmware
+        chain-pull shape that makes the device set ``fanon`` retained-True on
+        its own. Callers switch loads instead and let the gate follow.
+        """
+        return self._poweron
+
+    def gate_diagnostics(self) -> dict:
+        """Retained load values and reconcile-loop health, for diagnostics.
+
+        The retained values are the RAW ungated states, which is the point:
+        ``light_on`` False collapses "light off" and "light retained on behind a
+        closed gate", and only these can tell them apart.
+        """
+        diagnostics = {load_key: getattr(self, attr) for load_key, attr in self._LOAD_ATTRS.items()}
+        diagnostics["rest_readback_stale"] = self._rest_readback_stale
+        diagnostics["stale_readback_retries"] = self._stale_readback_retries
+        return diagnostics
+
     def _gated(self, load_value: bool | None) -> bool | None:
         """Apply the whole-device power gate to a retained load value.
 

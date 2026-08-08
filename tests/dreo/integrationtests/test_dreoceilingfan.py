@@ -3,11 +3,12 @@
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import patch
+from custom_components.dreo import binary_sensor
 from custom_components.dreo import fan
 from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo import light
-from custom_components.dreo.haimports import ColorMode, ATTR_RGB_COLOR
+from custom_components.dreo.haimports import ColorMode, ATTR_RGB_COLOR, EntityCategory
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
@@ -506,3 +507,51 @@ class TestDreoCeilingFan(IntegrationTestBase):
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgbic_light.turn_on(**{ATTR_RGB_COLOR: (0, 255, 0)})
                 mock_send_command.assert_any_call(pydreo_fan, {ATMCOLOR_KEY: 65280})
+
+    def test_main_power_diagnostic_entity(self):
+        """The whole-device gate is exposed as a diagnostic binary sensor.
+
+        `light_on == False` collapses "light off" and "light retained on behind a
+        closed gate"; only the gate distinguishes them, and until now that state
+        existed nowhere in HA - it had to be probed live against Dreo's cloud REST.
+        Recording it makes the failure mode visible after the fact.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HCF002S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_fan = self.pydreo_manager.devices[0]
+
+            sensors = binary_sensor.get_entries([pydreo_fan])
+            assert len(sensors) == 1
+            main_power = sensors[0]
+            assert main_power.entity_description.key == "main_power"
+            assert main_power.entity_category is EntityCategory.DIAGNOSTIC
+            assert main_power.entity_registry_enabled_default is True
+            assert main_power.unique_id.endswith("-main_power")
+            # No state strings of our own: HA core supplies localized On/Off.
+            assert main_power.device_class is None
+
+            # Powered, light retained on, fan retained off.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: False, FANON_KEY: False}})
+            assert main_power.is_on is True
+            assert main_power.icon == "mdi:power"
+            assert main_power.extra_state_attributes[LIGHTON_KEY] is True
+
+            # Unpowered: the light entity reads off, but the attributes still show
+            # lighton retained True. That difference is the whole point of the entity.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+            assert main_power.is_on is False
+            assert main_power.icon == "mdi:power-off"
+            assert pydreo_fan.light_on is False
+            assert main_power.extra_state_attributes[LIGHTON_KEY] is True
+            assert main_power.extra_state_attributes["rest_readback_stale"] is False
+
+    def test_no_main_power_entity_on_ungated_models(self):
+        """DR-HCF001S and DR-HCF521S have no poweron key, so no gate and no entity."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            for devices_file in ("get_devices_HCF001S.json", "get_devices_HCF521S.json"):
+                self.get_devices_file_name = devices_file
+                self.pydreo_manager.load_devices()
+                pydreo_fan = self.pydreo_manager.devices[0]
+                assert pydreo_fan.poweron is None
+                assert binary_sensor.get_entries([pydreo_fan]) == [], devices_file

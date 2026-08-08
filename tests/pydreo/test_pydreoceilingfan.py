@@ -927,3 +927,67 @@ class TestPyDreoCeilingFan(TestBase):
         assert fan._light_on is False, "stale contradicting key must stay optimistic"  # pylint: disable=protected-access
         assert fan._poweron is True and fan._atm_light_on is True  # pylint: disable=protected-access
         assert fan._rest_readback_stale is True  # pylint: disable=protected-access
+
+    def test_poweron_property_exposes_the_gate(self):
+        """The gate is public read-only state: it is what distinguishes "light off"
+        from "light retained on behind a closed gate", and the diagnostic entity
+        renders it."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, FANON_KEY: False, ATMON_KEY: False}})
+        assert fan.poweron is True
+        assert fan.is_feature_supported("poweron") is True
+
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+        assert fan.poweron is False
+        # The load is gated off but still retained on underneath - the collapse
+        # that made the field bugs invisible.
+        assert fan.light_on is False
+
+    def test_poweron_is_none_on_ungated_models(self):
+        """Models with no poweron key (DR-HCF001S) have no gate, so no entity."""
+        self.get_devices_file_name = "get_devices_HCF001S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        assert fan.poweron is None
+        assert fan.is_feature_supported("poweron") is False
+
+    def test_gate_diagnostics_reports_raw_retained_loads(self):
+        """gate_diagnostics exposes the UNGATED load values plus reconcile health."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: True, FANON_KEY: False}})
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+
+        diagnostics = fan.gate_diagnostics()
+        # Gated off, yet the loads are still retained ON - exactly the state the
+        # gated properties cannot show.
+        assert fan.light_on is False and fan.atm_light_on is False
+        assert diagnostics == {
+            FANON_KEY: False,
+            LIGHTON_KEY: True,
+            ATMON_KEY: True,
+            "rest_readback_stale": False,
+            "stale_readback_retries": 0,
+        }
+
+    def test_gate_diagnostics_surfaces_stale_readbacks(self):
+        """A stale REST contradiction shows up in the diagnostics attributes, so a
+        misbehaving reconcile loop is visible in HA rather than only in the logs."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, LIGHTON_KEY: True, ATMON_KEY: False, FANON_KEY: False}})
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.light_on = False  # last load off -> closes the gate
+
+        stale = self._rest_state(time.time() - 30, poweron=True, lighton=True, fanon=False, atmon=False)
+        stale["windlevel"] = {"state": 5, "timestamp": time.time() - 30}
+        fan.update_state(stale)
+
+        assert fan.gate_diagnostics()["rest_readback_stale"] is True
