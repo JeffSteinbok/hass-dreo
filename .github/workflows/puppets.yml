@@ -1,9 +1,8 @@
 name: Puppets
 
 on:
-  # Stagger the minute across repositories to spread API and model traffic.
   schedule:
-    - cron: "0 4,10,16,22 * * *"
+    - cron: "20 16 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
@@ -17,12 +16,8 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  # The reusable workflow cannot elevate beyond these caller-granted permissions.
   actions: write
-  # GitHub validates the reusable workflow's provider job before evaluating whether it will
-  # run, so every caller must grant its declared maximum even when using Copilot only.
   contents: write
-  # Lets the reusable workflow identify its exact GitHub-resolved commit.
   id-token: write
   issues: write
   pull-requests: write
@@ -30,16 +25,9 @@ permissions:
 
 jobs:
   reconcile:
-    uses: JeffSteinbok/puppets/.github/workflows/reconcile.yml@v1
+    uses: JeffSteinbok/puppets/.github/workflows/reconcile.yml@e4d85e333ebbb42c0f4dd20b7860fa7882e90a2e
     with:
       dry_run: ${{ inputs.dry_run || false }}
       caller_workflow: puppets.yml
     secrets:
-      # Required when a profile uses Copilot. GitHub App installation tokens, including
-      # GITHUB_TOKEN, cannot assign coding agents; use a repository-scoped user token.
       token: ${{ secrets.PUPPETS_TOKEN }}
-      # Optional: only required if a workflow profile sets implementation.provider to
-      # `claude` or `codex`. Uncomment the secrets for whichever provider(s) you use.
-      # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-      # claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      # openai_api_key: ${{ secrets.OPENAI_API_KEY }}
