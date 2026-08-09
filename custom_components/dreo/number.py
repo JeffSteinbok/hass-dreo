@@ -12,7 +12,7 @@ import logging
 from .haimports import *  # pylint: disable=W0401,W0614
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .pydreo.constant import DreoDeviceType
+from .pydreo.constant import DreoDeviceType, TIMER_MAX_MINUTES
 from .dreobasedevice import DreoBaseDeviceHA
 
 from .const import DOMAIN, PYDREO_MANAGER
@@ -189,6 +189,28 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         step=1,
         exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
         and device.is_feature_supported("rgbth"),
+    ),
+    DreoNumberEntityDescription(
+        key="Timer On",
+        translation_key="timer_on",
+        attr_name="timer_on",
+        icon="mdi:timer-play-outline",
+        min_value=0,
+        max_value=TIMER_MAX_MINUTES,
+        step=1,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        exists_fn=lambda device: device.is_feature_supported("timer_on"),
+    ),
+    DreoNumberEntityDescription(
+        key="Timer Off",
+        translation_key="timer_off",
+        attr_name="timer_off",
+        icon="mdi:timer-off-outline",
+        min_value=0,
+        max_value=TIMER_MAX_MINUTES,
+        step=1,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        exists_fn=lambda device: device.is_feature_supported("timer_off"),
     ),
 )
 

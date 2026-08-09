@@ -40,6 +40,10 @@ FIXEDCONF_KEY = "fixedconf"
 FIXEDCONF_SETTLE_SECONDS_KEY = "fixed_conf_settle_seconds"
 DEVON_KEY = "devon"
 TIMERON_KEY = "timeron"
+# Maximum duration (minutes) settable for the auto on/off timer. The Dreo mobile
+# app allows up to 11h59m (719 minutes), which is a superset of what's exposed on
+# any single device's physical remote.
+TIMER_MAX_MINUTES = 719
 COOLDOWN_KEY = "cooldown"
 PTCON_KEY = "ptcon"
 LIGHTON_KEY = "lighton"
