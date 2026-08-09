@@ -585,9 +585,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
             self._pm25 = val_pm25
 
         val_timer_on = self.get_server_update_key_value(message, TIMERON_KEY)
-        if isinstance(val_timer_on, int):
+        if isinstance(val_timer_on, int) and self._timer_on is not None:
             self._timer_on = val_timer_on
 
         val_timer_off = self.get_server_update_key_value(message, TIMEROFF_KEY)
-        if isinstance(val_timer_off, int):
+        if isinstance(val_timer_off, int) and self._timer_off is not None:
             self._timer_off = val_timer_off
