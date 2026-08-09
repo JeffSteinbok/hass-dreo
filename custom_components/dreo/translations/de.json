@@ -256,6 +256,12 @@
       },
       "ambient_light_level": {
         "name": "Umgebungslicht-Stufe"
+      },
+      "timer_on": {
+        "name": "Timer Ein"
+      },
+      "timer_off": {
+        "name": "Timer Aus"
       }
     },
     "select": {

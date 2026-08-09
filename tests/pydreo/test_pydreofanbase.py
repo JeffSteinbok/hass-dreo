@@ -675,3 +675,91 @@ class TestPyDreoFanBase(TestBase):
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "normal"  # same value, device is ON
             mock_send_command.assert_not_called()
+
+    # --- timer_on / timer_off ---
+    def test_timer_on_off_parsed_from_rest_state(self):
+        """Test timer_on/timer_off are parsed from the REST state's {du, ts} structure."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMERON_KEY: {"state": {"du": 120}}, TIMEROFF_KEY: {"state": {"du": 60}}})
+        assert fan.timer_on == 120
+        assert fan.timer_off == 60
+
+    def test_timer_on_off_none_when_state_missing(self):
+        """Test timer_on/timer_off are None when the REST state is missing/None."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMERON_KEY: {"state": None}, TIMEROFF_KEY: {"state": None}})
+        assert fan.timer_on is None
+        assert fan.timer_off is None
+
+    def test_timer_on_off_updated_via_websocket(self):
+        """Test timer_on/timer_off are updated from raw int websocket values."""
+        fan = self._load_htf005s()
+        fan.handle_server_update({REPORTED_KEY: {TIMERON_KEY: 45, TIMEROFF_KEY: 90}})
+        assert fan.timer_on == 45
+        assert fan.timer_off == 90
+
+    def test_timer_on_setter_sends_command(self):
+        """Test timer_on setter sends a command when the value changes."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMERON_KEY: {"state": {"du": 0}}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.timer_on = 30
+            mock_send_command.assert_called_once_with(fan, {TIMERON_KEY: 30})
+
+    def test_timer_on_setter_noop_when_unchanged(self):
+        """Test timer_on setter skips command when value hasn't changed."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMERON_KEY: {"state": {"du": 30}}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.timer_on = 30
+            mock_send_command.assert_not_called()
+
+    def test_timer_off_setter_sends_command(self):
+        """Test timer_off setter sends a command when the value changes."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMEROFF_KEY: {"state": {"du": 0}}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.timer_off = 480
+            mock_send_command.assert_called_once_with(fan, {TIMEROFF_KEY: 480})
+
+    def test_timer_off_setter_noop_when_unchanged(self):
+        """Test timer_off setter skips command when value hasn't changed."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMEROFF_KEY: {"state": {"du": 480}}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.timer_off = 480
+            mock_send_command.assert_not_called()
+
+    def test_timer_on_setter_raises_when_unsupported(self):
+        """Test timer_on setter raises NotImplementedError when unsupported."""
+        fan = self._load_htf005s()
+        fan._timer_on = None  # pylint: disable=protected-access
+        with pytest.raises(NotImplementedError, match="doesn't support it"):
+            fan.timer_on = 30
+
+    def test_timer_off_setter_raises_when_unsupported(self):
+        """Test timer_off setter raises NotImplementedError when unsupported."""
+        fan = self._load_htf005s()
+        fan._timer_off = None  # pylint: disable=protected-access
+        with pytest.raises(NotImplementedError, match="doesn't support it"):
+            fan.timer_off = 30
+
+    def test_timer_on_setter_rejects_out_of_range(self):
+        """Test timer_on setter rejects values outside the acceptable range."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMERON_KEY: {"state": {"du": 0}}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.timer_on = 1000
+            mock_send_command.assert_not_called()
+
+    def test_is_feature_supported_timer_on_off(self):
+        """Test is_feature_supported reflects timer_on/timer_off availability."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMERON_KEY: {"state": {"du": 0}}, TIMEROFF_KEY: {"state": None}})
+        assert fan.is_feature_supported("timer_on") is True
+        assert fan.is_feature_supported("timer_off") is False

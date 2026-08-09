@@ -49,6 +49,22 @@ class TestDreoNumberHA(TestDeviceBase):
         keys = [e.entity_description.key for e in entities]
         assert "Vertical Angle" in keys
 
+    def test_number_get_entries_timer_on(self):
+        """Test number entity creation for timer_on."""
+        device = self.create_mock_device(name="Test Circulator", serial_number="AC001", features={"timer_on": 0})
+
+        entities = number.get_entries([device])
+        keys = [e.entity_description.key for e in entities]
+        assert "Timer On" in keys
+
+    def test_number_get_entries_timer_off(self):
+        """Test number entity creation for timer_off."""
+        device = self.create_mock_device(name="Test Circulator", serial_number="AC001", features={"timer_off": 0})
+
+        entities = number.get_entries([device])
+        keys = [e.entity_description.key for e in entities]
+        assert "Timer Off" in keys
+
     def test_number_get_entries_empty(self):
         """Test that devices without number features get no number entities."""
         device = self.create_mock_device(name="Simple Fan", serial_number="FAN001", features={"is_on": True, "fan_speed": 3})

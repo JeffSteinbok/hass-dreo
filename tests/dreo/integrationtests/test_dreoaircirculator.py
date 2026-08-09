@@ -90,6 +90,18 @@ class TestDreoAirCirculator(IntegrationTestBase):
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(switches, ["Horizontally Oscillating", "Panel Sound", "Vertically Oscillating", "Display Auto Off", "Child Lock"])
 
+            # Test timer support (issue #915: DR-HAF001S has an on-device auto on/off timer)
+            numbers = number.get_entries([pydreo_fan])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
+            timer_off_number = self.get_entity_by_key(numbers, "Timer Off")
+            assert timer_off_number.native_value == 0
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                timer_off_number.set_native_value(480)
+                mock_send_command.assert_called_once_with(pydreo_fan, {TIMEROFF_KEY: 480})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {TIMEROFF_KEY: 480}})
+            assert timer_off_number.native_value == 480
+
     def test_HAF004S(self):  # pylint: disable=invalid-name
         """Test HAF004S fan."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:
@@ -981,4 +993,16 @@ class TestDreoAirCirculator(IntegrationTestBase):
             switches = switch.get_entries([pydreo_fan])
             self.verify_expected_entities(switches, ["Adaptive Brightness", "Child Lock", "Display Light", "Horizontally Oscillating", "Panel Sound", "Vertically Oscillating"])
             numbers = number.get_entries([pydreo_fan])
-            self.verify_expected_entities(numbers, ["Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right", "Vertical Angle", "Vertical Oscillation Angle Bottom", "Vertical Oscillation Angle Top"])
+            self.verify_expected_entities(
+                numbers,
+                [
+                    "Horizontal Angle",
+                    "Horizontal Oscillation Angle Left",
+                    "Horizontal Oscillation Angle Right",
+                    "Timer Off",
+                    "Timer On",
+                    "Vertical Angle",
+                    "Vertical Oscillation Angle Bottom",
+                    "Vertical Oscillation Angle Top",
+                ],
+            )

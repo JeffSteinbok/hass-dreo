@@ -256,6 +256,12 @@
       },
       "ambient_light_level": {
         "name": "Poziom światła otoczenia"
+      },
+      "timer_on": {
+        "name": "Timer włączenia"
+      },
+      "timer_off": {
+        "name": "Timer wyłączenia"
       }
     },
     "select": {

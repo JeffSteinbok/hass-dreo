@@ -256,6 +256,12 @@
       },
       "ambient_light_level": {
         "name": "Nivel de luz ambiental"
+      },
+      "timer_on": {
+        "name": "Temporizador de encendido"
+      },
+      "timer_off": {
+        "name": "Temporizador de apagado"
       }
     },
     "select": {
