@@ -256,6 +256,12 @@
       },
       "ambient_light_level": {
         "name": "Livello luce ambientale"
+      },
+      "timer_on": {
+        "name": "Timer Accensione"
+      },
+      "timer_off": {
+        "name": "Timer Spegnimento"
       }
     },
     "select": {

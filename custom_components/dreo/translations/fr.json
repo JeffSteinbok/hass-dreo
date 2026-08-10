@@ -256,6 +256,12 @@
       },
       "ambient_light_level": {
         "name": "Niveau de lumière d'ambiance"
+      },
+      "timer_on": {
+        "name": "Minuterie Marche"
+      },
+      "timer_off": {
+        "name": "Minuterie Arrêt"
       }
     },
     "select": {

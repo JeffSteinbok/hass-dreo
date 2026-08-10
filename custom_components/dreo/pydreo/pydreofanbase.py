@@ -19,6 +19,9 @@ from .constant import (
     CHILDLOCKON_KEY,
     LOCATEMEON_KEY,
     PM25_KEY,
+    TIMERON_KEY,
+    TIMEROFF_KEY,
+    TIMER_MAX_MINUTES,
     TemperatureUnit,
     SPEED_RANGE,
     DreoDeviceSetting,
@@ -80,6 +83,8 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._child_lock_on = None
         self._locate_me_on = None
         self._pm25 = None
+        self._timer_on = None
+        self._timer_off = None
 
     def parse_speed_range(self, details: Dict[str, list]) -> tuple[int, int]:
         """Parse the speed range from the details."""
@@ -419,6 +424,46 @@ class PyDreoFanBase(PyDreoBaseDevice):
         else:
             raise NotImplementedError("PyDreoFanBase: Attempting to set locatemeon on a device that doesn't support.")
 
+    @property
+    def timer_on(self) -> int | None:
+        """Minutes remaining on the auto turn-on timer, or None if unsupported."""
+        return self._timer_on
+
+    @timer_on.setter
+    def timer_on(self, value: int) -> None:
+        """Set the auto turn-on timer, in minutes. Use 0 to cancel the timer."""
+        _LOGGER.debug("timer_on: timer_on.setter(%s)", value)
+        if self._timer_on is None:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set timer_on on a device that doesn't support it.")
+        value = int(value)
+        if not 0 <= value <= TIMER_MAX_MINUTES:
+            _LOGGER.error("timer_on: Timer duration %s is not in the acceptable range: (0, %s)", value, TIMER_MAX_MINUTES)
+            return
+        if self._timer_on == value:
+            _LOGGER.debug("timer_on: timer_on - value already %s, skipping command", value)
+            return
+        self._send_command(TIMERON_KEY, value)
+
+    @property
+    def timer_off(self) -> int | None:
+        """Minutes remaining on the auto turn-off timer, or None if unsupported."""
+        return self._timer_off
+
+    @timer_off.setter
+    def timer_off(self, value: int) -> None:
+        """Set the auto turn-off timer, in minutes. Use 0 to cancel the timer."""
+        _LOGGER.debug("timer_off: timer_off.setter(%s)", value)
+        if self._timer_off is None:
+            raise NotImplementedError("PyDreoFanBase: Attempting to set timer_off on a device that doesn't support it.")
+        value = int(value)
+        if not 0 <= value <= TIMER_MAX_MINUTES:
+            _LOGGER.error("timer_off: Timer duration %s is not in the acceptable range: (0, %s)", value, TIMER_MAX_MINUTES)
+            return
+        if self._timer_off == value:
+            _LOGGER.debug("timer_off: timer_off - value already %s, skipping command", value)
+            return
+        self._send_command(TIMEROFF_KEY, value)
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
@@ -458,6 +503,12 @@ class PyDreoFanBase(PyDreoBaseDevice):
         self._child_lock_on = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._locate_me_on = self.get_state_update_value(state, LOCATEMEON_KEY)
         self._pm25 = self.get_state_update_value(state, PM25_KEY)
+
+        timeron = self.get_state_update_value(state, TIMERON_KEY)
+        self._timer_on = timeron.get("du") if isinstance(timeron, dict) else None
+
+        timeroff = self.get_state_update_value(state, TIMEROFF_KEY)
+        self._timer_off = timeroff.get("du") if isinstance(timeroff, dict) else None
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -532,3 +583,11 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_pm25 = self.get_server_update_key_value(message, PM25_KEY)
         if isinstance(val_pm25, int):
             self._pm25 = val_pm25
+
+        val_timer_on = self.get_server_update_key_value(message, TIMERON_KEY)
+        if isinstance(val_timer_on, int) and self._timer_on is not None:
+            self._timer_on = val_timer_on
+
+        val_timer_off = self.get_server_update_key_value(message, TIMEROFF_KEY)
+        if isinstance(val_timer_off, int) and self._timer_off is not None:
+            self._timer_off = val_timer_off

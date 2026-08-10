@@ -75,7 +75,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             # Check to see what numbers are added to ceiling fans
             numbers = number.get_entries([pydreo_fan])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             lights = light.get_entries([pydreo_fan])
             self.verify_expected_entities(lights, ["Light"])
@@ -315,7 +315,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             # Check to see what numbers are added to ceiling fans
             numbers = number.get_entries([pydreo_fan])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             lights = light.get_entries([pydreo_fan])
             self.verify_expected_entities(lights, ["Light"])
@@ -416,7 +416,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
             self.verify_expected_entities(switches, ["Panel Sound"])
 
             numbers = number.get_entries([pydreo_fan])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             lights = light.get_entries([pydreo_fan])
             self.verify_expected_entities(lights, ["Light"])

@@ -267,6 +267,12 @@
       },
       "ambient_light_level": {
         "name": "Ambient Light Level"
+      },
+      "timer_on": {
+        "name": "Timer On"
+      },
+      "timer_off": {
+        "name": "Timer Off"
       }
     },
     "select": {

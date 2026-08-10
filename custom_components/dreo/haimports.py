@@ -85,6 +85,7 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
     UnitOfTemperature,
+    UnitOfTime,
 )
 
 from homeassistant.helpers import entity_platform

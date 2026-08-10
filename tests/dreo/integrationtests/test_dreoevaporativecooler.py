@@ -51,7 +51,7 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
                 assert len(pydreo_ec.preset_modes) > 0
 
             numbers = number.get_entries([pydreo_ec])
-            self.verify_expected_entities(numbers, ["Ambient Light Threshold Low", "Ambient Light Threshold High", "Target Humidity"])
+            self.verify_expected_entities(numbers, ["Ambient Light Threshold Low", "Ambient Light Threshold High", "Target Humidity", "Timer Off", "Timer On"])
 
             sensors = sensor.get_entries([pydreo_ec])
             self.verify_expected_entities(sensors, ["Temperature", 'Target Humidity Reached', "Humidity", "Use since cleaning"])
@@ -101,6 +101,8 @@ class TestDreoEvaporativeCoolers(IntegrationTestBase):
                     "Horizontal Oscillation Angle Left",
                     "Horizontal Oscillation Angle Right",
                     "Target Humidity",
+                    "Timer Off",
+                    "Timer On",
                 ],
             )
 
