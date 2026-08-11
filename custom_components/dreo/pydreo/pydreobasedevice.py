@@ -5,6 +5,7 @@ import logging
 from typing import Dict
 from typing import TYPE_CHECKING
 
+from .commandoutbox import CommandOutbox, OutboxTiming
 from .constant import REPORTED_KEY, POWERON_KEY, CONNECTED_KEY, STATE_KEY, PRESET_MODE_STRINGS
 from .models import DreoDeviceDetails
 
@@ -27,6 +28,12 @@ class PyDreoBaseDevice:
 
     Has code to handle providing common attributes and comment event handling.
     """
+
+    # Outgoing commands go through a per-device CommandOutbox so that
+    # near-simultaneous key changes merge into one request (see the rationale
+    # in commandoutbox.py). A device class may override this with
+    # ``OutboxTiming.IMMEDIATE`` to restore synchronous per-key sends.
+    _COMMAND_TIMING = OutboxTiming(quiet_period=0.10, max_wait=0.25, min_interval=0.50)
 
     def __init__(
         self,
@@ -58,6 +65,18 @@ class PyDreoBaseDevice:
         self.raw_state = None
         self._attr_cbs = []
         self._lock = threading.Lock()
+
+        self._outbox = CommandOutbox(
+            name=self._name,
+            timing=self._COMMAND_TIMING,
+            send=lambda params: self._dreo.send_command(self, params),
+            # Bound method, so a host scheduler installed after construction
+            # (HA wires async_call_later during setup) is picked up.
+            schedule=self._dreo.schedule_call_later,
+            on_submit=self._apply_optimistic_state,
+            finalize=self._finalize_command_params,
+            on_sent=self._on_command_sent,
+        )
 
     def __repr__(self):
         # Representation string of object.
@@ -130,9 +149,41 @@ class PyDreoBaseDevice:
     def _send_command(self, command_key: str, value):
         """Send a command to the Dreo servers via WebSocket."""
         _LOGGER.debug("_send_command: %s-> %s", command_key, value)
+        self._send_command_batch({command_key: value})
 
-        params: dict = {command_key: value}
-        self._dreo.send_command(self, params)
+    def _send_command_batch(self, params: dict) -> None:
+        """Send several key changes as ONE command.
+
+        The keys are guaranteed to ship together in a single request (the
+        hardware applies multi-key commands atomically); single-key
+        ``_send_command`` calls make no such grouping promise, though the
+        outbox may still merge them with a concurrent burst.
+        """
+        self._outbox.submit(params)
+
+    def _apply_optimistic_state(self, params: dict) -> None:
+        """Hook: fold keys we are about to send into local state.
+
+        Called by the outbox at submit time with the caller's keys and at
+        flush time with any keys ``_finalize_command_params`` derived. Base
+        implementation is a no-op; setters that update their own attributes
+        keep doing so themselves.
+        """
+
+    def _finalize_command_params(self, params: dict) -> dict:
+        """Hook: adjust a merged batch just before it is sent.
+
+        Base implementation returns the batch unchanged. Device classes with
+        cross-key semantics (e.g. the ceiling fan's whole-device power gate)
+        override this to derive extra keys from the merged final state.
+        """
+        return params
+
+    def _on_command_sent(self) -> None:
+        """Hook: called after each send attempt (success or failure).
+
+        Base implementation is a no-op.
+        """
 
     def _set_setting(self, setting_key: str, value):
         """Set a setting on the device."""
@@ -188,7 +239,11 @@ class PyDreoBaseDevice:
         Called when the PyDreo manager tears down (integration unload). Subclasses
         that schedule background work should override and cancel it here so
         callbacks cannot run against torn-down state.
+
+        Drops any batched-but-unsent commands so no outbox timer fires against a
+        torn-down connection; subclasses that override must call super().
         """
+        self._outbox.cancel()
 
     def add_attr_callback(self, cb):
         """Add a callback to be called by _do_callbacks."""

@@ -212,6 +212,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     if DreoDeviceType.CEILING_FAN in device_types or DreoDeviceType.AIR_CIRCULATOR in device_types:
         platforms.add(Platform.LIGHT)
+    if DreoDeviceType.CEILING_FAN in device_types:
+        # Diagnostic main-power sensor; see binary_sensor.py.
+        platforms.add(Platform.BINARY_SENSOR)
     if DreoDeviceType.AIR_CIRCULATOR in device_types:
         platforms.add(Platform.SELECT)
         # Diagnostic settle-pending binary sensor for models with fixedconf settle.

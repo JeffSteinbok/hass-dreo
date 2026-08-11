@@ -2,12 +2,14 @@
 
 import logging
 import threading
+import time
 from unittest.mock import patch, MagicMock
 import pytest
 from .imports import *  # pylint: disable=W0401,W0614
-from .testbase import TestBase, PATCH_SEND_COMMAND, PATCH_BASE_PATH
+from .testbase import TestBase, PATCH_SEND_COMMAND, PATCH_BASE_PATH, wait_for
 
 from custom_components.dreo.pydreo import PyDreo
+from custom_components.dreo.pydreo.commandoutbox import OutboxTiming
 from custom_components.dreo.pydreo.pydreobasedevice import PyDreoBaseDevice
 
 logger = logging.getLogger(__name__)
@@ -114,6 +116,44 @@ class TestSendCommand(TestBase):
         with patch(PATCH_TRANSPORT_SEND, side_effect=ack_wrong_method), patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1):
             fan.is_on = True
             # No valid ACK (wrong method) - should have exhausted all retries
+
+    def test_control_reply_is_not_applied_as_state(self):
+        """control-reply echoes what the server ACCEPTED, not what the device did.
+
+        It must feed the ack machinery only. Applying it as device state corrupted
+        the local cache whenever the device did not follow through (field-observed:
+        HA showed a light on that never physically turned on).
+        """
+        fan = self._load_fan()
+        initial = bool(fan.is_on)
+
+        self.pydreo_manager._transport_consume_message(
+            {"devicesn": fan.serial_number, "method": "control-reply", "reported": {POWERON_KEY: not initial}}
+        )
+        assert bool(fan.is_on) is initial  # unchanged: reply is not device state
+
+        self.pydreo_manager._transport_consume_message(
+            {"devicesn": fan.serial_number, "method": "control-report", "reported": {POWERON_KEY: not initial}}
+        )
+        assert bool(fan.is_on) is (not initial)  # device-confirmed state applies
+
+    def test_device_batches_near_simultaneous_commands(self):
+        """Every device type routes commands through its outbox: two setters
+        inside the quiet period merge into ONE multi-key send (the hardware
+        silently drops a second command arriving <~250 ms after the first)."""
+        self.get_devices_file_name = "get_devices_HTF005S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._outbox.timing = OutboxTiming(quiet_period=0.03, max_wait=0.12, min_interval=0.0)
+
+        sends = []
+        with patch(PATCH_SEND_COMMAND, side_effect=lambda _d, p: sends.append(p)):
+            fan._send_command(POWERON_KEY, True)
+            fan._send_command(WINDLEVEL_KEY, 3)
+            assert wait_for(lambda: len(sends) >= 1), "batch never flushed"
+            time.sleep(0.15)  # several quiet periods: a second send would have fired by now
+
+        assert sends == [{POWERON_KEY: True, WINDLEVEL_KEY: 3}]
 
     def test_command_slot_serializes_commands(self):
         """Test that only one command can be in-flight at a time."""
