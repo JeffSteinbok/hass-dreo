@@ -7,6 +7,7 @@ import time
 from unittest.mock import patch
 import pytest
 from custom_components.dreo.pydreo.commandoutbox import OutboxTiming
+from custom_components.dreo.pydreo.models import SUPPORTED_DEVICES
 from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
@@ -25,6 +26,15 @@ CEILING_FAN_EXHAUSTIVE_MODELS = [
 
 class TestPyDreoCeilingFan(TestBase):
     """Test PyDreoFan class."""
+
+    def test_HCF008S_capabilities(self):  # pylint: disable=invalid-name
+        """DR-HCF008S has the CF513S RGBIC ceiling-fan capabilities."""
+        details = SUPPORTED_DEVICES["DR-HCF008S"]
+        assert details.device_type == DreoDeviceType.CEILING_FAN
+        assert details.device_ranges[SPEED_RANGE] == (1, 12)
+        assert details.preset_modes == [("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)]
+        assert details.device_ranges["atm_brightness_range"] == (1, 100)
+        assert details.device_ranges["supports_direct_rgb_color"] is True
 
     def _exercise_all_settable_properties(self, fan: PyDreoCeilingFan):
         """Exercise all writable ceiling-fan properties that are supported by a model."""

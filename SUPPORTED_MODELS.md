@@ -56,6 +56,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HCF002S
 - DR-HCF003S
 - DR-HCF007S (CF521S RGBIC)
+- DR-HCF008S (CF513S RGBIC)
 - DR-HCF521S (CLF521S)
 
 ### Air Purifiers (DR-HAP Series)
