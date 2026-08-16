@@ -342,6 +342,10 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HAF004S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
+        # This model rejects fixedconf updates while the previous pan/tilt
+        # movement is still in progress. Match the proven settle interval used
+        # by DR-HPF017S to serialize successive axis changes.
+        device_ranges={FIXEDCONF_SETTLE_SECONDS_KEY: 8.0},
         override_fn=_haf004s_mcu_override,
     ),
     "DR-HAF008S": DreoDeviceDetails(
