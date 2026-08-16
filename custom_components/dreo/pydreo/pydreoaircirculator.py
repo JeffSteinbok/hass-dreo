@@ -769,7 +769,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
             if send is not None:
                 self._send_fixed_conf(send)
         except Exception:
-            # Dispatch cleared in-flight on send failure; still refresh diagnostics.
+            # Send failure cleared in-flight state; still refresh diagnostics.
             self._notify_fixed_conf_ui()
             raise
         if notify:
