@@ -27,9 +27,12 @@ from .constant import (
     HWFPON_KEY,
     HWFPANGLE_KEY,
     HBODYCNT_KEY,
+    WINDTYPE_KEY,
+    WIND_MODE_KEY,
 )
 
 from .commandoutbox import OutboxTiming
+from .helpers import Helpers
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
@@ -162,6 +165,23 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._follow_me: bool = None
         self._follow_me_angle: int = None
         self._people_detected: int = None
+
+    def turn_on_with_preset_mode(self, preset_mode: str) -> None:
+        """Atomically turn on the fan and select a preset mode."""
+        if self._preset_modes is None:
+            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support modes.")
+
+        key = WINDTYPE_KEY if self._wind_type is not None else WIND_MODE_KEY if self._wind_mode is not None else None
+        if key is None:
+            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support wind type or wind mode keys.")
+
+        numeric_value = Helpers.value_from_name(self._preset_modes, preset_mode)
+        if numeric_value is None:
+            raise ValueError(f"Preset mode {preset_mode} is not in the acceptable list: {self.preset_modes}")
+        if self._power_on_key is None:
+            raise NotImplementedError("Attempting to turn on a device with an unknown power key.")
+
+        self._send_command_batch({self._power_on_key: True, key: numeric_value})
 
     def _uses_hangleadj_for_horizontal(self) -> bool:
         """Check if device uses hangleadj (simpler angle control) instead of hoscangle."""

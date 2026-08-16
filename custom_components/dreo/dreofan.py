@@ -157,12 +157,16 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         if preset_mode not in self.preset_modes:
             raise ValueError(f"{preset_mode} is not one of the valid preset modes: {self.preset_modes}")
 
-        if not self.device.is_on:
+        was_off = not self.device.is_on
+        atomically_set_preset = was_off and self.device.model == "DR-HPF015S"
+        if atomically_set_preset:
+            self.device.turn_on_with_preset_mode(preset_mode)
+        elif was_off:
             self.device.is_on = True
 
         if self.device.type is DreoDeviceType.DEHUMIDIFIER:
             self.device.set_preset_mode(preset_mode)
-        else:
+        elif not atomically_set_preset:
             self.device.preset_mode = preset_mode
 
         self.schedule_update_ha_state()
