@@ -439,6 +439,11 @@ SUPPORTED_DEVICES = {
         # picker via the atm_color_rgb_write capability path (write-only, no state echo).
         device_ranges={SPEED_RANGE: (1, 12), "atm_brightness_range": (1, 100), "supports_direct_rgb_color": True},
     ),
+    "DR-HCF008S": DreoDeviceDetails(
+        device_type=DreoDeviceType.CEILING_FAN,
+        preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
+        device_ranges={SPEED_RANGE: (1, 12), "atm_brightness_range": (1, 100), "supports_direct_rgb_color": True},
+    ),
     "DR-HCF521S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
     # Air Purifiers
     "DR-HAP": DreoDeviceDetails(device_type=DreoDeviceType.AIR_PURIFIER),
