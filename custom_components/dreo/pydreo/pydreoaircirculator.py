@@ -171,7 +171,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         key = WINDTYPE_KEY if self._wind_type is not None else WIND_MODE_KEY if self._wind_mode is not None else None
         if key is None:
-            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support.")
+            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support wind type or wind mode keys.")
 
         numeric_value = Helpers.value_from_name(self._preset_modes, preset_mode)
         if numeric_value is None:
