@@ -1531,6 +1531,26 @@ class TestPyDreoAirCirculator(TestBase):
         assert debug["commanded"] is None
         assert debug["settle_pending"] is False
 
+    def test_fixed_conf_command_does_not_hold_state_lock(self):  # pylint: disable=invalid-name
+        """A synchronous control report must not deadlock fixedconf state updates."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        fan._fixed_conf_settle_seconds = 0  # pylint: disable=protected-access
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+
+        def send_command(device, command):
+            assert device._fixed_conf_lock.acquire(blocking=False)  # pylint: disable=protected-access
+            device._fixed_conf_lock.release()  # pylint: disable=protected-access
+            device.handle_server_update({"method": "control-report", REPORTED_KEY: command})
+
+        with patch(PATCH_SEND_COMMAND, side_effect=send_command) as mock_send_command:
+            fan.vertical_angle = 30
+            mock_send_command.assert_called_once_with(fan, {FIXEDCONF_KEY: "30,0"})
+
+        assert fan.vertical_angle == 0
+        assert fan.fixed_conf_commanded == "30,0"
+
     def test_fixed_conf_confirm_and_reject_notify_ui(self):  # pylint: disable=invalid-name
         """Confirm/reject clear commanded tracking and push HA callbacks."""
         self.get_devices_file_name = "get_devices_HAF004S.json"
