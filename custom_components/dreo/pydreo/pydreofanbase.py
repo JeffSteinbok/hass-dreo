@@ -19,6 +19,7 @@ from .constant import (
     CHILDLOCKON_KEY,
     LOCATEMEON_KEY,
     PM25_KEY,
+    TEMPOFFSET_KEY,
     TIMERON_KEY,
     TIMEROFF_KEY,
     TIMER_MAX_MINUTES,
@@ -58,7 +59,8 @@ class PyDreoFanBase(PyDreoBaseDevice):
 
         # Check to see if temperature calibration is supported.
         self._temperature_offset = None
-        if self.is_preference_supported(PREFERENCE_TYPE_TEMPERATURE_CALIBRATION, details):
+        self._supports_temperature_calibration = self.is_preference_supported(PREFERENCE_TYPE_TEMPERATURE_CALIBRATION, details)
+        if self._supports_temperature_calibration:
             self._temperature_offset = int(self.get_setting(dreo, DreoDeviceSetting.FAN_TEMP_OFFSET, 0))
 
         self._is_on = False
@@ -492,6 +494,9 @@ class PyDreoFanBase(PyDreoBaseDevice):
             _LOGGER.error("update_state: Unable to get fan speed from state. Check debug logs for more information.")
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
+        temp_offset = self.get_state_update_value(state, TEMPOFFSET_KEY)
+        if isinstance(temp_offset, int) and self._supports_temperature_calibration:
+            self._temperature_offset = temp_offset
         self._led_always_on = self.get_state_update_value(state, LEDALWAYSON_KEY)
         self._led_kept_on = self.get_state_update_value(state, LEDKEPTON_KEY)
         self._voice_on = self.get_state_update_value(state, VOICEON_KEY)
@@ -539,6 +544,10 @@ class PyDreoFanBase(PyDreoBaseDevice):
         val_temperature = self.get_server_update_key_value(message, TEMPERATURE_KEY)
         if isinstance(val_temperature, int):
             self._temperature = val_temperature
+
+        val_temp_offset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)
+        if isinstance(val_temp_offset, int) and self._supports_temperature_calibration:
+            self._temperature_offset = val_temp_offset
 
         val_display_always_on = self.get_server_update_key_value(message, LEDALWAYSON_KEY)
         if isinstance(val_display_always_on, bool):

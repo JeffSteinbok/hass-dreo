@@ -112,6 +112,20 @@ class TestPyDreoFanBase(TestBase):
         expected = 72 + fan.temperature_offset
         assert fan.temperature == expected
 
+    def test_temperature_with_offset_from_state(self):
+        """State tempoffset overrides calibration used by temperature property."""
+        fan = self._load_htf005s()
+        fan.update_state({TEMPERATURE_KEY: {STATE_KEY: 72}, TEMPOFFSET_KEY: {STATE_KEY: -5}})
+        assert fan.temperature_offset == -5
+        assert fan.temperature == 67
+
+    def test_temperature_with_offset_from_server_update(self):
+        """Websocket tempoffset updates calibration used by temperature property."""
+        fan = self._load_htf005s()
+        fan.handle_server_update({REPORTED_KEY: {TEMPERATURE_KEY: 72, TEMPOFFSET_KEY: -5}})
+        assert fan.temperature_offset == -5
+        assert fan.temperature == 67
+
     def test_temperature_none(self):
         """Test temperature returns None when no temperature data."""
         fan = self._load_htf005s()
