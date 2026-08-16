@@ -445,9 +445,11 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert ha_fan.preset_mode == "auto"
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                ha_fan.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True})
-            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True, WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, WIND_MODE_KEY: 5}})
+            assert ha_fan.is_on is True
+            assert ha_fan.preset_mode == "turbo"
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_percentage(100)
@@ -455,9 +457,9 @@ class TestDreoAirCirculator(IntegrationTestBase):
             pydreo_fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 12}})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                ha_fan.set_preset_mode("turbo")
-                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
-            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
 
     def test_HPF015S_old_rev(self):  # pylint: disable=invalid-name
         """Test HPF015S hardware revision with the bare SC95F8613B MCU.

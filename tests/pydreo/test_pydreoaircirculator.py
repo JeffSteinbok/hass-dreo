@@ -816,6 +816,10 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.oscillating is True
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.turn_on_with_preset_mode("turbo")
+            mock_send_command.assert_called_once_with(fan, {POWERON_KEY: True, WIND_MODE_KEY: 5})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "turbo"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 5})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
