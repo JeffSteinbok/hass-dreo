@@ -676,7 +676,8 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.horizontally_oscillating is False
         assert fan.oscillating is False
         assert fan.vertical_angle_range == (-30, 90)
-        assert fan.temperature == 74
+        assert fan.temperature_offset == -4
+        assert fan.temperature == 70
         assert fan.model == "DR-HPF008S"
         assert fan.device_name is not None
         assert fan.serial_number is not None
