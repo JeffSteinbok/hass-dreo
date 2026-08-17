@@ -38,11 +38,10 @@ from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(__name__)
 
-# Cloud control-reply / control-report can echo the requested fixedconf as an
-# optimistic ACK (see PyDreo._ACK_METHOD_NAMES). Some devices (notably
-# DR-HPF017S / 517S) then report the real encoder position and may reject the
-# move. Treat only non-optimistic updates (e.g. method "report") as authoritative.
-_FIXEDCONF_OPTIMISTIC_METHODS = frozenset({"control-reply", "control-report"})
+# Cloud control-reply can echo the requested fixedconf before the device moves.
+# control-report is the later device confirmation and carries encoder updates,
+# so it must remain authoritative along with method "report".
+_FIXEDCONF_OPTIMISTIC_METHODS = frozenset({"control-reply"})
 
 # Default: no inter-command settle (most air circulators handle rapid fixedconf).
 # Models that need a longer interval set FIXEDCONF_SETTLE_SECONDS_KEY (float seconds)
@@ -1197,8 +1196,8 @@ class PyDreoAirCirculator(PyDreoFanBase):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             method = message.get("method")
-            # control-reply / control-report may echo the requested value as an
-            # ACK and are not reliable for actual motor position. Prefer "report".
+            # control-reply may echo the requested value before the motor moves.
+            # control-report and report carry authoritative encoder positions.
             if method in _FIXEDCONF_OPTIMISTIC_METHODS:
                 _LOGGER.debug(
                     "fixedconf: Ignoring optimistic %s value %s (waiting for device report)",
