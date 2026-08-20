@@ -340,8 +340,8 @@ class TestPyDreoAirConditioner(TestBase):
             ac.mode = DreoACMode.COOL
             mock_send_command.assert_not_called()
 
-    def test_HAC006S_power_cycle_always_sends(self):  # pylint: disable=invalid-name
-        """Test that poweron command is always sent even when cached state matches."""
+    def test_HAC006S_power_cycle_duplicate_no_command(self):  # pylint: disable=invalid-name
+        """Test that setting poweron to the same value sends no command (avoids colliding with other commands)."""
         self.get_devices_file_name = "get_devices_HAC006S.json"
         self.pydreo_manager.load_devices()
         ac: PyDreoAC = self.pydreo_manager.devices[0]
@@ -352,10 +352,11 @@ class TestPyDreoAirConditioner(TestBase):
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             ac.poweron = True
-            mock_send_command.assert_called_once_with(ac, {POWERON_KEY: True})
-        # TODO: Fix this in the AC class
-        # with pytest.raises(ValueError):
-        #    ac.preset_mode = 'not_a_mode'
+            mock_send_command.assert_not_called()
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            ac.poweron = False
+            mock_send_command.assert_called_once_with(ac, {POWERON_KEY: False})
 
     def test_HAC006S_temperature_offset(self):  # pylint: disable=invalid-name
         """Test that temperature offset is applied to air conditioner temperature."""
