@@ -196,6 +196,9 @@
       "filter_life": {
         "name": "Живот на филтъра"
       },
+      "water_level_percent": {
+        "name": "Ниво на водата в проценти"
+      },
       "filter_active": {
         "name": "Активен филтър",
         "state": {

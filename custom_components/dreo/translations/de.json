@@ -196,6 +196,9 @@
       "filter_life": {
         "name": "Filterlebensdauer"
       },
+      "water_level_percent": {
+        "name": "Wasserstand in Prozent"
+      },
       "filter_active": {
         "name": "Filter aktiv",
         "state": {

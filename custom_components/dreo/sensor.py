@@ -147,6 +147,17 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(FILTERTIME_KEY),
     ),
     DreoSensorEntityDescription(
+        # Opt-in: confirmed on DR-HHM014S only; not yet verified on other humidifier models.
+        key="Water Level Percent",
+        translation_key="water_level_percent",
+        icon="mdi:water-percent",
+        state_class=SensorStateClass.MEASUREMENT,
+        entity_registry_enabled_default=False,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.water_level_percent,
+        exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported("water_level_percent"),
+    ),
+    DreoSensorEntityDescription(
         key="Filter Active",
         translation_key="filter_active",
         icon="mdi:filter-check",
