@@ -36,6 +36,7 @@ from .models import DreoDeviceDetails
 _LOGGER = logging.getLogger(__name__)
 
 WATER_LEVEL_STATUS_KEY = "wrong"
+WATER_LEVEL_PERCENT_KEY = "waterlevel"
 WORKTIME_KEY = "worktime"
 FOGLEVEL_INTERNAL_KEY = "foglevel"
 FILTERTIME_KEY = "filtertime"
@@ -89,6 +90,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._sleep_target_humidity = None
         self._ledkepton = None
         self._wrong = None
+        self._water_level_percent = None
         self._worktime = None
         self._foglevel = None
         self._rgblevel = None
@@ -270,6 +272,14 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def water_level(self):
         """Return the water level status"""
         return self._wrong
+
+    @property
+    def water_level_percent(self) -> int | None:
+        """Return the numeric water level percentage (0-100), reported by newer humidifiers.
+
+        None on models that only report the fault-code-based ``wrong``/``water_level`` status.
+        """
+        return self._water_level_percent
 
     @property
     def worktime(self):
@@ -580,6 +590,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._ledkepton = self.get_state_update_value(state, LEDKEPTON_KEY)
         self._ledlevel = self.get_state_update_value_mapped(state, LEDLEVEL_KEY, LEDLEVEL_MAP)
         self._wrong = self.get_state_update_value_mapped(state, WATER_LEVEL_STATUS_KEY, WATER_LEVEL_STATUS_MAP)
+        self._water_level_percent = self.get_state_update_value(state, WATER_LEVEL_PERCENT_KEY)
         self._worktime = self.get_state_update_value(state, WORKTIME_KEY)
         self._foglevel = self.get_state_update_value(state, FOGLEVEL_INTERNAL_KEY)
         self._rgblevel = self.get_state_update_value(state, RGB_LEVEL)
@@ -618,6 +629,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         if isinstance(val_water_level, int):
             val_water_level = WATER_LEVEL_STATUS_MAP.get(val_water_level, val_water_level)
             self._wrong = val_water_level
+
+        val_water_level_percent = self.get_server_update_key_value(message, WATER_LEVEL_PERCENT_KEY)
+        if isinstance(val_water_level_percent, int):
+            self._water_level_percent = val_water_level_percent
 
         val_foglevel = self.get_server_update_key_value(message, FOGLEVEL_INTERNAL_KEY)
         if isinstance(val_foglevel, int):

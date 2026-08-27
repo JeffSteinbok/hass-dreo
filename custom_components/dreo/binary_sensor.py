@@ -89,7 +89,10 @@ BINARY_SENSORS: tuple[DreoBinarySensorEntityDescription, ...] = (
         value_fn=_water_empty_value,
         exists_fn=_water_empty_exists,
         icon_fn=lambda device: "mdi:water-remove" if _water_empty_value(device) else "mdi:water-check",
-        attrs_fn=lambda device: {"water_level": getattr(device, "water_level", None)},
+        attrs_fn=lambda device: {
+            "water_level": getattr(device, "water_level", None),
+            "water_level_percent": getattr(device, "water_level_percent", None),
+        },
         unique_id_suffix="water-empty",  # pre-dates the key-derived default; do not change
     ),
     DreoBinarySensorEntityDescription(

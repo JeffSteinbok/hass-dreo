@@ -128,6 +128,24 @@ class TestDreoHumidifier(IntegrationTestBase):
             binary_sensors = binary_sensor.get_entries([pydreo_humidifier])
             assert len(binary_sensors) == 1
 
+    def test_HHM014S_water_level_percent_attribute(self):  # pylint: disable=invalid-name
+        """Test that a DR-HHM014S reporting waterlevel surfaces it as a water_empty attribute and sensor."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HHM014S_2.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+            binary_sensors = binary_sensor.get_entries([pydreo_humidifier])
+            assert len(binary_sensors) == 1
+            assert binary_sensors[0].extra_state_attributes.get("water_level_percent") == 42
+
+            sensors = sensor.get_entries([pydreo_humidifier])
+            water_level_percent_sensor = next(s for s in sensors if s.entity_description.key == "Water Level Percent")
+            assert water_level_percent_sensor.native_value == 42
+            assert water_level_percent_sensor.entity_description.entity_registry_enabled_default is False
+
     def test_HHM003S(self):# pylint: disable=invalid-name
         """Load HHM003S (HM713S/813S) humidifier and test all features including humidity sensors."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):

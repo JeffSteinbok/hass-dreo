@@ -35,6 +35,7 @@ class TestPyDreoHumidifier(TestBase):
         _ = humidifier.mode
         _ = humidifier.wrong
         _ = humidifier.water_level
+        _ = humidifier.water_level_percent
         _ = humidifier.worktime
         _ = humidifier.display_light
         _ = humidifier.foglevel
@@ -185,6 +186,42 @@ class TestPyDreoHumidifier(TestBase):
         # Check that water_level is accessible and returns the expected value
         assert humidifier.is_feature_supported("water_level") is True
         assert humidifier.water_level == "ok"
+
+    def test_HHM014S_water_level_percent_property(self):  # pylint: disable=invalid-name
+        """Test that water_level_percent is reported for a DR-HHM014S that sends the raw field."""
+        self.get_devices_file_name = "get_devices_HHM014S_2.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        assert humidifier.is_feature_supported("water_level_percent") is True
+        assert humidifier.water_level_percent == 42
+
+    def test_water_level_percent_absent_for_models_without_it(self):
+        """Test that water_level_percent is absent (not an error) for models that don't report the raw field."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+
+        assert humidifier.is_feature_supported("water_level_percent") is False
+        assert humidifier.water_level_percent is None
+
+    def test_handle_server_update_water_level_percent(self):
+        """Test handle_server_update processes the numeric water level percentage."""
+        self.get_devices_file_name = "get_devices_HHM014S_2.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        humidifier.handle_server_update({REPORTED_KEY: {"waterlevel": 42}})
+        assert humidifier.water_level_percent == 42
+
+    def test_water_level_percent_rest_path_out_of_range_value(self):
+        """Test that update_state() passes an out-of-domain waterlevel value through unchanged."""
+        self.get_devices_file_name = "get_devices_HHM014S_2.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        humidifier.update_state({"waterlevel": {"state": 137, "timestamp": 1735000000}})
+        assert humidifier.water_level_percent == 137
 
     def test_HHM003S(self):  # pylint: disable=invalid-name
         """Load HHM003S (HM713S/813S) and test humidity properties."""
