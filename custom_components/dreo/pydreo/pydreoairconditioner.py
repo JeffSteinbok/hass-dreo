@@ -103,6 +103,9 @@ class PyDreoAC(PyDreoBaseDevice):
     @poweron.setter
     def poweron(self, value: bool):
         """Set if the air conditioner is on or off"""
+        if self._is_on == value:
+            _LOGGER.debug("poweron: poweron - value already %s, skipping command", value)
+            return
         _LOGGER.debug("poweron: poweron.setter - %s", value)
         self._send_command(POWERON_KEY, value)
 
