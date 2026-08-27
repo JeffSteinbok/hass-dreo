@@ -739,6 +739,7 @@ class TestPyDreoAirCirculator(TestBase):
             fan.preset_mode = "auto"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 4})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+        assert fan.preset_mode == "auto"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "sleep"
@@ -749,6 +750,7 @@ class TestPyDreoAirCirculator(TestBase):
             fan.preset_mode = "natural"
             mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: 2})
         fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
+        assert fan.preset_mode == "natural"
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.preset_mode = "turbo"
