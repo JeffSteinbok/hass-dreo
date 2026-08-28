@@ -391,6 +391,34 @@ class PyDreoCeilingFan(PyDreoFanBase):
         _LOGGER.debug("turn_light_on: enqueueing combined command %s", params)
         self._send_command_batch(params)
 
+    def turn_atm_on(self, brightness: int | None = None, color_rgb: tuple[int | float, int | float, int | float] | None = None) -> None:
+        """Turn the atmosphere light on, optionally setting brightness and/or RGB color.
+
+        Submits all keys as one batch so the device receives the whole desired
+        state atomically. Sending the power-on command separately from the color
+        command let the device wake up and drop the color command before it was
+        ready to receive it, leaving the light at its startup color (issue #907).
+        ``atmon`` is always included - skipping it when the cache already says on
+        would make the light unreachable on a stale cache.
+        """
+        if self._atm_light_on is None:
+            _LOGGER.error("turn_atm_on: Atmosphere light not supported by this fan model.")
+            return
+
+        params: dict = {}
+        if brightness is not None and self._atm_brightness is not None and self._atm_brightness != brightness:
+            low, high = self._atm_brightness_range
+            params[ATMBRI_KEY] = max(low, min(high, brightness))
+        if color_rgb is not None:
+            r_int, g_int, b_int = self._clamp_rgb_tuple(color_rgb)
+            color_value = self._pack_rgb_to_int((r_int, g_int, b_int))
+            if self._atm_color is None or self._atm_color != color_value:
+                params[ATMCOLOR_KEY] = color_value
+        params[ATMON_KEY] = True
+
+        _LOGGER.debug("turn_atm_on: enqueueing combined command %s", params)
+        self._send_command_batch(params)
+
     @property
     def atm_light_on(self) -> bool | None:
         """Returns True if the atmosphere light is on (device powered AND atm on)."""

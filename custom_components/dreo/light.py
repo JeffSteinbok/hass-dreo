@@ -313,7 +313,24 @@ class DreoRGBLightHA(DreoLightHA):
         Note: RGB color adjustments are handled as part of turn_on() action.
         There is no separate method for changing colors - Home Assistant passes
         color changes as kwargs to this turn_on() method.
+
+        When the atmosphere light is currently off, brightness/color and the
+        power-on command are sent as a single atomic command via
+        ``turn_atm_on()``. Sending the power-on command separately from the
+        color command let the device wake up and drop the color command
+        before it was ready, leaving the light at its startup color
+        (issue #907).
         """
+        if not self.is_on and isinstance(self.pydreo_device, PyDreoCeilingFan):
+            computed_brightness: int | None = None
+            if ATTR_BRIGHTNESS in kwargs:
+                computed_brightness = round(brightness_to_value(self._brightness_scale, kwargs[ATTR_BRIGHTNESS]))
+
+            rgb = kwargs.get(ATTR_RGB_COLOR)
+
+            self.pydreo_device.turn_atm_on(brightness=computed_brightness, color_rgb=rgb)
+            return
+
         # Call parent to handle basic light on and brightness
         super().turn_on(**kwargs)
 

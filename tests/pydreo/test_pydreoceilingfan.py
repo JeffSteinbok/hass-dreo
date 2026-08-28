@@ -598,6 +598,29 @@ class TestPyDreoCeilingFan(TestBase):
             )
         assert fan.light_on is True
 
+    def test_turn_atm_on_wakes_gated_device(self):
+        """turn_atm_on (the combined RGB turn-on path) must include the
+        wake keys when the device is gated off, and must not drop the color
+        command that a separate atmon send would otherwise clobber (issue #907)."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.turn_atm_on(brightness=2, color_rgb=(255, 0, 0))
+            mock_send_command.assert_called_once_with(
+                fan,
+                {
+                    ATMBRI_KEY: 2,
+                    ATMCOLOR_KEY: 16711680,
+                    ATMON_KEY: True,
+                    POWERON_KEY: True,
+                    FANON_KEY: False,
+                    LIGHTON_KEY: False,
+                },
+            )
+        assert fan.atm_light_on is True
+
     def _get_batching_fan(self) -> PyDreoCeilingFan:
         """Load the HCF002S fixture and switch its outbox to async collect mode."""
         self.get_devices_file_name = "get_devices_HCF002S.json"
