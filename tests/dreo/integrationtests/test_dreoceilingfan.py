@@ -200,6 +200,38 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 # Should send atmcolor command (atmon sent first automatically)
                 assert mock_send_command.call_count == 2  # atmon + atmcolor
 
+    def test_HCF002S_rgb_light_atomic_turn_on(self):  # pylint: disable=invalid-name
+        """Issue #907: turning the RGB atmosphere light on together with a color (as
+        happens whenever the light is off and turn_on is called with rgb_color) must be
+        delivered as a single combined command containing both atmcolor and atmon=True,
+        not as two separate sequential commands where the color could be dropped while
+        the device wakes up."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HCF002S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_fan = self.pydreo_manager.devices[0]
+
+            lights = light.get_entries([pydreo_fan])
+            rgb_light = self.get_entity_by_key(lights, "RGB Light")
+
+            # Known starting state: atmosphere light off.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {ATMON_KEY: False}})
+            assert rgb_light.is_on is False
+
+            # Turning on with a color while off must send ONE combined command.
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
+                mock_send_command.assert_called_once_with(
+                    pydreo_fan, {ATMCOLOR_KEY: 16711680, ATMON_KEY: True, POWERON_KEY: True, FANON_KEY: False, LIGHTON_KEY: False}
+                )
+
+            # Turning on again while already on still uses the sequential path
+            # (atmon set, then atmcolor), since the device is already awake.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {ATMON_KEY: True}})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgb_light.turn_on(rgb_color=(0, 0, 255))  # Blue
+                assert mock_send_command.call_count == 2  # atmon + atmcolor
+
     def test_HCF002S_CFRGB(self):  # pylint: disable=invalid-name
         """Load DR-HCF002S RGBIC variant (CFRGB control type) and verify that RGB colour
         and colour-temperature commands are generated even when 'atmcolor' was absent
