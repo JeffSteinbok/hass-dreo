@@ -371,7 +371,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         elif self.device.oscon is not None and self.device.oscon is True:
             self._attr_swing_mode = SWING_ON
         elif self.device.oscangle is not None:
-            self._attr_swing_mode = ANGLE_OSCANGLE_MAP[self.device.oscangle]
+            self._attr_swing_mode = ANGLE_OSCANGLE_MAP.get(self.device.oscangle, SWING_OFF)
         else:
             self._attr_swing_mode = SWING_OFF
         return self._attr_swing_mode
