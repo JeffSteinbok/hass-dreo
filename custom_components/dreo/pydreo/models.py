@@ -456,6 +456,15 @@ SUPPORTED_DEVICES = {
         # The original revision ("meidi" MCU, seriesName "Macro Max S") is left untouched.
         override_fn=_hap003s_mcu_override,
     ),
+    # DR-HAP006S diagnostics report no controlsConf, so speed range and preset modes cannot be
+    # auto-detected. Hardcode the known fan capabilities. The device also rejects the plain "auto"
+    # mode command and requires "auto-regular" instead (issue #909).
+    "DR-HAP006S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_PURIFIER,
+        preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
+        device_ranges={SPEED_RANGE: (1, 4)},
+        override_fn=_hap009s_override,
+    ),
     # DR-HAP009S diagnostics currently report an empty controlsConf object, so speed range and
     # preset modes cannot be auto-detected from the API metadata. Hardcode the known fan
     # capabilities to keep the Home Assistant fan entity available.
