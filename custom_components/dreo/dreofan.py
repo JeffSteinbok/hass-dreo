@@ -65,6 +65,8 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     @property
     def speed_count(self) -> int:
         """Return the number of speeds the fan supports."""
+        if self.device.speed_range is None:
+            return 1
         return int_states_in_range(self.device.speed_range)
 
     @property
