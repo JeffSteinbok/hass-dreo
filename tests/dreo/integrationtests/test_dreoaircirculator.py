@@ -355,6 +355,20 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
             pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
 
+            # Test turn_on with preset_mode when device is off (regression: #905)
+            # Both power-on and mode change must be sent atomically in a single command
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on(preset_mode="natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True, WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True, WIND_MODE_KEY: 2}})
+            assert ha_fan.is_on is True
+            assert ha_fan.preset_mode == "natural"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})
@@ -719,13 +733,10 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {OSCMODE_KEY: 1})
             pydreo_fan.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 1}})
 
-            # Test preset modes (device is off after turn_off, so set_preset_mode also powers on)
+            # Test preset modes (device is off after turn_off, set_preset_mode atomically powers on)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("turbo")
-                assert mock_send_command.call_count == 2
-                calls = [call[0][1] for call in mock_send_command.call_args_list]
-                assert {POWERON_KEY: True} in calls
-                assert {WIND_MODE_KEY: 5} in calls
+                mock_send_command.assert_called_once_with(pydreo_fan, {POWERON_KEY: True, WIND_MODE_KEY: 5})
             pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, WIND_MODE_KEY: 5}})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
