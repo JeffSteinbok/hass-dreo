@@ -27,6 +27,7 @@ from .constant import (
     HWFPON_KEY,
     HWFPANGLE_KEY,
     HBODYCNT_KEY,
+    WINDLEVEL_KEY,
     WINDTYPE_KEY,
     WIND_MODE_KEY,
 )
@@ -165,22 +166,43 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._follow_me_angle: int = None
         self._people_detected: int = None
 
-    def turn_on_with_preset_mode(self, preset_mode: str) -> None:
-        """Atomically turn on the fan and select a preset mode."""
-        if self._preset_modes is None:
-            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support modes.")
+    def turn_on_with_settings(self, preset_mode: str = None, fan_speed: int = None) -> None:
+        """Atomically turn on the fan and apply a preset mode and/or a fan speed.
 
-        key = WINDTYPE_KEY if self._wind_type is not None else WIND_MODE_KEY if self._wind_mode is not None else None
-        if key is None:
-            raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support wind type or wind mode keys.")
+        A powered-off circulator restores its remembered mode and speed as soon as
+        it sees ``poweron``, so a mode or speed arriving as a second command is
+        overwritten by that restore (#852, #905). Everything the caller asked for
+        therefore has to ship in the same command as the power-on.
 
-        numeric_value = Helpers.value_from_name(self._preset_modes, preset_mode)
-        if numeric_value is None:
-            raise ValueError(f"Preset mode {preset_mode} is not in the acceptable list: {self.preset_modes}")
+        Raises ``NotImplementedError`` when the device cannot express a requested
+        setting, so callers can fall back to the sequential setters.
+        """
         if self._power_on_key is None:
             raise NotImplementedError("Attempting to turn on a device with an unknown power key.")
 
-        self._send_command_batch({self._power_on_key: True, key: numeric_value})
+        params = {self._power_on_key: True}
+
+        if preset_mode is not None:
+            if self._preset_modes is None:
+                raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support modes.")
+
+            key = WINDTYPE_KEY if self._wind_type is not None else WIND_MODE_KEY if self._wind_mode is not None else None
+            if key is None:
+                raise NotImplementedError("Attempting to set preset_mode on a device that doesn't support wind type or wind mode keys.")
+
+            numeric_value = Helpers.value_from_name(self._preset_modes, preset_mode)
+            if numeric_value is None:
+                raise ValueError(f"Preset mode {preset_mode} is not in the acceptable list: {self.preset_modes}")
+            params[key] = numeric_value
+
+        if fan_speed is not None:
+            if self._speed_range is None:
+                raise NotImplementedError("Attempting to set fan speed on a device that doesn't report a speed range.")
+            if fan_speed < self._speed_range[0] or fan_speed > self._speed_range[1]:
+                raise ValueError(f"fan_speed must be between {self._speed_range[0]} and {self._speed_range[1]}")
+            params[WINDLEVEL_KEY] = fan_speed
+
+        self._send_command_batch(params)
 
     def _uses_hangleadj_for_horizontal(self) -> bool:
         """Check if device uses hangleadj (simpler angle control) instead of hoscangle."""
