@@ -369,6 +369,38 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
             pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
 
+            # The automation in #905 sets a preset mode AND a speed; both have to ride
+            # along with the power-on or the device restores its remembered state.
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on(percentage=20, preset_mode="auto")
+                mock_send_command.assert_called_once_with(
+                    pydreo_fan, {FANON_KEY: True, WIND_MODE_KEY: 4, WINDLEVEL_KEY: 2}
+                )
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True, WIND_MODE_KEY: 4, WINDLEVEL_KEY: 2}})
+            assert ha_fan.is_on is True
+            assert ha_fan.preset_mode == "auto"
+            assert pydreo_fan.fan_speed == 2
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+
+            # A speed on its own has to power on atomically too.
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_on(percentage=60)
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True, WINDLEVEL_KEY: 6})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: True, WINDLEVEL_KEY: 6}})
+            assert pydreo_fan.fan_speed == 6
+
+            # Put the mode back where the rest of this test expects to find it.
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 1}})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: False})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {FANON_KEY: False}})
+
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.turn_on()
                 mock_send_command.assert_called_once_with(pydreo_fan, {FANON_KEY: True})

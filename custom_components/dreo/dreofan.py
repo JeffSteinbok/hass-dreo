@@ -117,13 +117,50 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
         **kwargs: Any,
     ) -> None:
         """Turn the device on."""
-        _LOGGER.debug("turn_on: turn_on")
+        _LOGGER.debug("turn_on: percentage=%s, preset_mode=%s", percentage, preset_mode)
+        if preset_mode is None and percentage is None:
+            self.device.is_on = True
+            return
+
+        if not self.device.is_on and self._turn_on_atomically(percentage, preset_mode):
+            self.schedule_update_ha_state()
+            return
+
         if preset_mode is not None:
             self.set_preset_mode(preset_mode)
         if percentage is not None:
             self.set_percentage(percentage)
-        if preset_mode is None and percentage is None:
-            self.device.is_on = True
+
+    def _turn_on_atomically(self, percentage: int | None, preset_mode: str | None) -> bool:
+        """Power on and apply the requested preset/speed as a single command.
+
+        A device that is off restores its remembered state the moment it sees the
+        power-on, so a mode or speed sent as a follow-up command is discarded
+        (#852, #905). Returns ``False`` when the device cannot do this, leaving the
+        caller to fall back to the sequential setters.
+        """
+        turn_on_with_settings = getattr(type(self.device), "turn_on_with_settings", None)
+        if not callable(turn_on_with_settings):
+            return False
+
+        # percentage=0 means "turn off" in HA; let set_percentage own that.
+        if percentage == 0:
+            return False
+
+        if preset_mode is not None and preset_mode not in self.preset_modes:
+            raise ValueError(f"{preset_mode} is not one of the valid preset modes: {self.preset_modes}")
+
+        fan_speed = None
+        if percentage is not None:
+            if self.device.speed_range is None:
+                return False
+            fan_speed = math.ceil(percentage_to_ranged_value(self.device.speed_range, percentage))
+
+        try:
+            self.device.turn_on_with_settings(preset_mode=preset_mode, fan_speed=fan_speed)
+        except NotImplementedError:
+            return False
+        return True
 
     def turn_off(self, **kwargs: Any) -> None:
         """Turn the device off."""
@@ -160,14 +197,8 @@ class DreoFanHA(DreoBaseDeviceHA, FanEntity):
             raise ValueError(f"{preset_mode} is not one of the valid preset modes: {self.preset_modes}")
 
         was_off = not self.device.is_on
-        atomically_set_preset = False
-        if was_off and callable(getattr(type(self.device), "turn_on_with_preset_mode", None)):
-            try:
-                self.device.turn_on_with_preset_mode(preset_mode)
-                atomically_set_preset = True
-            except NotImplementedError:
-                pass
-        if not atomically_set_preset and was_off:
+        atomically_set_preset = was_off and self._turn_on_atomically(None, preset_mode)
+        if was_off and not atomically_set_preset:
             self.device.is_on = True
 
         if self.device.type is DreoDeviceType.DEHUMIDIFIER:
