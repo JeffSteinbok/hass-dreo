@@ -1,0 +1,48 @@
+{
+    "code": 0,
+    "msg": "OK",
+    "data": {
+        "mixed": {
+            "poweron": {
+                "state": true,
+                "timestamp": 0
+            },
+            "mode": {
+                "state": "manual",
+                "timestamp": 0
+            },
+            "windlevel": {
+                "state": 3,
+                "timestamp": 0
+            },
+            "pm25": {
+                "state": 12,
+                "timestamp": 0
+            },
+            "lifetime": {
+                "state": 100,
+                "timestamp": 0
+            },
+            "ledalwayson": {
+                "state": true,
+                "timestamp": 0
+            },
+            "childlockon": {
+                "state": false,
+                "timestamp": 0
+            },
+            "muteon": {
+                "state": true,
+                "timestamp": 0
+            },
+            "connected": {
+                "state": true,
+                "timestamp": 0
+            }
+        },
+        "sn": "HAP010S_1",
+        "productId": "**REDACTED**",
+        "region": "us-east-2/emq",
+        "deviceInfo": null
+    }
+}

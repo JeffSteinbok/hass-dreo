@@ -195,6 +195,16 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
 
+    def test_HAP010S(self):  # pylint: disable=invalid-name
+        """Test DR-HAP010S (530S) Air Purifier with empty controlsConf."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP010S"
+        assert air_purifier.series_name == "530S"
+        assert air_purifier.speed_range == (1, 4)
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
     def test_air_purifier_preset_mode_variant_mapping(self):
         """Mode variants like auto-regular should still map to the base preset mode."""
         self.get_devices_file_name = "get_devices_HAP003S.json"
