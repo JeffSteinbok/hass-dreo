@@ -2016,6 +2016,43 @@ class TestPyDreoAirCirculator(TestBase):
         with pytest.raises(NotImplementedError):
             fan.vertical_oscillation_angle = 30
 
+    def test_angle_nudge_commands(self):  # pylint: disable=invalid-name
+        """Test hoscadj/voscadj nudge commands for older firmware movement controls."""
+        self.get_devices_file_name = "get_devices_HAF004S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert fan.is_feature_supported("horizontal_angle_nudge")
+        assert fan.is_feature_supported("vertical_angle_nudge")
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.nudge_horizontal_left()
+            mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ADJ_KEY: -5})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.nudge_horizontal_right()
+            mock_send_command.assert_called_once_with(fan, {HORIZONTAL_OSCILLATION_ADJ_KEY: 5})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.nudge_vertical_up()
+            mock_send_command.assert_called_once_with(fan, {VERTICAL_OSCILLATION_ADJ_KEY: 5})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.nudge_vertical_down()
+            mock_send_command.assert_called_once_with(fan, {VERTICAL_OSCILLATION_ADJ_KEY: -5})
+
+    def test_angle_nudge_unsupported_raises(self):  # pylint: disable=invalid-name
+        """Nudge methods should raise on devices that do not expose nudge controls."""
+        self.get_devices_file_name = "get_devices_HAF001S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        assert not fan.is_feature_supported("horizontal_angle_nudge")
+        assert not fan.is_feature_supported("vertical_angle_nudge")
+
+        with pytest.raises(NotImplementedError):
+            fan.nudge_horizontal_left()
+        with pytest.raises(NotImplementedError):
+            fan.nudge_vertical_up()
+
     def test_atm_light_unsupported(self):  # pylint: disable=invalid-name
         """Test ATM light setters on device without ATM support."""
         self.get_devices_file_name = "get_devices_HAF004S.json"

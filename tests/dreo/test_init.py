@@ -201,6 +201,7 @@ class TestInit:
         assert Platform.SWITCH in platforms
         assert Platform.NUMBER in platforms
         assert Platform.SELECT in platforms
+        assert Platform.BUTTON in platforms
 
     def test_successful_setup_with_humidifier(self):
         """Test successful setup with a HUMIDIFIER device."""

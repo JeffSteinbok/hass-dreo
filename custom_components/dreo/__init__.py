@@ -217,6 +217,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.BINARY_SENSOR)
     if DreoDeviceType.AIR_CIRCULATOR in device_types:
         platforms.add(Platform.SELECT)
+        platforms.add(Platform.BUTTON)
         # Diagnostic settle-pending binary sensor for models with fixedconf settle.
         platforms.add(Platform.BINARY_SENSOR)
 
