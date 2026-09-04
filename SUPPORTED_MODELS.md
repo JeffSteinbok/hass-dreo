@@ -67,6 +67,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HAP003S
 - DR-HAP005S
 - DR-HAP008S
+- DR-HAP010S (530S)
 
 ## Humidifiers (DR-HHM Series)
 

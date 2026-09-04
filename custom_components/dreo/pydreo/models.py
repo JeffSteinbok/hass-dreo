@@ -487,6 +487,14 @@ SUPPORTED_DEVICES = {
         preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
         device_ranges={SPEED_RANGE: (1, 4)},
     ),
+    # DR-HAP010S (Air Purifier 530S) diagnostics report an empty controlsConf object, so the
+    # speed range and preset modes cannot be auto-detected. Hardcode the fan capabilities
+    # shared by the other empty-controlsConf purifiers so the fan entity is created (issue #906).
+    "DR-HAP010S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_PURIFIER,
+        preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
+        device_ranges={SPEED_RANGE: (1, 4)},
+    ),
     # Heaters
     "DR-HSH017BS": DreoHeaterDeviceDetails(
         device_ranges={ECOLEVEL_RANGE: (41, 85)},
