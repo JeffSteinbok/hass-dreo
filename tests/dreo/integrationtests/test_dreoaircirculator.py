@@ -9,6 +9,7 @@ from custom_components.dreo import switch
 from custom_components.dreo import number
 from custom_components.dreo import light
 from custom_components.dreo import select
+from custom_components.dreo import button
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 from custom_components.dreo.pydreo.constant import (
@@ -17,6 +18,8 @@ from custom_components.dreo.pydreo.constant import (
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
     VERTICAL_OSCILLATION_ANGLE_KEY,
     HORIZONTAL_ANGLE_ADJ_KEY,
+    HORIZONTAL_OSCILLATION_ADJ_KEY,
+    VERTICAL_OSCILLATION_ADJ_KEY,
 )
 
 PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
@@ -647,6 +650,31 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 pydreo_fan.vertical_oscillation_angle = 45
                 mock_send_command.assert_called_once_with(pydreo_fan, {VERTICAL_OSCILLATION_ANGLE_KEY: 45})
             pydreo_fan.handle_server_update({REPORTED_KEY: {VERTICAL_OSCILLATION_ANGLE_KEY: 45}})
+
+            # Nudge buttons for older firmware movement controls
+            pydreo_fan.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_ADJ_KEY: 0}})
+            buttons = button.get_entries([pydreo_fan])
+            button_names = [b.entity_description.key for b in buttons]
+            assert "Pan Left" in button_names
+            assert "Pan Right" in button_names
+            assert "Tilt Up" in button_names
+            assert "Tilt Down" in button_names
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                self.get_entity_by_key(buttons, "Pan Left").press()
+                mock_send_command.assert_called_once_with(pydreo_fan, {HORIZONTAL_OSCILLATION_ADJ_KEY: -5})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                self.get_entity_by_key(buttons, "Pan Right").press()
+                mock_send_command.assert_called_once_with(pydreo_fan, {HORIZONTAL_OSCILLATION_ADJ_KEY: 5})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                self.get_entity_by_key(buttons, "Tilt Up").press()
+                mock_send_command.assert_called_once_with(pydreo_fan, {VERTICAL_OSCILLATION_ADJ_KEY: 5})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                self.get_entity_by_key(buttons, "Tilt Down").press()
+                mock_send_command.assert_called_once_with(pydreo_fan, {VERTICAL_OSCILLATION_ADJ_KEY: -5})
 
     def test_HPF020S(self):  # pylint: disable=invalid-name
         """Test HPF020S fan (Costco 350S pedestal fan)."""

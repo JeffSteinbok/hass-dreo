@@ -71,6 +71,7 @@ from homeassistant.components.select import SelectEntity, SelectEntityDescriptio
 from homeassistant.components.light import LightEntity, LightEntityFeature, ColorMode, ATTR_COLOR_TEMP_KELVIN, ATTR_BRIGHTNESS, ATTR_RGB_COLOR, ATTR_EFFECT
 
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorEntityDescription, BinarySensorDeviceClass
+from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 
 from homeassistant.util.color import value_to_brightness, brightness_to_value
 from homeassistant.util.unit_conversion import TemperatureConverter
