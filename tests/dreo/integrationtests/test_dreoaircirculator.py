@@ -693,10 +693,9 @@ class TestDreoAirCirculator(IntegrationTestBase):
             assert pydreo_fan.model == "DR-HPF020S"
             assert pydreo_fan.speed_range == (1, 9)
 
-            # Verify preset modes
-            assert len(ha_fan.preset_modes) == 6
-            assert "normal" in ha_fan.preset_modes
-            assert "custom" in ha_fan.preset_modes
+            # Verify preset modes (normal=1, natural=2, sleep=3, auto=4, turbo=5, custom=6)
+            assert pydreo_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+            assert ha_fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
 
             # Test power on/off
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -730,11 +729,38 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 assert {WINDLEVEL_KEY: 9} in calls
             pydreo_fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, WINDLEVEL_KEY: 9}})
 
-            # Test preset modes
+            # Test preset modes. Exact values matter here: HPF020S returns an empty
+            # controlsConf, so the mapping is hardcoded and a swap is invisible
+            # without asserting the command value (issue #920).
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("natural")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 2})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 2}})
+            assert ha_fan.preset_mode == "natural"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 3})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 3}})
+            assert ha_fan.preset_mode == "sleep"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 4})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 4}})
+            assert ha_fan.preset_mode == "auto"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("turbo")
+                mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 5})
+            pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 5}})
+            assert ha_fan.preset_mode == "turbo"
+
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 ha_fan.set_preset_mode("custom")
                 mock_send_command.assert_called_once_with(pydreo_fan, {WIND_MODE_KEY: 6})
             pydreo_fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: 6}})
+            assert ha_fan.preset_mode == "custom"
 
             # Test cruise_conf angles
             assert pydreo_fan.vertical_osc_angle_top == 30

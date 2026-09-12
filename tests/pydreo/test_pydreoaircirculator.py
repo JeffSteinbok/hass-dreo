@@ -1103,6 +1103,26 @@ class TestPyDreoAirCirculator(TestBase):
                         mock_send_command.assert_called_once()
                     break
 
+    def test_HPF020S_preset_modes(self):  # pylint: disable=invalid-name
+        """Verify HPF020S preset mode values (normal=1, natural=2, sleep=3, auto=4, turbo=5, custom=6).
+
+        HPF020S returns an empty controlsConf, so the mapping is hardcoded in models.py.
+        Assert the exact command values so a swapped pair cannot pass CI again (issue #920).
+        """
+        self.get_devices_file_name = "get_devices_HPF020S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+
+        assert fan.preset_modes == ["normal", "natural", "sleep", "auto", "turbo", "custom"]
+
+        for mode, value in (("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4), ("turbo", 5), ("custom", 6)):
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                fan.preset_mode = mode
+                mock_send_command.assert_called_once_with(fan, {WIND_MODE_KEY: value})
+            fan.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: value}})
+            assert fan.preset_mode == mode
+
     def test_HPF007S_follow_me(self):  # pylint: disable=invalid-name
         """Verify HPF007S exposes presence-based follow mode (hwfpon) and telemetry."""
         self.get_devices_file_name = "get_devices_HPF007S.json"
