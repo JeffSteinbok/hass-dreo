@@ -122,8 +122,15 @@ class TestDreoSensorHA(TestDeviceBase):
         assert pm25_sensor.native_unit_of_measurement == MICROGRAMS_PER_CUBIC_METER
 
     def test_sensor_pm25_unit_constant_value(self):
-        """Test PM2.5 unit constant value."""
-        assert MICROGRAMS_PER_CUBIC_METER == "µg/m³"
+        """Test PM2.5 unit constant resolves to the micrograms-per-cubic-metre unit.
+
+        The leading character is not asserted exactly: MICRO SIGN (U+00B5) and GREEK
+        SMALL LETTER MU (U+03BC) are visually identical, and which one Home Assistant
+        uses has varied by version. Pinning one spelling made this test pass on CI's
+        HA but fail on newer HA (see #921). Normalise it, so the test still catches a
+        genuinely wrong unit (mg, missing superscript) without breaking on the glyph.
+        """
+        assert str(MICROGRAMS_PER_CUBIC_METER).replace("\u00b5", "\u03bc") == "\u03bcg/m\u00b3"
 
     def test_sensor_multiple_devices(self):
         """Test get_entries with multiple devices."""
