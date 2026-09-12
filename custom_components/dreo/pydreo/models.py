@@ -403,8 +403,10 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HPF020S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
-        # Hardware-confirmed in issue #920: natural=2 and auto=4, matching the other
-        # air circulators. The original submission had these two values swapped.
+        # natural=2 and auto=4, confirmed on hardware in issue #920; the original
+        # submission had these two values swapped. Same correction as DR-HPF008S
+        # (issue #902). Note that DR-HPF017S and DR-HPF025S still declare auto=2 /
+        # natural=4 and are unverified -- do not treat them as corroboration either way.
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4), ("turbo", 5), ("custom", 6)],
         device_ranges={SPEED_RANGE: (1, 9), HORIZONTAL_ANGLE_RANGE: (-60, 60), VERTICAL_ANGLE_RANGE: (-30, 90)},
     ),
