@@ -121,6 +121,10 @@ class TestDreoSensorHA(TestDeviceBase):
         pm25_sensor = next(e for e in entities if e.entity_description.key == "pm25")
         assert pm25_sensor.native_unit_of_measurement == MICROGRAMS_PER_CUBIC_METER
 
+    def test_sensor_pm25_unit_constant_value(self):
+        """Test PM2.5 unit constant value."""
+        assert MICROGRAMS_PER_CUBIC_METER == "µg/m³"
+
     def test_sensor_multiple_devices(self):
         """Test get_entries with multiple devices."""
         device1 = self.create_mock_device(name="Humidifier", serial_number="HUM001", type="Humidifier", features={"temperature": 72, "humidity": 55})
