@@ -490,6 +490,42 @@ class TestDreoRGBICLightHA(TestDeviceBase):
         assert DreoRGBICLightHA._build_effect_id(None, 0) is None
 
 
+    def test_hcf002s_api_rgbic_exposes_rgb_and_named_effects(self):
+        """The newer HCF002S API path exposes RGB color plus the basic effect names."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self._make_device(effect_range=None, effect_id=None)
+            device._supported_features.append("rgbic_effect_api")
+            device.rgbic_color = (128, 0, 255)
+            device.rgbic_effect_name = "Constant"
+            device.rgbic_effect_names = [
+                "Constant", "Breath", "Cycle", "Marquee", "Flow", "Flash", "Starlight", "Chase"
+            ]
+            entity = DreoRGBICLightHA(device)
+
+            assert entity.color_mode == ColorMode.RGB
+            assert entity.supported_color_modes == {ColorMode.RGB}
+            assert entity.rgb_color == (128, 0, 255)
+            assert entity.effect == "Constant"
+            assert entity.effect_list == device.rgbic_effect_names
+
+    def test_hcf002s_api_rgbic_turn_on_routes_color_and_effect(self):
+        """HA RGB/effect requests are routed through set_rgbic_effect on the new API path."""
+        with patch(PATCH_UPDATE_HA_STATE):
+            device = self._make_device(effect_range=None, effect_id=None)
+            device._supported_features.append("rgbic_effect_api")
+            device.rgbic_color = None
+            device.rgbic_effect_name = None
+            device.rgbic_effect_names = ["Constant", "Breath"]
+            calls = []
+            device.set_rgbic_effect = lambda effect, color_rgb=None: calls.append((effect, color_rgb))
+            entity = DreoRGBICLightHA(device)
+
+            entity.turn_on(**{ATTR_RGB_COLOR: (128, 0, 255)})
+            assert calls[-1] == ("Constant", (128, 0, 255))
+
+            entity.turn_on(**{ATTR_EFFECT: "Breath"})
+            assert calls[-1] == ("Breath", None)
+
 class TestDreoHumidifierLightHA(TestDeviceBase):
     """Test the Dreo humidifier ambient light entity (atmosphere light on humidifiers)."""
 

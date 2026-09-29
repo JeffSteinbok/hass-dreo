@@ -410,6 +410,97 @@ class PyDreo:  # pylint: disable=function-redefined
 
         return setting_value
 
+    def get_rgbic_effect_catalog(self, device: PyDreoBaseDevice) -> dict | None:
+        """Return the RGBIC effect catalog used by newer Dreo devices."""
+        api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
+        response, status_code = Helpers.call_api(
+            api_url,
+            "/api/device/rgb-effect/all/list",
+            "get",
+            {"devicesn": device.serial_number},  # RGBIC API expects lowercase, not deviceSn
+            Helpers.req_headers(self),
+        )
+        if status_code != 200 or not isinstance(response, dict) or response.get("code") != 0:
+            _LOGGER.warning(
+                "get_rgbic_effect_catalog: request failed for %s status=%s response=%s",
+                device.name,
+                status_code,
+                Helpers.redactor(json.dumps(response)),
+            )
+            return None
+        return response.get("data") or {}
+
+    def set_rgbic_effect(self, device: PyDreoBaseDevice, effect_name: str, color: str | None = None) -> bool:
+        """Apply a basic RGBIC effect, optionally overriding Constant's whole-ring color."""
+        catalog = self.get_rgbic_effect_catalog(device)
+        if not catalog:
+            return False
+
+        effect = next(
+            (item for item in (catalog.get("basicEffects") or []) if item.get("name") == effect_name),
+            None,
+        )
+        if effect is None:
+            _LOGGER.warning("set_rgbic_effect: effect %s not found for %s", effect_name, device.name)
+            return False
+
+        layouts = json.loads(json.dumps(effect.get("layouts") or []))
+        if color is not None:
+            if effect_name != "Constant" or not layouts:
+                _LOGGER.warning("set_rgbic_effect: color override is only supported by Constant")
+                return False
+
+            # The Constant effect can contain several layouts. Do not assume the
+            # whole-ring colour control is layouts[0]: update the layout(s) that
+            # actually expose wholeColorList and preserve their segmented
+            # colorList unchanged.
+            whole_color_layouts = [
+                layout for layout in layouts
+                if isinstance(layout, dict) and "wholeColorList" in layout
+            ]
+            if not whole_color_layouts:
+                _LOGGER.warning(
+                    "set_rgbic_effect: Constant effect has no wholeColorList layout for %s",
+                    device.name,
+                )
+                return False
+
+            for layout in whole_color_layouts:
+                layout["currentSelected"] = "whole"
+                layout["wholeColorList"] = [color.upper()]
+
+        referenced_id = effect.get("referencedId")
+        if not referenced_id:
+            _LOGGER.warning("set_rgbic_effect: effect %s has no referencedId", effect_name)
+            return False
+
+        payload = [{
+            "applyToDevice": True,
+            "devicesn": device.serial_number,  # RGBIC batch API uses lowercase
+            "effectType": effect.get("effectType", 0),
+            "id": effect.get("id"),
+            "name": effect.get("name"),
+            "subEffects": [{
+                "effectId": referenced_id,
+                "layouts": layouts,
+            }],
+        }]
+        if effect.get("subRemoteEffect") is not None:
+            payload[0]["subRemoteEffect"] = effect.get("subRemoteEffect")
+
+        api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
+        response, status_code = Helpers.call_api(
+            api_url,
+            "/api/device/rgb-effect/edit/batch",
+            "post",
+            payload,
+            Helpers.req_headers(self),
+        )
+        if status_code != 200 or not isinstance(response, dict) or response.get("code") != 0:
+            _LOGGER.warning("set_rgbic_effect: request failed for %s status=%s", device.name, status_code)
+            return False
+        return True
+
     def set_device_setting(self, device: PyDreoBaseDevice, setting: DreoDeviceSetting, value: bool | int) -> None:
         """Set a device setting from the API."""
         _LOGGER.debug("set_device_setting: %s(%s=%s), enabled: %s", device.name, setting, value, self.enabled)
