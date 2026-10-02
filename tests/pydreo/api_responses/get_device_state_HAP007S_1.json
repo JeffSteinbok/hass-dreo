@@ -1,0 +1,118 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -31,
+        "timestamp": 1790879300
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1790879300
+      },
+      "lifetime": {
+        "state": 89,
+        "timestamp": 1790892095
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1790879300
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1790447275
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1790879300
+      },
+      "mode": {
+        "state": "turbo",
+        "timestamp": 1790879300
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1790879300
+      },
+      "network_latency": {
+        "state": 67,
+        "timestamp": 1790879300
+      },
+      "rgbalwayson": {
+        "state": false,
+        "timestamp": 1790879300
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1790879300
+      },
+      "mcu_firmware_version": {
+        "state": "0.3.5",
+        "timestamp": 1790879300
+      },
+      "module_hardware_mac": {
+        "state": "**REDACTED**",
+        "timestamp": 1790879300
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1790879300
+      },
+      "wifi_ssid": {
+        "state": "**REDACTED**",
+        "timestamp": 1790879300
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8573/US",
+        "timestamp": 1790879300
+      },
+      "windlevel": {
+        "state": 4,
+        "timestamp": 1790879300
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1790879300
+      },
+      "module_firmware_version": {
+        "state": "3.8.6",
+        "timestamp": 1790879300
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1790879300
+      },
+      "aq": {
+        "state": 1,
+        "timestamp": 1790913929
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1790447275
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1790879300
+      },
+      "pm25": {
+        "state": 1,
+        "timestamp": 1790913929
+      },
+      "ledalwayson": {
+        "state": false,
+        "timestamp": 1790879300
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1790879300
+      }
+    }
+  }
+}

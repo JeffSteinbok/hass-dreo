@@ -147,6 +147,15 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: (device.type in {DreoDeviceType.HUMIDIFIER}) and device.is_feature_supported(FILTERTIME_KEY),
     ),
     DreoSensorEntityDescription(
+        key="Air Purifier Filter Life",
+        translation_key="filter_life",
+        icon="mdi:air-filter",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement_fn=lambda device: "%",
+        value_fn=lambda device: device.filter_life,
+        exists_fn=lambda device: (device.type in {DreoDeviceType.AIR_PURIFIER}) and device.is_feature_supported("filter_life"),
+    ),
+    DreoSensorEntityDescription(
         # Opt-in: confirmed on DR-HHM014S only; not yet verified on other humidifier models.
         key="Water Level Percent",
         translation_key="water_level_percent",

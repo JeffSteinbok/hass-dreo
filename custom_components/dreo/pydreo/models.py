@@ -80,6 +80,10 @@ class DreoDeviceDetails:
     """Valid rgblevel values for the ambient light ring. None = not set (use default).
     Examples: (0, 2) = off/full only, (0, 1, 2) = off/low/full."""
 
+    filter_life_percent: bool
+    """True if the "lifetime" state key is the remaining filter life in percent. Opt-in per
+    model: other models report it in other units (e.g. hours on the DR-HAP002S/HAP003S)."""
+
     def __init__(
         self,
         device_type: DreoDeviceType = None,
@@ -92,6 +96,7 @@ class DreoDeviceDetails:
         cooking_range: dict = None,
         override_fn: Callable | None = None,
         ambient_light_levels: tuple | None = None,
+        filter_life_percent: bool = False,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -108,6 +113,7 @@ class DreoDeviceDetails:
         self.cooking_range = cooking_range
         self.override_fn = override_fn
         self.ambient_light_levels = ambient_light_levels
+        self.filter_life_percent = filter_life_percent
 
 
 @dataclass
@@ -498,6 +504,17 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.AIR_PURIFIER,
         preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
         device_ranges={SPEED_RANGE: (1, 4)},
+    ),
+    # DR-HAP007S (Air Purifier 337S/337AS) diagnostics report an empty controlsConf object, so the
+    # speed range and preset modes cannot be auto-detected; it reports mode "turbo" with windlevel 4.
+    # Like the DR-HAP009S it rejects the plain "auto" mode command ("instruction validate failed")
+    # and accepts "auto-regular". Its "lifetime" key is the filter life in percent (matches the app).
+    "DR-HAP007S": DreoDeviceDetails(
+        device_type=DreoDeviceType.AIR_PURIFIER,
+        preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
+        device_ranges={SPEED_RANGE: (1, 4)},
+        override_fn=_hap009s_override,
+        filter_life_percent=True,
     ),
     # Heaters
     "DR-HSH017BS": DreoHeaterDeviceDetails(
