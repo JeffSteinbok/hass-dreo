@@ -4,6 +4,7 @@ import logging
 from typing import TYPE_CHECKING, Dict
 
 from .pydreofanbase import PyDreoFanBase
+from .constant import LIFETIME_KEY
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,6 +28,8 @@ class PyDreoAirPurifier(PyDreoFanBase):
         # reject "auto" (e.g. DR-HAP009S requires "auto-regular").  None means send "auto" unchanged.
         # Takes effect only when _auto_mode_uses_auto_silent is not set.
         self._auto_mode_command_value: str | None = None
+        # Remaining filter life in percent ("lifetime"), only for models flagged filter_life_percent.
+        self._filter_life: int | None = None
 
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
         """Parse the speed range from a control node"""
@@ -70,15 +73,26 @@ class PyDreoAirPurifier(PyDreoFanBase):
     def oscillating(self, value: bool) -> None:
         raise NotImplementedError(f"Attempting to set oscillating on a device that doesn't support ({value})")
 
+    @property
+    def filter_life(self) -> int | None:
+        """Return the remaining filter life in percent, if the purifier reports it."""
+        return self._filter_life
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
+        if self._device_definition.filter_life_percent:
+            self._filter_life = self.get_state_update_value(state, LIFETIME_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
+        if self._device_definition.filter_life_percent:
+            val_filter_life = self.get_server_update_key_value(message, LIFETIME_KEY)
+            if isinstance(val_filter_life, int):
+                self._filter_life = val_filter_life
 
     def _send_command(self, command_key: str, value) -> None:
         """Override to remap the 'auto' mode command for models that reject the plain "auto" string.
