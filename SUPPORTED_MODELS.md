@@ -66,6 +66,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HAP002S
 - DR-HAP003S
 - DR-HAP005S
+- DR-HAP007S (337S/337AS)
 - DR-HAP008S
 - DR-HAP010S (530S)
 
