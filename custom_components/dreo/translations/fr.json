@@ -141,6 +141,9 @@
       },
       "follow_me": {
         "name": "Suis-moi"
+      },
+      "purifyon": {
+        "name": "Purification"
       }
     },
     "sensor": {

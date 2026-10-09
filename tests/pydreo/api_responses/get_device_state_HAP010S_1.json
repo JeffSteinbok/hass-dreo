@@ -31,6 +31,10 @@
                 "state": false,
                 "timestamp": 0
             },
+            "purifyon": {
+                "state": false,
+                "timestamp": 0
+            },
             "muteon": {
                 "state": true,
                 "timestamp": 0

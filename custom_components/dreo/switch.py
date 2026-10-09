@@ -128,6 +128,12 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="follow_me",
         icon="mdi:motion-sensor",
     ),
+    DreoSwitchEntityDescription(
+        key="Purification",
+        translation_key="purifyon",
+        attr_name="purifyon",
+        icon="mdi:air-filter",
+    ),
 )
 
 
