@@ -1,0 +1,310 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Zadejte uživatelské jméno a heslo Dreo",
+        "data": {
+          "username": "E-mailová adresa",
+          "password": "Heslo",
+          "region": "Region"
+        },
+        "data_description": {
+          "region": "Vyberte cloudový region Dreo pro váš účet. Pro většinu uživatelů funguje automatické zjištění."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ověření selhalo."
+    },
+    "abort": {
+      "single_instance_allowed": "Povolena je pouze jedna instance."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Dreo",
+        "data": {
+          "auto_reconnect": "Automaticky znovu připojit při výpadku websocketu."
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "water_empty": {
+        "name": "Nedostatek vody",
+        "state": {
+          "off": "OK",
+          "on": "Prázdná"
+        }
+      },
+      "fixed_conf_settle_pending": {
+        "name": "Čeká se na ustálení úhlu",
+        "state": {
+          "off": "Neaktivní",
+          "on": "Čeká"
+        }
+      },
+      "main_power": {
+        "name": "Hlavní napájení"
+      }
+    },
+    "fan": {
+      "fan": {
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "normal": "Normální",
+              "natural": "Přírodní",
+              "sleep": "Spánek",
+              "auto": "Auto",
+              "turbo": "Turbo",
+              "reverse": "Zpětný chod",
+              "custom": "Vlastní",
+              "low": "Nízký",
+              "medium": "Střední",
+              "high": "Vysoký"
+            }
+          }
+        }
+      },
+      "fan_speed": {
+        "name": "Rychlost ventilátoru",
+        "state_attributes": {
+          "preset_mode": {
+            "state": {
+              "low": "Nízká",
+              "medium": "Střední",
+              "high": "Vysoká"
+            }
+          }
+        }
+      }
+    },
+    "climate": {
+      "air_conditioner": {
+        "name": "Klimatizace"
+      },
+      "heater": {
+        "name": "Ohřívač"
+      }
+    },
+    "switch": {
+      "horizontally_oscillating": {
+        "name": "Horizontální oscilace"
+      },
+      "vertically_oscillating": {
+        "name": "Vertikální oscilace"
+      },
+      "display_auto_off": {
+        "name": "Automatické vypnutí displeje"
+      },
+      "panel_sound": {
+        "name": "Zvuk panelu"
+      },
+      "mist": {
+        "name": "Mlžení"
+      },
+      "adaptive_brightness": {
+        "name": "Adaptivní jas"
+      },
+      "mute_on": {
+        "name": "Ztišení panelu"
+      },
+      "oscon": {
+        "name": "Oscilace"
+      },
+      "ptcon": {
+        "name": "PTC ohřev"
+      },
+      "childlockon": {
+        "name": "Dětský zámek"
+      },
+      "locatemeon": {
+        "name": "Snímač přítomnosti"
+      },
+      "light": {
+        "name": "Světlo"
+      },
+      "humidify": {
+        "name": "Zvlhčování"
+      },
+      "display_light": {
+        "name": "Osvětlení displeje"
+      },
+      "auto_mode": {
+        "name": "Automatické zapnutí"
+      },
+      "scheon": {
+        "name": "Harmonogram"
+      },
+      "follow_me": {
+        "name": "Sledování osoby (Follow Me)"
+      },
+      "purifyon": {
+        "name": "Čištění"
+      }
+    },
+    "sensor": {
+      "temperature": {
+        "name": "Teplota"
+      },
+      "people_detected": {
+        "name": "Detekce osob"
+      },
+      "follow_me_angle": {
+        "name": "Úhel sledování osoby"
+      },
+      "humidity": {
+        "name": "Vlhkost"
+      },
+      "use_hours": {
+        "name": "Doba provozu od čištění"
+      },
+      "reach_target_temp": {
+        "name": "Cílová teplota dosažena",
+        "state": {
+          "yes": "Ano",
+          "no": "Ne"
+        }
+      },
+      "status": {
+        "name": "Stav",
+        "state": {
+          "standby": "Pohotovostní režim",
+          "ckcfm": "Konfigurace",
+          "cooking": "Vaření",
+          "off": "Vypnuto",
+          "ckpause": "Pozastaveno",
+          "ckcomplete": "Dokončeno"
+        }
+      },
+      "cook_end_time": {
+        "name": "Čas dokončení vaření"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "water": {
+        "name": "Hladina vody",
+        "state": {
+          "ok": "OK",
+          "empty": "Prázdná"
+        }
+      },
+      "use_hours_hm": {
+        "name": "Doba provozu od čištění"
+      },
+      "filter_life": {
+        "name": "Životnost filtru"
+      },
+      "water_level_percent": {
+        "name": "Hladina vody v procentech"
+      },
+      "filter_active": {
+        "name": "Filtr aktivní",
+        "state": {
+          "active": "Aktivní",
+          "inactive": "Neaktivní"
+        }
+      },
+      "target_humidity_reached": {
+        "name": "Cílová vlhkost dosažena",
+        "state": {
+          "yes": "Ano",
+          "no": "Ne"
+        }
+      }
+    },
+    "number": {
+      "fixed_conf_settle_seconds": {
+        "name": "Zpoždění ustálení úhlu"
+      },
+      "horizontal_angle": {
+        "name": "Horizontální úhel"
+      },
+      "vertical_angle": {
+        "name": "Vertikální úhel"
+      },
+      "horizontal_osc_angle_left": {
+        "name": "Horizontální úhel oscilace vlevo"
+      },
+      "horizontal_osc_angle_right": {
+        "name": "Horizontální úhel oscilace vpravo"
+      },
+      "vertical_osc_angle_top": {
+        "name": "Vertikální úhel oscilace nahoře"
+      },
+      "vertical_osc_angle_bottom": {
+        "name": "Vertikální úhel oscilace dole"
+      },
+      "osc_angle": {
+        "name": "Úhel oscilace"
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Horizontální úhel oscilace"
+      },
+      "vertical_oscillation_angle": {
+        "name": "Vertikální úhel oscilace"
+      },
+      "target_humidity": {
+        "name": "Cílová vlhkost"
+      },
+      "fog_level": {
+        "name": "Úroveň mlžení"
+      },
+      "sleep_target_humidity": {
+        "name": "Cílová vlhkost pro spánek"
+      },
+      "ambient_light_threshold_low": {
+        "name": "Dolní práh vlhkosti osvětlení"
+      },
+      "ambient_light_threshold_high": {
+        "name": "Horní práh vlhkosti osvětlení"
+      },
+      "ambient_light_level": {
+        "name": "Úroveň osvětlení"
+      },
+      "timer_on": {
+        "name": "Časovač zapnutí"
+      },
+      "timer_off": {
+        "name": "Časovač vypnutí"
+      }
+    },
+    "select": {
+      "mist_level": {
+        "name": "Úroveň mlžení",
+        "state": {
+          "low": "Nízká",
+          "medium": "Střední",
+          "high": "Vysoká"
+        }
+      },
+      "ambient_light_mode": {
+        "name": "Režim osvětlení",
+        "state": {
+          "humidity": "Vlhkost",
+          "color": "Barva",
+          "breath": "Dýchání",
+          "cycle": "Cyklování"
+        }
+      },
+      "three_d_angle_preset": {
+        "name": "Předvolba 3D úhlu"
+      }
+    },
+    "light": {
+      "light": {
+        "name": "Světlo"
+      },
+      "rgb_light": {
+        "name": "RGB světlo"
+      },
+      "ambient_light": {
+        "name": "Noční osvětlení"
+      }
+    }
+  }
+}
