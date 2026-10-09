@@ -218,7 +218,7 @@ def _hap003s_mcu_override(device) -> None:
 
 
 def _hap009s_override(device) -> None:
-    """Remap the "auto" mode command to "auto-regular" for DR-HAP009S air purifiers.
+    """Remap the "auto" mode command to "auto-regular" for DR-HAP009S, DR-HAP008S and DR-HAP010S air purifiers.
 
     The DR-HAP009S rejects the plain "auto" mode command ("instruction validate failed",
     error 500003) and requires "auto-regular" instead (issue #860).  The device reports
@@ -486,18 +486,22 @@ SUPPORTED_DEVICES = {
     ),
     # DR-HAP008S diagnostics report an empty controlsConf object. Hardcode its known fan
     # capabilities so Home Assistant can create the primary fan entity.
+    # DR-HAP008S (338S) also rejects plain "auto" with error 500003 and needs "auto-regular" (issue #932).
     "DR-HAP008S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_PURIFIER,
         preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
         device_ranges={SPEED_RANGE: (1, 4)},
+        override_fn=_hap009s_override,
     ),
     # DR-HAP010S (Air Purifier 530S) diagnostics report an empty controlsConf object, so the
     # speed range and preset modes cannot be auto-detected. Hardcode the fan capabilities
     # shared by the other empty-controlsConf purifiers so the fan entity is created (issue #906).
+    # It also needs "auto-regular" in place of plain "auto" (reported on issue #932).
     "DR-HAP010S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_PURIFIER,
         preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
         device_ranges={SPEED_RANGE: (1, 4)},
+        override_fn=_hap009s_override,
     ),
     # Heaters
     "DR-HSH017BS": DreoHeaterDeviceDetails(
