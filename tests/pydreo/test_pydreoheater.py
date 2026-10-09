@@ -18,6 +18,7 @@ HEATER_EXHAUSTIVE_MODELS = [
     "get_devices_HSH011.json",
     "get_devices_HSH011S.json",
     "get_devices_HSH034S.json",
+    "get_devices_HSH041S.json",
     "get_devices_WH714S.json",
 ]
 
@@ -215,6 +216,32 @@ class TestPyDreoHeater(TestBase):
 
         with pytest.raises(ValueError):
             heater.mode = "not_a_mode"
+
+    def test_HSH041S(self):  # pylint: disable=invalid-name
+        """Load HSH041S (711S) convection heater from its issue #928 diagnostics."""
+        self.get_devices_file_name = "get_devices_HSH041S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        assert heater.model == "DR-HSH041S"
+        assert heater.series_name == "711S"
+        assert heater.htalevel_range == (1, 3)
+        assert heater.poweron is False
+        assert heater.mode == DreoHeaterMode.ECO
+        assert heater.ecolevel == 68
+        assert heater.htalevel == 1
+        assert heater.temperature == 74
+        assert heater.childlockon is False
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.poweron = True
+            mock_send_command.assert_called_once_with(heater, {POWERON_KEY: True})
+        heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 3
+            mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 3})], True)
 
     def test_HSH011S(self):  # pylint: disable=invalid-name
         """Load HSH011S (OH521S) oil radiator heater and test sending commands."""

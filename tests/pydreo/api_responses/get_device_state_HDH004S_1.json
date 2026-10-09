@@ -1,0 +1,156 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -34,
+        "timestamp": 1791312062
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1791312062
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1791312062
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1791312061
+        },
+        "timestamp": null
+      },
+      "rhoffset": {
+        "state": 0,
+        "timestamp": 1791312062
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1791312062
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1791312062
+      },
+      "mode": {
+        "state": 1,
+        "timestamp": 1791312062
+      },
+      "network_latency": {
+        "state": 70,
+        "timestamp": 1791312062
+      },
+      "wh": {
+        "state": 433,
+        "timestamp": 1791316384
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1791312062
+      },
+      "mcu_firmware_version": {
+        "state": "1.0.24",
+        "timestamp": 1791312062
+      },
+      "temperature": {
+        "state": 77,
+        "timestamp": 1791316075
+      },
+      "cooldown": {
+        "state": 0,
+        "timestamp": 1791312062
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "rgbon": {
+        "state": true,
+        "timestamp": 1791312062
+      },
+      "rhautolevel": {
+        "state": 45,
+        "timestamp": 1791312062
+      },
+      "reachtarget": {
+        "state": 0,
+        "timestamp": 1791312062
+      },
+      "muteon": {
+        "state": false,
+        "timestamp": 1791312062
+      },
+      "lighton": {
+        "state": true,
+        "timestamp": 1791312062
+      },
+      "suspend": {
+        "state": false,
+        "timestamp": 1791312062
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8613B/US",
+        "timestamp": 1791312062
+      },
+      "wifi_ssid": "**REDACTED**",
+      "windlevel": {
+        "state": 3,
+        "timestamp": 1791312062
+      },
+      "autoon": {
+        "state": false,
+        "timestamp": 1791312062
+      },
+      "rhsecconf": {
+        "state": "3232323232323232323232323232,2D2D2D2D2D2D,2D2D2D2D2D2D2D2D2D2D",
+        "timestamp": 1791312062
+      },
+      "rgbthconfig": {
+        "state": 1,
+        "timestamp": 1791312062
+      },
+      "module_firmware_version": {
+        "state": "3.8.6",
+        "timestamp": 1791312062
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1791312062
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1791312062
+      },
+      "filterthr": {
+        "state": 600,
+        "timestamp": 1791312062
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1791312061
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 2,
+        "timestamp": 1791312062
+      },
+      "rh": {
+        "state": 50,
+        "timestamp": 1791316385
+      },
+      "rgbth": {
+        "state": "35,65",
+        "timestamp": 1791312062
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1791312062
+      },
+      "worktime": {
+        "state": 1,
+        "timestamp": 1791315521
+      }
+    }
+  }
+}
