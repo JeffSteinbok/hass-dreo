@@ -211,6 +211,12 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
 
+        # DR-HAP010S also requires "auto-regular" (reported on issue #932)
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+
     def test_HAP010S_purifyon(self):  # pylint: disable=invalid-name
         """DR-HAP010S exposes the purification toggle (issue #933)."""
         self.get_devices_file_name = "get_devices_HAP010S.json"
