@@ -320,7 +320,8 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def display_auto_off(self) -> bool | None:
         """Returns `True` if Display Auto Off is enabled (the device reports it inverted as `lighton`)."""
-        if self._light_on is None:
+        # Models with has_display_light use lighton as a plain display on/off, exposed by display_light.
+        if self._light_on is None or self._heaterDeviceDefinition.has_display_light:
             return None
         return not self._light_on
 
@@ -328,7 +329,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def display_auto_off(self, value: bool) -> None:
         """Enable or disable display auto-off"""
         _LOGGER.debug("display_auto_off: display_auto_off.setter(%s) --> %s", self.name, value)
-        if self._light_on is not None:
+        if self.display_auto_off is not None:
             if self._light_on == (not value):
                 _LOGGER.debug("display_auto_off: display_auto_off - value already %s, skipping command", value)
                 return

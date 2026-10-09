@@ -100,9 +100,14 @@ class TestPyDreoHeater(TestBase):
                 heater.ptcon = not bool(heater.ptcon)
                 mock_send_command.assert_called_once()
 
-        if heater._light_on is not None:  # pylint: disable=protected-access
+        if heater.display_auto_off is not None:
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater.display_auto_off = not bool(heater.display_auto_off)
+                mock_send_command.assert_called_once()
+
+        if heater.display_light is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.display_light = not bool(heater.display_light)
                 mock_send_command.assert_called_once()
 
         if heater.ctlstatus is not None:
@@ -357,6 +362,11 @@ class TestPyDreoHeater(TestBase):
             mock_send_command.assert_called_once_with(heater, {LIGHTON_KEY: True})
         heater.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True}})
         assert heater.display_light is True
+        # lighton is owned by display_light here, so the inverted Display Auto Off is not exposed.
+        assert heater.display_auto_off is None
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.display_auto_off = True
+            mock_send_command.assert_not_called()
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.mode = DreoHeaterMode.HOTAIR
