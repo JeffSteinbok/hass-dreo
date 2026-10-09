@@ -48,6 +48,13 @@
       },
       "main_power": {
         "name": "Hlavní napájení"
+      },
+      "heating": {
+        "name": "Topení",
+        "state": {
+          "off": "Nečinný",
+          "on": "Topí"
+        }
       }
     },
     "fan": {
@@ -144,6 +151,12 @@
       },
       "purifyon": {
         "name": "Čištění"
+      },
+      "airflow_360": {
+        "name": "360° proudění vzduchu"
+      },
+      "window_detection": {
+        "name": "Detekce otevřeného okna"
       }
     },
     "sensor": {
@@ -271,6 +284,9 @@
       },
       "timer_off": {
         "name": "Časovač vypnutí"
+      },
+      "temperature_offset": {
+        "name": "Korekce teploty"
       }
     },
     "select": {
