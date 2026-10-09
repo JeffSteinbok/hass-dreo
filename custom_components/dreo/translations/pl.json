@@ -46,6 +46,13 @@
           "on": "Waiting"
         }
       },
+      "heating": {
+        "name": "Grzanie",
+        "state": {
+          "off": "Bezczynny",
+          "on": "Grzeje"
+        }
+      },
       "main_power": {
         "name": "Zasilanie główne"
       }
@@ -117,6 +124,12 @@
       },
       "ptcon": {
         "name": "PTC"
+      },
+      "airflow_360": {
+        "name": "Nawiew 360°"
+      },
+      "window_detection": {
+        "name": "Wykrywanie otwartego okna"
       },
       "childlockon": {
         "name": "Blokada rodzicielska"
@@ -265,6 +278,9 @@
       },
       "ambient_light_level": {
         "name": "Poziom światła otoczenia"
+      },
+      "temperature_offset": {
+        "name": "Przesunięcie temperatury"
       },
       "timer_on": {
         "name": "Timer włączenia"

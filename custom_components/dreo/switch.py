@@ -79,6 +79,18 @@ SWITCHES: tuple[DreoSwitchEntityDescription, ...] = (
         attr_name="oscon",
         icon="mdi:rotate-360",
     ),
+    DreoSwitchEntityDescription(
+        key="360° Airflow",
+        translation_key="airflow_360",
+        attr_name="airflow_360",
+        icon="mdi:rotate-360",
+    ),
+    DreoSwitchEntityDescription(
+        key="Window Detection",
+        translation_key="window_detection",
+        attr_name="window_detection",
+        icon="mdi:window-open-variant",
+    ),
     DreoSwitchEntityDescription(key="PTC", translation_key="ptcon", attr_name="ptcon", icon="mdi:help"),
     DreoSwitchEntityDescription(
         key="Child Lock",

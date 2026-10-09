@@ -252,6 +252,9 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoNumberHA]:
                 else:
                     number_ha_collection.append(DreoNumberHA(pydreo_device, number_definition))
 
+        if pydreo_device.is_feature_supported("temperature_offset_range"):
+            number_ha_collection.append(DreoTemperatureOffsetNumberHA(pydreo_device))
+
     return number_ha_collection
 
 
@@ -328,3 +331,53 @@ class DreoNumberHA(DreoBaseDeviceHA, NumberEntity):  # pylint: disable=abstract-
         if self.entity_description.attr_name in {"fog_level", "sleep_target_humidity"}:
             value = int(value)
         return setattr(self.device, self.entity_description.attr_name, value)
+
+
+class DreoTemperatureOffsetNumberHA(DreoNumberHA):  # pylint: disable=abstract-method
+    """Temperature offset, shown in Home Assistant's temperature unit.
+
+    The device stores the offset in °F. Like the Dreo app, Celsius users get 1°C per 2°F.
+    The offset is a temperature difference, so it has no temperature device_class: HA would
+    convert it as an absolute temperature.
+    """
+
+    def __init__(self, pyDreoDevice: PyDreoBaseDevice) -> None:
+        super().__init__(
+            pyDreoDevice,
+            DreoNumberEntityDescription(
+                key="Temperature Offset",
+                translation_key="temperature_offset",
+                attr_name="temperature_offset",
+                icon="mdi:thermometer-lines",
+                step=1,
+                exists_fn=lambda device: device.is_feature_supported("temperature_offset_range"),
+            ),
+        )
+
+    @property
+    def _celsius(self) -> bool:
+        return self.hass is None or self.hass.config.units.temperature_unit == UnitOfTemperature.CELSIUS
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        return UnitOfTemperature.CELSIUS if self._celsius else UnitOfTemperature.FAHRENHEIT
+
+    @property
+    def native_min_value(self) -> float:
+        low = self.device.temperature_offset_range[0]
+        return low / 2 if self._celsius else low
+
+    @property
+    def native_max_value(self) -> float:
+        high = self.device.temperature_offset_range[1]
+        return high / 2 if self._celsius else high
+
+    @property
+    def native_value(self) -> float | None:
+        offset = self.device.temperature_offset
+        if offset is None:
+            return None
+        return offset / 2 if self._celsius else offset
+
+    def set_native_value(self, value: float) -> None:
+        self.device.temperature_offset = round(value * 2) if self._celsius else round(value)

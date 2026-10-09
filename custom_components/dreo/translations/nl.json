@@ -46,6 +46,13 @@
           "on": "Waiting"
         }
       },
+      "heating": {
+        "name": "Verwarmen",
+        "state": {
+          "off": "Inactief",
+          "on": "Verwarmt"
+        }
+      },
       "main_power": {
         "name": "Hoofdvoeding"
       }
@@ -117,6 +124,12 @@
       },
       "ptcon": {
         "name": "PTC"
+      },
+      "airflow_360": {
+        "name": "360°-luchtstroom"
+      },
+      "window_detection": {
+        "name": "Open-raamdetectie"
       },
       "childlockon": {
         "name": "Kinderslot"
@@ -265,6 +278,9 @@
       },
       "ambient_light_level": {
         "name": "Sfeerverlichtingsniveau"
+      },
+      "temperature_offset": {
+        "name": "Temperatuurafwijking"
       },
       "timer_on": {
         "name": "Timer Aan"

@@ -139,6 +139,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             manufacturer=self.device.brand,
             model=f"{self.device.series_name} ({self.device.model}) {self.device.product_name}",
             name=self.device.device_name,
+            sw_version=self.device.mcu_firmware_version,
+            hw_version=self.device.mcu_hardware_model,
         )
 
     @property

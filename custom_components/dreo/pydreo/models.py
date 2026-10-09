@@ -8,6 +8,7 @@ from .constant import (
     SPEED_RANGE,
     HEAT_RANGE,
     ECOLEVEL_RANGE,
+    TEMPERATURE_OFFSET_RANGE,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
@@ -140,7 +141,16 @@ class DreoACDeviceDetails(DreoDeviceDetails):
 class DreoHeaterDeviceDetails(DreoDeviceDetails):
     """Represents a Dreo Heater device model and capabilities"""
 
-    def __init__(self, device_ranges: dict = None, modes: list[DreoHeaterMode] = None, swing_modes: list[str] = None):
+    def __init__(
+        self,
+        device_ranges: dict = None,
+        modes: list[DreoHeaterMode] = None,
+        swing_modes: list[str] = None,
+        ptc_read_only: bool = False,
+        has_display_light: bool = False,
+        temperature_includes_offset: bool = False,
+        ambient_light_levels: tuple | None = None,
+    ):
         # Set default ranges if not provided
         if device_ranges is None:
             device_ranges = {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)}
@@ -153,8 +163,18 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
             device_type=DreoDeviceType.HEATER,
             device_ranges=device_ranges,
             swing_modes=swing_modes,
+            # When set, "rgbon" turns the ambient light on and off and "rgbbri" is its brightness level.
+            ambient_light_levels=ambient_light_levels,
         )
         self.modes = modes
+        # When True, "ptcon" only reports whether the heating element is drawing power and
+        # cannot be set, so it is exposed as a read-only "heating" state instead of a switch.
+        self.ptc_read_only = ptc_read_only
+        # When True, expose "lighton" as a "display light" switch (lighton=True means the display is on).
+        self.has_display_light = has_display_light
+        # When True, the reported "temperature" already has "tempoffset" applied, so it must not be
+        # added again.
+        self.temperature_includes_offset = temperature_includes_offset
         if self.modes is None:
             self.modes = [
                 DreoHeaterMode.COOLAIR,
@@ -559,6 +579,21 @@ SUPPORTED_DEVICES = {
             HeaterOscillationAngles.NINETY,
             HeaterOscillationAngles.ONE_TWENTY,
         ],
+    ),
+    # DR-HSH040S (720S Whole-Room Heater) reports an empty controlsConf. Per the user manual it has
+    # three heat levels (H1-H3), an ECO target of 5-35°C (41-95°F, reported in °F) and fan only,
+    # which match the heater defaults. It has no oscillation; the top panel switches between
+    # 360° airflow and direct heat instead (airflowmode). Its "ptcon" turns on and off by itself as
+    # the heating element engages, so it is read-only. The display button turns the LED display
+    # and the ambient temperature indicator on and off together. "tempoffset" is a temperature
+    # calibration in °F, already applied to the reported temperature. The app sets -5 to +5°C as
+    # 2°F per °C, or the °F value directly (checked on a real unit: +3°C -> 6, +2°F -> 2).
+    "DR-HSH040S": DreoHeaterDeviceDetails(
+        device_ranges={TEMPERATURE_OFFSET_RANGE: (-10, 10)},
+        ptc_read_only=True,
+        has_display_light=True,
+        temperature_includes_offset=True,
+        ambient_light_levels=(0, 1, 2, 3),
     ),
     "DR-HSH010S": DreoHeaterDeviceDetails(),
     "DR-HSH011": DreoHeaterDeviceDetails(),

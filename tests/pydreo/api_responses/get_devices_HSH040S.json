@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1972212506796044400",
+        "sn": "HSH040S_1",
+        "brand": "Dreo",
+        "model": "DR-HSH040S",
+        "productId": "**REDACTED**",
+        "productName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH040S",
+        "shared": false,
+        "series": null,
+        "seriesName": "720S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202606/29a20dd20d425a49c7baa5c4a2593c539d.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202606/294bddbcfd2c6949f29f7a347709207dfb.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202606/2925464fa688f84180956e0b7f9a9da959.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202607/14cee1dd5f751a4890b13a410a3b5a1215.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202607/242b8f9ec3e30d49b6b83839c5c268384c.pdf",
+            "icon": null,
+            "desc": "DR-HSH040S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

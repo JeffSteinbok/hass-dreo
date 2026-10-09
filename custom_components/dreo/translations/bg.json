@@ -46,6 +46,13 @@
           "on": "Waiting"
         }
       },
+      "heating": {
+        "name": "Отопление",
+        "state": {
+          "off": "Неактивен",
+          "on": "Отоплява"
+        }
+      },
       "main_power": {
         "name": "Основно захранване"
       }
@@ -117,6 +124,12 @@
       },
       "ptcon": {
         "name": "PTC"
+      },
+      "airflow_360": {
+        "name": "Въздушен поток 360°"
+      },
+      "window_detection": {
+        "name": "Откриване на отворен прозорец"
       },
       "childlockon": {
         "name": "Детска защита"
@@ -265,6 +278,9 @@
       },
       "ambient_light_level": {
         "name": "Ниво на ambient осветление"
+      },
+      "temperature_offset": {
+        "name": "Отместване на температурата"
       },
       "timer_on": {
         "name": "Таймер за включване"

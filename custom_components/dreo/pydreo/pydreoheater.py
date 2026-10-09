@@ -17,6 +17,12 @@ from .constant import (
     COOLDOWN_KEY,
     PTCON_KEY,
     LIGHTON_KEY,
+    AIRFLOWMODE_KEY,
+    WINOPENON_KEY,
+    RGBON_KEY,
+    RGB_BRI,
+    MCU_FIRMWARE_VERSION_KEY,
+    MCU_HARDWARE_MODEL_KEY,
     CTLSTATUS_KEY,
     TIMEROFF_KEY,
     ECOLEVEL_KEY,
@@ -32,9 +38,14 @@ from .constant import (
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoHeaterDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE
+from .models import DreoHeaterDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE, TEMPERATURE_OFFSET_RANGE
 
 _LOGGER = logging.getLogger(__name__)
+
+# "airflowmode" values (checked on a DR-HSH040S): direct heat from the front outlet only,
+# or "360° airflow" (as the Dreo app calls it) with the top raised so heat comes out all around.
+AIRFLOWMODE_DIRECT = 1
+AIRFLOWMODE_360 = 2
 
 if TYPE_CHECKING:
     from pydreo import PyDreo
@@ -66,6 +77,12 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._ecolevel = None
         self._childlockon = None
         self._tempoffset = None
+        self._airflowmode = None
+        self._winopenon = None
+        self._rgbon = None
+        self._rgbbri = None
+        self._mcu_firmware_version = None
+        self._mcu_hardware_model = None
 
         self._htalevel_range = None
 
@@ -171,7 +188,7 @@ class PyDreoHeater(PyDreoBaseDevice):
     def temperature(self):
         """Get the temperature"""
         temp = self._temperature
-        if temp is not None and self.temperature_offset is not None:
+        if temp is not None and self.temperature_offset is not None and not self._heaterDeviceDefinition.temperature_includes_offset:
             temp += self.temperature_offset
         return temp
 
@@ -179,6 +196,28 @@ class PyDreoHeater(PyDreoBaseDevice):
     def temperature_offset(self):
         """Get the temperature calibration value"""
         return self._tempoffset
+
+    @temperature_offset.setter
+    def temperature_offset(self, value: int) -> None:
+        """Set the temperature calibration value, in the device's unit (°F)."""
+        _LOGGER.debug("temperature_offset: temperature_offset.setter(%s) --> %s", self.name, value)
+        value = int(value)
+        offset_range = self.temperature_offset_range
+        if offset_range is None:
+            _LOGGER.error("temperature_offset: Attempting to set temperature offset on a device that doesn't support it.")
+            return
+        if not offset_range[0] <= value <= offset_range[1]:
+            _LOGGER.error("temperature_offset: Offset %s is not in the acceptable range: %s", value, offset_range)
+            return
+        if self._tempoffset == value:
+            _LOGGER.debug("temperature_offset: temperature_offset - value already %s, skipping command", value)
+            return
+        self._send_command(TEMPOFFSET_KEY, value)
+
+    @property
+    def temperature_offset_range(self) -> tuple | None:
+        """Get the settable temperature offset range in °F, on models that support setting it."""
+        return (self._device_definition.device_ranges or {}).get(TEMPERATURE_OFFSET_RANGE)
 
     @property
     def temperature_units(self) -> TemperatureUnit:
@@ -251,12 +290,24 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def ptcon(self) -> bool:
         """Returns `True` if PTC is on."""
+        if self._heaterDeviceDefinition.ptc_read_only:
+            return None
+        return self._ptc_on
+
+    @property
+    def heating(self) -> bool | None:
+        """Returns `True` while the heating element is drawing power, on models where PTC is read-only."""
+        if not self._heaterDeviceDefinition.ptc_read_only:
+            return None
         return self._ptc_on
 
     @ptcon.setter
     def ptcon(self, value: bool) -> None:
         """Enable or disable PTC"""
         _LOGGER.debug("ptcon: ptcon.setter(%s) --> %s", self.name, value)
+        if self._heaterDeviceDefinition.ptc_read_only:
+            _LOGGER.error("ptcon: PTC is read-only on this device.")
+            return
         if self._ptc_on is not None:
             if self._ptc_on == value:
                 _LOGGER.debug("ptcon: ptcon - value already %s, skipping command", value)
@@ -285,6 +336,93 @@ class PyDreoHeater(PyDreoBaseDevice):
         else:
             _LOGGER.error("display_auto_off: Attempting to set Display Auto Off on a device that doesn't support it.")
             return
+
+    @property
+    def display_light(self) -> bool | None:
+        """Returns `True` if the display is on, on models that expose it."""
+        if not self._heaterDeviceDefinition.has_display_light:
+            return None
+        return self._light_on
+
+    @display_light.setter
+    def display_light(self, value: bool) -> None:
+        """Turn the display on or off."""
+        _LOGGER.debug("display_light: display_light.setter(%s) --> %s", self.name, value)
+        if self.display_light is None:
+            _LOGGER.error("display_light: Attempting to set display light on a device that doesn't support it.")
+            return
+        if self.display_light == value:
+            _LOGGER.debug("display_light: display_light - value already %s, skipping command", value)
+            return
+        self._send_command(LIGHTON_KEY, value)
+
+    @property
+    def airflow_360(self) -> bool | None:
+        """Returns `True` if 360° airflow is on: the top is raised and heat comes out all around."""
+        if self._airflowmode is None:
+            return None
+        return self._airflowmode == AIRFLOWMODE_360
+
+    @airflow_360.setter
+    def airflow_360(self, value: bool) -> None:
+        """Turn 360° airflow on, or off for direct heat from the front outlet only."""
+        _LOGGER.debug("airflow_360: airflow_360.setter(%s) --> %s", self.name, value)
+        if self._airflowmode is None:
+            _LOGGER.error("airflow_360: Attempting to set 360° airflow on a device that doesn't support it.")
+            return
+        if self.airflow_360 == value:
+            _LOGGER.debug("airflow_360: airflow_360 - value already %s, skipping command", value)
+            return
+        self._send_command(AIRFLOWMODE_KEY, AIRFLOWMODE_360 if value else AIRFLOWMODE_DIRECT)
+
+    @property
+    def rgblevel(self) -> int | None:
+        """Ambient light brightness level (rgbbri), or 0 when the light is off."""
+        if self._heaterDeviceDefinition.ambient_light_levels is None or self._rgbon is None:
+            return None
+        if not self._rgbon:
+            return 0
+        return self._rgbbri if self._rgbbri is not None else max(self._heaterDeviceDefinition.ambient_light_levels)
+
+    @rgblevel.setter
+    def rgblevel(self, value: int) -> None:
+        """Turn the ambient light off (0), or on at the given brightness level."""
+        _LOGGER.debug("rgblevel: rgblevel.setter(%s) --> %s", self.name, value)
+        if self.rgblevel is None:
+            _LOGGER.error("rgblevel: Attempting to set the ambient light on a device that doesn't support it.")
+            return
+        level = int(value)
+        if level > 0 and level != self._rgbbri:
+            self._send_command(RGB_BRI, level)
+        if self._rgbon != (level > 0):
+            self._send_command(RGBON_KEY, level > 0)
+
+    @property
+    def window_detection(self) -> bool | None:
+        """Returns `True` if open window detection is enabled."""
+        return self._winopenon
+
+    @window_detection.setter
+    def window_detection(self, value: bool) -> None:
+        """Enable or disable open window detection."""
+        _LOGGER.debug("window_detection: window_detection.setter(%s) --> %s", self.name, value)
+        if self._winopenon is None:
+            _LOGGER.error("window_detection: Attempting to set window detection on a device that doesn't support it.")
+            return
+        if self._winopenon == value:
+            _LOGGER.debug("window_detection: window_detection - value already %s, skipping command", value)
+            return
+        self._send_command(WINOPENON_KEY, value)
+
+    @property
+    def mcu_firmware_version(self) -> str | None:
+        """Get the MCU firmware version."""
+        return self._mcu_firmware_version
+
+    @property
+    def mcu_hardware_model(self) -> str | None:
+        """Get the MCU hardware model."""
+        return self._mcu_hardware_model
 
     @property
     def ctlstatus(self) -> bool:
@@ -371,6 +509,12 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._ecolevel = self.get_state_update_value(state, ECOLEVEL_KEY)
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)
+        self._airflowmode = self.get_state_update_value(state, AIRFLOWMODE_KEY)
+        self._winopenon = self.get_state_update_value(state, WINOPENON_KEY)
+        self._rgbon = self.get_state_update_value(state, RGBON_KEY)
+        self._rgbbri = self.get_state_update_value(state, RGB_BRI)
+        self._mcu_firmware_version = self.get_state_update_value(state, MCU_FIRMWARE_VERSION_KEY)
+        self._mcu_hardware_model = self.get_state_update_value(state, MCU_HARDWARE_MODEL_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
 
     def handle_server_update(self, message):
@@ -462,6 +606,22 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_tempoffset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)
         if isinstance(val_tempoffset, int):
             self._tempoffset = val_tempoffset
+
+        val_airflowmode = self.get_server_update_key_value(message, AIRFLOWMODE_KEY)
+        if isinstance(val_airflowmode, int):
+            self._airflowmode = val_airflowmode
+
+        val_rgbon = self.get_server_update_key_value(message, RGBON_KEY)
+        if isinstance(val_rgbon, bool):
+            self._rgbon = val_rgbon
+
+        val_rgbbri = self.get_server_update_key_value(message, RGB_BRI)
+        if isinstance(val_rgbbri, int):
+            self._rgbbri = val_rgbbri
+
+        val_winopenon = self.get_server_update_key_value(message, WINOPENON_KEY)
+        if isinstance(val_winopenon, bool):
+            self._winopenon = val_winopenon
 
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
