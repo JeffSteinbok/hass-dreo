@@ -141,6 +141,9 @@
       },
       "follow_me": {
         "name": "Seguirme"
+      },
+      "purifyon": {
+        "name": "Purificación"
       }
     },
     "sensor": {

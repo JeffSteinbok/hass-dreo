@@ -267,21 +267,23 @@ class PyDreoHeater(PyDreoBaseDevice):
             return
 
     @property
-    def lighton(self) -> bool:
-        """Returns `True` if Display Auto off is OFF."""
+    def display_auto_off(self) -> bool | None:
+        """Returns `True` if Display Auto Off is enabled (the device reports it inverted as `lighton`)."""
+        if self._light_on is None:
+            return None
         return not self._light_on
 
-    @lighton.setter
-    def lighton(self, value: bool) -> None:
-        """Enable or disable light"""
-        _LOGGER.debug("lighton: lighton.setter(%s) --> %s", self.name, value)
+    @display_auto_off.setter
+    def display_auto_off(self, value: bool) -> None:
+        """Enable or disable display auto-off"""
+        _LOGGER.debug("display_auto_off: display_auto_off.setter(%s) --> %s", self.name, value)
         if self._light_on is not None:
             if self._light_on == (not value):
-                _LOGGER.debug("lighton: lighton - value already %s, skipping command", value)
+                _LOGGER.debug("display_auto_off: display_auto_off - value already %s, skipping command", value)
                 return
             self._send_command(LIGHTON_KEY, not value)
         else:
-            _LOGGER.error("lighton: Attempting to set Display Auto Off on a device that doesn't support it.")
+            _LOGGER.error("display_auto_off: Attempting to set Display Auto Off on a device that doesn't support it.")
             return
 
     @property

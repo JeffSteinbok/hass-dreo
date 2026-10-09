@@ -42,7 +42,14 @@ ScheduleCallLater: TypeAlias = Callable[[float, Callable[[], None]], Callable[[]
 # it is unicast to the issuing connection and arrives before (or without) any
 # device execution. Applying it as device state corrupts the local cache when the
 # device doesn't follow through. Only these methods carry actual device state.
-_STATE_METHOD_NAMES = {"report", "control-report"}
+#
+# device-online is the device's own full state snapshot, pushed when it
+# (re)connects to the cloud. Unlike control-reply it is real device state, and it
+# is the only notification we get when a device comes back from a mains outage in
+# its power-on default (e.g. air circulators return with poweron=False). Dropping
+# it leaves HA showing the pre-outage state indefinitely, and the same-value
+# guards in the power setters then turn turn_on into a silent no-op.
+_STATE_METHOD_NAMES = {"report", "control-report", "device-online"}
 
 _DREO_DEVICE_TYPE_TO_CLASS = {
     DreoDeviceType.TOWER_FAN: PyDreoTowerFan,

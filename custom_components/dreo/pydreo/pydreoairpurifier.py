@@ -3,8 +3,8 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
+from .constant import LIFETIME_KEY, PURIFYON_KEY
 from .pydreofanbase import PyDreoFanBase
-from .constant import LIFETIME_KEY
 from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(__name__)
@@ -30,6 +30,9 @@ class PyDreoAirPurifier(PyDreoFanBase):
         self._auto_mode_command_value: str | None = None
         # Remaining filter life in percent ("lifetime"), only for models flagged filter_life_percent.
         self._filter_life: int | None = None
+        # Purification toggle (DR-HAP010S). On that model fan speed changes have no physical
+        # effect unless purification is on (issue #933).  None if the device doesn't report it.
+        self._purify_on: bool | None = None
 
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
         """Parse the speed range from a control node"""
@@ -78,12 +81,29 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Return the remaining filter life in percent, if the purifier reports it."""
         return self._filter_life
 
+    @property
+    def purifyon(self) -> bool | None:
+        """Is purification on?"""
+        return self._purify_on
+
+    @purifyon.setter
+    def purifyon(self, value: bool) -> None:
+        """Turn purification on or off"""
+        _LOGGER.debug("purifyon: purifyon.setter(%s) --> %s", self.name, value)
+        if self._purify_on is None:
+            raise NotImplementedError("PyDreoAirPurifier: Attempting to set purifyon on a device that doesn't support.")
+        if self._purify_on == value:
+            _LOGGER.debug("purifyon: purifyon - value already %s, skipping command", value)
+            return
+        self._send_command(PURIFYON_KEY, value)
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
         if self._device_definition.filter_life_percent:
             self._filter_life = self.get_state_update_value(state, LIFETIME_KEY)
+        self._purify_on = self.get_state_update_value(state, PURIFYON_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -93,6 +113,10 @@ class PyDreoAirPurifier(PyDreoFanBase):
             val_filter_life = self.get_server_update_key_value(message, LIFETIME_KEY)
             if isinstance(val_filter_life, int):
                 self._filter_life = val_filter_life
+
+        val_purify_on = self.get_server_update_key_value(message, PURIFYON_KEY)
+        if isinstance(val_purify_on, bool):
+            self._purify_on = val_purify_on
 
     def _send_command(self, command_key: str, value) -> None:
         """Override to remap the 'auto' mode command for models that reject the plain "auto" string.

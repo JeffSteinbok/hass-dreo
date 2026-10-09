@@ -42,7 +42,7 @@ class TestPyDreoHeater(TestBase):
         _ = heater.oscangle
         _ = heater.oscmode
         _ = heater.ptcon
-        _ = heater.lighton
+        _ = heater.display_auto_off
         _ = heater.ctlstatus
         _ = heater.childlockon
         _ = heater.panel_sound
@@ -100,7 +100,7 @@ class TestPyDreoHeater(TestBase):
 
         if heater._light_on is not None:  # pylint: disable=protected-access
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                heater.lighton = not bool(heater.lighton)
+                heater.display_auto_off = not bool(heater.display_auto_off)
                 mock_send_command.assert_called_once()
 
         if heater.ctlstatus is not None:
@@ -348,9 +348,12 @@ class TestPyDreoHeater(TestBase):
         heater.handle_server_update({REPORTED_KEY: {PTCON_KEY: False}})
         assert heater.ptcon is False
 
-        # lighton
+        # lighton (inverted: lighton=False means display auto-off is enabled)
         heater.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: False}})
         assert heater._light_on is False
+        assert heater.display_auto_off is True
+        heater.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True}})
+        assert heater.display_auto_off is False
 
         # ecolevel (target temperature)
         heater.handle_server_update({REPORTED_KEY: {ECOLEVEL_KEY: 75}})
@@ -466,8 +469,8 @@ class TestPyDreoHeater(TestBase):
             heater.devon = True
             mock_send_command.assert_not_called()
 
-    def test_HSH009S_lighton_setter(self):  # pylint: disable=invalid-name
-        """Test lighton setter sends the inverted display auto-off command."""
+    def test_HSH009S_display_auto_off_setter(self):  # pylint: disable=invalid-name
+        """Test display_auto_off setter sends the inverted lighton command."""
         self.get_devices_file_name = "get_devices_HSH009S.json"
         self.pydreo_manager.load_devices()
         assert len(self.pydreo_manager.devices) == 1
@@ -477,14 +480,13 @@ class TestPyDreoHeater(TestBase):
         # (HSH009S state may not have a lighton field; we simulate a device that supports it)
         heater._light_on = True  # auto-off is ON
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            # lighton property = not _light_on; setting lighton=True flips to auto-off OFF
-            heater.lighton = True  # turn display auto-off OFF -> send LIGHTON_KEY: False
+            heater.display_auto_off = True  # enable display auto-off -> send LIGHTON_KEY: False
             mock_send_command.assert_called_once_with(heater, {LIGHTON_KEY: False})
 
-        # Duplicate value -- no command (_light_on=False -> lighton property is True; already True)
+        # Duplicate value -- no command (_light_on=False -> display_auto_off is already True)
         heater._light_on = False
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
-            heater.lighton = True
+            heater.display_auto_off = True
             mock_send_command.assert_not_called()
 
     def test_HSH009S_poweron_mode_preserved_on_poweroff(self):  # pylint: disable=invalid-name
