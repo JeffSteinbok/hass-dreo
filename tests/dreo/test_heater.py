@@ -516,9 +516,9 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert heater.max_temp == 95
 
     def test_target_temperature_step(self):
-        """Test target_temperature_step returns 1."""
+        """Test target_temperature_step is left to the frontend's unit-based default."""
         mock, heater = self._create_full_heater()
-        assert heater.target_temperature_step == 1
+        assert heater.target_temperature_step is None
 
     def test_hvac_modes_property(self):
         """Test hvac_modes returns the list of available modes."""
