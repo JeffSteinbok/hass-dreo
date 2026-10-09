@@ -288,7 +288,7 @@ class PyDreoHeater(PyDreoBaseDevice):
             raise ValueError("Attempting to set oscmode on a device that doesn't support it.")
 
     @property
-    def ptcon(self) -> bool:
+    def ptcon(self) -> bool | None:
         """Returns `True` if PTC is on."""
         if self._heaterDeviceDefinition.ptc_read_only:
             return None
