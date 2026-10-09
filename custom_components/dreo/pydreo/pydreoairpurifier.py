@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import PURIFYON_KEY
+from .constant import LIFETIME_KEY, PURIFYON_KEY
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
@@ -28,6 +28,8 @@ class PyDreoAirPurifier(PyDreoFanBase):
         # reject "auto" (e.g. DR-HAP009S requires "auto-regular").  None means send "auto" unchanged.
         # Takes effect only when _auto_mode_uses_auto_silent is not set.
         self._auto_mode_command_value: str | None = None
+        # Remaining filter life in percent ("lifetime"), only for models flagged filter_life_percent.
+        self._filter_life: int | None = None
         # Purification toggle (DR-HAP010S). On that model fan speed changes have no physical
         # effect unless purification is on (issue #933).  None if the device doesn't report it.
         self._purify_on: bool | None = None
@@ -75,6 +77,11 @@ class PyDreoAirPurifier(PyDreoFanBase):
         raise NotImplementedError(f"Attempting to set oscillating on a device that doesn't support ({value})")
 
     @property
+    def filter_life(self) -> int | None:
+        """Return the remaining filter life in percent, if the purifier reports it."""
+        return self._filter_life
+
+    @property
     def purifyon(self) -> bool | None:
         """Is purification on?"""
         return self._purify_on
@@ -94,12 +101,18 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
         super().update_state(state)
+        if self._device_definition.filter_life_percent:
+            self._filter_life = self.get_state_update_value(state, LIFETIME_KEY)
         self._purify_on = self.get_state_update_value(state, PURIFYON_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
         _LOGGER.debug("handle_server_update: handle_server_update")
         super().handle_server_update(message)
+        if self._device_definition.filter_life_percent:
+            val_filter_life = self.get_server_update_key_value(message, LIFETIME_KEY)
+            if isinstance(val_filter_life, int):
+                self._filter_life = val_filter_life
 
         val_purify_on = self.get_server_update_key_value(message, PURIFYON_KEY)
         if isinstance(val_purify_on, bool):

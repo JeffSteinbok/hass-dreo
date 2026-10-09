@@ -142,6 +142,33 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["manual"]
 
+    def test_HAP007S(self):  # pylint: disable=invalid-name
+        """Test DR-HAP007S Air Purifier (337S/337AS) with empty controlsConf."""
+
+        self.get_devices_file_name = "get_devices_HAP007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP007S"
+        assert air_purifier.series_name == "337S/337AS"
+        assert air_purifier.speed_range == (1, 4)
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+        assert air_purifier.preset_mode == "turbo"
+        assert air_purifier.filter_life == 89
+        assert air_purifier.is_feature_supported("filter_life")
+
+        # Rejects plain "auto" ("instruction validate failed") and requires "auto-regular"
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+        assert air_purifier.preset_mode == "auto"
+
+        # Filter life also arrives over the websocket
+        air_purifier.handle_server_update({REPORTED_KEY: {"lifetime": 88}})
+        assert air_purifier.filter_life == 88
+
     def test_HAP009S(self):  # pylint: disable=invalid-name
         """Test DR-HAP009S Air Purifier with empty controlsConf."""
 

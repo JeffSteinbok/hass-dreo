@@ -32,6 +32,7 @@ LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
 MUTEON_KEY = "muteon"
 PM25_KEY = "pm25"
+LIFETIME_KEY = "lifetime"
 LOCATEMEON_KEY = "locatemeon"
 FIXEDCONF_KEY = "fixedconf"
 # device_ranges key (float seconds): min gap between fixedconf commands for models
