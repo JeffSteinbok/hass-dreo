@@ -46,6 +46,13 @@
           "on": "Waiting"
         }
       },
+      "heating": {
+        "name": "Riscaldamento",
+        "state": {
+          "off": "Inattivo",
+          "on": "In riscaldamento"
+        }
+      },
       "main_power": {
         "name": "Alimentazione principale"
       }
@@ -117,6 +124,12 @@
       },
       "ptcon": {
         "name": "PTC"
+      },
+      "airflow_360": {
+        "name": "Flusso d'aria a 360°"
+      },
+      "window_detection": {
+        "name": "Rilevamento finestra aperta"
       },
       "childlockon": {
         "name": "Blocco bambini"
@@ -265,6 +278,9 @@
       },
       "ambient_light_level": {
         "name": "Livello luce ambientale"
+      },
+      "temperature_offset": {
+        "name": "Scostamento temperatura"
       },
       "timer_on": {
         "name": "Timer Accensione"

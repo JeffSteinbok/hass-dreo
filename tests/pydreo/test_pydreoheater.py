@@ -18,6 +18,7 @@ HEATER_EXHAUSTIVE_MODELS = [
     "get_devices_HSH011.json",
     "get_devices_HSH011S.json",
     "get_devices_HSH034S.json",
+    "get_devices_HSH040S.json",
     "get_devices_HSH041S.json",
     "get_devices_WH714S.json",
 ]
@@ -99,9 +100,14 @@ class TestPyDreoHeater(TestBase):
                 heater.ptcon = not bool(heater.ptcon)
                 mock_send_command.assert_called_once()
 
-        if heater._light_on is not None:  # pylint: disable=protected-access
+        if heater.display_auto_off is not None:
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater.display_auto_off = not bool(heater.display_auto_off)
+                mock_send_command.assert_called_once()
+
+        if heater.display_light is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.display_light = not bool(heater.display_light)
                 mock_send_command.assert_called_once()
 
         if heater.ctlstatus is not None:
@@ -252,6 +258,8 @@ class TestPyDreoHeater(TestBase):
         heater = self.pydreo_manager.devices[0]
 
         assert heater.model == "DR-HSH011S"
+        # Reports rgbon, but its ambient light has not been checked on a real unit.
+        assert heater.rgblevel is None
         assert heater.series_name == "OH521S"
         assert heater.htalevel_range == (1, 3)
         assert sorted(heater.modes) == sorted([DreoHeaterMode.COOLAIR, DreoHeaterMode.HOTAIR, DreoHeaterMode.ECO, DreoHeaterMode.OFF])
@@ -265,6 +273,115 @@ class TestPyDreoHeater(TestBase):
             heater.htalevel = 1
             mock_send_command.assert_has_calls([call(heater, {HTALEVEL_KEY: 1})], True)
         heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 1}})
+
+        with pytest.raises(ValueError):
+            heater.mode = "not_a_mode"
+
+    def test_HSH040S(self):  # pylint: disable=invalid-name
+        """Load HSH040S (720S) heater and test sending commands."""
+
+        self.get_devices_file_name = "get_devices_HSH040S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        assert isinstance(heater, PyDreoHeater)
+        assert heater.model == "DR-HSH040S"
+        assert heater.series_name == "720S"
+        assert heater.htalevel_range == (1, 3)
+        assert heater.ecolevel_range == (41, 95)
+        assert sorted(heater.modes) == sorted([DreoHeaterMode.COOLAIR, DreoHeaterMode.HOTAIR, DreoHeaterMode.ECO, DreoHeaterMode.OFF])
+        assert heater.device_definition.swing_modes is None
+
+        assert heater.poweron is True
+        assert heater.mode == DreoHeaterMode.ECO
+        assert heater.ecolevel == 68
+        assert heater.temperature == 70
+        assert heater.temperature_units == TemperatureUnit.FAHRENHEIT
+        assert heater.oscon is None
+        assert heater.oscangle is None
+        assert heater.oscmode is None
+
+        # PTC only reports whether the heating element is engaged; it cannot be set.
+        assert heater.ptcon is None
+        assert heater.heating is False
+        heater.handle_server_update({REPORTED_KEY: {PTCON_KEY: True}})
+        assert heater.heating is True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ptcon = False
+            mock_send_command.assert_not_called()
+
+        # airflowmode: 1 = direct heat (front only), 2 = 360° airflow (checked on a real unit).
+        assert heater.airflow_360 is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.airflow_360 = True
+            mock_send_command.assert_called_once_with(heater, {AIRFLOWMODE_KEY: 2})
+        heater.handle_server_update({REPORTED_KEY: {AIRFLOWMODE_KEY: 2}})
+        assert heater.airflow_360 is True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.airflow_360 = False
+            mock_send_command.assert_called_once_with(heater, {AIRFLOWMODE_KEY: 1})
+
+        # tempoffset is a -10..+10°F calibration, and the reported temperature already includes it
+        # (checked on a real unit: +3°C in the app -> 6, +2°F -> 2, temperature moved by the same amount).
+        assert heater.temperature_offset_range == (-10, 10)
+        assert heater.temperature_offset == 0
+        heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 6, TEMPERATURE_KEY: 76}})
+        assert heater.temperature_offset == 6
+        assert heater.temperature == 76
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.temperature_offset = -10
+            mock_send_command.assert_called_once_with(heater, {TEMPOFFSET_KEY: -10})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.temperature_offset = 11
+            mock_send_command.assert_not_called()
+
+        assert heater.mcu_firmware_version == "1.3.6"
+
+        # rgbon turns the ambient light on and off, rgbbri is its 1-3 brightness (checked on a real unit).
+        assert heater.rgblevel == 0
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.rgblevel = 2
+            mock_send_command.assert_has_calls([call(heater, {RGB_BRI: 2}), call(heater, {RGBON_KEY: True})])
+        heater.handle_server_update({REPORTED_KEY: {RGBON_KEY: True, RGB_BRI: 2}})
+        assert heater.rgblevel == 2
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.rgblevel = 0
+            mock_send_command.assert_called_once_with(heater, {RGBON_KEY: False})
+        assert heater.window_detection is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.window_detection = True
+            mock_send_command.assert_called_once_with(heater, {WINOPENON_KEY: True})
+        heater.handle_server_update({REPORTED_KEY: {WINOPENON_KEY: True}})
+        assert heater.window_detection is True
+
+        # lighton is not inverted on this model: True means the display is on (checked on a real unit).
+        assert heater.display_light is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.display_light = True
+            mock_send_command.assert_called_once_with(heater, {LIGHTON_KEY: True})
+        heater.handle_server_update({REPORTED_KEY: {LIGHTON_KEY: True}})
+        assert heater.display_light is True
+        # lighton is owned by display_light here, so the inverted Display Auto Off is not exposed.
+        assert heater.display_auto_off is None
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.display_auto_off = True
+            mock_send_command.assert_not_called()
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.HOTAIR
+            mock_send_command.assert_called_once_with(heater, {MODE_KEY: DreoHeaterMode.HOTAIR})
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "hotair"}})
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 3
+            mock_send_command.assert_called_once_with(heater, {HTALEVEL_KEY: 3})
+        heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 3}})
+        assert heater.htalevel == 3
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.ecolevel = 72
+            mock_send_command.assert_called_once_with(heater, {ECOLEVEL_KEY: 72})
 
         with pytest.raises(ValueError):
             heater.mode = "not_a_mode"

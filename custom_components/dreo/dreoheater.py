@@ -73,7 +73,8 @@ PRESET_TO_HEAT_LEVEL = {
 class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     """Representation of a Dreo heater as a climate entity."""
 
-    _attr_precision = PRECISION_WHOLE
+    # Heaters take whole °F targets. Halves keep a converted °C target readable (69°F shows as 20.5°C).
+    _attr_precision = PRECISION_HALVES
     _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
     _attr_target_temperature = None
     _attr_current_temperature = None
@@ -139,6 +140,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             manufacturer=self.device.brand,
             model=f"{self.device.series_name} ({self.device.model}) {self.device.product_name}",
             name=self.device.device_name,
+            sw_version=self.device.mcu_firmware_version,
+            hw_version=self.device.mcu_hardware_model,
         )
 
     @property
@@ -304,7 +307,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def target_temperature_step(self) -> float | None:
-        return 1
+        # No fixed step: Home Assistant does not convert it to the user's unit, so 1 would mean whole °C
+        # for Celsius users. Unset, the frontend uses 1 in °F and 0.5 in °C, both close to the device's 1°F.
+        return None
 
     @property
     def hvac_mode(self) -> HVACMode:

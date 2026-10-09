@@ -109,6 +109,16 @@ BINARY_SENSORS: tuple[DreoBinarySensorEntityDescription, ...] = (
         icon_fn=lambda device: "mdi:power" if device.poweron else "mdi:power-off",
         attrs_fn=lambda device: device.gate_diagnostics(),
     ),
+    # Heaters whose PTC flag is read-only (e.g. DR-HSH040S): on while the heating element draws power.
+    DreoBinarySensorEntityDescription(
+        key="heating",
+        translation_key="heating",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        entity_registry_enabled_default=True,
+        value_fn=lambda device: device.heating,
+        exists_fn=lambda device: device.is_feature_supported("heating"),
+        icon_fn=lambda device: "mdi:radiator" if device.heating else "mdi:radiator-off",
+    ),
     # Diagnostic: models with fixedconf settle (e.g. DR-HPF017S) queue axis
     # updates while the head is moving; enable this entity to observe the queue.
     DreoBinarySensorEntityDescription(

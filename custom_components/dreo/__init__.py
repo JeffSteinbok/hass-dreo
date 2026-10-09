@@ -226,6 +226,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SENSOR)
         platforms.add(Platform.SWITCH)
         platforms.add(Platform.NUMBER)
+    if DreoDeviceType.HEATER in device_types:
+        # Heating and window sensors, and the ambient light, on models that have them (e.g. DR-HSH040S).
+        platforms.add(Platform.BINARY_SENSOR)
+        platforms.add(Platform.LIGHT)
 
     if DreoDeviceType.HUMIDIFIER in device_types:
         platforms.add(Platform.HUMIDIFIER)

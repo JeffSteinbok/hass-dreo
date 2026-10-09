@@ -2,13 +2,17 @@
 
 # pylint: disable=used-before-assignment
 import logging
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+from custom_components.dreo import binary_sensor
 from custom_components.dreo import dreoheater
+from custom_components.dreo import light
 from custom_components.dreo import sensor
 from custom_components.dreo import number
 from custom_components.dreo import switch
 
-from homeassistant.components.climate import HVACMode
+from homeassistant.components.climate import ATTR_TEMPERATURE, PRESET_ECO, ClimateEntityFeature, HVACMode
+from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode
+from homeassistant.const import UnitOfTemperature
 
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import PATCH_SEND_COMMAND, IntegrationTestBase
@@ -197,6 +201,140 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
             pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "eco"}})
             assert heater_ha.hvac_mode == HVACMode.HEAT
+
+    def test_HSH040S(self):  # pylint: disable=invalid-name
+        """Load HSH040S (720S) heater and test sending commands."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH040S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.type == "Heater"
+            assert pydreo_heater.model == "DR-HSH040S"
+            assert pydreo_heater.series_name == "720S"
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.is_on is True
+            assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert sorted(heater_ha.hvac_modes) == sorted([HVACMode.HEAT, HVACMode.FAN_ONLY, HVACMode.OFF])
+            assert heater_ha.preset_mode == PRESET_ECO
+            assert sorted(heater_ha.preset_modes) == sorted([PRESET_ECO, "H1", "H2", "H3"])
+            assert heater_ha.current_temperature == 70
+            assert heater_ha.target_temperature == 68
+            assert heater_ha.min_temp == 41
+            assert heater_ha.max_temp == 95
+            assert heater_ha.swing_modes is None
+            assert not heater_ha.supported_features & ClimateEntityFeature.SWING_MODE
+            assert heater_ha.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
+            assert heater_ha.supported_features & ClimateEntityFeature.PRESET_MODE
+
+            # PTC is read-only on this model: no switch, a "heating" binary sensor instead.
+            switches = switch.get_entries([pydreo_heater])
+            self.verify_expected_entities(switches, ["Child Lock", "Display Light", "Panel Sound", "360° Airflow", "Window Detection"])
+            airflow_360_switch = self.get_entity_by_key(switches, "360° Airflow")
+            assert airflow_360_switch.is_on is False
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                airflow_360_switch.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_heater, {AIRFLOWMODE_KEY: 2})
+            display_switch = self.get_entity_by_key(switches, "Display Light")
+            assert display_switch.is_on is False
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                display_switch.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_heater, {LIGHTON_KEY: True})
+
+            binary_sensors = binary_sensor.get_entries([pydreo_heater])
+            self.verify_expected_entities(binary_sensors, ["heating"])
+            lights = light.get_entries([pydreo_heater])
+            assert len(lights) == 1
+            ambient_light = lights[0]
+            assert ambient_light.translation_key == "ambient_light"
+            assert ambient_light.supported_color_modes == {ColorMode.BRIGHTNESS}
+            assert ambient_light.is_on is False
+            # The fixture's rgbbri is 1.
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ambient_light.turn_on(**{ATTR_BRIGHTNESS: 1})
+                mock_send_command.assert_called_once_with(pydreo_heater, {RGBON_KEY: True})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {RGBON_KEY: True}})
+            assert ambient_light.is_on is True
+            assert ambient_light.brightness == 85
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ambient_light.turn_on(**{ATTR_BRIGHTNESS: 255})
+                mock_send_command.assert_called_once_with(pydreo_heater, {RGB_BRI: 3})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {RGB_BRI: 3}})
+            assert ambient_light.brightness == 255
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ambient_light.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_heater, {RGBON_KEY: False})
+
+            window_detection_switch = self.get_entity_by_key(switches, "Window Detection")
+            assert window_detection_switch.is_on is False
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                window_detection_switch.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_heater, {WINOPENON_KEY: True})
+            assert heater_ha.device_info["sw_version"] == "1.3.6"
+            assert heater_ha.device_info["hw_version"] == "SC95F8615B/EU"
+            heating_sensor = self.get_entity_by_key(binary_sensors, "heating")
+            assert heating_sensor.is_on is False
+            pydreo_heater.handle_server_update({REPORTED_KEY: {PTCON_KEY: True}})
+            assert heating_sensor.is_on is True
+            pydreo_heater.handle_server_update({REPORTED_KEY: {PTCON_KEY: False}})
+            assert heating_sensor.is_on is False
+
+            numbers = number.get_entries([pydreo_heater])
+            self.verify_expected_entities(numbers, ["Temperature Offset"])
+            offset_number = self.get_entity_by_key(numbers, "Temperature Offset")
+
+            # Celsius: 1°C per 2°F, like the Dreo app.
+            offset_number.hass = MagicMock()
+            offset_number.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
+            assert offset_number.native_unit_of_measurement == UnitOfTemperature.CELSIUS
+            assert (offset_number.native_min_value, offset_number.native_max_value) == (-5, 5)
+            assert offset_number.native_value == 0
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                offset_number.set_native_value(-2.0)
+                mock_send_command.assert_called_once_with(pydreo_heater, {TEMPOFFSET_KEY: -4})
+            # The reported temperature already includes the offset; it must not be added twice.
+            pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: -4, TEMPERATURE_KEY: 66}})
+            assert offset_number.native_value == -2
+            assert heater_ha.current_temperature == 66
+
+            # Fahrenheit: the device value as is.
+            offset_number.hass.config.units.temperature_unit = UnitOfTemperature.FAHRENHEIT
+            assert offset_number.native_unit_of_measurement == UnitOfTemperature.FAHRENHEIT
+            assert (offset_number.native_min_value, offset_number.native_max_value) == (-10, 10)
+            assert offset_number.native_value == -4
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                offset_number.set_native_value(3.0)
+                mock_send_command.assert_called_once_with(pydreo_heater, {TEMPOFFSET_KEY: 3})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 0, TEMPERATURE_KEY: 70}})
+
+            sensors = sensor.get_entries([pydreo_heater])
+            self.verify_expected_entities(sensors, [])
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H2")
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: DreoHeaterMode.HOTAIR})
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 2})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "hotair", HTALEVEL_KEY: 2}})
+            assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert heater_ha.preset_mode == "H2"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.FAN_ONLY)
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: DreoHeaterMode.COOLAIR})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "coolair"}})
+            assert heater_ha.hvac_mode == HVACMode.FAN_ONLY
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_temperature(**{ATTR_TEMPERATURE: 72})
+                mock_send_command.assert_called_once_with(pydreo_heater, {ECOLEVEL_KEY: 72})
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.OFF)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: False})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+            assert heater_ha.hvac_mode == HVACMode.OFF
 
     def test_HSH011(self):  # pylint: disable=invalid-name
         """Load DR-HSH011 oil radiator heater and test sending commands."""

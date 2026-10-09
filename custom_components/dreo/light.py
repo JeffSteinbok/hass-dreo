@@ -57,7 +57,7 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
             _LOGGER.debug("get_entries: Adding RGB Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoRGBLightHA(pydreo_device))
 
-        # Check if device has an ambient light ring (humidifiers, evaporative coolers).
+        # Check if device has an ambient light ring (humidifiers, evaporative coolers, some heaters).
         # Older firmware exposes rgblevel; newer firmware exposes atm_on (ambient_switch key).
         if pydreo_device.is_feature_supported("rgblevel") or pydreo_device.is_feature_supported("atm_on"):
             _LOGGER.debug("get_entries: Adding Ambient Light for %s", pydreo_device.name)
