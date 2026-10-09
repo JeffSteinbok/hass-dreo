@@ -638,9 +638,8 @@ class PyDreo:  # pylint: disable=function-redefined
                 self._release_command_slot()
                 raise
 
-            ack_received = self._wait_for_command_ack(device)
+            ack_received, rejection = self._wait_for_command_ack(device)
             if ack_received:
-                rejection = self._command_rejection
                 if rejection is not None:
                     # Retrying the same payload would be rejected again.
                     error_code, error_msg = rejection
@@ -671,8 +670,12 @@ class PyDreo:  # pylint: disable=function-redefined
         with self._command_condition:
             self._clear_pending_command_locked()
 
-    def _wait_for_command_ack(self, device: PyDreoBaseDevice) -> bool:
-        """Wait for server acknowledgment or timeout. Returns True if ack received."""
+    def _wait_for_command_ack(self, device: PyDreoBaseDevice) -> Tuple[bool, Optional[Tuple[object, object]]]:
+        """Wait for server acknowledgment or timeout.
+
+        Returns (ack_received, rejection). The rejection is read under the lock, before the
+        slot is released: once released, another sender may reserve it and reset it.
+        """
         _LOGGER.debug("_wait_for_command_ack: Waiting for ack from %s", device.name)
         with self._command_condition:
             ack_received = self._command_condition.wait_for(
@@ -683,9 +686,10 @@ class PyDreo:  # pylint: disable=function-redefined
                 _LOGGER.debug("_wait_for_command_ack: Timed out for %s", device.name)
             else:
                 _LOGGER.debug("_wait_for_command_ack: Ack received for %s", device.name)
+            rejection = self._command_rejection if ack_received else None
             # Always clear slot when done (success or timeout)
             self._clear_pending_command_locked()
-            return ack_received
+            return ack_received, rejection
 
     def _handle_command_ack(self, device_sn: Optional[str], method: Optional[str], reported: Optional[dict]) -> None:
         """Signal ack received when server sends control-reply/control-report for our device.

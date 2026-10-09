@@ -82,6 +82,30 @@ class TestSendCommand(TestBase):
         with patch(PATCH_TRANSPORT_SEND, side_effect=simulate_ack), patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1):
             fan.is_on = False
 
+    def test_send_command_rejection_survives_slot_handoff(self):
+        """The rejection is captured before the slot is released, so a sender that grabs
+        the slot right after (and resets the rejection) can't turn it into a success."""
+        fan = self._load_fan()
+        manager = self.pydreo_manager
+        original_clear = manager._clear_pending_command_locked
+
+        def clear_then_next_sender_reserves():
+            original_clear()
+            manager._command_rejection = None  # what _reserve_command_slot does for the next sender
+
+        def simulate_rejection(content):
+            manager._transport_consume_message(
+                {"devicesn": fan.serial_number, "method": "control-reply", "reported": {"error_msg": "instruction validate failed", "error_code": 500003}}
+            )
+
+        with (
+            patch(PATCH_TRANSPORT_SEND, side_effect=simulate_rejection),
+            patch(f"{PATCH_BASE_PATH}._COMMAND_ACK_TIMEOUT", 0.1),
+            patch.object(manager, "_clear_pending_command_locked", side_effect=clear_then_next_sender_reserves),
+        ):
+            with pytest.raises(DreoCommandRejectedError):
+                fan.is_on = True
+
     def test_send_command_retries_on_timeout(self):
         """Test that send_command retries when no ACK is received."""
         fan = self._load_fan()
