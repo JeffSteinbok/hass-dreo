@@ -143,6 +143,13 @@ class PyDreoBaseDevice:
         self.handle_server_update(message)
         self._do_callbacks()
 
+    def set_connected(self, connected: bool, notify: bool = True) -> None:
+        """Record a connectivity change pushed by the cloud (device-online / device-offline)."""
+        _LOGGER.debug("set_connected: {%s}: connected: %s --> %s", self.name, self._connected, connected)
+        self._connected = connected
+        if notify:
+            self._do_callbacks()
+
     def handle_server_update(self, message: dict):
         """Method to process WebSocket message"""
 

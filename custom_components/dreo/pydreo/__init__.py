@@ -51,6 +51,16 @@ ScheduleCallLater: TypeAlias = Callable[[float, Callable[[], None]], Callable[[]
 # guards in the power setters then turn turn_on into a silent no-op.
 _STATE_METHOD_NAMES = {"report", "control-report", "device-online"}
 
+# Sent by the cloud when a device drops off (e.g. unplugged). It carries no
+# "reported" state, only the device serial, so it is handled as a connectivity
+# change rather than as state.
+_DEVICE_OFFLINE_METHOD = "device-offline"
+_DEVICE_ONLINE_METHOD = "device-online"
+
+
+class DreoCommandRejectedError(Exception):
+    """The Dreo server rejected a command (e.g. error 500003, "instruction validate failed")."""
+
 _DREO_DEVICE_TYPE_TO_CLASS = {
     DreoDeviceType.TOWER_FAN: PyDreoTowerFan,
     DreoDeviceType.AIR_CIRCULATOR: PyDreoAirCirculator,
@@ -127,6 +137,8 @@ class PyDreo:  # pylint: disable=function-redefined
         self._pending_command_device: Optional[str] = None
         self._pending_command_params: Optional[dict] = None
         self._ack_received: bool = False
+        # (error_code, error_msg) when the server's reply to the in-flight command was a rejection.
+        self._command_rejection: Optional[Tuple[object, object]] = None
 
         # Host-provided delayed scheduler; see ScheduleCallLater / class docstring.
         self._schedule_call_later: ScheduleCallLater | None = None
@@ -576,6 +588,12 @@ class PyDreo:  # pylint: disable=function-redefined
 
         # Existing device update handling
         if message_device_sn in self._device_list_by_sn:
+            if message_method == _DEVICE_OFFLINE_METHOD:
+                self._device_list_by_sn[message_device_sn].set_connected(False)
+                return
+            if message_method == _DEVICE_ONLINE_METHOD:
+                # The snapshot doesn't necessarily include "connected", so mark it explicitly.
+                self._device_list_by_sn[message_device_sn].set_connected(True, notify=False)
             if message_method is not None and message_method not in _STATE_METHOD_NAMES:
                 # control-reply (and any other non-state method) feeds the ack
                 # machinery above but must never be applied as device state.
@@ -622,6 +640,11 @@ class PyDreo:  # pylint: disable=function-redefined
 
             ack_received = self._wait_for_command_ack(device)
             if ack_received:
+                rejection = self._command_rejection
+                if rejection is not None:
+                    # Retrying the same payload would be rejected again.
+                    error_code, error_msg = rejection
+                    raise DreoCommandRejectedError(f"Dreo rejected command {params} for {device.name}: {error_msg} (error {error_code})")
                 return  # Success!
 
             # Timeout - will retry if attempts remain
@@ -640,6 +663,7 @@ class PyDreo:  # pylint: disable=function-redefined
             self._pending_command_device = device_sn
             self._pending_command_params = params
             self._ack_received = False
+            self._command_rejection = None
             _LOGGER.debug("_reserve_command_slot: Acquired slot for %s with params %s", device_sn, params)
 
     def _release_command_slot(self) -> None:
@@ -679,6 +703,9 @@ class PyDreo:  # pylint: disable=function-redefined
                 _LOGGER.debug("_handle_command_ack: Ignoring, pending device is %s", self._pending_command_device)
                 return
             # Accept any control-reply/control-report for the correct device as an ACK.
+            # A reply carrying error_code is still an answer (stop waiting), but a rejection.
+            if isinstance(reported, dict) and "error_code" in reported:
+                self._command_rejection = (reported.get("error_code"), reported.get("error_msg"))
             _LOGGER.debug("_handle_command_ack: Signaling ack for %s, reported=%s", device_sn, reported)
             self._ack_received = True
             self._command_condition.notify_all()

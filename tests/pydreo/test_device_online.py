@@ -97,6 +97,38 @@ class TestDeviceOnline(TestBase):
         finally:
             self.pydreo_manager._release_command_slot()
 
+    def test_device_offline_marks_disconnected(self):
+        """device-offline (no reported state) marks the device disconnected and notifies (issue #937)."""
+        self.get_devices_file_name = "get_devices_HPF015S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+        power_before = fan.is_on
+
+        callback = MagicMock()
+        fan.add_attr_callback(callback)
+
+        self.pydreo_manager._transport_consume_message({"method": "device-offline", "devicesn": fan.serial_number, "timestamp": 1791452054262})
+
+        assert fan.connected is False
+        assert fan.is_on == power_before
+        callback.assert_called_once()
+
+    def test_device_online_after_offline_marks_connected(self):
+        """device-online brings a device marked offline back, even if the snapshot lacks "connected"."""
+        self.get_devices_file_name = "get_devices_HPF015S.json"
+        self.pydreo_manager.load_devices()
+        fan = self.pydreo_manager.devices[0]
+
+        self.pydreo_manager._transport_consume_message({"method": "device-offline", "devicesn": fan.serial_number})
+        assert fan.connected is False
+
+        callback = MagicMock()
+        fan.add_attr_callback(callback)
+        self.pydreo_manager._transport_consume_message(self._device_online(fan, HPF015S_DEVICE_ONLINE_REPORTED))
+
+        assert fan.connected is True
+        callback.assert_called_once()
+
     def test_control_reply_is_still_not_applied(self):
         """Adding device-online must not re-open the door for control-reply."""
         self.get_devices_file_name = "get_devices_HPF015S.json"
