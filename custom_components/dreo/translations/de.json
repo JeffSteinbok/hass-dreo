@@ -309,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "3D-Winkel-Voreinstellung"
+      },
+      "display_mode": {
+        "name": "Display-Modus",
+        "state": {
+          "off": "Aus",
+          "on": "Ein",
+          "auto": "Automatisch"
+        }
       }
     },
     "light": {

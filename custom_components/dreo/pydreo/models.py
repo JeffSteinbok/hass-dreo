@@ -9,6 +9,8 @@ from .constant import (
     HEAT_RANGE,
     ECOLEVEL_RANGE,
     TEMPERATURE_OFFSET_RANGE,
+    COOL_RANGE,
+    HEATER_HOSC_SWING_ANGLES,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
@@ -598,6 +600,13 @@ SUPPORTED_DEVICES = {
     "DR-HSH010S": DreoHeaterDeviceDetails(),
     "DR-HSH011": DreoHeaterDeviceDetails(),
     "DR-HSH011S": DreoHeaterDeviceDetails(),
+    # Tower Fan & Heater 706S: heat (H1-H5 / eco) plus a 12-speed fan function with
+    # normal/natural/sleep/auto modes and 30-120 degree horizontal oscillation. Reports an
+    # integer "mode" (1 heat, 2 fan) with "htamode"/"coolmode" sub-modes; see PyDreoHeater.
+    "DR-HSH016S": DreoHeaterDeviceDetails(
+        device_ranges={HEAT_RANGE: (1, 5), COOL_RANGE: (1, 12)},
+        swing_modes=[SWING_OFF, *HEATER_HOSC_SWING_ANGLES.keys()],
+    ),
     # DR-HSH041S (Convection Heater 711S) reports an empty controlsConf; its state keys match the
     # HSH011S (heat levels, ECO target in °F, PTC, window-open detection), so the defaults apply (issue #928).
     "DR-HSH041S": DreoHeaterDeviceDetails(),

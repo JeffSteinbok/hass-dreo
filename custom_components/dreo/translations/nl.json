@@ -309,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "3D-hoekvoorinstelling"
+      },
+      "display_mode": {
+        "name": "Displaymodus",
+        "state": {
+          "off": "Uit",
+          "on": "Aan",
+          "auto": "Automatisch"
+        }
       }
     },
     "light": {

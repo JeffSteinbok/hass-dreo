@@ -9,8 +9,9 @@ from custom_components.dreo import light
 from custom_components.dreo import sensor
 from custom_components.dreo import number
 from custom_components.dreo import switch
+from custom_components.dreo import select
 
-from homeassistant.components.climate import ATTR_TEMPERATURE, PRESET_ECO, ClimateEntityFeature, HVACMode
+from homeassistant.components.climate import ATTR_TEMPERATURE, PRESET_ECO, PRESET_NONE, SWING_OFF, ClimateEntityFeature, HVACMode
 from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode
 from homeassistant.const import UnitOfTemperature
 
@@ -589,6 +590,7 @@ class TestDreoHeater(IntegrationTestBase):
 
             # HSH010S has no swing modes
             from homeassistant.components.climate import ClimateEntityFeature
+
             assert not (heater_ha.supported_features & ClimateEntityFeature.SWING_MODE)
 
             # Test HVAC mode changes
@@ -639,6 +641,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.current_temperature == 74
 
             from homeassistant.components.climate import ClimateEntityFeature
+
             assert not (heater_ha.supported_features & ClimateEntityFeature.SWING_MODE)
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -677,6 +680,7 @@ class TestDreoHeater(IntegrationTestBase):
 
             # HSH011S has no swing modes
             from homeassistant.components.climate import ClimateEntityFeature
+
             assert not (heater_ha.supported_features & ClimateEntityFeature.SWING_MODE)
 
             # Test HVAC mode changes
@@ -700,6 +704,156 @@ class TestDreoHeater(IntegrationTestBase):
 
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, [])
+
+            sensors = sensor.get_entries([pydreo_heater])
+            self.verify_expected_entities(sensors, [])
+
+    def test_HSH016S(self):  # pylint: disable=invalid-name
+        """Load DR-HSH016S (Tower Fan & Heater 706S) and test the combined heat/fan climate entity."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH016S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.type == "Heater"
+            assert pydreo_heater.model == "DR-HSH016S"
+            assert pydreo_heater.series_name == "706S/806S"
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.unique_id is not None
+            assert heater_ha.translation_key == "heater"
+
+            from homeassistant.components.climate import ClimateEntityFeature
+
+            assert heater_ha.supported_features & ClimateEntityFeature.SWING_MODE
+            assert heater_ha.supported_features & ClimateEntityFeature.FAN_MODE
+            assert heater_ha.supported_features & ClimateEntityFeature.PRESET_MODE
+            assert heater_ha.supported_features & ClimateEntityFeature.TARGET_TEMPERATURE
+            assert sorted(heater_ha.hvac_modes) == sorted([HVACMode.HEAT, HVACMode.FAN_ONLY, HVACMode.OFF])
+
+            # Fixture: on, fan function at speed 5 in normal mode, oscillation off
+            assert heater_ha.hvac_mode == HVACMode.FAN_ONLY
+            assert heater_ha.preset_mode == PRESET_NONE
+            assert heater_ha.fan_modes == [str(n) for n in range(1, 13)]
+            assert heater_ha.fan_mode == "5"
+            assert heater_ha.swing_modes == [SWING_OFF, "30°", "60°", "90°", "120°"]
+            assert heater_ha.swing_mode == SWING_OFF
+            assert heater_ha.current_temperature == 66
+            assert heater_ha.target_temperature == 85
+            assert (heater_ha.min_temp, heater_ha.max_temp) == (41, 95)
+            assert heater_ha.preset_modes == [PRESET_ECO, "H1", "H2", "H3", "H4", "H5", PRESET_NONE, "Natural", "Sleep", "Auto"]
+
+            # Fan speed
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_fan_mode("12")
+                mock_send_command.assert_any_call(pydreo_heater, {COOLLEVEL_KEY: 12})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {COOLLEVEL_KEY: 12}})
+            assert heater_ha.fan_mode == "12"
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_fan_mode("13")
+                mock_send_command.assert_not_called()
+
+            # Fan sub-mode presets
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("Sleep")
+                mock_send_command.assert_any_call(pydreo_heater, {COOLMODE_KEY: 3})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {COOLMODE_KEY: 3}})
+            assert heater_ha.preset_mode == "Sleep"
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode(PRESET_NONE)
+                mock_send_command.assert_any_call(pydreo_heater, {COOLMODE_KEY: 1})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {COOLMODE_KEY: 1}})
+            assert heater_ha.preset_mode == PRESET_NONE
+
+            # Switching to heat sends the function and sub-mode together, as the app does
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: 1, HTAMODE_KEY: 1})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1}})
+            # Already heating: no function command. An unknown reported function reads as heat but is replaced
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
+                mock_send_command.assert_called_once_with(pydreo_heater, {POWERON_KEY: True})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 99}})
+            assert heater_ha.hvac_mode == HVACMode.HEAT
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: 1, HTAMODE_KEY: 1})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1}})
+            assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert heater_ha.preset_mode == "H1"
+
+            # Heat levels up to H5
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H5")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 5})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 5}})
+            assert heater_ha.preset_mode == "H5"
+
+            # Eco is the heat function with the eco sub-mode; thermostat in Fahrenheit
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode(PRESET_ECO)
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: 1, HTAMODE_KEY: 2})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HTAMODE_KEY: 2}})
+            assert heater_ha.hvac_mode == HVACMode.HEAT
+            assert heater_ha.preset_mode == PRESET_ECO
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_temperature(temperature=70)
+                mock_send_command.assert_any_call(pydreo_heater, {ECOLEVEL_KEY: 70})
+
+            # Back to the fan function
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.FAN_ONLY)
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: 2})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+            assert heater_ha.hvac_mode == HVACMode.FAN_ONLY
+
+            # Swing: a preset angle sets a symmetric range and turns oscillation on; off just stops it
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_swing_mode("90°")
+                mock_send_command.assert_any_call(pydreo_heater, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-45,45"})
+                mock_send_command.assert_any_call(pydreo_heater, {HORIZONTAL_OSCILLATION_KEY: True})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_KEY: True, HORIZONTAL_OSCILLATION_ANGLE_KEY: "-45,45"}})
+            assert heater_ha.swing_mode == "90°"
+            # An asymmetric range set from the app maps to the nearest preset by width
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-30,20"}})
+            assert heater_ha.swing_mode == "60°"
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_swing_mode(SWING_OFF)
+                mock_send_command.assert_any_call(pydreo_heater, {HORIZONTAL_OSCILLATION_KEY: False})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_KEY: False}})
+            assert heater_ha.swing_mode == SWING_OFF
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.OFF)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: False})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: False}})
+            assert heater_ha.hvac_mode == HVACMode.OFF
+
+            # Companion entities: fixed direction + oscillation range numbers, the usual heater switches
+            # plus open-window detection, and the off/on/auto display select
+            numbers = number.get_entries([pydreo_heater])
+            self.verify_expected_entities(numbers, ["Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right"])
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                self.get_entity_by_key(numbers, "Horizontal Angle").set_native_value(-20)
+                mock_send_command.assert_any_call(pydreo_heater, {HORIZONTAL_ANGLE_ADJ_KEY: -20})
+
+            switches = switch.get_entries([pydreo_heater])
+            self.verify_expected_entities(switches, ["Horizontally Oscillating", "Panel Sound", "PTC", "Child Lock", "Window Detection"])
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                self.get_entity_by_key(switches, "Window Detection").turn_on()
+                mock_send_command.assert_any_call(pydreo_heater, {WINOPENON_KEY: True})
+
+            selects = select.get_entries([pydreo_heater])
+            self.verify_expected_entities(selects, ["Display Mode"])
+            display = self.get_entity_by_key(selects, "Display Mode")
+            assert display.options == ["off", "on", "auto"]
+            assert display.current_option == "auto"
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                display.select_option("off")
+                mock_send_command.assert_any_call(pydreo_heater, {LIGHTMODE_KEY: 0})
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])

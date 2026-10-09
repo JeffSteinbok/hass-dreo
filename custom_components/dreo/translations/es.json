@@ -309,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "Preajuste de ángulo 3D"
+      },
+      "display_mode": {
+        "name": "Modo de pantalla",
+        "state": {
+          "off": "Apagado",
+          "on": "Encendido",
+          "auto": "Automático"
+        }
       }
     },
     "light": {

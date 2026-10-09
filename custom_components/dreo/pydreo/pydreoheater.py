@@ -29,7 +29,17 @@ from .constant import (
     CHILDLOCKON_KEY,
     TEMPOFFSET_KEY,
     FIXEDCONF_KEY,
+    HTAMODE_KEY,
+    COOLMODE_KEY,
+    COOLLEVEL_KEY,
+    LIGHTMODE_KEY,
+    HORIZONTAL_OSCILLATION_KEY,
+    HORIZONTAL_OSCILLATION_ANGLE_KEY,
+    HORIZONTAL_ANGLE_ADJ_KEY,
     DreoHeaterMode,
+    DreoHeaterFunction,
+    DreoHeaterHeatMode,
+    DreoHeaterFanMode,
     TemperatureUnit,
     HeaterOscillationAngles,
     HEATER_OSCMODE_SWING_MAP,
@@ -38,7 +48,7 @@ from .constant import (
 )
 
 from .pydreobasedevice import PyDreoBaseDevice
-from .models import DreoHeaterDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE, TEMPERATURE_OFFSET_RANGE
+from .models import DreoHeaterDeviceDetails, HEAT_RANGE, ECOLEVEL_RANGE, TEMPERATURE_OFFSET_RANGE, COOL_RANGE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,10 +96,24 @@ class PyDreoHeater(PyDreoBaseDevice):
 
         self._htalevel_range = None
 
+        # Tower fan/heater combos (DR-HSH016S): the function (heat/fan) and heat sub-mode arrive as
+        # integers and are folded into _mode; the fan function has its own mode and speed level.
+        self._function = None
+        self._htamode = None
+        self._coolmode = None
+        self._coollevel = None
+        self._coollevel_range = None
+        self._lightmode = None
+        self._hoscon = None
+        self._hoscangle = None
+        self._hangleadj = None
+
         # Check if the device has a speed range defined in the device definition
         # If not, parse the speed range from the details
         if device_definition.device_ranges is not None and HEAT_RANGE in device_definition.device_ranges:
             self._htalevel_range = device_definition.device_ranges[HEAT_RANGE]
+        if device_definition.device_ranges is not None and COOL_RANGE in device_definition.device_ranges:
+            self._coollevel_range = device_definition.device_ranges[COOL_RANGE]
 
         self._timeron = None
 
@@ -177,10 +201,22 @@ class PyDreoHeater(PyDreoBaseDevice):
     @mode.setter
     def mode(self, value: DreoHeaterMode) -> None:
         if value in self.modes:
-            if self._mode == value:
-                _LOGGER.debug("mode: mode - value already %s, skipping command", value)
-                return
-            self._send_command(MODE_KEY, value)
+            if self.is_fan_heater:
+                params = self._function_params(value)
+                if params is None:
+                    _LOGGER.debug("mode: mode - %s is not a function of a tower fan/heater combo, use poweron", value)
+                    return
+                # Compare the raw function and heat sub-mode, not the derived mode: an unknown value reads as
+                # power heat but must still be replaced when power heat is requested
+                if self._function == params[MODE_KEY] and self._htamode == params.get(HTAMODE_KEY, self._htamode):
+                    _LOGGER.debug("mode: mode - value already %s, skipping command", value)
+                    return
+                self._send_command_batch(params)
+            else:
+                if self._mode == value:
+                    _LOGGER.debug("mode: mode - value already %s, skipping command", value)
+                    return
+                self._send_command(MODE_KEY, value)
         else:
             raise ValueError(f"Mode {value} is not in the acceptable list: {self.modes}")
 
@@ -483,6 +519,194 @@ class PyDreoHeater(PyDreoBaseDevice):
             _LOGGER.error("panel_sound: Attempting to set panel_sound on a device that doesn't support.")
             return
 
+    @property
+    def is_fan_heater(self) -> bool:
+        """Returns `True` for tower fan/heater combos, which report an integer function instead of a mode string."""
+        return self._coollevel_range is not None
+
+    def _mode_from_function(self) -> DreoHeaterMode:
+        """Derive the heater mode from the function and heat sub-mode of a tower fan/heater combo.
+
+        An unknown function or heat sub-mode (logged by _int_enum) is reported as power heat so the
+        climate entity always has a valid mode; the next known report corrects it.
+        """
+        if self._function == DreoHeaterFunction.FAN:
+            return DreoHeaterMode.COOLAIR
+        if self._function == DreoHeaterFunction.HEAT and self._htamode == DreoHeaterHeatMode.ECO:
+            return DreoHeaterMode.ECO
+        return DreoHeaterMode.HOTAIR
+
+    @staticmethod
+    def _function_params(mode: DreoHeaterMode) -> dict | None:
+        """Translate a heater mode into the function and heat sub-mode keys a tower fan/heater combo expects.
+
+        "off" is not a function; it is handled by poweron, so it has no command.
+        """
+        if mode == DreoHeaterMode.COOLAIR:
+            return {MODE_KEY: DreoHeaterFunction.FAN}
+        if mode == DreoHeaterMode.HOTAIR:
+            return {MODE_KEY: DreoHeaterFunction.HEAT, HTAMODE_KEY: DreoHeaterHeatMode.POWER}
+        if mode == DreoHeaterMode.ECO:
+            return {MODE_KEY: DreoHeaterFunction.HEAT, HTAMODE_KEY: DreoHeaterHeatMode.ECO}
+        return None
+
+    @property
+    def coolmode(self) -> DreoHeaterFanMode | None:
+        """Return the fan function sub-mode (normal/natural/sleep/auto) of a tower fan/heater combo."""
+        return self._coolmode
+
+    @coolmode.setter
+    def coolmode(self, value: DreoHeaterFanMode) -> None:
+        """Set the fan function sub-mode."""
+        _LOGGER.debug("coolmode: coolmode.setter(%s) --> %s", self.name, value)
+        if self._coolmode is None:
+            _LOGGER.error("coolmode: Attempting to set fan mode on a device that doesn't support it.")
+            raise ValueError("Attempting to set fan mode on a device that doesn't support it.")
+        value = DreoHeaterFanMode(value)
+        if self._coolmode == value:
+            _LOGGER.debug("coolmode: coolmode - value already %s, skipping command", value)
+            return
+        self._send_command(COOLMODE_KEY, value)
+
+    @property
+    def coollevel_range(self):
+        """Get the fan speed range of the fan function"""
+        return self._coollevel_range
+
+    @property
+    def coollevel(self):
+        """Return the fan speed of the fan function"""
+        return self._coollevel
+
+    @coollevel.setter
+    def coollevel(self, coollevel: int):
+        """Set the fan speed of the fan function."""
+        coollevel = int(coollevel)  # ensure it's an int
+        _LOGGER.debug("coollevel: coollevel.setter(%s) --> %s", self.name, coollevel)
+        if self._coollevel is None or self._coollevel_range is None:
+            _LOGGER.error("coollevel: Attempting to set fan speed on a device that doesn't support it.")
+            raise ValueError("Attempting to set fan speed on a device that doesn't support it.")
+        if not (self._coollevel_range[0] <= coollevel <= self._coollevel_range[1]):
+            _LOGGER.error("coollevel: Fan speed %s is not in the acceptable range: %s", coollevel, self._coollevel_range)
+            return
+        if self._coollevel == coollevel:
+            _LOGGER.debug("coollevel: coollevel - value already %s, skipping command", coollevel)
+            return
+        self._send_command(COOLLEVEL_KEY, coollevel)
+
+    @property
+    def horizontally_oscillating(self) -> bool:
+        """Returns `True` if horizontal oscillation is on."""
+        return self._hoscon
+
+    @horizontally_oscillating.setter
+    def horizontally_oscillating(self, value: bool) -> None:
+        """Enable or disable horizontal oscillation"""
+        _LOGGER.debug("horizontally_oscillating: horizontally_oscillating.setter(%s) --> %s", self.name, value)
+        if self._hoscon is not None:
+            if self._hoscon == value:
+                _LOGGER.debug("horizontally_oscillating: horizontally_oscillating - value already %s, skipping command", value)
+                return
+            self._send_command(HORIZONTAL_OSCILLATION_KEY, value)
+        else:
+            _LOGGER.error("horizontally_oscillating: Attempting to set horizontal oscillation on a device that doesn't support it.")
+            return
+
+    @property
+    def horizontal_osc_angle_left(self) -> int | None:
+        """Get the left bound of the horizontal oscillation range, in degrees"""
+        return self._hoscangle[0] if self._hoscangle is not None else None
+
+    @horizontal_osc_angle_left.setter
+    def horizontal_osc_angle_left(self, value: int) -> None:
+        """Set the left bound of the horizontal oscillation range"""
+        self.set_horizontal_oscillation_range(int(value), self.horizontal_osc_angle_right)
+
+    @property
+    def horizontal_osc_angle_right(self) -> int | None:
+        """Get the right bound of the horizontal oscillation range, in degrees"""
+        return self._hoscangle[1] if self._hoscangle is not None else None
+
+    @horizontal_osc_angle_right.setter
+    def horizontal_osc_angle_right(self, value: int) -> None:
+        """Set the right bound of the horizontal oscillation range"""
+        self.set_horizontal_oscillation_range(self.horizontal_osc_angle_left, int(value))
+
+    def set_horizontal_oscillation_range(self, left: int, right: int) -> None:
+        """Set the horizontal oscillation range. The device takes "left,right" in degrees, e.g. "-60,60" for 120 degrees.
+
+        Both bounds travel in one key, so the range is kept locally once sent: a left and a right change made
+        back to back then compose instead of the second overwriting the first. It is always sent, so a failed
+        command can simply be repeated.
+        """
+        _LOGGER.debug("set_horizontal_oscillation_range(%s) --> %s,%s", self.name, left, right)
+        if self._hoscangle is None:
+            _LOGGER.error("set_horizontal_oscillation_range: Attempting to set oscillation range on a device that doesn't support it.")
+            return
+        if left >= right:
+            _LOGGER.error("set_horizontal_oscillation_range: Left bound %s must be below the right bound %s", left, right)
+            return
+        self._send_command(HORIZONTAL_OSCILLATION_ANGLE_KEY, f"{left},{right}")
+        self._hoscangle = (left, right)
+
+    @property
+    def horizontal_angle(self) -> int | None:
+        """Get the fixed horizontal direction used while not oscillating, in degrees"""
+        return self._hangleadj
+
+    @horizontal_angle.setter
+    def horizontal_angle(self, value: int) -> None:
+        """Set the fixed horizontal direction"""
+        value = int(value)
+        _LOGGER.debug("horizontal_angle: horizontal_angle.setter(%s) --> %s", self.name, value)
+        if self._hangleadj is None:
+            _LOGGER.error("horizontal_angle: Attempting to set horizontal angle on a device that doesn't support it.")
+            return
+        if self._hangleadj == value:
+            _LOGGER.debug("horizontal_angle: horizontal_angle - value already %s, skipping command", value)
+            return
+        self._send_command(HORIZONTAL_ANGLE_ADJ_KEY, value)
+
+    @property
+    def lightmode(self) -> int | None:
+        """Get the display mode: 0 off, 1 on, 2 auto-brightness"""
+        return self._lightmode
+
+    @lightmode.setter
+    def lightmode(self, value: int) -> None:
+        """Set the display mode"""
+        value = int(value)
+        _LOGGER.debug("lightmode: lightmode.setter(%s) --> %s", self.name, value)
+        if self._lightmode is None:
+            _LOGGER.error("lightmode: Attempting to set display mode on a device that doesn't support it.")
+            return
+        if self._lightmode == value:
+            _LOGGER.debug("lightmode: lightmode - value already %s, skipping command", value)
+            return
+        self._send_command(LIGHTMODE_KEY, value)
+
+    @staticmethod
+    def _int_enum(enum_type, value):
+        """Convert a device integer into the given IntEnum, keeping the raw value if it is not a known member."""
+        if value is None:
+            return None
+        try:
+            return enum_type(value)
+        except ValueError:
+            _LOGGER.warning("_int_enum: Unknown %s value %s", enum_type.__name__, value)
+            return value
+
+    @staticmethod
+    def _parse_hoscangle(value) -> tuple[int, int] | None:
+        """Parse a "left,right" oscillation range string into a tuple of degrees."""
+        if not isinstance(value, str) or "," not in value:
+            return None
+        try:
+            left, right = (int(part) for part in value.split(",", 1))
+        except ValueError:
+            return None
+        return (left, right)
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         super().update_state(state)  # handles _is_on
@@ -493,7 +717,20 @@ class PyDreoHeater(PyDreoBaseDevice):
             _LOGGER.error("update_state: Unable to get heat level from state. Check debug logs for more information.")
 
         self._temperature = self.get_state_update_value(state, TEMPERATURE_KEY)
-        self._mode = self.get_state_update_value(state, MODE_KEY)
+        mode = self.get_state_update_value(state, MODE_KEY)
+        self._htamode = self._int_enum(DreoHeaterHeatMode, self.get_state_update_value(state, HTAMODE_KEY))
+        if self.is_fan_heater:
+            # Tower fan/heater combo: an integer function plus a heat sub-mode instead of a mode string
+            self._function = self._int_enum(DreoHeaterFunction, mode)
+            self._mode = self._mode_from_function()
+        else:
+            self._mode = mode
+        self._coolmode = self._int_enum(DreoHeaterFanMode, self.get_state_update_value(state, COOLMODE_KEY))
+        self._coollevel = self.get_state_update_value(state, COOLLEVEL_KEY)
+        self._lightmode = self.get_state_update_value(state, LIGHTMODE_KEY)
+        self._hoscon = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
+        self._hoscangle = self._parse_hoscangle(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY))
+        self._hangleadj = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
         self._oscon = self.get_state_update_value(state, OSCON_KEY)
         self._oscangle = self.get_state_update_value(state, OSCANGLE_KEY)
         self._oscmode = self.get_state_update_value(state, OSCMODE_KEY)
@@ -545,6 +782,39 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_mode = self.get_server_update_key_value(message, MODE_KEY)
         if isinstance(val_mode, str) and val_mode:
             self._mode = val_mode if val_mode in self.device_definition.modes else DreoHeaterMode.OFF
+        elif self.is_fan_heater and isinstance(val_mode, int) and not isinstance(val_mode, bool):
+            self._function = self._int_enum(DreoHeaterFunction, val_mode)
+            self._mode = self._mode_from_function()
+
+        val_htamode = self.get_server_update_key_value(message, HTAMODE_KEY)
+        if isinstance(val_htamode, int) and not isinstance(val_htamode, bool):
+            self._htamode = self._int_enum(DreoHeaterHeatMode, val_htamode)
+            if self.is_fan_heater:
+                self._mode = self._mode_from_function()
+
+        val_coolmode = self.get_server_update_key_value(message, COOLMODE_KEY)
+        if isinstance(val_coolmode, int) and not isinstance(val_coolmode, bool):
+            self._coolmode = self._int_enum(DreoHeaterFanMode, val_coolmode)
+
+        val_coollevel = self.get_server_update_key_value(message, COOLLEVEL_KEY)
+        if isinstance(val_coollevel, int) and not isinstance(val_coollevel, bool):
+            self._coollevel = val_coollevel
+
+        val_lightmode = self.get_server_update_key_value(message, LIGHTMODE_KEY)
+        if isinstance(val_lightmode, int) and not isinstance(val_lightmode, bool):
+            self._lightmode = val_lightmode
+
+        val_hoscon = self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_KEY)
+        if isinstance(val_hoscon, bool):
+            self._hoscon = val_hoscon
+
+        val_hoscangle = self._parse_hoscangle(self.get_server_update_key_value(message, HORIZONTAL_OSCILLATION_ANGLE_KEY))
+        if val_hoscangle is not None:
+            self._hoscangle = val_hoscangle
+
+        val_hangleadj = self.get_server_update_key_value(message, HORIZONTAL_ANGLE_ADJ_KEY)
+        if isinstance(val_hangleadj, int) and not isinstance(val_hangleadj, bool):
+            self._hangleadj = val_hangleadj
 
         val_oscon = self.get_server_update_key_value(message, OSCON_KEY)
         if isinstance(val_oscon, bool):
