@@ -6,6 +6,7 @@ from unittest.mock import patch
 from custom_components.dreo import dreoheater
 from custom_components.dreo import sensor
 from custom_components.dreo import number
+from custom_components.dreo import switch
 
 from homeassistant.components.climate import HVACMode
 
@@ -481,6 +482,43 @@ class TestDreoHeater(IntegrationTestBase):
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
+
+    def test_HSH041S(self):  # pylint: disable=invalid-name
+        """Load DR-HSH041S (711S) convection heater and test HA entities (issue #928)."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH041S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.type == "Heater"
+            assert pydreo_heater.model == "DR-HSH041S"
+            assert pydreo_heater.series_name == "711S"
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.unique_id is not None
+            assert heater_ha.hvac_mode == HVACMode.OFF  # poweron=False
+            assert heater_ha.current_temperature == 74
+
+            from homeassistant.components.climate import ClimateEntityFeature
+            assert not (heater_ha.supported_features & ClimateEntityFeature.SWING_MODE)
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.HEAT)
+                mock_send_command.assert_any_call(pydreo_heater, {POWERON_KEY: True})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+
+            assert {"H1", "H2", "H3"} <= set(heater_ha.preset_modes)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_preset_mode("H3")
+                mock_send_command.assert_any_call(pydreo_heater, {HTALEVEL_KEY: 3})
+
+            # lighton=True in the diagnostics -> Display Auto Off is off (inverted, as on HSH006S).
+            switches = switch.get_entries([pydreo_heater])
+            display_auto_off = self.get_entity_by_key(switches, "Display Auto Off")
+            assert display_auto_off is not None
+            assert display_auto_off.is_on is False
+            assert self.get_entity_by_key(switches, "Child Lock") is not None
 
     def test_HSH011S(self):  # pylint: disable=invalid-name
         """Load DR-HSH011S (OH521S) oil radiator heater and test HA entity."""

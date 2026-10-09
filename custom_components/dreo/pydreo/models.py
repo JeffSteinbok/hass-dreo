@@ -563,6 +563,9 @@ SUPPORTED_DEVICES = {
     "DR-HSH010S": DreoHeaterDeviceDetails(),
     "DR-HSH011": DreoHeaterDeviceDetails(),
     "DR-HSH011S": DreoHeaterDeviceDetails(),
+    # DR-HSH041S (Convection Heater 711S) reports an empty controlsConf; its state keys match the
+    # HSH011S (heat levels, ECO target in °F, PTC, window-open detection), so the defaults apply (issue #928).
+    "DR-HSH041S": DreoHeaterDeviceDetails(),
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     "WH714S": DreoHeaterDeviceDetails(
         swing_modes=[
@@ -646,6 +649,8 @@ SUPPORTED_DEVICES = {
     "DR-HDH002S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
     "DR-HDH003S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
     "DR-HDH005S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
+    # DR-HDH004S (733S/764S) reports the same state keys as HDH002S/HDH005S, plus RGB and energy keys (issue #936).
+    "DR-HDH004S": DreoDeviceDetails(device_type=DreoDeviceType.DEHUMIDIFIER, device_ranges={HUMIDITY_RANGE: (30, 85), SPEED_RANGE: (1, 3)}),
     # Evaporative Coolers
     "DR-HEC": DreoDeviceDetails(
         device_type=DreoDeviceType.EVAPORATIVE_COOLER,
