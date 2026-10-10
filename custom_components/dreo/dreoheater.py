@@ -284,15 +284,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         """Turn the device on."""
         _LOGGER.debug("turn_on: turn_on(%s)", self.device.name)
         self.device.poweron = True
-        # Use preset if ECO, otherwise map HVAC mode to Dreo mode
-        current_preset = self.preset_mode or PRESET_NONE
-        if current_preset == PRESET_ECO:
-            self.device.mode = DreoHeaterMode.ECO
-        elif self._last_hvac_mode == HVACMode.HEAT:
-            self.device.mode = DreoHeaterMode.HOTAIR
-        elif self._last_hvac_mode == HVACMode.FAN_ONLY:
-            self.device.mode = DreoHeaterMode.COOLAIR
-        else:
+        # The heater keeps its mode (hotair/eco/coolair) and heat level while off and resumes them on
+        # power-on, so only pick a mode when none is known. Forcing one here turned ECO into H1 (issue #953).
+        if self.device.mode not in (DreoHeaterMode.HOTAIR, DreoHeaterMode.ECO, DreoHeaterMode.COOLAIR):
             self.device.mode = DreoHeaterMode.HOTAIR
 
     def turn_off(self, **kwargs: Any) -> None:

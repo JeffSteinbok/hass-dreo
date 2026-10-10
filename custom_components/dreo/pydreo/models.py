@@ -552,8 +552,12 @@ SUPPORTED_DEVICES = {
     "DR-HSH004S": DreoHeaterDeviceDetails(
         swing_modes=[SWING_OFF, SWING_ON],
     ),
+    # Temperature offset measured by the owner (issue #952): the app sets -2 to +2 °C, stored as "tempoffset"
+    # in °F (2 per °C), and the reported temperature already includes it.
     "DR-HSH006S": DreoHeaterDeviceDetails(
         swing_modes=[SWING_OFF, SWING_ON],
+        device_ranges={TEMPERATURE_OFFSET_RANGE: (-4, 4)},
+        temperature_includes_offset=True,
     ),
     "DR-HSH009S": DreoHeaterDeviceDetails(
         swing_modes=[
@@ -604,8 +608,10 @@ SUPPORTED_DEVICES = {
     # normal/natural/sleep/auto modes and 30-120 degree horizontal oscillation. Reports an
     # integer "mode" (1 heat, 2 fan) with "htamode"/"coolmode" sub-modes; see PyDreoHeater.
     # A "ptcon" command is accepted by the cloud but has no effect on the device, so PTC is read-only.
+    # Temperature offset measured by the owner (issue #952): the app sets -5 to +5 °C, stored as "tempoffset"
+    # in °F (2 per °C); the reported temperature is raw, so the offset is added to it.
     "DR-HSH016S": DreoHeaterDeviceDetails(
-        device_ranges={HEAT_RANGE: (1, 5), COOL_RANGE: (1, 12)},
+        device_ranges={HEAT_RANGE: (1, 5), COOL_RANGE: (1, 12), TEMPERATURE_OFFSET_RANGE: (-10, 10)},
         ptc_read_only=True,
         swing_modes=[SWING_OFF, *HEATER_HOSC_SWING_ANGLES.keys()],
     ),

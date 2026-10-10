@@ -13,6 +13,7 @@ logger.setLevel(logging.DEBUG)
 HEATER_EXHAUSTIVE_MODELS = [
     "get_devices_HSH003S.json",
     "get_devices_HSH004S.json",
+    "get_devices_HSH006S.json",
     "get_devices_HSH009S.json",
     "get_devices_HSH010S.json",
     "get_devices_HSH011.json",
