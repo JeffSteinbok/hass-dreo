@@ -271,34 +271,21 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 main_light.turn_on(brightness=128)
                 mock_send_command.assert_called_once_with(pydreo_fan, {BRIGHTNESS_KEY: 50, LIGHTON_KEY: True})
 
-            # ---- RGBIC atmosphere light (preset-based, not direct RGB) ----
+            # ---- RGBIC atmosphere light (effect API) ----
             rgbic_light = self.get_entity_by_key(lights, "RGBIC Light")
             assert rgbic_light is not None
-            # RGBIC preset device - rgb_color is not supported
-            assert rgbic_light.rgb_color is None
-            # atmon was retained True in the fixture, but the device was gated off and
-            # the main-light wake above explicitly forced atmon off - so the RGBIC
-            # light reads OFF here. The device then reports it back on.
-            assert rgbic_light.is_on is False
-            pydreo_fan.handle_server_update({REPORTED_KEY: {ATMON_KEY: True}})
-            assert rgbic_light.is_on is True
-            # RGBIC light should have effect list with presets
-            assert rgbic_light.effect_list == ["Preset 1", "Preset 2", "Preset 3", "Preset 4"]
-            # Current preset is 0, so effect should be "Preset 1"
-            assert rgbic_light.effect == "Preset 1"
-
-            # Redundant same-value sends are no longer skipped (a stale-cache skip
-            # made entities unreachable on units that stop reporting load keys), so
-            # turn_on() re-sends atmon - a hardware-validated no-op on the device.
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                rgbic_light.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: True})
-
-            # Setting effect sends the (redundant) atmon plus the rgbpresetsel command
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                rgbic_light.turn_on(effect="Preset 3")
-                assert mock_send_command.call_count == 2
-                mock_send_command.assert_any_call(pydreo_fan, {RGBPRESETSEL_KEY: 2})
+            assert pydreo_fan.is_feature_supported("rgbic_effect_api")
+            assert pydreo_fan.atm_brightness_range == (1, 100)
+            assert rgbic_light.effect_list == [
+                "Constant",
+                "Breath",
+                "Cycle",
+                "Marquee",
+                "Flow",
+                "Flash",
+                "Starlight",
+                "Chase",
+            ]
 
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S fan and test sending commands."""

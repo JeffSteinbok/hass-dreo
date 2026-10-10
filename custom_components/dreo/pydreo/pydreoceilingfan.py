@@ -156,6 +156,16 @@ class PyDreoCeilingFan(PyDreoFanBase):
 
         self._device_definition = device_definition
 
+        # Newer DR-HCF002S / CF712S revisions expose rgbeffectid but no
+        # atmcolor state. Older HCF002S revisions retain the legacy RGB path.
+        # Latch the capability once detected because later REST payloads may
+        # omit RGBIC keys.
+        self._uses_rgbic_effect_api = False
+        self._rgbic_color: tuple[int, int, int] | None = None
+        self._rgbic_effect_name: str | None = None
+        self._rgbic_effect_cancel: Callable[[], None] | None = None
+        self._rgbic_effect_generation = 0
+
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
         preset_modes = []
@@ -534,6 +544,106 @@ class PyDreoCeilingFan(PyDreoFanBase):
         """Returns the valid range (min, max) of RGBIC effect indices, or None."""
         return self._rgb_effect_range
 
+    @property
+    def rgbic_color(self) -> tuple[int, int, int] | None:
+        """Return the last RGBIC whole-ring color requested through HA."""
+        return self._rgbic_color
+
+    @property
+    def rgbic_effect_name(self) -> str | None:
+        """Return the last RGBIC basic effect requested through HA."""
+        return self._rgbic_effect_name
+
+    @property
+    def rgbic_effect_names(self) -> list[str]:
+        """Return basic RGBIC effects exposed by the CF712S catalog."""
+        return ["Constant", "Breath", "Cycle", "Marquee", "Flow", "Flash", "Starlight", "Chase"]
+
+    def _detect_rgbic_effect_api(self) -> None:
+        """Latch support for the newer HCF002S / CF712S RGBIC protocol."""
+        if self._uses_rgbic_effect_api:
+            return
+        if not self._device_definition.device_ranges.get("supports_rgbic_effect_api", False):
+            return
+        if self._atm_light_on is None or self._rgb_effect_id is None or self._atm_color is not None:
+            return
+
+        self._uses_rgbic_effect_api = True
+        self._atm_brightness_range = (1, 100)
+        _LOGGER.debug("Detected RGBIC effect API on %s", self.name)
+
+    def _cancel_pending_rgbic_effect_locked(self) -> None:
+        """Cancel pending RGBIC effect work. Caller must hold ``_lock``."""
+        self._rgbic_effect_generation += 1
+        if self._rgbic_effect_cancel is None:
+            return
+        try:
+            self._rgbic_effect_cancel()
+        except Exception as ex:  # pylint: disable=broad-except
+            _LOGGER.debug("RGBIC effect cancel failed for %s: %s", self.name, ex)
+        self._rgbic_effect_cancel = None
+
+    def cancel_pending_rgbic_effect(self) -> None:
+        """Cancel an RGBIC effect that has not yet reached the REST API."""
+        with self._lock:
+            self._cancel_pending_rgbic_effect_locked()
+
+    def set_rgbic_effect(self, effect_name: str, color_rgb: tuple | None = None) -> None:
+        """Turn on RGBIC and apply a basic effect after the device wake delay."""
+        if not self.is_feature_supported("rgbic_effect_api"):
+            _LOGGER.error("set_rgbic_effect: RGBIC effect API not supported by this fan revision.")
+            return
+
+        color_hex = None
+        requested_color = None
+        if color_rgb is not None:
+            requested_color = self._clamp_rgb_tuple(color_rgb)
+            color_hex = "#{:02X}{:02X}{:02X}".format(*requested_color)
+            effect_name = "Constant"
+
+        if effect_name not in self.rgbic_effect_names:
+            _LOGGER.warning("set_rgbic_effect: Unknown effect %s", effect_name)
+            return
+
+        # Supersede any request still waiting in the 600 ms wake window before
+        # sending the new wake command.
+        with self._lock:
+            self._cancel_pending_rgbic_effect_locked()
+            generation = self._rgbic_effect_generation
+
+        self._send_command_batch({ATMON_KEY: True})
+
+        def _apply() -> None:
+            with self._lock:
+                if self._state_verify_disposed or generation != self._rgbic_effect_generation:
+                    return
+                self._rgbic_effect_cancel = None
+            try:
+                success = self._dreo.set_rgbic_effect(self, effect_name, color_hex)
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("set_rgbic_effect: Failed to apply %s on %s", effect_name, self.name)
+                return
+
+            if not success:
+                _LOGGER.warning("set_rgbic_effect: API rejected %s on %s", effect_name, self.name)
+                return
+
+            with self._lock:
+                if generation != self._rgbic_effect_generation:
+                    return
+                self._rgbic_effect_name = effect_name
+                if requested_color is not None:
+                    self._rgbic_color = requested_color
+            self._do_callbacks()
+
+        # The Dreo Android app waits ~600 ms after enabling RGB before previewing.
+        cancel = self._dreo.schedule_call_later(0.6, _apply)
+        with self._lock:
+            if generation == self._rgbic_effect_generation:
+                self._rgbic_effect_cancel = cancel
+            else:
+                cancel()
+
     # ------------------------------------------------------------------
     # Incoming state (REST payloads and WebSocket deltas)
     # ------------------------------------------------------------------
@@ -613,6 +723,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._rgb_preset_sel = self.get_state_update_value(state, RGBPRESETSEL_KEY)
         self._rgb_preset_num = self.get_state_update_value(state, RGBPRESETNUM_KEY)
         self._rgb_effect_id = self.get_state_update_value(state, RGBEFFECTID_KEY)
+        self._detect_rgbic_effect_api()
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -661,6 +772,8 @@ class PyDreoCeilingFan(PyDreoFanBase):
         val_rgb_effect_id = self.get_server_update_key_value(message, RGBEFFECTID_KEY)
         if isinstance(val_rgb_effect_id, str):
             self._rgb_effect_id = val_rgb_effect_id
+
+        self._detect_rgbic_effect_api()
 
     def _handle_power_state_update(self, message):
         """Ceiling fans: update the retained load values and the power gate.
@@ -787,6 +900,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         super().dispose()
         with self._lock:
             self._state_verify_disposed = True
+            self._cancel_pending_rgbic_effect_locked()
             self._cancel_state_verification_locked()
 
     def is_feature_supported(self, feature: str) -> bool:
@@ -813,4 +927,6 @@ class PyDreoCeilingFan(PyDreoFanBase):
         # Only enabled when the device also has a defined rgb_effect_range in its model
         if feature == "rgb_effect_id":
             return self._rgb_effect_id is not None and self._rgb_effect_range is not None
+        if feature == "rgbic_effect_api":
+            return self._uses_rgbic_effect_api
         return super().is_feature_supported(feature)

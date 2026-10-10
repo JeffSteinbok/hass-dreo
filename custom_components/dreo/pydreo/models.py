@@ -460,7 +460,10 @@ SUPPORTED_DEVICES = {
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
         device_ranges={SPEED_RANGE: (1, 12)},
     ),
-    "DR-HCF002S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
+    "DR-HCF002S": DreoDeviceDetails(
+        device_type=DreoDeviceType.CEILING_FAN,
+        device_ranges={SPEED_RANGE: (1, 12), "supports_rgbic_effect_api": True},
+    ),
     "DR-HCF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.CEILING_FAN,
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
