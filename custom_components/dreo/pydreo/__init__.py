@@ -410,15 +410,26 @@ class PyDreo:  # pylint: disable=function-redefined
 
         return setting_value
 
+    def _call_authenticated_api(self, path: str, method: str, payload) -> tuple:
+        """Call a Dreo endpoint and retry once after refreshing an expired token."""
+        api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
+
+        def _call():
+            return Helpers.call_api(api_url, path, method, payload, Helpers.req_headers(self))
+
+        response, status_code = _call()
+        if status_code == 401:
+            _LOGGER.warning("_call_authenticated_api: Got 401 for %s - attempting re-login", path)
+            if self._re_login():
+                response, status_code = _call()
+        return response, status_code
+
     def get_rgbic_effect_catalog(self, device: PyDreoBaseDevice) -> dict | None:
         """Return the RGBIC effect catalog used by newer Dreo devices."""
-        api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
-        response, status_code = Helpers.call_api(
-            api_url,
+        response, status_code = self._call_authenticated_api(
             "/api/device/rgb-effect/all/list",
             "get",
             {"devicesn": device.serial_number},  # RGBIC API expects lowercase, not deviceSn
-            Helpers.req_headers(self),
         )
         if status_code != 200 or not isinstance(response, dict) or response.get("code") != 0:
             _LOGGER.warning(
@@ -488,13 +499,10 @@ class PyDreo:  # pylint: disable=function-redefined
         if effect.get("subRemoteEffect") is not None:
             payload[0]["subRemoteEffect"] = effect.get("subRemoteEffect")
 
-        api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
-        response, status_code = Helpers.call_api(
-            api_url,
+        response, status_code = self._call_authenticated_api(
             "/api/device/rgb-effect/edit/batch",
             "post",
             payload,
-            Helpers.req_headers(self),
         )
         if status_code != 200 or not isinstance(response, dict) or response.get("code") != 0:
             _LOGGER.warning("set_rgbic_effect: request failed for %s status=%s", device.name, status_code)

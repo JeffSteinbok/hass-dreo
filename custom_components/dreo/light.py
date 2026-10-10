@@ -480,8 +480,9 @@ class DreoRGBICLightHA(DreoLightHA):
             else:
                 self.pydreo_device.atm_color_rgb = rgb
 
-        # Handle effect selection
-        if ATTR_EFFECT in kwargs:
+        # A color selection on RGBIC API devices already maps to Constant; do
+        # not schedule a second effect from the same HA service call.
+        if ATTR_EFFECT in kwargs and not (self._uses_rgbic_api and ATTR_RGB_COLOR in kwargs):
             effect = kwargs[ATTR_EFFECT]
             _LOGGER.debug("turn_on: Setting RGBIC effect to %s", effect)
 
@@ -514,6 +515,12 @@ class DreoRGBICLightHA(DreoLightHA):
                     self.pydreo_device.rgb_preset_sel = preset_idx
                 except (ValueError, IndexError):
                     _LOGGER.warning("turn_on: Invalid effect name %s", effect)
+
+    def turn_off(self, **kwargs: Any) -> None:
+        """Turn off RGBIC and cancel an effect still waiting for its wake delay."""
+        if self._uses_rgbic_api:
+            self.pydreo_device.cancel_pending_rgbic_effect()
+        super().turn_off(**kwargs)
 
 
 class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-method

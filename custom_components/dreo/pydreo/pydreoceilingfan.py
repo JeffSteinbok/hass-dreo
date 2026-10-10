@@ -163,6 +163,8 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._uses_rgbic_effect_api = False
         self._rgbic_color: tuple[int, int, int] | None = None
         self._rgbic_effect_name: str | None = None
+        self._rgbic_effect_cancel: Callable[[], None] | None = None
+        self._rgbic_effect_generation = 0
 
     def parse_preset_modes(self, details: Dict[str, list]) -> tuple[str, int]:
         """Parse the preset modes from the details."""
@@ -570,6 +572,22 @@ class PyDreoCeilingFan(PyDreoFanBase):
         self._atm_brightness_range = (1, 100)
         _LOGGER.debug("Detected RGBIC effect API on %s", self.name)
 
+    def _cancel_pending_rgbic_effect_locked(self) -> None:
+        """Cancel pending RGBIC effect work. Caller must hold ``_lock``."""
+        self._rgbic_effect_generation += 1
+        if self._rgbic_effect_cancel is None:
+            return
+        try:
+            self._rgbic_effect_cancel()
+        except Exception as ex:  # pylint: disable=broad-except
+            _LOGGER.debug("RGBIC effect cancel failed for %s: %s", self.name, ex)
+        self._rgbic_effect_cancel = None
+
+    def cancel_pending_rgbic_effect(self) -> None:
+        """Cancel an RGBIC effect that has not yet reached the REST API."""
+        with self._lock:
+            self._cancel_pending_rgbic_effect_locked()
+
     def set_rgbic_effect(self, effect_name: str, color_rgb: tuple | None = None) -> None:
         """Turn on RGBIC and apply a basic effect after the device wake delay."""
         if not self.is_feature_supported("rgbic_effect_api"):
@@ -577,27 +595,54 @@ class PyDreoCeilingFan(PyDreoFanBase):
             return
 
         color_hex = None
+        requested_color = None
         if color_rgb is not None:
-            rgb = self._clamp_rgb_tuple(color_rgb)
-            color_hex = "#{:02X}{:02X}{:02X}".format(*rgb)
-            self._rgbic_color = rgb
+            requested_color = self._clamp_rgb_tuple(color_rgb)
+            color_hex = "#{:02X}{:02X}{:02X}".format(*requested_color)
             effect_name = "Constant"
 
         if effect_name not in self.rgbic_effect_names:
             _LOGGER.warning("set_rgbic_effect: Unknown effect %s", effect_name)
             return
 
-        self._rgbic_effect_name = effect_name
+        # Supersede any request still waiting in the 600 ms wake window before
+        # sending the new wake command.
+        with self._lock:
+            self._cancel_pending_rgbic_effect_locked()
+            generation = self._rgbic_effect_generation
+
         self._send_command_batch({ATMON_KEY: True})
 
         def _apply() -> None:
+            with self._lock:
+                if self._state_verify_disposed or generation != self._rgbic_effect_generation:
+                    return
+                self._rgbic_effect_cancel = None
             try:
-                self._dreo.set_rgbic_effect(self, effect_name, color_hex)
+                success = self._dreo.set_rgbic_effect(self, effect_name, color_hex)
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("set_rgbic_effect: Failed to apply %s on %s", effect_name, self.name)
+                return
+
+            if not success:
+                _LOGGER.warning("set_rgbic_effect: API rejected %s on %s", effect_name, self.name)
+                return
+
+            with self._lock:
+                if generation != self._rgbic_effect_generation:
+                    return
+                self._rgbic_effect_name = effect_name
+                if requested_color is not None:
+                    self._rgbic_color = requested_color
+            self._do_callbacks()
 
         # The Dreo Android app waits ~600 ms after enabling RGB before previewing.
-        self._dreo.schedule_call_later(0.6, _apply)
+        cancel = self._dreo.schedule_call_later(0.6, _apply)
+        with self._lock:
+            if generation == self._rgbic_effect_generation:
+                self._rgbic_effect_cancel = cancel
+            else:
+                cancel()
 
     # ------------------------------------------------------------------
     # Incoming state (REST payloads and WebSocket deltas)
@@ -855,6 +900,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         super().dispose()
         with self._lock:
             self._state_verify_disposed = True
+            self._cancel_pending_rgbic_effect_locked()
             self._cancel_state_verification_locked()
 
     def is_feature_supported(self, feature: str) -> bool:

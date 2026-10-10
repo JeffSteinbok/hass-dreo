@@ -346,14 +346,60 @@ class TestPyDreoCeilingFan(TestBase):
             fan.set_rgbic_effect("Constant", (128, 0, 255))
 
             mock_send.assert_called_once_with({ATMON_KEY: True})
-            assert fan.rgbic_color == (128, 0, 255)
-            assert fan.rgbic_effect_name == "Constant"
+            assert fan.rgbic_color is None
+            assert fan.rgbic_effect_name is None
             assert len(scheduled) == 1
             assert scheduled[0]["delay"] == pytest.approx(0.6)
             mock_effect.assert_not_called()
 
             self.fire_last_scheduled(scheduled)
             mock_effect.assert_called_once_with(fan, "Constant", "#8000FF")
+            assert fan.rgbic_color == (128, 0, 255)
+            assert fan.rgbic_effect_name == "Constant"
+
+    def test_rgbic_failed_apply_does_not_commit_reported_state(self):
+        """A failed REST application must not publish color/effect state to HA."""
+        self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        scheduled = self.install_manual_scheduler()
+        with patch.object(fan, "_send_command_batch"), patch.object(
+            self.pydreo_manager, "set_rgbic_effect", return_value=False
+        ):
+            fan.set_rgbic_effect("Constant", (128, 0, 255))
+            self.fire_last_scheduled(scheduled)
+        assert fan.rgbic_color is None
+        assert fan.rgbic_effect_name is None
+
+    def test_rgbic_new_request_cancels_superseded_callback(self):
+        """Only the newest request waiting in the 600 ms wake window may run."""
+        self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        scheduled = self.install_manual_scheduler()
+        with patch.object(fan, "_send_command_batch"), patch.object(
+            self.pydreo_manager, "set_rgbic_effect", return_value=True
+        ) as mock_effect:
+            fan.set_rgbic_effect("Breath")
+            fan.set_rgbic_effect("Chase")
+            assert len(scheduled) == 2
+            assert scheduled[0]["cancelled"] is True
+            assert self.pending_scheduled(scheduled) == [scheduled[1]]
+            self.fire_last_scheduled(scheduled)
+        mock_effect.assert_called_once_with(fan, "Chase", None)
+        assert fan.rgbic_effect_name == "Chase"
+
+    def test_rgbic_dispose_cancels_pending_callback(self):
+        """Unload must cancel delayed RGBIC work."""
+        self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        scheduled = self.install_manual_scheduler()
+        with patch.object(fan, "_send_command_batch"):
+            fan.set_rgbic_effect("Flow")
+        assert len(self.pending_scheduled(scheduled)) == 1
+        fan.dispose()
+        assert self.pending_scheduled(scheduled) == []
 
     def test_rgbic_effect_api_uses_lowercase_devicesn_and_preserves_segments(self):
         """RGBIC REST calls require devicesn and Constant must preserve segmented colors."""
@@ -404,6 +450,27 @@ class TestPyDreoCeilingFan(TestBase):
         assert layouts[1]["colorList"] == original_segments
         assert layouts[1]["currentSelected"] == "whole"
         assert layouts[1]["wholeColorList"] == ["#8000FF"]
+
+    def test_rgbic_api_reauthenticates_and_retries_after_401(self):
+        """RGBIC endpoints refresh authentication and retry after HTTP 401."""
+        self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        catalog = {"code": 0, "data": {"basicEffects": [{
+            "id": "1", "name": "Breath", "effectType": 0,
+            "referencedId": "2", "layouts": [],
+        }]}}
+        with patch("custom_components.dreo.pydreo.Helpers.call_api") as mock_call_api, patch.object(
+            self.pydreo_manager, "_re_login", return_value=True
+        ) as mock_relogin:
+            mock_call_api.side_effect = [
+                ({"code": 401}, 401),
+                (catalog, 200),
+                ({"code": 0, "data": {}}, 200),
+            ]
+            assert self.pydreo_manager.set_rgbic_effect(fan, "Breath") is True
+        mock_relogin.assert_called_once()
+        assert mock_call_api.call_count == 3
 
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S and test core fan/light command paths."""
