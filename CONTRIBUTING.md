@@ -20,7 +20,11 @@ This repository includes a workflow named **AI Code Review Gate** with a job nam
 To enforce it on every PR, add this check as **required** in your branch protection/ruleset:
 - Required check name: `AI Code Review Gate / AI review present`
 
-The check passes when at least one AI review is present on the PR (for example from `github-copilot[bot]`).
+The check passes when either:
+- at least one AI review is present on the PR (for example from `copilot-pull-request-reviewer[bot]`). A Copilot "unable to review" reply (e.g. quota exhausted) does not count; or
+- a maintainer's latest review approves the PR's current head commit.
+
+Copilot reviews are not requested automatically, since each one spends the requester's Copilot AI credits. Request one from the PR's Reviewers menu, or `gh pr edit <N> --add-reviewer @copilot`, when a change warrants it.
 
 # Deploying to Home Assistant
 

@@ -79,11 +79,16 @@ jobs:
             // maintainer can review a PR themselves instead of paying for a Copilot review.
             const headSha = context.payload.pull_request.head.sha;
             const maintainerAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
-            const maintainerApprovals = reviews.filter(
-              (review) =>
-                review.state === "APPROVED" &&
-                review.commit_id === headSha &&
-                maintainerAssociations.has(review.author_association)
+            // Only each maintainer's latest decisive review counts, as in GitHub's own review state:
+            // an approval followed by a request for changes is no longer an approval.
+            const latestDecisive = new Map();
+            for (const review of reviews) {
+              if (!maintainerAssociations.has(review.author_association)) continue;
+              if (review.state !== "APPROVED" && review.state !== "CHANGES_REQUESTED") continue;
+              latestDecisive.set(review.user.login, review); // reviews are returned oldest first
+            }
+            const maintainerApprovals = [...latestDecisive.values()].filter(
+              (review) => review.state === "APPROVED" && review.commit_id === headSha
             );
 
             if (maintainerApprovals.length > 0) {
