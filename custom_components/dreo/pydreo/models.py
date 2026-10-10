@@ -603,8 +603,10 @@ SUPPORTED_DEVICES = {
     # Tower Fan & Heater 706S: heat (H1-H5 / eco) plus a 12-speed fan function with
     # normal/natural/sleep/auto modes and 30-120 degree horizontal oscillation. Reports an
     # integer "mode" (1 heat, 2 fan) with "htamode"/"coolmode" sub-modes; see PyDreoHeater.
+    # A "ptcon" command is accepted by the cloud but has no effect on the device, so PTC is read-only.
     "DR-HSH016S": DreoHeaterDeviceDetails(
         device_ranges={HEAT_RANGE: (1, 5), COOL_RANGE: (1, 12)},
+        ptc_read_only=True,
         swing_modes=[SWING_OFF, *HEATER_HOSC_SWING_ANGLES.keys()],
     ),
     # DR-HSH041S (Convection Heater 711S) reports an empty controlsConf; its state keys match the

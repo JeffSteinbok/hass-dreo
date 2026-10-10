@@ -841,7 +841,7 @@ class TestDreoHeater(IntegrationTestBase):
                 mock_send_command.assert_any_call(pydreo_heater, {HORIZONTAL_ANGLE_ADJ_KEY: -20})
 
             switches = switch.get_entries([pydreo_heater])
-            self.verify_expected_entities(switches, ["Horizontally Oscillating", "Panel Sound", "PTC", "Child Lock", "Window Detection"])
+            self.verify_expected_entities(switches, ["Horizontally Oscillating", "Panel Sound", "Child Lock", "Window Detection"])
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 self.get_entity_by_key(switches, "Window Detection").turn_on()
                 mock_send_command.assert_any_call(pydreo_heater, {WINOPENON_KEY: True})

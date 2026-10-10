@@ -128,6 +128,7 @@ class TestInit:
         assert Platform.NUMBER in platforms
         assert Platform.BINARY_SENSOR in platforms
         assert Platform.LIGHT in platforms
+        assert Platform.SELECT in platforms
 
     def test_successful_setup_with_ceiling_fan(self):
         """Test successful setup with a CEILING_FAN device."""
