@@ -3,6 +3,7 @@
 # pylint: disable=used-before-assignment
 import logging
 from unittest.mock import MagicMock, patch
+import pytest
 from custom_components.dreo import binary_sensor
 from custom_components.dreo import dreoheater
 from custom_components.dreo import light
@@ -623,6 +624,76 @@ class TestDreoHeater(IntegrationTestBase):
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
 
+    def test_HSH006S(self):  # pylint: disable=invalid-name
+        """Load DR-HSH006S (Atom 316S) from the issue #953 diagnostics and test HA entities."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH006S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            assert pydreo_heater.model == "DR-HSH006S"
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            # Diagnostics: poweron=False, mode=coolair, temperature=70, tempoffset=0.
+            assert heater_ha.hvac_mode == HVACMode.OFF
+            assert heater_ha.current_temperature == 70
+
+            # Temperature offset as measured on the device (issue #952): the app sets -2 to +2 °C, stored as
+            # tempoffset in °F (2 per °C), and the reported temperature already includes it.
+            numbers = number.get_entries([pydreo_heater])
+            self.verify_expected_entities(numbers, ["Temperature Offset"])
+            offset_number = self.get_entity_by_key(numbers, "Temperature Offset")
+            offset_number.hass = MagicMock()
+            offset_number.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
+            assert (offset_number.native_min_value, offset_number.native_max_value) == (-2, 2)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                offset_number.set_native_value(2.0)
+                mock_send_command.assert_called_once_with(pydreo_heater, {TEMPOFFSET_KEY: 4})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 4, TEMPERATURE_KEY: 74}})
+            assert offset_number.native_value == 2
+            assert heater_ha.current_temperature == 74  # not 78: the offset is not added a second time
+
+    @pytest.mark.parametrize(
+        "devices_file, sequence",
+        [
+            # DR-HSH006S (316S), issue #953 log 16:05:28-16:05:38: H2 selected, powered off, powered on again.
+            ("get_devices_HSH006S.json", [{MODE_KEY: "hotair", HTALEVEL_KEY: 2}, {"fstrmtopat": 0, POWERON_KEY: False, "cooldown": 30}]),
+            # DR-HSH006S (316S), issue #953 log 16:05:01-16:05:09: ECO selected, powered off.
+            ("get_devices_HSH006S.json", [{MODE_KEY: "eco"}, {"fstrmtopat": 0, POWERON_KEY: False, "cooldown": 30}]),
+            # DR-HSH040S (720S), issue #953 log 16:05:51-16:05:54: ECO selected, powered off.
+            ("get_devices_HSH040S.json", [{MODE_KEY: "eco"}, {POWERON_KEY: False}]),
+            # Issue #953 diagnostics: both heaters were off in fan-only (mode=coolair), with no HA history (restart).
+            ("get_devices_HSH006S.json", []),
+        ],
+    )
+    def test_turn_on_resumes_device_mode(self, devices_file, sequence):
+        """turn_on sends only poweron: the heater keeps its mode and heat level while off (issue #953).
+
+        The #953 log shows power-off reports carry no mode, and the diagnostics show heaters reporting
+        their last mode (coolair) while off. Sending a mode on power-on turned ECO and Fan Only into H1.
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = devices_file
+            self.pydreo_manager.load_devices()
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            for reported in sequence:
+                pydreo_heater.handle_server_update({REPORTED_KEY: reported})
+            # A fresh entity, as after a Home Assistant restart: there is no remembered HVAC mode.
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.hvac_mode == HVACMode.OFF
+            mode_before, level_before = pydreo_heater.mode, pydreo_heater.htalevel
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_heater, {POWERON_KEY: True})
+
+            pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
+            assert (pydreo_heater.mode, pydreo_heater.htalevel) == (mode_before, level_before)
+            expected = {"eco": (HVACMode.HEAT, PRESET_ECO), "coolair": (HVACMode.FAN_ONLY, PRESET_NONE)}
+            expected_hvac, expected_preset = expected.get(mode_before, (HVACMode.HEAT, f"H{level_before}"))
+            assert heater_ha.hvac_mode == expected_hvac
+            assert heater_ha.preset_mode == expected_preset
+
     def test_HSH041S(self):  # pylint: disable=invalid-name
         """Load DR-HSH041S (711S) convection heater and test HA entities (issue #928)."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
@@ -835,7 +906,22 @@ class TestDreoHeater(IntegrationTestBase):
             # Companion entities: fixed direction + oscillation range numbers, the usual heater switches
             # plus open-window detection, and the off/on/auto display select
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right"])
+            self.verify_expected_entities(
+                numbers, ["Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right", "Temperature Offset"]
+            )
+            # Temperature offset as measured on the device (issue #952): the app's +3 °C is stored as tempoffset 6, and
+            # the reported temperature stays raw (64 °F) while the app shows 21 °C, so the offset is added: 64 + 6 = 70 °F.
+            offset_number = self.get_entity_by_key(numbers, "Temperature Offset")
+            offset_number.hass = MagicMock()
+            offset_number.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
+            assert (offset_number.native_min_value, offset_number.native_max_value) == (-5, 5)
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                offset_number.set_native_value(3.0)
+                mock_send_command.assert_called_once_with(pydreo_heater, {TEMPOFFSET_KEY: 6})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 6, TEMPERATURE_KEY: 64}})
+            assert offset_number.native_value == 3
+            assert heater_ha.current_temperature == 70
+            pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 0}})
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 self.get_entity_by_key(numbers, "Horizontal Angle").set_native_value(-20)
                 mock_send_command.assert_any_call(pydreo_heater, {HORIZONTAL_ANGLE_ADJ_KEY: -20})

@@ -440,32 +440,31 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert mock.mode == original_mode
 
     def test_turn_on_default(self):
-        """Test turn_on sets HOTAIR mode by default."""
+        """Test turn_on falls back to HOTAIR when the device reports no usable mode."""
         mock, heater = self._create_full_heater(features_override={"poweron": False, "mode": DreoHeaterMode.OFF})
         heater.turn_on()
         assert mock.poweron is True
         assert mock.mode == DreoHeaterMode.HOTAIR
 
-    def test_turn_on_preserves_eco_preset(self):
-        """Test turn_on preserves ECO mode when preset is ECO."""
+    def test_turn_on_keeps_eco(self):
+        """Test turn_on leaves the device's ECO mode alone."""
         mock, heater = self._create_full_heater(features_override={"mode": DreoHeaterMode.ECO})
         heater.turn_on()
         assert mock.poweron is True
         assert mock.mode == DreoHeaterMode.ECO
 
-    def test_turn_on_restores_fan_only(self):
-        """Test turn_on restores FAN_ONLY if last HVAC mode was FAN_ONLY."""
+    def test_turn_on_keeps_fan_only(self):
+        """Test turn_on after turn_off leaves the device's COOLAIR (fan only) mode alone (issue #953)."""
         mock, heater = self._create_full_heater(features_override={"mode": DreoHeaterMode.COOLAIR})
-        # Turn off first to set _last_hvac_mode
         heater.turn_off()
         assert mock.poweron is False
-        # Now turn on - should restore COOLAIR since last mode was FAN_ONLY
+        # The device keeps its mode while off; turn_on must not replace it
         heater.turn_on()
         assert mock.poweron is True
         assert mock.mode == DreoHeaterMode.COOLAIR
 
-    def test_turn_on_restores_heat(self):
-        """Test turn_on restores HEAT mode if last mode was HEAT."""
+    def test_turn_on_keeps_hotair(self):
+        """Test turn_on after turn_off leaves the device's HOTAIR mode alone."""
         mock, heater = self._create_full_heater(features_override={"mode": DreoHeaterMode.HOTAIR})
         heater.turn_off()
         heater.turn_on()
