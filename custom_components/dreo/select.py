@@ -59,6 +59,16 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         icon="mdi:axis-arrow",
         exists_fn=lambda device: device.type == DreoDeviceType.AIR_CIRCULATOR and device.is_feature_supported("angle_preset"),
     ),
+    # Display off / on / auto-brightness. Only the tower fan/heater combo has had its lightmode values verified.
+    DreoSelectEntityDescription(
+        key="Display Mode",
+        translation_key="display_mode",
+        attr_name="lightmode",
+        icon="mdi:monitor",
+        options_list=["off", "on", "auto"],
+        raw_values=[0, 1, 2],
+        exists_fn=lambda device: device.type == DreoDeviceType.HEATER and device.is_fan_heater and device.is_feature_supported("lightmode"),
+    ),
 )
 
 

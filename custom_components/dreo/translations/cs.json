@@ -309,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "Předvolba 3D úhlu"
+      },
+      "display_mode": {
+        "name": "Režim displeje",
+        "state": {
+          "off": "Vypnuto",
+          "on": "Zapnuto",
+          "auto": "Automaticky"
+        }
       }
     },
     "light": {

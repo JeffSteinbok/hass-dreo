@@ -309,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "Preset angolo 3D"
+      },
+      "display_mode": {
+        "name": "Modalità display",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso",
+          "auto": "Automatico"
+        }
       }
     },
     "light": {

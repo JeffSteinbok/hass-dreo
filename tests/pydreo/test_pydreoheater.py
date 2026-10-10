@@ -17,6 +17,7 @@ HEATER_EXHAUSTIVE_MODELS = [
     "get_devices_HSH010S.json",
     "get_devices_HSH011.json",
     "get_devices_HSH011S.json",
+    "get_devices_HSH016S.json",
     "get_devices_HSH034S.json",
     "get_devices_HSH040S.json",
     "get_devices_HSH041S.json",
@@ -48,6 +49,15 @@ class TestPyDreoHeater(TestBase):
         _ = heater.ctlstatus
         _ = heater.childlockon
         _ = heater.panel_sound
+        _ = heater.coolmode
+        _ = heater.coollevel
+        _ = heater.coollevel_range
+        _ = heater.horizontally_oscillating
+        _ = heater.horizontal_osc_angle_left
+        _ = heater.horizontal_osc_angle_right
+        _ = heater.horizontal_angle
+        _ = heater.lightmode
+        _ = heater.window_detection
 
         with patch(PATCH_SEND_COMMAND) as mock_send_command:
             heater.poweron = not bool(heater.poweron)
@@ -123,6 +133,41 @@ class TestPyDreoHeater(TestBase):
         if heater.panel_sound is not None:
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater.panel_sound = not bool(heater.panel_sound)
+                mock_send_command.assert_called_once()
+
+        if heater.coolmode is not None:
+            new_coolmode = DreoHeaterFanMode.NORMAL if heater.coolmode != DreoHeaterFanMode.NORMAL else DreoHeaterFanMode.AUTO
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.coolmode = new_coolmode
+                mock_send_command.assert_called_once()
+
+        if heater.coollevel is not None and heater.coollevel_range is not None:
+            low, high = heater.coollevel_range
+            new_coollevel = low if heater.coollevel != low else high
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.coollevel = new_coollevel
+                mock_send_command.assert_called_once()
+
+        if heater.horizontally_oscillating is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.horizontally_oscillating = not bool(heater.horizontally_oscillating)
+                mock_send_command.assert_called_once()
+
+        if heater.horizontal_angle is not None:
+            new_angle = 0 if heater.horizontal_angle != 0 else 30
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.horizontal_angle = new_angle
+                mock_send_command.assert_called_once()
+
+        if heater.lightmode is not None:
+            new_lightmode = 0 if heater.lightmode != 0 else 2
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.lightmode = new_lightmode
+                mock_send_command.assert_called_once()
+
+        if heater.window_detection is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.window_detection = not bool(heater.window_detection)
                 mock_send_command.assert_called_once()
 
     def test_HSH009S(self):  # pylint: disable=invalid-name
@@ -757,6 +802,195 @@ class TestPyDreoHeater(TestBase):
                     heater.mode = mode
                     mock_send_command.assert_called_once()
                 break
+
+    def test_HSH016S(self):  # pylint: disable=invalid-name
+        """Load the DR-HSH016S tower fan/heater combo and check the function/sub-mode translation.
+
+        Key values were captured from the Dreo app driving a real device: mode 1 = heat, 2 = fan;
+        htamode 1 = power heat, 2 = eco; coolmode 1-4 = normal/natural/sleep/auto; hoscangle is a
+        "left,right" range and hangleadj the fixed direction while not oscillating.
+        """
+
+        self.get_devices_file_name = "get_devices_HSH016S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+
+        assert heater.model == "DR-HSH016S"
+        assert heater.series_name == "706S/806S"
+        assert heater.is_fan_heater is True
+        assert heater.htalevel_range == (1, 5)
+        assert heater.coollevel_range == (1, 12)
+        assert heater.ecolevel_range == (41, 95)
+
+        # Fixture: on, fan function (mode 2), normal mode at speed 5, oscillation off pointing at 45 degrees
+        assert heater.poweron is True
+        assert heater.mode == DreoHeaterMode.COOLAIR
+        assert heater.coolmode == DreoHeaterFanMode.NORMAL
+        assert heater.coollevel == 5
+        assert heater.htalevel == 1
+        assert heater.ecolevel == 85
+        assert heater.horizontally_oscillating is False
+        assert (heater.horizontal_osc_angle_left, heater.horizontal_osc_angle_right) == (-30, 20)
+        assert heater.horizontal_angle == 45
+        assert heater.lightmode == 2
+        assert heater.window_detection is False
+        assert heater.temperature == 66
+        assert heater.temperature_units == TemperatureUnit.FAHRENHEIT
+
+        # Mode changes are sent as the function integer plus, for heat, the sub-mode - in one command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.HOTAIR
+            mock_send_command.assert_called_once_with(heater, {MODE_KEY: 1, HTAMODE_KEY: 1})
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1}})
+        assert heater.mode == DreoHeaterMode.HOTAIR
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.ECO
+            mock_send_command.assert_called_once_with(heater, {MODE_KEY: 1, HTAMODE_KEY: 2})
+        heater.handle_server_update({REPORTED_KEY: {HTAMODE_KEY: 2}})
+        assert heater.mode == DreoHeaterMode.ECO
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.COOLAIR
+            mock_send_command.assert_called_once_with(heater, {MODE_KEY: 2})
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+        assert heater.mode == DreoHeaterMode.COOLAIR
+        # The heat sub-mode is remembered while in the fan function
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1}})
+        assert heater.mode == DreoHeaterMode.ECO
+        heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 1, HTAMODE_KEY: 1}})
+        assert heater.mode == DreoHeaterMode.HOTAIR
+
+        # Heat levels H1-H5
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 5
+            mock_send_command.assert_called_once_with(heater, {HTALEVEL_KEY: 5})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.htalevel = 6
+            mock_send_command.assert_not_called()
+
+        # Fan sub-modes and speed
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.coolmode = DreoHeaterFanMode.SLEEP
+            mock_send_command.assert_called_once_with(heater, {COOLMODE_KEY: 3})
+        heater.handle_server_update({REPORTED_KEY: {COOLMODE_KEY: 3}})
+        assert heater.coolmode == DreoHeaterFanMode.SLEEP
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.coollevel = 12
+            mock_send_command.assert_called_once_with(heater, {COOLLEVEL_KEY: 12})
+        heater.handle_server_update({REPORTED_KEY: {COOLLEVEL_KEY: 12}})
+        assert heater.coollevel == 12
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.coollevel = 13
+            mock_send_command.assert_not_called()
+
+        # Horizontal oscillation: on/off, "left,right" range, fixed direction
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontally_oscillating = True
+            mock_send_command.assert_called_once_with(heater, {HORIZONTAL_OSCILLATION_KEY: True})
+        heater.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_KEY: True}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.set_horizontal_oscillation_range(-60, 60)
+            mock_send_command.assert_called_once_with(heater, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-60,60"})
+        heater.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-60,60"}})
+        assert (heater.horizontal_osc_angle_left, heater.horizontal_osc_angle_right) == (-60, 60)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_osc_angle_right = 20
+            mock_send_command.assert_called_once_with(heater, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-60,20"})
+        # Both bounds share one key: a left change made before the right one is reported must not be lost
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_osc_angle_left = -45
+            heater.horizontal_osc_angle_right = 45
+            mock_send_command.assert_has_calls(
+                [
+                    call(heater, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-45,20"}),
+                    call(heater, {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-45,45"}),
+                ]
+            )
+        heater.handle_server_update({REPORTED_KEY: {HORIZONTAL_OSCILLATION_ANGLE_KEY: "-45,45"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.set_horizontal_oscillation_range(30, 10)
+            mock_send_command.assert_not_called()
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_angle = -20
+            mock_send_command.assert_called_once_with(heater, {HORIZONTAL_ANGLE_ADJ_KEY: -20})
+        heater.handle_server_update({REPORTED_KEY: {HORIZONTAL_ANGLE_ADJ_KEY: -20}})
+        assert heater.horizontal_angle == -20
+
+        # Display mode and open-window detection
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.lightmode = 0
+            mock_send_command.assert_called_once_with(heater, {LIGHTMODE_KEY: 0})
+        heater.handle_server_update({REPORTED_KEY: {LIGHTMODE_KEY: 0}})
+        assert heater.lightmode == 0
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.window_detection = True
+            mock_send_command.assert_called_once_with(heater, {WINOPENON_KEY: True})
+        heater.handle_server_update({REPORTED_KEY: {WINOPENON_KEY: True}})
+        assert heater.window_detection is True
+
+        # "off" is not a function: it must never be sent as power heat
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.OFF
+            mock_send_command.assert_not_called()
+
+        # Unknown function or heat sub-mode values are kept but do not leave the mode undefined:
+        # they read as power heat whatever the previous state was
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1, HTAMODE_KEY: 2}})
+        assert heater.mode == DreoHeaterMode.ECO
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 99}})
+        assert heater.mode == DreoHeaterMode.HOTAIR
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 2}})
+        assert heater.mode == DreoHeaterMode.COOLAIR
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1, HTAMODE_KEY: 99}})
+        assert heater.mode == DreoHeaterMode.HOTAIR
+        heater.handle_server_update({REPORTED_KEY: {HTAMODE_KEY: 2}})
+        assert heater.mode == DreoHeaterMode.ECO
+
+        # The combo is identified by its model, so a state without a function still uses the integer protocol
+        heater.update_state({})
+        assert heater.is_fan_heater
+        assert heater.mode == DreoHeaterMode.HOTAIR
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.ECO
+            mock_send_command.assert_called_once_with(heater, {MODE_KEY: 1, HTAMODE_KEY: 2})
+
+        # Requesting power heat while the device reports an unknown function or heat sub-mode must still
+        # send the command even though the fallback already reads as power heat
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 99, HTAMODE_KEY: 1}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.HOTAIR
+            mock_send_command.assert_called_once_with(heater, {MODE_KEY: 1, HTAMODE_KEY: 1})
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1, HTAMODE_KEY: 99}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.HOTAIR
+            mock_send_command.assert_called_once_with(heater, {MODE_KEY: 1, HTAMODE_KEY: 1})
+        heater.handle_server_update({REPORTED_KEY: {MODE_KEY: 1, HTAMODE_KEY: 1}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.mode = DreoHeaterMode.HOTAIR
+            mock_send_command.assert_not_called()
+
+        with pytest.raises(ValueError):
+            heater.mode = "not_a_mode"
+        with pytest.raises(ValueError):
+            heater.coolmode = 9
+
+    def test_HSH009S_has_no_fan_function(self):  # pylint: disable=invalid-name
+        """A conventional heater must not grow the tower fan/heater combo features."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        assert heater.is_fan_heater is False
+        assert heater.coolmode is None
+        assert heater.coollevel is None
+        assert heater.horizontally_oscillating is None
+        assert heater.horizontal_angle is None
+        assert heater.lightmode is None
+        with pytest.raises(ValueError):
+            heater.coolmode = DreoHeaterFanMode.AUTO
+        with pytest.raises(ValueError):
+            heater.coollevel = 3
 
     @pytest.mark.parametrize("devices_file", HEATER_EXHAUSTIVE_MODELS)
     def test_all_settable_properties_for_each_model(self, devices_file: str):

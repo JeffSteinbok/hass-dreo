@@ -309,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "Ustawienie kąta 3D"
+      },
+      "display_mode": {
+        "name": "Tryb wyświetlacza",
+        "state": {
+          "off": "Wyłączony",
+          "on": "Włączony",
+          "auto": "Automatyczny"
+        }
       }
     },
     "light": {

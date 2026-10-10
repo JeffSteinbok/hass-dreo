@@ -98,6 +98,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HSH010S (OH310S)
 - DR-HSH011
 - DR-HSH011S (OH521S)
+- DR-HSH016S (Tower Fan & Heater 706S)
 - DR-HSH041S (711S) — added from diagnostics, awaiting owner confirmation ([#928](https://github.com/JeffSteinbok/hass-dreo/issues/928))
 - DR-HSH0017S
 - DR-HSH034S
