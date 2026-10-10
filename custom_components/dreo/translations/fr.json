@@ -40,10 +40,10 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Attente de stabilisation de l'angle",
         "state": {
-          "off": "Idle",
-          "on": "Waiting"
+          "off": "Au repos",
+          "on": "Attend"
         }
       },
       "heating": {
@@ -232,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Délai de stabilisation de l'angle"
       },
       "horizontal_angle": {
         "name": "Angle horizontal"

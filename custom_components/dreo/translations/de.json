@@ -40,10 +40,10 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Winkelstabilisierung ausstehend",
         "state": {
-          "off": "Idle",
-          "on": "Waiting"
+          "off": "Inaktiv",
+          "on": "Wartet"
         }
       },
       "heating": {
@@ -232,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Wartezeit zur Winkelstabilisierung"
       },
       "horizontal_angle": {
         "name": "Horizontaler Winkel"
