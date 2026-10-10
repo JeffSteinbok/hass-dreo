@@ -106,8 +106,8 @@ See **[SUPPORTED_MODELS.md](SUPPORTED_MODELS.md)** for the model-specific settle
 
 | Entity | Purpose |
 |--------|---------|
-| **Angle settle pending** | On while a second angle command is queued; attributes show `reported`, `commanded`, `pending_target`, and settle timing |
-| **Angle settle delay** | Runtime-tunable settle seconds for self-tuning (session-only until reload) |
+| **Angle Settle Pending** | On while a second angle command is queued; attributes show `reported`, `commanded`, `pending_target`, and settle timing |
+| **Angle Settle Delay** | Runtime-tunable settle seconds for self-tuning (session-only until reload) |
 
 If logs show a **rejected angle** command, recalibrate pan/tilt in the Dreo app (device
 settings / calibration), then reload this integration if Home Assistant stays out of sync.

@@ -40,10 +40,10 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Oczekiwanie na stabilizację kąta",
         "state": {
-          "off": "Idle",
-          "on": "Waiting"
+          "off": "Bezczynny",
+          "on": "Oczekuje"
         }
       },
       "heating": {
@@ -232,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Opóźnienie stabilizacji kąta"
       },
       "horizontal_angle": {
         "name": "Kąt poziomy"

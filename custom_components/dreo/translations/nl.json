@@ -40,10 +40,10 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Wachten op hoekstabilisatie",
         "state": {
-          "off": "Idle",
-          "on": "Waiting"
+          "off": "Inactief",
+          "on": "Wacht"
         }
       },
       "heating": {
@@ -232,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Wachttijd voor hoekstabilisatie"
       },
       "horizontal_angle": {
         "name": "Horizontale hoek"

@@ -40,7 +40,7 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Angle Settle Pending",
         "state": {
           "off": "Idle",
           "on": "Waiting"
@@ -129,7 +129,7 @@
         "name": "360° Airflow"
       },
       "window_detection": {
-        "name": "Open window detection"
+        "name": "Open Window Detection"
       },
       "childlockon": {
         "name": "Child Lock"
@@ -232,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Angle Settle Delay"
       },
       "horizontal_angle": {
         "name": "Horizontal Angle"
