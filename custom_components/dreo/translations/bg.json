@@ -40,10 +40,17 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Изчакване за стабилизиране на ъгъла",
         "state": {
-          "off": "Idle",
-          "on": "Waiting"
+          "off": "Неактивен",
+          "on": "Изчаква"
+        }
+      },
+      "heating": {
+        "name": "Отопление",
+        "state": {
+          "off": "Неактивен",
+          "on": "Отоплява"
         }
       },
       "main_power": {
@@ -118,6 +125,12 @@
       "ptcon": {
         "name": "PTC"
       },
+      "airflow_360": {
+        "name": "Въздушен поток 360°"
+      },
+      "window_detection": {
+        "name": "Откриване на отворен прозорец"
+      },
       "childlockon": {
         "name": "Детска защита"
       },
@@ -141,6 +154,9 @@
       },
       "follow_me": {
         "name": "Следвай ме"
+      },
+      "purifyon": {
+        "name": "Пречистване"
       }
     },
     "sensor": {
@@ -216,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Закъснение при стабилизиране на ъгъла"
       },
       "horizontal_angle": {
         "name": "Хоризонтален ъгъл"
@@ -263,6 +279,9 @@
       "ambient_light_level": {
         "name": "Ниво на ambient осветление"
       },
+      "temperature_offset": {
+        "name": "Отместване на температурата"
+      },
       "timer_on": {
         "name": "Таймер за включване"
       },
@@ -290,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "Предварителна настройка на 3D ъгъл"
+      },
+      "display_mode": {
+        "name": "Режим на дисплея",
+        "state": {
+          "off": "Изключен",
+          "on": "Включен",
+          "auto": "Автоматичен"
+        }
       }
     },
     "light": {

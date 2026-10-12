@@ -1,0 +1,164 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -48,
+        "timestamp": 1791565940
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1791565940
+      },
+      "rgbcycleseq": {
+        "state": "FF422B,FF5E00,FF7800,FFA700,49F6FF",
+        "timestamp": 1791565940
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1791565940
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 5
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1791565940
+      },
+      "rgbbri": {
+        "state": 1,
+        "timestamp": 1791565940
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1791565940
+      },
+      "mode": {
+        "state": "eco",
+        "timestamp": 1791565940
+      },
+      "network_latency": {
+        "state": 8,
+        "timestamp": 1791565940
+      },
+      "rgbmode": {
+        "state": 0,
+        "timestamp": 1791565940
+      },
+      "module_hardware_model": {
+        "state": "X1",
+        "timestamp": 1791565940
+      },
+      "mcu_firmware_version": {
+        "state": "1.3.6",
+        "timestamp": 1791565940
+      },
+      "airflowmode": {
+        "state": 1,
+        "timestamp": 1791565940
+      },
+      "temperature": {
+        "state": 70,
+        "timestamp": 1791568162
+      },
+      "cooldown": {
+        "state": 0,
+        "timestamp": 1791567786
+      },
+      "rgbbreathspeed": {
+        "state": 2,
+        "timestamp": 1791565940
+      },
+      "winopenon": {
+        "state": false,
+        "timestamp": 1791565940
+      },
+      "winopened": {
+        "state": 0,
+        "timestamp": 1791565940
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "rgbon": {
+        "state": false,
+        "timestamp": 1791565940
+      },
+      "rgbcyclespeed": {
+        "state": 2,
+        "timestamp": 1791565940
+      },
+      "ptcon": {
+        "state": false,
+        "timestamp": 1791567757
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1791565940
+      },
+      "lighton": {
+        "state": false,
+        "timestamp": 1791565940
+      },
+      "mcu_hardware_model": {
+        "state": "SC95F8615B/EU",
+        "timestamp": 1791565940
+      },
+      "wifi_ssid": "**REDACTED**",
+      "module_firmware_version": {
+        "state": "1.0.8",
+        "timestamp": 1791565940
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1791565940
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1791565940
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 5
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1791565940
+      },
+      "rgbbreathseq": {
+        "state": "FF422B,FF5E00,FF7800,FFA700,49F6FF",
+        "timestamp": 1791565940
+      },
+      "ecolevel": {
+        "state": 68,
+        "timestamp": 1791565940
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1791565940
+      },
+      "htalevel": {
+        "state": 1,
+        "timestamp": 1791565940
+      },
+      "tempoffset": {
+        "state": 0,
+        "timestamp": 1791565940
+      },
+      "rgbcolor": {
+        "state": 4847359,
+        "timestamp": 1791565940
+      }
+    },
+    "sn": "HSH040S_1",
+    "productId": "**REDACTED**",
+    "region": "eu-central-1/emq",
+    "deviceInfo": null
+  }
+}

@@ -129,3 +129,31 @@ class TestDreoDeHumidifier(IntegrationTestBase):
             water_empty_sensor = self.get_entity_by_key(binary_sensors, "water_empty")
             assert water_empty_sensor is not None, "Water Empty binary sensor should exist for dehumidifier"
             assert water_empty_sensor.is_on is False, "Water Empty should be False when error code wrong=0"
+
+    def test_HDH004S(self):  # pylint: disable=invalid-name
+        """Load DR-HDH004S (733S/764S) dehumidifier and test HA entities (issue #936)."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HDH004S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_dehumidifier: PyDreoDehumidifier = self.pydreo_manager.devices[0]
+            assert pydreo_dehumidifier.type == "Dehumidifier"
+            assert pydreo_dehumidifier.model == "DR-HDH004S"
+
+            ha_humidifier = humidifier.DreoDehumidifierHA(pydreo_dehumidifier)
+            assert ha_humidifier.is_on is True
+            assert ha_humidifier.current_humidity == 50
+            assert ha_humidifier.target_humidity == 45
+            assert ha_humidifier.min_humidity <= ha_humidifier.target_humidity <= ha_humidifier.max_humidity
+
+            numbers = number.get_entries([pydreo_dehumidifier])
+            self.verify_expected_entities(numbers, ["Target Humidity"])
+            assert self.get_entity_by_key(numbers, "Target Humidity").native_value == 45
+
+            sensors = sensor.get_entries([pydreo_dehumidifier])
+            self.verify_expected_entities(sensors, ["Humidity", "Temperature", "Water Level"])
+
+            binary_sensors = binary_sensor.get_entries([pydreo_dehumidifier])
+            self.verify_expected_entities(binary_sensors, ["water_empty"])
+            assert self.get_entity_by_key(binary_sensors, "water_empty").is_on is False

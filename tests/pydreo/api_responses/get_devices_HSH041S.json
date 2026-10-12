@@ -1,0 +1,65 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1972221935910204041",
+        "sn": "HSH041S_1",
+        "brand": "Dreo",
+        "model": "DR-HSH041S",
+        "productId": "**REDACTED**",
+        "productName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH041S",
+        "shared": false,
+        "series": null,
+        "seriesName": "711S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202607/91e732dbb1cf14404869503504551dd25.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202607/96ace83b5bf3a40af9c25a80650a87682.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202607/96d34c1f9168d409491864dd7aacadf44.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202607/9b72ff9085221494f9a7ebbb5eb588fb1.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202607/24f7c684abf1ad4878a15accc47de214aa.pdf",
+            "icon": null,
+            "desc": "DR-HSH041S User Manual EU",
+            "lang": "en"
+          },
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202607/7ad3dd4146cfe4afb83d8f14761d8e880.pdf",
+            "icon": null,
+            "desc": "DR-HSH041S User Manual US V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

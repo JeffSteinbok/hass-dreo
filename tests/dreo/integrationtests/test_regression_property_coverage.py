@@ -44,11 +44,14 @@ INTEGRATION_EXHAUSTIVE_MODEL_FIXTURES = [
     "get_devices_HPF025S.json",
     "get_devices_HSH003S.json",
     "get_devices_HSH004S.json",
+    "get_devices_HSH006S.json",
     "get_devices_HSH009S.json",
     "get_devices_HSH010S.json",
     "get_devices_HSH011.json",
     "get_devices_HSH011S.json",
+    "get_devices_HSH016S.json",
     "get_devices_HSH034S.json",
+    "get_devices_HSH041S.json",
     "get_devices_WH714S.json",
 ]
 

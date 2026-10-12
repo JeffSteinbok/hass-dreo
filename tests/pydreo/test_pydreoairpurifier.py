@@ -130,6 +130,40 @@ class TestPyDreoAirPurifier(TestBase):
         air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-silent"}})
         assert air_purifier.preset_mode == "auto"
 
+    def test_HAP003S_4(self):  # pylint: disable=invalid-name
+        """Test DR-HAP003S Air Purifier (Macro Max S/AS) with the "SC95F8616B-2/US" MCU (issue #957).
+
+        Fixture from the issue's diagnostics. These units reject plain "auto" ("instruction
+        validate failed", 500003), report their auto state as "auto-regular", and switch to
+        auto when sent "auto-regular".
+        """
+
+        self.get_devices_file_name = "get_devices_HAP003S_4.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP003S"
+        assert air_purifier.series_name == "Macro Max S/AS"
+        assert air_purifier.speed_range == (1, 18)
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+        assert air_purifier._auto_mode_uses_auto_silent is False  # pylint: disable=protected-access
+        # The diagnostics report the auto state as "auto-regular"
+        assert air_purifier.preset_mode == "auto"
+
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "turbo"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+        assert air_purifier.preset_mode == "auto"
+
+        # turbo, sleep and manual are sent unchanged
+        for mode in ("turbo", "sleep", "manual"):
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                air_purifier.preset_mode = mode
+                mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: mode})
+            air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: mode}})
+
     def test_HAP005S(self):  # pylint: disable=invalid-name
         """Test DR-HAP005S Air Purifier (Macro AP505S)."""
 
@@ -141,6 +175,33 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.series_name == "Macro AP505S"
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["manual"]
+
+    def test_HAP007S(self):  # pylint: disable=invalid-name
+        """Test DR-HAP007S Air Purifier (337S/337AS) with empty controlsConf."""
+
+        self.get_devices_file_name = "get_devices_HAP007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP007S"
+        assert air_purifier.series_name == "337S/337AS"
+        assert air_purifier.speed_range == (1, 4)
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+        assert air_purifier.preset_mode == "turbo"
+        assert air_purifier.filter_life == 89
+        assert air_purifier.is_feature_supported("filter_life")
+
+        # Rejects plain "auto" ("instruction validate failed") and requires "auto-regular"
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+        assert air_purifier.preset_mode == "auto"
+
+        # Filter life also arrives over the websocket
+        air_purifier.handle_server_update({REPORTED_KEY: {"lifetime": 88}})
+        assert air_purifier.filter_life == 88
 
     def test_HAP009S(self):  # pylint: disable=invalid-name
         """Test DR-HAP009S Air Purifier with empty controlsConf."""
@@ -195,6 +256,12 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
 
+        # DR-HAP008S rejects plain "auto" and requires "auto-regular" (issue #932)
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+
     def test_HAP010S(self):  # pylint: disable=invalid-name
         """Test DR-HAP010S (530S) Air Purifier with empty controlsConf."""
         self.get_devices_file_name = "get_devices_HAP010S.json"
@@ -204,6 +271,43 @@ class TestPyDreoAirPurifier(TestBase):
         assert air_purifier.series_name == "530S"
         assert air_purifier.speed_range == (1, 4)
         assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
+        # DR-HAP010S also requires "auto-regular" (reported on issue #932)
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+
+    def test_HAP010S_purifyon(self):  # pylint: disable=invalid-name
+        """DR-HAP010S exposes the purification toggle (issue #933)."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.purifyon is False
+        assert air_purifier.is_feature_supported("purifyon")
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.purifyon = True
+            mock_send_command.assert_called_once_with(air_purifier, {"purifyon": True})
+
+        air_purifier.handle_server_update({REPORTED_KEY: {"purifyon": True}})
+        assert air_purifier.purifyon is True
+
+        # Same value -- no command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.purifyon = True
+            mock_send_command.assert_not_called()
+
+        air_purifier.handle_server_update({REPORTED_KEY: {"purifyon": False}})
+        assert air_purifier.purifyon is False
+
+    def test_purifyon_not_supported_without_state(self):
+        """Purifiers that don't report purifyon must not get the switch."""
+        self.get_devices_file_name = "get_devices_HAP008S.json"
+        self.pydreo_manager.load_devices()
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.purifyon is None
+        assert not air_purifier.is_feature_supported("purifyon")
 
     def test_air_purifier_preset_mode_variant_mapping(self):
         """Mode variants like auto-regular should still map to the base preset mode."""

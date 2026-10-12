@@ -56,16 +56,47 @@ jobs:
             ].map((login) => login.toLowerCase()));
 
             const acceptedReviewStates = new Set(["APPROVED", "CHANGES_REQUESTED", "COMMENTED"]);
+            // Copilot posts a COMMENTED review when it could not run (e.g. the requester's quota is
+            // exhausted). That is not a review.
+            const failedReviewPattern = /Copilot was unable to review this pull request/i;
             const aiReviews = reviews.filter((review) => {
               const reviewer = review.user?.login?.toLowerCase();
-              return reviewer && aiReviewerLogins.has(reviewer) && acceptedReviewStates.has(review.state);
+              return (
+                reviewer &&
+                aiReviewerLogins.has(reviewer) &&
+                acceptedReviewStates.has(review.state) &&
+                !failedReviewPattern.test(review.body || "")
+              );
             });
 
-            if (aiReviews.length === 0) {
-              core.setFailed(
-                "No AI review found. Request AI review (for example, GitHub Copilot review) and then re-run this check."
-              );
-            } else {
+            if (aiReviews.length > 0) {
               const reviewers = [...new Set(aiReviews.map((review) => review.user.login))].join(", ");
               core.info(`AI review detected from: ${reviewers}`);
+              return;
+            }
+
+            // A maintainer's approval of the current head commit also satisfies the gate, so a
+            // maintainer can review a PR themselves instead of paying for a Copilot review.
+            const headSha = context.payload.pull_request.head.sha;
+            const maintainerAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            // Only each maintainer's latest decisive review counts, as in GitHub's own review state:
+            // an approval followed by a request for changes is no longer an approval.
+            const latestDecisive = new Map();
+            for (const review of reviews) {
+              if (!maintainerAssociations.has(review.author_association)) continue;
+              if (review.state !== "APPROVED" && review.state !== "CHANGES_REQUESTED") continue;
+              latestDecisive.set(review.user.login, review); // reviews are returned oldest first
+            }
+            const maintainerApprovals = [...latestDecisive.values()].filter(
+              (review) => review.state === "APPROVED" && review.commit_id === headSha
+            );
+
+            if (maintainerApprovals.length > 0) {
+              const approvers = [...new Set(maintainerApprovals.map((review) => review.user.login))].join(", ");
+              core.info(`No AI review; maintainer approval of ${headSha} from: ${approvers}`);
+            } else {
+              core.setFailed(
+                "No AI review or maintainer approval of the latest commit found. Request an AI review " +
+                  "(for example, GitHub Copilot review) or have a maintainer approve, then re-run this check."
+              );
             }

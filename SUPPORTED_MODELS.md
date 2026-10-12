@@ -40,9 +40,9 @@ This document lists all Dreo device models that have been tested and confirmed t
   (`fixed_conf_settle_seconds` in device model metadata; empirically tuned to this
   model’s motor travel — other models can set their own independently). This
   prevents rapid horizontal/vertical angle updates from stacking while the head
-  is moving. Enable diagnostic entities to self-tune: **Angle settle pending**
+  is moving. Enable diagnostic entities to self-tune: **Angle Settle Pending**
   (shows reported / commanded / pending_target / settle_remaining_seconds) and
-  **Angle settle delay** (runtime-tunable seconds; session-only until reload).
+  **Angle Settle Delay** (runtime-tunable seconds; session-only until reload).
   Rejected angle commands are logged (no auto-retry): recalibrate pan/tilt in the
   Dreo app (device settings / calibration), then reload this integration if Home
   Assistant stays out of sync. Other air-circulator models default to no settle
@@ -66,6 +66,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HAP002S
 - DR-HAP003S
 - DR-HAP005S
+- DR-HAP007S (337S/337AS)
 - DR-HAP008S
 - DR-HAP010S (530S)
 
@@ -83,6 +84,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HDH001S
 - DR-HDH002S
 - DR-HDH003S
+- DR-HDH004S (733S/764S) — added from diagnostics, awaiting owner confirmation ([#936](https://github.com/JeffSteinbok/hass-dreo/issues/936))
 - DR-HDH005S
 
 ## Space Heaters
@@ -96,8 +98,11 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HSH010S (OH310S)
 - DR-HSH011
 - DR-HSH011S (OH521S)
+- DR-HSH016S (Tower Fan & Heater 706S)
+- DR-HSH041S (711S) — added from diagnostics, awaiting owner confirmation ([#928](https://github.com/JeffSteinbok/hass-dreo/issues/928))
 - DR-HSH0017S
 - DR-HSH034S
+- DR-HSH040S (720S)
 
 ### WH Series
 - WH517S

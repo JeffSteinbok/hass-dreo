@@ -193,7 +193,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgb_light.turn_on()
-                mock_send_command.assert_any_call(pydreo_fan, {ATMON_KEY: True})
+                mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
@@ -287,7 +287,8 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 "Chase",
             ]
 
-            # The fixture reports the RGBIC atmosphere light as on.
+            # atmon is retained True in the fixture, but the main-light wake above forced
+            # atmon off, so the RGBIC light reads OFF here.
             assert rgbic_light.is_on is False
 
             # Applying an RGBIC effect first sends atmon, then schedules the

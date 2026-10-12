@@ -40,10 +40,17 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Wachten op hoekstabilisatie",
         "state": {
-          "off": "Idle",
-          "on": "Waiting"
+          "off": "Inactief",
+          "on": "Wacht"
+        }
+      },
+      "heating": {
+        "name": "Verwarmen",
+        "state": {
+          "off": "Inactief",
+          "on": "Verwarmt"
         }
       },
       "main_power": {
@@ -118,6 +125,12 @@
       "ptcon": {
         "name": "PTC"
       },
+      "airflow_360": {
+        "name": "360°-luchtstroom"
+      },
+      "window_detection": {
+        "name": "Open-raamdetectie"
+      },
       "childlockon": {
         "name": "Kinderslot"
       },
@@ -141,6 +154,9 @@
       },
       "follow_me": {
         "name": "Volg mij"
+      },
+      "purifyon": {
+        "name": "Zuivering"
       }
     },
     "sensor": {
@@ -216,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Wachttijd voor hoekstabilisatie"
       },
       "horizontal_angle": {
         "name": "Horizontale hoek"
@@ -263,6 +279,9 @@
       "ambient_light_level": {
         "name": "Sfeerverlichtingsniveau"
       },
+      "temperature_offset": {
+        "name": "Temperatuurafwijking"
+      },
       "timer_on": {
         "name": "Timer Aan"
       },
@@ -290,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "3D-hoekvoorinstelling"
+      },
+      "display_mode": {
+        "name": "Displaymodus",
+        "state": {
+          "off": "Uit",
+          "on": "Aan",
+          "auto": "Automatisch"
+        }
       }
     },
     "light": {

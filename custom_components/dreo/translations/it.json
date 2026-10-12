@@ -40,10 +40,17 @@
         }
       },
       "fixed_conf_settle_pending": {
-        "name": "Angle settle pending",
+        "name": "Stabilizzazione angolo in attesa",
         "state": {
-          "off": "Idle",
-          "on": "Waiting"
+          "off": "Inattivo",
+          "on": "In attesa"
+        }
+      },
+      "heating": {
+        "name": "Riscaldamento",
+        "state": {
+          "off": "Inattivo",
+          "on": "In riscaldamento"
         }
       },
       "main_power": {
@@ -118,6 +125,12 @@
       "ptcon": {
         "name": "PTC"
       },
+      "airflow_360": {
+        "name": "Flusso d'aria a 360°"
+      },
+      "window_detection": {
+        "name": "Rilevamento finestra aperta"
+      },
       "childlockon": {
         "name": "Blocco bambini"
       },
@@ -141,6 +154,9 @@
       },
       "follow_me": {
         "name": "Seguimi"
+      },
+      "purifyon": {
+        "name": "Purificazione"
       }
     },
     "sensor": {
@@ -216,7 +232,7 @@
     },
     "number": {
       "fixed_conf_settle_seconds": {
-        "name": "Angle settle delay"
+        "name": "Ritardo stabilizzazione angolo"
       },
       "horizontal_angle": {
         "name": "Angolo orizzontale"
@@ -263,6 +279,9 @@
       "ambient_light_level": {
         "name": "Livello luce ambientale"
       },
+      "temperature_offset": {
+        "name": "Scostamento temperatura"
+      },
       "timer_on": {
         "name": "Timer Accensione"
       },
@@ -290,6 +309,14 @@
       },
       "three_d_angle_preset": {
         "name": "Preset angolo 3D"
+      },
+      "display_mode": {
+        "name": "Modalità display",
+        "state": {
+          "off": "Spento",
+          "on": "Acceso",
+          "auto": "Automatico"
+        }
       }
     },
     "light": {

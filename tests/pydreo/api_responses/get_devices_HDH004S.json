@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "1972221935910204004",
+        "sn": "HDH004S_1",
+        "brand": "Dreo",
+        "model": "DR-HDH004S",
+        "productId": "**REDACTED**",
+        "productName": "Dehumidifier",
+        "deviceName": "DEBUGTEST - Dehumidifier - DR-HDH004S",
+        "shared": false,
+        "series": null,
+        "seriesName": "764S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "b",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202604/166be9064ff0d145b696095645c7b79fb8.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202604/16763a65ad54e2483799b07e342864adf9.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202604/1611bde29d3909474cbb78b59b2140af84.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202604/16029fb973e05440ed861eb620a3b9634b.lottie.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202601/287dff1b55210b45659a2e34e6e8336a54.pdf",
+            "icon": null,
+            "desc": "DR-HDH004S User Manual V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "rgbflowspeed": {
+        "state": 2,
+        "timestamp": 1790864816
+      },
+      "wifi_rssi": {
+        "state": -78,
+        "timestamp": 1790864816
+      },
+      "poweron": {
+        "state": false,
+        "timestamp": 1790866723
+      },
+      "rgbcycleseq": {
+        "state": "FF0E06,FF2A00,FF5800,FFA100",
+        "timestamp": 1790864816
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1790864816
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 7
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1790864816
+      },
+      "rgbbri": {
+        "state": 3,
+        "timestamp": 1790864816
+      },
+      "rgbflowseq": {
+        "state": "FF0E06,FF2A00,FF5800,FFA100",
+        "timestamp": 1790864816
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1790864816
+      },
+      "mode": {
+        "state": "eco",
+        "timestamp": 1790865191
+      },
+      "network_latency": {
+        "state": 12,
+        "timestamp": 1790864819
+      },
+      "rgbmode": {
+        "state": 0,
+        "timestamp": 1790864816
+      },
+      "module_hardware_model": {
+        "state": "X1",
+        "timestamp": 1790864816
+      },
+      "mcu_firmware_version": {
+        "state": "1.3.0",
+        "timestamp": 1790864816
+      },
+      "temperature": {
+        "state": 74,
+        "timestamp": 1790867755
+      },
+      "cooldown": {
+        "state": 0,
+        "timestamp": 1790864816
+      },
+      "rgbbreathspeed": {
+        "state": 2,
+        "timestamp": 1790864816
+      },
+      "winopenon": {
+        "state": true,
+        "timestamp": 1790866690
+      },
+      "winopened": {
+        "state": 0,
+        "timestamp": 1790864816
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "rgbrainbowspeed": {
+        "state": 2,
+        "timestamp": 1790864816
+      },
+      "rgbon": {
+        "state": true,
+        "timestamp": 1790865125
+      },
+      "rgbcyclespeed": {
+        "state": 2,
+        "timestamp": 1790864816
+      },
+      "ptcon": {
+        "state": false,
+        "timestamp": 1790864816
+      },
+      "muteon": {
+        "state": false,
+        "timestamp": 1790865172
+      },
+      "lighton": {
+        "state": true,
+        "timestamp": 1790864816
+      },
+      "mcu_hardware_model": {
+        "state": "CMS80F7618/EU",
+        "timestamp": 1790864816
+      },
+      "wifi_ssid": "**REDACTED**",
+      "tempunit": {
+        "state": 2,
+        "timestamp": 1790864816
+      },
+      "rgbrainbowseq": {
+        "state": "FF0E06,FF2A00,FF5800,FFA100",
+        "timestamp": 1790864816
+      },
+      "module_firmware_version": {
+        "state": "1.0.7",
+        "timestamp": 1790864816
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1790864816
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1790864816
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 7
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1790864816
+      },
+      "rgbbreathseq": {
+        "state": "FF0E06,FF2A00,FF5800,FFA100",
+        "timestamp": 1790864816
+      },
+      "ecolevel": {
+        "state": 68,
+        "timestamp": 1790865138
+      },
+      "rgbflowdir": {
+        "state": 1,
+        "timestamp": 1790864816
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1790864816
+      },
+      "htalevel": {
+        "state": 1,
+        "timestamp": 1790865078
+      },
+      "rgbrainbowdir": {
+        "state": 1,
+        "timestamp": 1790864816
+      },
+      "tempoffset": {
+        "state": 0,
+        "timestamp": 1790864816
+      },
+      "rgbcolor": {
+        "state": 30719,
+        "timestamp": 1790864816
+      }
+    }
+  }
+}

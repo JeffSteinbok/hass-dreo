@@ -1,0 +1,59 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "familyRooms": null,
+    "list": [
+      {
+        "deviceId": "2000518919670542339",
+        "sn": "HSH016S_1",
+        "brand": "Dreo",
+        "model": "DR-HSH016S",
+        "productId": "**REDACTED**",
+        "productName": "Heater",
+        "deviceName": "DEBUGTEST - Heater - DR-HSH016S",
+        "shared": false,
+        "series": null,
+        "seriesName": "706S/806S",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "s",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202603/5c5ea76f791ff4e80bba21d83bb86c056.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202603/572bf324863e94165afb6771995975b00.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": null,
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202603/58d96067db18440c09872e9b05b476f19.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202603/52ec27a96a5774f20ae825085dcbbc15a.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202603/10840f1526a091431caaa352485afb1f4b.pdf",
+            "icon": null,
+            "desc": "DR-HSH016 User Manual",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

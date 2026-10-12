@@ -32,6 +32,7 @@ LEDALWAYSON_KEY = "ledalwayson"
 LIGHTSENSORON_KEY = "lightsensoron"
 MUTEON_KEY = "muteon"
 PM25_KEY = "pm25"
+LIFETIME_KEY = "lifetime"
 LOCATEMEON_KEY = "locatemeon"
 FIXEDCONF_KEY = "fixedconf"
 # device_ranges key (float seconds): min gap between fixedconf commands for models
@@ -48,6 +49,11 @@ TIMER_MAX_MINUTES = 719
 COOLDOWN_KEY = "cooldown"
 PTCON_KEY = "ptcon"
 LIGHTON_KEY = "lighton"
+AIRFLOWMODE_KEY = "airflowmode"
+WINOPENON_KEY = "winopenon"
+RGBON_KEY = "rgbon"
+MCU_FIRMWARE_VERSION_KEY = "mcu_firmware_version"
+MCU_HARDWARE_MODEL_KEY = "mcu_hardware_model"
 HWFPON_KEY = "hwfpon"
 HWFPANGLE_KEY = "hwfpangle"
 HBODYCNT_KEY = "hbodycnt"
@@ -58,7 +64,14 @@ TIMEROFF_KEY = "timeroff"
 ECOLEVEL_KEY = "ecolevel"
 ECOLEVEL_RANGE_KEY = "ecolevel_range"
 CHILDLOCKON_KEY = "childlockon"
+PURIFYON_KEY = "purifyon"
 TEMPOFFSET_KEY = "tempoffset"
+# Tower fan/heater combos (DR-HSH016S): "mode" is an integer selecting the HEAT or FAN function,
+# with a separate sub-mode key for each function and a fan speed level for the FAN function.
+HTAMODE_KEY = "htamode"
+COOLMODE_KEY = "coolmode"
+COOLLEVEL_KEY = "coollevel"
+LIGHTMODE_KEY = "lightmode"
 HUMIDITY_KEY = "rh"
 WORKTIME_KEY = "worktime"
 TEMP_TARGET_REACHED_KEY = "reachtarget"
@@ -174,6 +187,8 @@ VERTICAL_ANGLE_RANGE = "vertical_angle_range"
 SPEED_RANGE = "speed_range"
 HEAT_RANGE = "heat_range"
 ECOLEVEL_RANGE = "ecolevel_range"
+TEMPERATURE_OFFSET_RANGE = "temperature_offset_range"
+COOL_RANGE = "cool_range"
 TEMP_RANGE = "temp_range"
 TARGET_TEMP_RANGE = "target_temp_range"
 TARGET_TEMP_RANGE_ECO = "target_temp_range_eco"
@@ -301,3 +316,27 @@ class DreoHeaterMode(StrEnum):
     HOTAIR = "hotair"
     ECO = "eco"
     OFF = "off"
+
+
+# Tower fan/heater combos (DR-HSH016S) report an integer "mode" selecting the function, plus a
+# heat sub-mode "htamode" and a fan sub-mode "coolmode". The function and heat sub-mode together
+# map onto the DreoHeaterMode strings the other heaters report.
+class DreoHeaterFunction(IntEnum):
+    HEAT = 1
+    FAN = 2
+
+
+class DreoHeaterHeatMode(IntEnum):
+    POWER = 1
+    ECO = 2
+
+
+class DreoHeaterFanMode(IntEnum):
+    NORMAL = 1
+    NATURAL = 2
+    SLEEP = 3
+    AUTO = 4
+
+
+# Symmetric horizontal oscillation presets ("hoscangle" = "-half,half") offered as climate swing modes.
+HEATER_HOSC_SWING_ANGLES = {"30°": 15, "60°": 30, "90°": 45, "120°": 60}

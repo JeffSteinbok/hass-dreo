@@ -41,6 +41,31 @@ class TestPyDreoDehumidifier(TestBase):
         assert dehumidifier.mode == "Auto"  # mode=1 → "Auto"
         assert dehumidifier.oscillating is False
 
+    def test_HDH004S_initial_state(self):  # pylint: disable=invalid-name
+        """Load HDH004S (733S/764S) from its issue #936 diagnostics."""
+        self.get_devices_file_name = "get_devices_HDH004S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+
+        dehumidifier: PyDreoDehumidifier = self.pydreo_manager.devices[0]
+
+        assert dehumidifier.model == "DR-HDH004S"
+        assert dehumidifier.is_on is True
+        assert dehumidifier.humidity == 50
+        assert dehumidifier.target_humidity == 45
+        assert dehumidifier.wind_level == 3
+        assert dehumidifier.speed_range == (1, 3)
+        assert dehumidifier.preset_mode == "high"
+        assert dehumidifier.panel_sound is True  # muteon=False
+        assert dehumidifier.display_light is True
+        assert dehumidifier.childlockon is False
+        assert dehumidifier.auto_mode is False
+        assert dehumidifier.temperature == 77
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            dehumidifier.target_humidity = 55
+            mock_send_command.assert_called_once_with(dehumidifier, {RHAUTOLEVEL_KEY: 55})
+
     def test_HDH005S_speed_range(self):  # pylint: disable=invalid-name
         """Test speed_range and preset_modes."""
         self.get_devices_file_name = "get_devices_HDH005S.json"

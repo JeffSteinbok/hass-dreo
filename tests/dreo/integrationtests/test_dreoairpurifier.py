@@ -225,6 +225,34 @@ class TestDreoAirPurifier(IntegrationTestBase):
             sensors = sensor.get_entries([pydreo_ap])
             self.verify_expected_entities(sensors, ["pm25"])
 
+    def test_HAP003S_4(self):  # pylint: disable=invalid-name
+        """Load HAP003S air purifier (Macro Max S/AS) with the "SC95F8616B-2/US" MCU (issue #957)."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HAP003S_4.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_ap = self.pydreo_manager.devices[0]
+            assert pydreo_ap.model == "DR-HAP003S"
+            assert pydreo_ap.series_name == "Macro Max S/AS"
+
+            ha_fan = fan.DreoFanHA(pydreo_ap)
+            assert ha_fan.speed_count == 18
+            assert ha_fan.preset_modes == ["auto", "manual", "sleep", "turbo"]
+            assert ha_fan.preset_mode == "auto"
+
+            # The device rejects plain "auto" with 500003; "auto-regular" switches it to auto.
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "turbo"}})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "auto-regular"})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+            assert ha_fan.preset_mode == "auto"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("sleep")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "sleep"})
+
     def test_HAP005S(self):  # pylint: disable=invalid-name
         """Load HAP005S air purifier (Macro AP505S) and test HA entity."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
@@ -260,6 +288,42 @@ class TestDreoAirPurifier(IntegrationTestBase):
             self.verify_expected_entities(switches, ["Child Lock", "Display Auto Off", "Panel Sound"])
             sensors = sensor.get_entries([pydreo_ap])
             self.verify_expected_entities(sensors, ["pm25"])
+
+    def test_HAP007S(self):  # pylint: disable=invalid-name
+        """Load HAP007S (337S/337AS) air purifier with empty controlsConf and test HA entities."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HAP007S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_ap = self.pydreo_manager.devices[0]
+            assert pydreo_ap.type == "Air Purifier"
+            assert pydreo_ap.model == "DR-HAP007S"
+            assert pydreo_ap.series_name == "337S/337AS"
+            assert pydreo_ap.speed_range == (1, 4)
+            assert pydreo_ap.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
+            ha_fan = fan.DreoFanHA(pydreo_ap)
+            assert ha_fan.speed_count == 4
+            assert ha_fan.preset_modes == ["auto", "manual", "sleep", "turbo"]
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_percentage(25)
+                mock_send_command.assert_called_once_with(pydreo_ap, {WINDLEVEL_KEY: 1})
+
+            # Selecting "auto" must send "auto-regular"; the device rejects plain "auto"
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "sleep"}})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                ha_fan.set_preset_mode("auto")
+                mock_send_command.assert_called_once_with(pydreo_ap, {WIND_MODE_KEY: "auto-regular"})
+            pydreo_ap.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+            assert ha_fan.preset_mode == "auto"
+
+            # Filter life (percent, matches the Dreo app) and PM2.5 sensors
+            sensors = sensor.get_entries([pydreo_ap])
+            self.verify_expected_entities(sensors, ["Air Purifier Filter Life", "pm25"])
+            filter_life = self.get_entity_by_key(sensors, "Air Purifier Filter Life")
+            assert filter_life.native_value == 89
 
     def test_HAP009S(self):  # pylint: disable=invalid-name
         """Load HAP009S air purifier with empty controlsConf and test HA fan entity."""
