@@ -7,6 +7,7 @@
 
 from typing import Any
 import logging
+import math
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
@@ -324,18 +325,34 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         """Set new target temperature."""
         temp = kwargs.get(ATTR_TEMPERATURE)
         if temp is not None:
-            self.device.ecolevel = round(temp)
+            # The Dreo app sends a °C target as the °F value rounded up (measured on every whole degree
+            # 5-35 °C, issue #951). round(..., 6) drops float noise such as 68.00000000000001 for 20 °C.
+            self.device.ecolevel = math.ceil(round(temp, 6))
             self.schedule_update_ha_state()
 
     @property
-    def target_temperature(self) -> int | None:
+    def target_temperature(self) -> float | None:
         """Return the target temperature.
 
         Returns the ecolevel (target temperature) if the device supports it,
         otherwise returns None. This ensures the target temperature is visible
         even when the device is OFF or in a different mode.
         """
-        return self.device.ecolevel if self.device.ecolevel is not None else None
+        ecolevel = self.device.ecolevel
+        if ecolevel is None:
+            return None
+        if self.hass is None or self.hass.config.units.temperature_unit != UnitOfTemperature.CELSIUS:
+            return ecolevel
+        # Converted directly, the whole-°F target shows as the nearest half °C, so 8 °C (47 °F) shows as 8.5.
+        # Invert set_temperature's rounding up instead: ceil(c * 9/5 + 32) == ecolevel for c in
+        # ((ecolevel - 33) * 5/9, (ecolevel - 32) * 5/9]. That interval is 5/9 °C wide, so it holds at most
+        # one whole degree and always a half degree. Prefer the whole degree, as the app only offers those.
+        low = (ecolevel - 33) * 5 / 9
+        high = (ecolevel - 32) * 5 / 9
+        celsius = math.floor(high + 1e-9)
+        if celsius <= low + 1e-9:
+            celsius = math.floor(high * 2 + 1e-9) / 2
+        return celsius * 9 / 5 + 32
 
     @property
     def min_temp(self) -> int | None:
