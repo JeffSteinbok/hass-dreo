@@ -1,5 +1,9 @@
 """Tests for the Dreo Ceiling heater HA class."""
 
+import math
+from fractions import Fraction
+from unittest.mock import MagicMock
+
 import pytest
 from custom_components.dreo import climate
 from .testdevicebase import TestDeviceBase
@@ -13,6 +17,9 @@ from homeassistant.components.climate import (
     PRESET_NONE,
     ATTR_TEMPERATURE,
 )
+from homeassistant.const import UnitOfTemperature
+from homeassistant.helpers.temperature import display_temp
+from homeassistant.util.unit_conversion import TemperatureConverter
 
 from custom_components.dreo.pydreo.constant import (
     HEAT_RANGE,
@@ -290,13 +297,11 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert mocked_pydreo_heater.ecolevel == 78
         assert test_heater.target_temperature == 78
 
-    def test_set_temperature_rounds_instead_of_truncating(self):
-        """Test that set_temperature rounds fractional Fahrenheit values instead of truncating.
+    def test_set_temperature_rounds_up(self):
+        """set_temperature rounds the Fahrenheit target up, as the Dreo app does (issue #951).
 
-        When HA is configured in Celsius and the entity uses Fahrenheit,
-        HA converts the user's Celsius input to Fahrenheit before calling set_temperature.
-        For example, 21°C = 69.8°F. Using int() would truncate to 69°F (≈20.6°C),
-        but round() correctly gives 70°F (≈21.1°C).
+        HA converts a Celsius target to Fahrenheit before calling set_temperature. The app
+        sends the °F value rounded up, so 18 °C (64.4 °F) is 65 and 22 °C (71.6 °F) is 72.
         """
         mocked_pydreo_heater: PyDreoDeviceMock = self.create_mock_device(
             name="HSH003S Test Heater",
@@ -320,27 +325,85 @@ class TestDreoHeaterHA(TestDeviceBase):
 
         test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
 
-        from homeassistant.components.climate import ATTR_TEMPERATURE
+        for fahrenheit, expected in ((69.8, 70), (77.0, 77), (64.4, 65), (71.6, 72), (70, 70)):
+            test_heater.set_temperature(**{ATTR_TEMPERATURE: fahrenheit})
+            assert mocked_pydreo_heater.ecolevel == expected
+            # Fahrenheit users see the device value unchanged.
+            assert test_heater.target_temperature == expected
 
-        # 21°C = 69.8°F - should round to 70, not truncate to 69
-        test_heater.set_temperature(**{ATTR_TEMPERATURE: 69.8})
-        assert mocked_pydreo_heater.ecolevel == 70
-        assert test_heater.target_temperature == 70
+    def _celsius_heater(self):
+        """A heater whose HA instance uses Celsius."""
+        mocked_pydreo_heater: PyDreoDeviceMock = self.create_mock_device(
+            name="HSH006S Test Heater",
+            serial_number="HSH006S",
+            features={
+                "poweron": True,
+                "temperature": 70,
+                "device_ranges": {HEAT_RANGE: (1, 3), ECOLEVEL_RANGE: (41, 95)},
+                "htalevel": 3,
+                "ecolevel": 68,
+                "mode": DreoHeaterMode.ECO,
+            },
+            modes=[DreoHeaterMode.COOLAIR, DreoHeaterMode.HOTAIR, DreoHeaterMode.ECO, DreoHeaterMode.OFF],
+            swing_modes=None,
+        )
+        test_heater = climate.DreoHeaterHA(mocked_pydreo_heater)
+        test_heater.hass = MagicMock()
+        test_heater.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
+        return test_heater, mocked_pydreo_heater
 
-        # 25°C = 77°F - exact conversion, no rounding needed
-        test_heater.set_temperature(**{ATTR_TEMPERATURE: 77.0})
-        assert mocked_pydreo_heater.ecolevel == 77
-        assert test_heater.target_temperature == 77
+    def _set_celsius(self, test_heater, celsius):
+        """Set a target the way HA's climate.set_temperature does: convert to the entity's unit first."""
+        test_heater.set_temperature(
+            **{ATTR_TEMPERATURE: TemperatureConverter.convert(celsius, UnitOfTemperature.CELSIUS, UnitOfTemperature.FAHRENHEIT)}
+        )
 
-        # 18°C = 64.4°F - should round to 64, not truncate to 64 (same result here)
-        test_heater.set_temperature(**{ATTR_TEMPERATURE: 64.4})
-        assert mocked_pydreo_heater.ecolevel == 64
-        assert test_heater.target_temperature == 64
+    def _shown_celsius(self, test_heater):
+        """The target as HA shows it: converted to °C and rounded to the entity's precision."""
+        return display_temp(test_heater.hass, test_heater.target_temperature, test_heater.temperature_unit, test_heater.precision)
 
-        # 22°C = 71.6°F - should round to 72, not truncate to 71
-        test_heater.set_temperature(**{ATTR_TEMPERATURE: 71.6})
-        assert mocked_pydreo_heater.ecolevel == 72
-        assert test_heater.target_temperature == 72
+    def test_celsius_target_matches_dreo_app(self):
+        """Every whole °C from 5 to 35 sends the ecolevel the Dreo app sends (issue #951).
+
+        Measured on a DR-HSH006S: 7 °C -> 45, 8 °C -> 47, 9 °C -> 49, 10 °C -> 50, and for all
+        31 whole degrees the app sends ceil(°C * 9/5 + 32).
+        """
+        test_heater, device = self._celsius_heater()
+
+        for celsius, ecolevel in ((7, 45), (8, 47), (9, 49), (10, 50)):
+            self._set_celsius(test_heater, celsius)
+            assert device.ecolevel == ecolevel
+
+        for celsius in range(5, 36):
+            self._set_celsius(test_heater, celsius)
+            assert device.ecolevel == math.ceil(Fraction(celsius) * 9 / 5 + 32)
+
+    def test_celsius_target_shows_back_as_set(self):
+        """A Celsius target shows back as set, not as the °F value converted back (issue #951).
+
+        Before the fix 8 °C (ecolevel 47) showed as 8.5 and 22.5 °C (ecolevel 73) as 23.
+        """
+        test_heater, device = self._celsius_heater()
+
+        for celsius in [*range(5, 36), 22.5, 7.5]:
+            self._set_celsius(test_heater, celsius)
+            assert self._shown_celsius(test_heater) == celsius
+
+        # The heater only takes whole °F: 9.5 °C sends the same ecolevel as 10 °C and shows as 10.
+        self._set_celsius(test_heater, 9.5)
+        assert device.ecolevel == 50
+        assert self._shown_celsius(test_heater) == 10
+
+        # A target set from the app shows as the app's whole degree.
+        for ecolevel, celsius in ((45, 7), (47, 8), (49, 9), (50, 10)):
+            device.ecolevel = ecolevel
+            assert self._shown_celsius(test_heater) == celsius
+
+        # Every ecolevel the device accepts shows as a value that sends it back unchanged.
+        for ecolevel in range(41, 96):
+            device.ecolevel = ecolevel
+            self._set_celsius(test_heater, self._shown_celsius(test_heater))
+            assert device.ecolevel == ecolevel
 
     def _create_full_heater(self, **overrides):
         """Helper to create a heater with all modes and swing modes."""
