@@ -130,6 +130,40 @@ class TestPyDreoAirPurifier(TestBase):
         air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-silent"}})
         assert air_purifier.preset_mode == "auto"
 
+    def test_HAP003S_4(self):  # pylint: disable=invalid-name
+        """Test DR-HAP003S Air Purifier (Macro Max S/AS) with the "SC95F8616B-2/US" MCU (issue #957).
+
+        Fixture from the issue's diagnostics. These units reject plain "auto" ("instruction
+        validate failed", 500003), report their auto state as "auto-regular", and switch to
+        auto when sent "auto-regular".
+        """
+
+        self.get_devices_file_name = "get_devices_HAP003S_4.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        air_purifier = self.pydreo_manager.devices[0]
+        assert air_purifier.model == "DR-HAP003S"
+        assert air_purifier.series_name == "Macro Max S/AS"
+        assert air_purifier.speed_range == (1, 18)
+        assert air_purifier.preset_modes == ["auto", "manual", "sleep", "turbo"]
+        assert air_purifier._auto_mode_uses_auto_silent is False  # pylint: disable=protected-access
+        # The diagnostics report the auto state as "auto-regular"
+        assert air_purifier.preset_mode == "auto"
+
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "turbo"}})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            air_purifier.preset_mode = "auto"
+            mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: "auto-regular"})
+        air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: "auto-regular"}})
+        assert air_purifier.preset_mode == "auto"
+
+        # turbo, sleep and manual are sent unchanged
+        for mode in ("turbo", "sleep", "manual"):
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                air_purifier.preset_mode = mode
+                mock_send_command.assert_called_once_with(air_purifier, {WIND_MODE_KEY: mode})
+            air_purifier.handle_server_update({REPORTED_KEY: {WIND_MODE_KEY: mode}})
+
     def test_HAP005S(self):  # pylint: disable=invalid-name
         """Test DR-HAP005S Air Purifier (Macro AP505S)."""
 

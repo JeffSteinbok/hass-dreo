@@ -1,0 +1,128 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "lightsenon": {
+        "state": false,
+        "timestamp": 1791647096
+      },
+      "wifi_rssi": {
+        "state": -46,
+        "timestamp": 1791647096
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1791647621
+      },
+      "lifetime": {
+        "state": 0,
+        "timestamp": 1791647096
+      },
+      "scheid": {
+        "state": 0,
+        "timestamp": 1791647096
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1791647096
+        },
+        "timestamp": null
+      },
+      "scheon": {
+        "state": false,
+        "timestamp": 1791647096
+      },
+      "mode": {
+        "state": "auto-regular",
+        "timestamp": 1791649261
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1791647096
+      },
+      "network_latency": {
+        "state": 4,
+        "timestamp": 1791647097
+      },
+      "module_hardware_model": {
+        "state": "HeFi",
+        "timestamp": 1791647096
+      },
+      "mcu_firmware_version": {
+        "state": "0.1.5",
+        "timestamp": 1791647096
+      },
+      "module_hardware_mac": "**REDACTED**",
+      "muteon": {
+        "state": false,
+        "timestamp": 1791647096
+      },
+      "wifi_ssid": "**REDACTED**",
+      "mcu_hardware_model": {
+        "state": "SC95F8616B-2/US",
+        "timestamp": 1791647096
+      },
+      "windlevel": {
+        "state": 10,
+        "timestamp": 1791647096
+      },
+      "lightsenval": {
+        "state": 255,
+        "timestamp": 1791647096
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1791647096
+      },
+      "module_firmware_version": {
+        "state": "3.8.3",
+        "timestamp": 1791647096
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1791647096
+      },
+      "aq": {
+        "state": 1,
+        "timestamp": 1791714131
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1791647096
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1791647096
+      },
+      "pm25": {
+        "state": 3,
+        "timestamp": 1791714131
+      },
+      "aqi": {
+        "state": 98,
+        "timestamp": 1791714131
+      },
+      "ledalwayson": {
+        "state": true,
+        "timestamp": 1791647096
+      },
+      "childlockon": {
+        "state": false,
+        "timestamp": 1791647096
+      },
+      "dispmode": {
+        "state": "aqi",
+        "timestamp": 1791647096
+      }
+    },
+    "sn": "HAP003S_4",
+    "productId": "**REDACTED**",
+    "region": "eu-central-1/emq",
+    "deviceInfo": null
+  }
+}
