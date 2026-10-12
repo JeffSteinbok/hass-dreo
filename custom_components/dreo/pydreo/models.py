@@ -194,6 +194,7 @@ SUPPORTED_MODEL_PREFIXES = {"DR-HTF", "DR-HAF", "DR-HAP", "DR-HPF", "DR-HCF", "W
 _MCU_HAF004S_OLD_REV = "SC95F8613B"
 _MCU_HTF007S_OLD_REV = ("CMS89F7518", "CMS89F7518/EUR", "CMS89F7518/USA")
 _MCU_HAP003S_AUTO_SILENT_REV = ("midea", "001")
+_MCU_HAP003S_AUTO_REGULAR_REV = "SC95F8616B-2/US"
 _MCU_HPF015S_NEG_TILT_REVS = ("SC95F8613B/GL",)
 
 
@@ -230,10 +231,12 @@ def _htf007s_mcu_override(device) -> None:
 
 
 def _hap003s_mcu_override(device) -> None:
-    """Enable auto-silent command remapping for DR-HAP003S units with the "midea" or "001" MCU.
+    """Remap the "auto" mode command for DR-HAP003S revisions that reject it.
 
     Newer hardware and firmware revisions (mcu_hardware_model is "midea" or "001") reject the
     plain "auto" mode command string.  These units require "auto-silent" to be sent instead.
+    Units with the "SC95F8616B-2/US" MCU also reject it (error 500003) and require "auto-regular",
+    which they report back as their auto state (issue #957).
     Units with a different MCU (e.g. "meidi") accept "auto" directly and are left untouched.
     """
     if device.raw_state is None:
@@ -243,6 +246,8 @@ def _hap003s_mcu_override(device) -> None:
     mcu_model = mcu_obj.get("state", "") if isinstance(mcu_obj, dict) else ""
     if mcu_model in _MCU_HAP003S_AUTO_SILENT_REV:
         device._auto_mode_uses_auto_silent = True  # pylint: disable=protected-access
+    elif mcu_model == _MCU_HAP003S_AUTO_REGULAR_REV:
+        device._auto_mode_command_value = "auto-regular"  # pylint: disable=protected-access
 
 
 def _hap009s_override(device) -> None:
@@ -490,6 +495,7 @@ SUPPORTED_DEVICES = {
         # Newer hardware and firmware revisions ("midea" or "001" MCU, seriesName "Macro Max S/AS") reject the plain
         # "auto" mode command and requires "auto-silent" instead.  The override sets a flag on
         # the device instance so PyDreoAirPurifier._send_command can remap the command value.
+        # Units with the "SC95F8616B-2/US" MCU need "auto-regular" instead (issue #957).
         # The original revision ("meidi" MCU, seriesName "Macro Max S") is left untouched.
         override_fn=_hap003s_mcu_override,
     ),
