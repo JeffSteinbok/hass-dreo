@@ -1,0 +1,692 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "rgbLimits": [
+      {
+        "rgbEffectType": 0,
+        "recordLimit": 10
+      },
+      {
+        "rgbEffectType": 3,
+        "recordLimit": 10
+      },
+      {
+        "rgbEffectType": 2,
+        "recordLimit": 10
+      },
+      {
+        "rgbEffectType": 4,
+        "recordLimit": 20
+      }
+    ],
+    "basicEffects": [
+      {
+        "id": "REDACTED_ID_1",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "currentSelected": "whole",
+            "viewType": "SEGMENT_COLOR_LIST",
+            "wholeColorList": [
+              "#FF890E"
+            ],
+            "title": "颜色列表",
+            "effectParamKey": "colors",
+            "colorList": [
+              "#0066FFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#FFFFFFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#0066FFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF"
+            ]
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_2",
+        "selected": false,
+        "name": "Constant",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/194d1c6656393049049bc9fb2b08f94faf.pag",
+        "description": "Constant light effect with customizable colors"
+      },
+      {
+        "id": "REDACTED_ID_3",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "maxListSize": 8,
+            "viewType": "COLOR_LIST",
+            "title": "颜色列表",
+            "effectParamKey": "colors",
+            "colorList": [
+              "#FF0000",
+              "#FF8000"
+            ]
+          },
+          {
+            "valueType": "INT",
+            "viewType": "SPEED",
+            "range": {
+              "last": 100,
+              "step": 1,
+              "first": 1
+            },
+            "title": "base_speed",
+            "value": 70,
+            "effectParamKey": "speedValue"
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_4",
+        "selected": false,
+        "name": "Breath",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/19af368fc9d59144fd89e235a11ee7c6fa.pag",
+        "description": "The light slowly dims and brightens in a continuous rhythm, creating a relaxing, soothing ambiance."
+      },
+      {
+        "id": "REDACTED_ID_5",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "maxListSize": 8,
+            "viewType": "COLOR_LIST",
+            "title": "颜色列表",
+            "effectParamKey": "colors",
+            "colorList": [
+              "#FF0000",
+              "#00FF00",
+              "#0000FF"
+            ]
+          },
+          {
+            "valueType": "INT",
+            "viewType": "SPEED",
+            "range": {
+              "last": 100,
+              "step": 1,
+              "first": 1
+            },
+            "title": "base_speed",
+            "value": 70,
+            "effectParamKey": "speedValue"
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_6",
+        "selected": false,
+        "name": "Cycle",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/194d25c0d84b2e41a596999c0d44c286e0.pag",
+        "description": "Seamlessly switches through colors, producing a continuous looping effect."
+      },
+      {
+        "id": "REDACTED_ID_7",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "maxListSize": 8,
+            "viewType": "COLOR_LIST",
+            "title": "颜色列表",
+            "effectParamKey": "colors",
+            "colorList": [
+              "#FF0000",
+              "#FF8000",
+              "#FFFF00",
+              "#00FF00",
+              "#00FFFF",
+              "#0000FF",
+              "#FF00FF"
+            ]
+          },
+          {
+            "valueType": "INT",
+            "viewType": "SPEED",
+            "range": {
+              "last": 100,
+              "step": 1,
+              "first": 1
+            },
+            "title": "base_speed",
+            "value": 70,
+            "effectParamKey": "speedValue"
+          },
+          {
+            "valueType": "BOOLEAN",
+            "viewType": "DIRECTION",
+            "title": "base_direction",
+            "value": false,
+            "effectParamKey": "reverse",
+            "direction": true
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_8",
+        "selected": false,
+        "name": "Marquee",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/199bee833bebb64dec9cdd7379f9d5018a.pag",
+        "description": "Sequential lights create a running motion along the strip."
+      },
+      {
+        "id": "REDACTED_ID_9",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "maxListSize": 8,
+            "viewType": "COLOR_LIST",
+            "title": "颜色列表",
+            "effectParamKey": "colors",
+            "colorList": [
+              "#FF0000",
+              "#0000FF",
+              "#00FF00"
+            ]
+          },
+          {
+            "valueType": "INT",
+            "viewType": "SPEED",
+            "range": {
+              "last": 100,
+              "step": 1,
+              "first": 1
+            },
+            "title": "base_speed",
+            "value": 70,
+            "effectParamKey": "speedValue"
+          },
+          {
+            "valueType": "BOOLEAN",
+            "viewType": "DIRECTION",
+            "title": "base_direction",
+            "value": false,
+            "effectParamKey": "reverse",
+            "direction": false
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_10",
+        "selected": false,
+        "name": "Flow",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/1926a832b4dd42418082b1294a804a1408.pag",
+        "description": "Smooth, flowing light that creates gradients and resembles motion like running water."
+      },
+      {
+        "id": "REDACTED_ID_11",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "maxListSize": 8,
+            "viewType": "COLOR_LIST",
+            "title": "颜色列表",
+            "effectParamKey": "colors",
+            "colorList": [
+              "#FF0000",
+              "#00FF00",
+              "#0000FF"
+            ]
+          },
+          {
+            "valueType": "INT",
+            "viewType": "SPEED",
+            "range": {
+              "last": 100,
+              "step": 1,
+              "first": 1
+            },
+            "title": "base_speed",
+            "value": 70,
+            "effectParamKey": "speedValue"
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_12",
+        "selected": false,
+        "name": "Flash",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/1966f802d29d864f70a51aee58b7eaed79.pag",
+        "description": "Rapid on/off and color changes that produce a blinking, rhythmic, or attention-grabbing effect."
+      },
+      {
+        "id": "REDACTED_ID_13",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "maxListSize": 4,
+            "viewType": "COLOR_LIST",
+            "title": "前景色",
+            "effectParamKey": "noise_colors",
+            "colorList": [
+              "#F61616",
+              "#FFB803",
+              "#48D026",
+              "#03FFE1"
+            ]
+          },
+          {
+            "valueType": "INT",
+            "viewType": "SPEED",
+            "range": {
+              "last": 100,
+              "step": 1,
+              "first": 1
+            },
+            "title": "base_speed",
+            "value": 70,
+            "effectParamKey": "speedValue"
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_14",
+        "selected": false,
+        "name": "Starlight",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/19cba3d8f536e448379d560e7f8275a45d.pag",
+        "description": "Multiple small points of light twinkle randomly like stars in the night sky – delicate and dreamy."
+      },
+      {
+        "id": "REDACTED_ID_15",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [
+          {
+            "maxListSize": 8,
+            "viewType": "COLOR_LIST",
+            "title": "颜色列表",
+            "effectParamKey": "colors",
+            "colorList": [
+              "#FF0000",
+              "#00FF00",
+              "#0000FF"
+            ]
+          },
+          {
+            "valueType": "INT",
+            "viewType": "SPEED",
+            "range": {
+              "last": 100,
+              "step": 1,
+              "first": 1
+            },
+            "title": "base_speed",
+            "value": 70,
+            "effectParamKey": "speedValue"
+          }
+        ],
+        "effectType": 0,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_16",
+        "selected": false,
+        "name": "Chase",
+        "icon": "https://resources.dreo-tech.com/app/preSigned202512/19cf6993d9f15d495bbe3e94e576aba530.pag",
+        "description": "Light points illuminate or move sequentially along a preset path, creating a chasing/tracking visual effect."
+      }
+    ],
+    "remoteEffects": [
+      {
+        "id": "REDACTED_ID_17",
+        "devicesn": "REDACTED_SERIAL_1",
+        "effectType": 2,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_8",
+        "selected": false,
+        "name": "Rainbow Marquee",
+        "referenceName": "Marquee",
+        "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+        "subRemoteEffect": {
+          "effectId": "REDACTED_ID_8",
+          "effectName": "Rainbow Marquee",
+          "effectType": 2,
+          "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+          "layouts": [
+            {
+              "maxListSize": 8,
+              "viewType": "COLOR_LIST",
+              "title": "颜色列表",
+              "effectParamKey": "colors",
+              "colorList": [
+                "#FF0000",
+                "#FF6000",
+                "#FFBF00",
+                "#00FF00",
+                "#00FFFF",
+                "#0000FF",
+                "#BF00FF"
+              ]
+            },
+            {
+              "valueType": "INT",
+              "viewType": "SPEED",
+              "range": {
+                "last": 100,
+                "step": 1,
+                "first": 1
+              },
+              "title": "base_speed",
+              "value": 30,
+              "effectParamKey": "speedValue"
+            },
+            {
+              "valueType": "BOOLEAN",
+              "viewType": "DIRECTION",
+              "title": "base_direction",
+              "value": false,
+              "effectParamKey": "reverse",
+              "direction": true
+            }
+          ],
+          "duration": null
+        },
+        "reserved": true,
+        "effectParamValues": {
+          "speedValue": 30,
+          "max_duration_ms": 30000,
+          "reverse": false,
+          "colors": [
+            "#FF0000",
+            "#FF6000",
+            "#FFBF00",
+            "#00FF00",
+            "#00FFFF",
+            "#0000FF",
+            "#BF00FF"
+          ]
+        }
+      },
+      {
+        "id": "REDACTED_ID_18",
+        "devicesn": "REDACTED_SERIAL_1",
+        "effectType": 2,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_4",
+        "selected": false,
+        "name": "Rainbow Breath",
+        "referenceName": "Breath",
+        "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+        "subRemoteEffect": {
+          "effectId": "REDACTED_ID_4",
+          "effectName": "Rainbow Breath",
+          "effectType": 2,
+          "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+          "layouts": [
+            {
+              "maxListSize": 8,
+              "viewType": "COLOR_LIST",
+              "title": "颜色列表",
+              "effectParamKey": "colors",
+              "colorList": [
+                "#FF0000",
+                "#FF6000",
+                "#FFBF00",
+                "#00FF00",
+                "#00FFFF",
+                "#0000FF",
+                "#BF00FF"
+              ]
+            },
+            {
+              "valueType": "INT",
+              "viewType": "SPEED",
+              "range": {
+                "last": 100,
+                "step": 1,
+                "first": 1
+              },
+              "title": "base_speed",
+              "value": 30,
+              "effectParamKey": "speedValue"
+            }
+          ],
+          "duration": null
+        },
+        "reserved": true,
+        "effectParamValues": {
+          "speedValue": 30,
+          "max_duration_ms": 30000,
+          "colors": [
+            "#FF0000",
+            "#FF6000",
+            "#FFBF00",
+            "#00FF00",
+            "#00FFFF",
+            "#0000FF",
+            "#BF00FF"
+          ]
+        }
+      },
+      {
+        "id": "REDACTED_ID_19",
+        "devicesn": "REDACTED_SERIAL_1",
+        "effectType": 2,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_6",
+        "selected": false,
+        "name": "Rainbow Cycle",
+        "referenceName": "Cycle",
+        "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+        "subRemoteEffect": {
+          "effectId": "REDACTED_ID_6",
+          "effectName": "Rainbow Cycle",
+          "effectType": 2,
+          "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+          "layouts": [
+            {
+              "maxListSize": 8,
+              "viewType": "COLOR_LIST",
+              "title": "颜色列表",
+              "effectParamKey": "colors",
+              "colorList": [
+                "#FF0000",
+                "#FF6000",
+                "#FFBF00",
+                "#00FF00",
+                "#00FFFF",
+                "#0000FF",
+                "#BF00FF"
+              ]
+            },
+            {
+              "valueType": "INT",
+              "viewType": "SPEED",
+              "range": {
+                "last": 100,
+                "step": 1,
+                "first": 1
+              },
+              "title": "base_speed",
+              "value": 30,
+              "effectParamKey": "speedValue"
+            }
+          ],
+          "duration": null
+        },
+        "reserved": true,
+        "effectParamValues": {
+          "speedValue": 30,
+          "max_duration_ms": 30000,
+          "colors": [
+            "#FF0000",
+            "#FF6000",
+            "#FFBF00",
+            "#00FF00",
+            "#00FFFF",
+            "#0000FF",
+            "#BF00FF"
+          ]
+        }
+      },
+      {
+        "id": "REDACTED_ID_20",
+        "devicesn": "REDACTED_SERIAL_1",
+        "effectType": 2,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_2",
+        "selected": false,
+        "name": "Yellow",
+        "referenceName": "Constant",
+        "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+        "subRemoteEffect": {
+          "effectId": "REDACTED_ID_2",
+          "effectName": "Yellow",
+          "effectType": 2,
+          "icon": "https://pic3.zhimg.com/v2-9007142c053eb1cebdc8bda4c8bea1dc_1440w.jpg",
+          "layouts": [
+            {
+              "currentSelected": "whole",
+              "viewType": "SEGMENT_COLOR_LIST",
+              "wholeColorList": [
+                "#FFBF00"
+              ],
+              "title": "颜色列表",
+              "effectParamKey": "colors",
+              "colorList": [
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF",
+                "#FFFFFF"
+              ]
+            }
+          ],
+          "duration": null
+        },
+        "reserved": false,
+        "effectParamValues": {
+          "led_count": 17,
+          "currentSelected": "whole",
+          "wholeColorList": [
+            "#FFBF00"
+          ],
+          "colors": [
+            "#FFBF00"
+          ],
+          "colorList": [
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF",
+            "#FFFFFF"
+          ]
+        }
+      }
+    ],
+    "sceneEffects": [
+      {
+        "id": "REDACTED_ID_21",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [],
+        "effectType": 3,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_21",
+        "selected": false,
+        "name": "Wave",
+        "icon": "https://resources.dreo-tech.com/app/presigned/202603/31/Wave.png",
+        "sortOrder": 13,
+        "description": "Wave scene light effect with flowing wave gradient"
+      },
+      {
+        "id": "REDACTED_ID_22",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [],
+        "effectType": 3,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_22",
+        "selected": false,
+        "name": "Cherry Blossom",
+        "icon": "https://resources.dreo-tech.com/app/presigned/202603/31/Cherry_Blossoms.png",
+        "sortOrder": 14,
+        "description": "Cherry Blossom scene light effect with romantic falling petals"
+      },
+      {
+        "id": "REDACTED_ID_23",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [],
+        "effectType": 3,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_23",
+        "selected": false,
+        "name": "Christmas",
+        "icon": "https://resources.dreo-tech.com/app/presigned/202603/31/Christmas.png",
+        "sortOrder": 15,
+        "description": "Christmas scene light effect with festive Christmas colors"
+      },
+      {
+        "id": "REDACTED_ID_24",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [],
+        "effectType": 3,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_24",
+        "selected": false,
+        "name": "Halloween",
+        "icon": "https://resources.dreo-tech.com/app/presigned/202603/31/Halloween.png",
+        "sortOrder": 16,
+        "description": "Halloween scene light effect with mysterious and spooky atmosphere"
+      },
+      {
+        "id": "REDACTED_ID_25",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [],
+        "effectType": 3,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_25",
+        "selected": false,
+        "name": "Birthday Party",
+        "icon": "https://resources.dreo-tech.com/app/presigned/202603/31/Party.png",
+        "sortOrder": 17,
+        "description": "Birthday Party scene light effect with colorful and cheerful celebration"
+      },
+      {
+        "id": "REDACTED_ID_26",
+        "devicesn": "REDACTED_SERIAL_1",
+        "layouts": [],
+        "effectType": 3,
+        "extendedType": 0,
+        "referencedId": "REDACTED_ID_26",
+        "selected": false,
+        "name": "Firefly",
+        "icon": "https://resources.dreo-tech.com/app/presigned/202603/31/Firefly.png",
+        "sortOrder": 18,
+        "description": "Firefly scene light effect with softly flickering fireflies at night"
+      }
+    ],
+    "intelligenceEffects": []
+  }
+}

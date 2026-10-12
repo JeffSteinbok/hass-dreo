@@ -44,8 +44,13 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
             _LOGGER.debug("get_entries: Adding Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoLightHA(pydreo_device))
 
+        # Newer HCF002S / CF712S revisions use Dreo's RGBIC effect API rather
+        # than direct atmcolor writes or the legacy preset/effect-id commands.
+        if pydreo_device.is_feature_supported("rgbic_effect_api"):
+            _LOGGER.debug("get_entries: Adding RGBIC API Light for %s", pydreo_device.name)
+            light_ha_collection.append(DreoRGBICLightHA(pydreo_device))
         # Check if device has an RGBIC effect-based atmosphere light (e.g., HCF007S with rgbeffectid)
-        if pydreo_device.is_feature_supported("rgb_effect_id"):
+        elif pydreo_device.is_feature_supported("rgb_effect_id"):
             _LOGGER.debug("get_entries: Adding RGBIC Effect Light for %s", pydreo_device.name)
             light_ha_collection.append(DreoRGBICLightHA(pydreo_device))
         # Check if device has an RGBIC preset-based atmosphere light (rgbpresetsel without rgbeffectid)
@@ -375,7 +380,10 @@ class DreoRGBICLightHA(DreoLightHA):
 
         # Some RGBIC models support direct RGB color commands in addition to effects.
         # Keep other RGBIC devices in BRIGHTNESS mode (effects + brightness only).
-        self._supports_direct_rgb = pyDreoDevice.is_feature_supported("atm_color_rgb_write")
+        self._uses_rgbic_api = pyDreoDevice.is_feature_supported("rgbic_effect_api")
+        self._supports_direct_rgb = (
+            pyDreoDevice.is_feature_supported("atm_color_rgb_write") or self._uses_rgbic_api
+        )
         self._color_mode = ColorMode.RGB if self._supports_direct_rgb else ColorMode.BRIGHTNESS
 
         # Determine which command mechanism to use
@@ -393,6 +401,8 @@ class DreoRGBICLightHA(DreoLightHA):
         """Return the RGB color when direct RGB control is supported."""
         if not self._supports_direct_rgb:
             return None
+        if self._uses_rgbic_api:
+            return getattr(self.pydreo_device, "rgbic_color", None)
         return getattr(self.pydreo_device, "atm_color_rgb", None)
 
     @property
@@ -402,6 +412,8 @@ class DreoRGBICLightHA(DreoLightHA):
         For effect-ID devices, uses rgb_effect_range from device definition.
         For preset devices, uses rgb_preset_num from device state.
         """
+        if self._uses_rgbic_api:
+            return getattr(self.pydreo_device, "rgbic_effect_names", [])
         if self._uses_effect_id:
             effect_range = getattr(self.pydreo_device, "rgb_effect_range", None)
             if effect_range is not None:
@@ -433,6 +445,8 @@ class DreoRGBICLightHA(DreoLightHA):
     @property
     def effect(self) -> str | None:
         """Return the current active effect."""
+        if self._uses_rgbic_api:
+            return getattr(self.pydreo_device, "rgbic_effect_name", None)
         if self._uses_effect_id:
             effect_id = getattr(self.pydreo_device, "rgb_effect_id", None)
             if effect_id is None:
@@ -461,14 +475,20 @@ class DreoRGBICLightHA(DreoLightHA):
         if self._supports_direct_rgb and ATTR_RGB_COLOR in kwargs:
             rgb = kwargs[ATTR_RGB_COLOR]
             _LOGGER.debug("turn_on: Setting RGBIC RGB color to %s", rgb)
-            self.pydreo_device.atm_color_rgb = rgb
+            if self._uses_rgbic_api:
+                self.pydreo_device.set_rgbic_effect("Constant", color_rgb=rgb)
+            else:
+                self.pydreo_device.atm_color_rgb = rgb
 
-        # Handle effect selection
-        if ATTR_EFFECT in kwargs:
+        # A color selection on RGBIC API devices already maps to Constant; do
+        # not schedule a second effect from the same HA service call.
+        if ATTR_EFFECT in kwargs and not (self._uses_rgbic_api and ATTR_RGB_COLOR in kwargs):
             effect = kwargs[ATTR_EFFECT]
             _LOGGER.debug("turn_on: Setting RGBIC effect to %s", effect)
 
-            if self._uses_effect_id and effect.startswith("Effect "):
+            if self._uses_rgbic_api and effect in self.effect_list:
+                self.pydreo_device.set_rgbic_effect(effect)
+            elif self._uses_effect_id and effect.startswith("Effect "):
                 # Effect ID system: construct rgbeffectid from base + index
                 try:
                     selected_effect = int(effect.split(" ")[1])
@@ -495,6 +515,12 @@ class DreoRGBICLightHA(DreoLightHA):
                     self.pydreo_device.rgb_preset_sel = preset_idx
                 except (ValueError, IndexError):
                     _LOGGER.warning("turn_on: Invalid effect name %s", effect)
+
+    def turn_off(self, **kwargs: Any) -> None:
+        """Turn off RGBIC and cancel an effect still waiting for its wake delay."""
+        if self._uses_rgbic_api:
+            self.pydreo_device.cancel_pending_rgbic_effect()
+        super().turn_off(**kwargs)
 
 
 class DreoHumidifierLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-method

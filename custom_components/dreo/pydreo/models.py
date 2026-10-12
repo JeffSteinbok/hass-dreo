@@ -87,6 +87,9 @@ class DreoDeviceDetails:
     """True if the "lifetime" state key is the remaining filter life in percent. Opt-in per
     model: other models report it in other units (e.g. hours on the DR-HAP002S/HAP003S)."""
 
+    supports_rgbic_effect_api: bool
+    """Whether this model supports the RGBIC effect REST API."""
+
     def __init__(
         self,
         device_type: DreoDeviceType = None,
@@ -100,6 +103,7 @@ class DreoDeviceDetails:
         override_fn: Callable | None = None,
         ambient_light_levels: tuple | None = None,
         filter_life_percent: bool = False,
+        supports_rgbic_effect_api: bool = False,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -117,6 +121,7 @@ class DreoDeviceDetails:
         self.override_fn = override_fn
         self.ambient_light_levels = ambient_light_levels
         self.filter_life_percent = filter_life_percent
+        self.supports_rgbic_effect_api = supports_rgbic_effect_api
 
 
 @dataclass
@@ -465,7 +470,11 @@ SUPPORTED_DEVICES = {
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
         device_ranges={SPEED_RANGE: (1, 12)},
     ),
-    "DR-HCF002S": DreoDeviceDetails(device_type=DreoDeviceType.CEILING_FAN, device_ranges={SPEED_RANGE: (1, 12)}),
+    "DR-HCF002S": DreoDeviceDetails(
+        device_type=DreoDeviceType.CEILING_FAN,
+        device_ranges={SPEED_RANGE: (1, 12)},
+        supports_rgbic_effect_api=True,
+    ),
     "DR-HCF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.CEILING_FAN,
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],

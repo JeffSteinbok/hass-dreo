@@ -1,0 +1,44 @@
+[
+  {
+    "subEffects": [
+      {
+        "effectId": "REDACTED_ID_3",
+        "layouts": [
+          {
+            "colorList": [
+              "#0066FFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#FFFFFFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#0066FFFF",
+              "#0066FFFF",
+              "#FFFFFFFF",
+              "#0066FFFF",
+              "#FFFFFFFF"
+            ],
+            "currentSelected": "whole",
+            "effectParamKey": "colors",
+            "title": "颜色列表",
+            "viewType": "SEGMENT_COLOR_LIST",
+            "wholeColorList": [
+              "#b941ff"
+            ]
+          }
+        ]
+      }
+    ],
+    "name": "Constant",
+    "applyToDevice": true,
+    "id": "REDACTED_ID_4",
+    "devicesn": "REDACTED_SERIAL_1",
+    "effectType": 0
+  }
+]
