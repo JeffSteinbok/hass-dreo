@@ -193,7 +193,7 @@ class TestDreoCeilingFan(IntegrationTestBase):
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgb_light.turn_on()
-                mock_send_command.assert_called_once_with(pydreo_fan, {ATMON_KEY: True})
+                mock_send_command.assert_any_call(pydreo_fan, {ATMON_KEY: True})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 rgb_light.turn_on(rgb_color=(255, 0, 0))  # Red
@@ -286,6 +286,21 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 "Starlight",
                 "Chase",
             ]
+
+            # The fixture reports the RGBIC atmosphere light as on.
+            assert rgbic_light.is_on is False
+
+            # Applying an RGBIC effect first sends atmon, then schedules the
+            # REST API effect request after the atmosphere light wake-up delay.
+            scheduled = []
+            self.pydreo_manager.set_schedule_call_later(lambda delay, callback: (scheduled.append({"delay": delay, "callback": callback, "cancelled": False}) or (lambda: scheduled[-1].update(cancelled=True))))
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                rgbic_light.turn_on(effect="Constant")
+                mock_send_command.assert_any_call(pydreo_fan, {ATMON_KEY: True})
+
+            rgbic_scheduled = [item for item in scheduled if item["delay"] == 0.6]
+            assert len(rgbic_scheduled) == 1
+            assert rgbic_scheduled[0]["cancelled"] is False
 
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S fan and test sending commands."""

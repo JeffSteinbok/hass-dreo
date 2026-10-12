@@ -563,7 +563,7 @@ class PyDreoCeilingFan(PyDreoFanBase):
         """Latch support for the newer HCF002S / CF712S RGBIC protocol."""
         if self._uses_rgbic_effect_api:
             return
-        if not self._device_definition.device_ranges.get("supports_rgbic_effect_api", False):
+        if not self._device_definition.supports_rgbic_effect_api:
             return
         if self._atm_light_on is None or self._rgb_effect_id is None or self._atm_color is not None:
             return

@@ -1,0 +1,39 @@
+[
+  {
+    "subEffects": [
+      {
+        "effectId": "REDACTED_ID_1",
+        "layouts": [
+          {
+            "colorList": [
+              "#FF0000",
+              "#00FF00",
+              "#0000FF"
+            ],
+            "effectParamKey": "colors",
+            "maxListSize": 8,
+            "title": "颜色列表",
+            "viewType": "COLOR_LIST"
+          },
+          {
+            "effectParamKey": "speedValue",
+            "range": {
+              "first": 1,
+              "last": 100,
+              "step": 1
+            },
+            "title": "base_speed",
+            "value": 52,
+            "valueType": "INT",
+            "viewType": "SPEED"
+          }
+        ]
+      }
+    ],
+    "name": "Poursuite",
+    "applyToDevice": true,
+    "id": "REDACTED_ID_2",
+    "devicesn": "REDACTED_SERIAL_1",
+    "effectType": 0
+  }
+]

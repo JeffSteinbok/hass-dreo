@@ -77,6 +77,9 @@ class DreoDeviceDetails:
     """Optional function called once after initial state load to apply hardware-specific overrides."""
 
     ambient_light_levels: tuple | None
+
+    supports_rgbic_effect_api: bool
+    """Whether this model supports the RGBIC effect REST API."""
     """Valid rgblevel values for the ambient light ring. None = not set (use default).
     Examples: (0, 2) = off/full only, (0, 1, 2) = off/low/full."""
 
@@ -92,6 +95,7 @@ class DreoDeviceDetails:
         cooking_range: dict = None,
         override_fn: Callable | None = None,
         ambient_light_levels: tuple | None = None,
+        supports_rgbic_effect_api: bool = False,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -108,6 +112,7 @@ class DreoDeviceDetails:
         self.cooking_range = cooking_range
         self.override_fn = override_fn
         self.ambient_light_levels = ambient_light_levels
+        self.supports_rgbic_effect_api = supports_rgbic_effect_api
 
 
 @dataclass
@@ -434,7 +439,8 @@ SUPPORTED_DEVICES = {
     ),
     "DR-HCF002S": DreoDeviceDetails(
         device_type=DreoDeviceType.CEILING_FAN,
-        device_ranges={SPEED_RANGE: (1, 12), "supports_rgbic_effect_api": True},
+        device_ranges={SPEED_RANGE: (1, 12)},
+        supports_rgbic_effect_api=True,
     ),
     "DR-HCF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.CEILING_FAN,

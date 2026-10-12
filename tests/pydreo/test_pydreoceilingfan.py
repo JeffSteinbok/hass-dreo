@@ -9,6 +9,7 @@ import pytest
 from custom_components.dreo.pydreo.commandoutbox import OutboxTiming
 from custom_components.dreo.pydreo.models import SUPPORTED_DEVICES
 from .imports import *  # pylint: disable=W0401,W0614
+from .call_json import get_response_from_file
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
 logger = logging.getLogger(__name__)
@@ -401,37 +402,31 @@ class TestPyDreoCeilingFan(TestBase):
         fan.dispose()
         assert self.pending_scheduled(scheduled) == []
 
-    def test_rgbic_effect_api_uses_lowercase_devicesn_and_preserves_segments(self):
-        """RGBIC REST calls require devicesn and Constant must preserve segmented colors."""
+    def test_rgbic_effect_api_matches_captured_constant_app_request(self):
+        """RGBIC Constant payload must match a captured Dreo app request."""
         self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
         self.pydreo_manager.load_devices()
         fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
-        original_segments = ["#FF0000", "#00FF00"]
-        catalog = {
-            "code": 0,
-            "data": {
-                "basicEffects": [{
-                    "id": "2103573880655314944",
-                    "name": "Constant",
-                    "effectType": 0,
-                    "referencedId": "1710000000000004001",
-                    "layouts": [
-                        {"currentSelected": "segment", "colorList": original_segments.copy()},
-                        {
-                            "currentSelected": "segment",
-                            "colorList": original_segments.copy(),
-                            "wholeColorList": ["#FFFF00"],
-                        },
-                    ],
-                }]
-            },
-        }
+
+        catalog = get_response_from_file("get_rgb_effect_catalog_HCF002S_CFRGB.json")
+        captured = get_response_from_file(
+            "post_rgb_effect_edit_batch_HCF002S_constant.json"
+        )
 
         with patch("custom_components.dreo.pydreo.Helpers.call_api") as mock_call_api:
-            mock_call_api.side_effect = [(catalog, 200), ({"code": 0, "data": {}}, 200)]
-            assert self.pydreo_manager.set_rgbic_effect(fan, "Constant", "#8000ff") is True
+            mock_call_api.side_effect = [
+                (catalog, 200),
+                ({"code": 0, "data": {}}, 200),
+            ]
+            assert (
+                self.pydreo_manager.set_rgbic_effect(
+                    fan, "Constant", "#b941ff"
+                )
+                is True
+            )
 
         assert mock_call_api.call_count == 2
+
         get_args = mock_call_api.call_args_list[0].args
         assert get_args[1] == "/api/device/rgb-effect/all/list"
         assert get_args[2] == "get"
@@ -441,15 +436,30 @@ class TestPyDreoCeilingFan(TestBase):
         post_args = mock_call_api.call_args_list[1].args
         assert post_args[1] == "/api/device/rgb-effect/edit/batch"
         assert post_args[2] == "post"
+
         payload = post_args[3]
         assert isinstance(payload, list) and len(payload) == 1
-        assert payload[0]["devicesn"] == fan.serial_number
-        assert "deviceSn" not in payload[0]
-        layouts = payload[0]["subEffects"][0]["layouts"]
-        assert layouts[0]["colorList"] == original_segments
-        assert layouts[1]["colorList"] == original_segments
-        assert layouts[1]["currentSelected"] == "whole"
-        assert layouts[1]["wholeColorList"] == ["#8000FF"]
+
+        # The capture and catalog were independently anonymized. Normalize only
+        # device-specific identifiers before comparing the request structure.
+        captured[0]["devicesn"] = payload[0]["devicesn"]
+        captured[0]["id"] = payload[0]["id"]
+        captured[0]["subEffects"][0]["effectId"] = payload[0]["subEffects"][0][
+            "effectId"
+        ]
+
+        # The Android app preserves lowercase hex while hass-dreo normalizes it
+        # to uppercase. Both represent the same RGB value.
+        captured_color_layout = next(
+            layout
+            for layout in captured[0]["subEffects"][0]["layouts"]
+            if layout.get("effectParamKey") == "colors"
+        )
+        captured_color_layout["wholeColorList"] = [
+            color.upper() for color in captured_color_layout["wholeColorList"]
+        ]
+
+        assert payload == captured
 
     def test_rgbic_api_reauthenticates_and_retries_after_401(self):
         """RGBIC endpoints refresh authentication and retry after HTTP 401."""
