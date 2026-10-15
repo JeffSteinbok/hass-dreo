@@ -659,6 +659,31 @@ class TestPyDreoHeater(TestBase):
             heater.devon = True
             mock_send_command.assert_not_called()
 
+    def test_HSH009S_display_light_ledkepton(self):  # pylint: disable=invalid-name
+        """Test display_light uses ledkepton on models without has_display_light (e.g. DR-HSH017S)."""
+        self.get_devices_file_name = "get_devices_HSH009S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        heater = self.pydreo_manager.devices[0]
+
+        # The state file reports ledkepton: True and no lighton.
+        assert heater.display_light is True
+        assert heater.display_auto_off is None
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.display_light = False
+            mock_send_command.assert_called_once_with(heater, {LEDKEPTON_KEY: False})
+        heater.handle_server_update({REPORTED_KEY: {LEDKEPTON_KEY: False}})
+        assert heater.display_light is False
+
+        # Duplicate value -- no command
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.display_light = False
+            mock_send_command.assert_not_called()
+
+        # A change made in the Dreo app arrives as a websocket update.
+        heater.handle_server_update({REPORTED_KEY: {LEDKEPTON_KEY: True}})
+        assert heater.display_light is True
+
     def test_HSH009S_display_auto_off_setter(self):  # pylint: disable=invalid-name
         """Test display_auto_off setter sends the inverted lighton command."""
         self.get_devices_file_name = "get_devices_HSH009S.json"

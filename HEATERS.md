@@ -19,6 +19,10 @@ The Tower Fan & Heater 706S (DR-HSH016S) is a heater and a 12-speed tower fan in
 - **Swing mode** selects a symmetric oscillation arc (`30°`–`120°`) or `off`. Asymmetric arcs set in the Dreo app are shown as the nearest arc, and can be set exactly with the *Horizontal Oscillation Angle Left/Right* numbers; *Horizontal Angle* points the unit while it is not oscillating.
 - A *Display Mode* select (off / on / auto-brightness) and a *Window Detection* switch are created alongside the usual child lock and panel sound switches.
 
+### Display
+
+Heaters whose Dreo app has a plain *Display* on/off toggle (such as the DR-HSH017S, which reports it as `ledkepton`) get a *Display Light* switch. Models where the app instead offers *Display Auto Off* get that switch.
+
 ### Remote Control Timeout
 
 **Important:** To satisfy UL safety listings, the remote control is disabled if it has not been used for 24 hours. If you find the heater is not responding to commands, you will need to give a quick tap on the WiFi button on the physical heater to resume the ability to control the device remotely via either the Dreo app or this Home Assistant integration.
