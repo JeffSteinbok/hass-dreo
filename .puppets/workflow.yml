@@ -1,0 +1,7 @@
+spec:
+  profiles:
+    # Implement approved issues with Claude Code (subscription via CLAUDE_CODE_OAUTH_TOKEN)
+    # instead of the Copilot coding agent. Curation and acceptance review remain Copilot.
+    - name: basic
+      implementation:
+        provider: claude
