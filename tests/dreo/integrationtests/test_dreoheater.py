@@ -57,6 +57,17 @@ class TestDreoHeater(IntegrationTestBase):
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
 
+            switches = switch.get_entries([pydreo_heater])
+            # Display Light reads/writes ledkepton: the fixture has no lighton (#964).
+            self.verify_expected_entities(switches, ["Child Lock", "Display Light", "PTC", "Panel Sound", "Window Detection"])
+            display_switch = self.get_entity_by_key(switches, "Display Light")
+            assert display_switch.is_on is True
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                display_switch.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_heater, {LEDKEPTON_KEY: False})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {LEDKEPTON_KEY: False}})
+            assert display_switch.is_on is False
+
             # Test HVAC mode changes
             # Device is already ON and in HEAT mode. Setting HEAT again should
             # still send the poweron command (fixes stale state after power cycle)

@@ -17,6 +17,7 @@ from .constant import (
     COOLDOWN_KEY,
     PTCON_KEY,
     LIGHTON_KEY,
+    LEDKEPTON_KEY,
     AIRFLOWMODE_KEY,
     WINOPENON_KEY,
     RGBON_KEY,
@@ -82,6 +83,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._cooldown = None
         self._ptc_on = None
         self._light_on = None
+        self._led_kept_on = None
         self._ctlstatus = None
         self._timer_off = None
         self._ecolevel = None
@@ -377,9 +379,11 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def display_light(self) -> bool | None:
         """Returns `True` if the display is on, on models that expose it."""
-        if not self._heaterDeviceDefinition.has_display_light:
-            return None
-        return self._light_on
+        if self._heaterDeviceDefinition.has_display_light:
+            return self._light_on
+        # Models such as DR-HSH017S report a plain display on/off as "ledkepton" (the app's
+        # "Display" preference; checked on a real unit) and have no lighton.
+        return self._led_kept_on
 
     @display_light.setter
     def display_light(self, value: bool) -> None:
@@ -391,7 +395,8 @@ class PyDreoHeater(PyDreoBaseDevice):
         if self.display_light == value:
             _LOGGER.debug("display_light: display_light - value already %s, skipping command", value)
             return
-        self._send_command(LIGHTON_KEY, value)
+        key = LIGHTON_KEY if self._heaterDeviceDefinition.has_display_light else LEDKEPTON_KEY
+        self._send_command(key, value)
 
     @property
     def airflow_360(self) -> bool | None:
@@ -741,6 +746,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._cooldown = self.get_state_update_value(state, COOLDOWN_KEY)
         self._ptc_on = self.get_state_update_value(state, PTCON_KEY)
         self._light_on = self.get_state_update_value(state, LIGHTON_KEY)
+        self._led_kept_on = self.get_state_update_value(state, LEDKEPTON_KEY)
         self._ctlstatus = self.get_state_update_value(state, CTLSTATUS_KEY)
         timeroff = self.get_state_update_value(state, TIMEROFF_KEY)
         self._timer_off = timeroff.get("du") if isinstance(timeroff, dict) else None
@@ -857,6 +863,10 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_light_on = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_light_on, bool):
             self._light_on = val_light_on
+
+        val_led_kept_on = self.get_server_update_key_value(message, LEDKEPTON_KEY)
+        if isinstance(val_led_kept_on, bool):
+            self._led_kept_on = val_led_kept_on
 
         val_ctlstatus = self.get_server_update_key_value(message, CTLSTATUS_KEY)
         if isinstance(val_ctlstatus, str):
