@@ -19,6 +19,8 @@ _LOGGER = logging.getLogger(__name__)
 class DreoFanHA(DreoBaseDeviceHA, FanEntity):
     """Representation of a Dreo fan."""
 
+    _unrecorded_attributes = frozenset({"temperature"})
+
     def __init__(self, pyDreoFan: PyDreoFanBase):
         """Initialize the Dreo fan device."""
         super().__init__(pyDreoFan)
