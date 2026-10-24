@@ -53,6 +53,22 @@ class TestDreoSensorHA(TestDeviceBase):
         keys = [e.entity_description.key for e in entities]
         assert "Temperature" not in keys
 
+    def test_sensor_get_entries_heater_heat_level(self):
+        """Test that heaters reporting htalevel get the Heat Level sensor."""
+        device = self.create_mock_device(name="Test Heater", serial_number="HTR001", type="Heater", features={"htalevel": 3})
+
+        entities = sensor.get_entries([device])
+        keys = [e.entity_description.key for e in entities]
+        assert "Heat Level" in keys
+
+    def test_sensor_get_entries_no_heat_level(self):
+        """Test that devices not reporting htalevel get no Heat Level sensor."""
+        device = self.create_mock_device(name="Simple Fan", serial_number="FAN001", features={"is_on": True, "fan_speed": 3})
+
+        entities = sensor.get_entries([device])
+        keys = [e.entity_description.key for e in entities]
+        assert "Heat Level" not in keys
+
     def test_sensor_get_entries_no_features(self):
         """Test that devices without sensor features get no sensor entities."""
         device = self.create_mock_device(name="Simple Fan", serial_number="FAN001", features={"is_on": True, "fan_speed": 3})

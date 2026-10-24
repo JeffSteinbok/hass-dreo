@@ -97,6 +97,13 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         exists_fn=lambda device: device.is_feature_supported("temp_target_reached"),
     ),
     DreoSensorEntityDescription(
+        key="Heat Level",
+        translation_key="htalevel",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda device: device.htalevel,
+        exists_fn=lambda device: device.is_feature_supported("htalevel"),
+    ),
+    DreoSensorEntityDescription(
         key="Status",
         translation_key="status",
         device_class=SensorDeviceClass.ENUM,

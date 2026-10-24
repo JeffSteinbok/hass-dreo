@@ -175,6 +175,9 @@
       "use_hours": {
         "name": "Nutzung seit Reinigung"
       },
+      "htalevel": {
+        "name": "Heizstufe"
+      },
       "reach_target_temp": {
         "name": "Zieltemperatur erreicht",
         "state": {

@@ -186,6 +186,9 @@
       "use_hours": {
         "name": "Use Since Cleaning"
       },
+      "htalevel": {
+        "name": "Heat Level"
+      },
       "reach_target_temp": {
         "name": "Target Temp Reached",
         "state": {
