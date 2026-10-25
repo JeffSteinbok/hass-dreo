@@ -1,0 +1,58 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "currentPage": 1,
+    "pageSize": 100,
+    "totalNum": 1,
+    "totalPage": 1,
+    "list": [
+      {
+        "deviceId": "1972221935910208008",
+        "sn": "HCF008S_1",
+        "brand": "Dreo",
+        "model": "DR-HCF008S",
+        "productId": "**REDACTED**",
+        "productName": "Ceiling Fan",
+        "deviceName": "DEBUGTEST - Ceiling Fan - DR-HCF008S (513S RGBIC)",
+        "shared": false,
+        "series": null,
+        "seriesName": "513S (RGBIC)",
+        "type": 0,
+        "owner": true,
+        "familyId": null,
+        "familyName": null,
+        "roomId": null,
+        "roomName": null,
+        "roomNameI18Key": "",
+        "color": "w",
+        "widgetOnImage": "https://resources.dreo-tech.com/app/preSigned202602/109c310783315a4c25a43d65862b5f5fea.png",
+        "widgetOffImage": "https://resources.dreo-tech.com/app/preSigned202602/1047298c5f56eb48c78d80a2924f7faa9f.png",
+        "widgetAbnormalImage": null,
+        "variantIconMd5": "105e0b2d7d0335402d8591eecc71e1f592",
+        "controlsConf": {},
+        "mainConf": {
+          "isSmart": true,
+          "isWifi": true,
+          "isBluetooth": null,
+          "isVoiceControl": true
+        },
+        "resourcesConf": {
+          "imageSmallSrc": "https://resources.dreo-tech.com/app/preSigned202602/10dd07a50e10ec4b1d8c7142d10b321fb6.png",
+          "imageFullSrc": "https://resources.dreo-tech.com/app/preSigned202602/10ea10641c5b9c42aa8e715cfbe5721361.zip",
+          "imageSmallDarkSrc": null,
+          "imageFullDarkSrc": null
+        },
+        "servicesConf": [],
+        "userManuals": [
+          {
+            "url": "https://resources.dreo-tech.com/app/preSigned202604/17940e140daca3466baccb77c8130ed45f.pdf",
+            "icon": null,
+            "desc": "DR-HCF008S_User-Manual_V1",
+            "lang": "en"
+          }
+        ]
+      }
+    ]
+  }
+}

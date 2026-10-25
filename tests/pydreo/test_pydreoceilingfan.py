@@ -37,6 +37,15 @@ class TestPyDreoCeilingFan(TestBase):
         assert details.device_ranges["atm_brightness_range"] == (1, 100)
         assert details.device_ranges["supports_direct_rgb_color"] is True
 
+    def test_HCF008S_detects_rgbic_effect_api(self):  # pylint: disable=invalid-name
+        """The issue #969 unit (no atmcolor, rgbeffectid present) uses the RGBIC effect API."""
+        self.get_devices_file_name = "get_devices_HCF008S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        assert fan.is_feature_supported("rgbic_effect_api") is True
+        assert fan.atm_brightness == 100
+        assert fan.atm_brightness_range == (1, 100)
+
     def test_HCF010S_capabilities(self):  # pylint: disable=invalid-name
         """DR-HCF010S has the CF510S RGBIC ceiling-fan capabilities."""
         details = SUPPORTED_DEVICES["DR-HCF010S"]
