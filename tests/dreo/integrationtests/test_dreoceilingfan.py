@@ -303,6 +303,46 @@ class TestDreoCeilingFan(IntegrationTestBase):
             assert len(rgbic_scheduled) == 1
             assert rgbic_scheduled[0]["cancelled"] is False
 
+    def test_HCF008S(self):  # pylint: disable=invalid-name
+        """DR-HCF008S (728S / 513S RGBIC) from the issue #969 diagnostics.
+
+        The unit reports atmon and rgbeffectid but no atmcolor, the same state as the CF712S in #927,
+        so colours and effects go through the RGBIC effect API. Writing atmcolor didn't change the
+        colour (issue #969).
+        """
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HCF008S.json"
+            self.pydreo_manager.load_devices()
+            assert len(self.pydreo_manager.devices) == 1
+
+            pydreo_fan = self.pydreo_manager.devices[0]
+            assert pydreo_fan.model == "DR-HCF008S"
+            ha_fan = fan.DreoFanHA(pydreo_fan)
+            assert ha_fan.speed_count == 12
+
+            lights = light.get_entries([pydreo_fan])
+            self.verify_expected_entities(lights, ["Light", "RGBIC Light"])
+            rgbic_light = self.get_entity_by_key(lights, "RGBIC Light")
+            assert pydreo_fan.is_feature_supported("rgbic_effect_api")
+            assert rgbic_light.effect_list == ["Constant", "Breath", "Cycle", "Marquee", "Flow", "Flash", "Starlight", "Chase"]
+            assert rgbic_light.is_on is True
+
+            # A colour turns the ring on, then applies Constant with that colour through the API; no atmcolor.
+            scheduled = []
+            self.pydreo_manager.set_schedule_call_later(
+                lambda delay, callback: scheduled.append({"delay": delay, "callback": callback}) or (lambda: None)
+            )
+            with patch(PATCH_SEND_COMMAND) as mock_send_command, patch.object(self.pydreo_manager, "set_rgbic_effect", return_value=True) as mock_effect:
+                rgbic_light.turn_on(rgb_color=(255, 0, 0))
+                # Only atmon goes over the WebSocket (turn_on and the effect path both send it).
+                assert {str(c.args[1]) for c in mock_send_command.call_args_list} == {str({ATMON_KEY: True})}
+                effect_calls = [item for item in scheduled if item["delay"] == 0.6]  # others are 10 s state checks
+                assert len(effect_calls) == 1
+                effect_calls[0]["callback"]()
+                mock_effect.assert_called_once_with(pydreo_fan, "Constant", "#FF0000")
+            assert rgbic_light.rgb_color == (255, 0, 0)
+            assert rgbic_light.effect == "Constant"
+
     def test_HCF003S(self):  # pylint: disable=invalid-name
         """Load HCF003S fan and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):

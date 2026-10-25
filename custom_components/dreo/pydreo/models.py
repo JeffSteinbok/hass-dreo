@@ -490,6 +490,9 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.CEILING_FAN,
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("reverse", 4)],
         device_ranges={SPEED_RANGE: (1, 12), "atm_brightness_range": (1, 100), "supports_direct_rgb_color": True},
+        # Units that report no atmcolor (728S, issue #969) ignore atmcolor writes; like the CF712S they take
+        # colours and effects through the RGBIC effect API. Units that report atmcolor keep the direct path.
+        supports_rgbic_effect_api=True,
     ),
     "DR-HCF010S": DreoDeviceDetails(
         device_type=DreoDeviceType.CEILING_FAN,

@@ -1,0 +1,150 @@
+{
+  "code": 0,
+  "msg": "OK",
+  "data": {
+    "mixed": {
+      "wifi_rssi": {
+        "state": -58,
+        "timestamp": 1792455891
+      },
+      "poweron": {
+        "state": true,
+        "timestamp": 1792548711
+      },
+      "scheid": {
+        "state": -703461391,
+        "timestamp": 1792548694
+      },
+      "timeron": {
+        "state": {
+          "du": 0,
+          "ts": 1792455891
+        },
+        "timestamp": null
+      },
+      "rgbeffectid": {
+        "state": "2112335757162053632",
+        "timestamp": 1792548782
+      },
+      "scheon": {
+        "state": true,
+        "timestamp": 1792547325
+      },
+      "mcuon": {
+        "state": true,
+        "timestamp": 1792455891
+      },
+      "mode": {
+        "state": 4,
+        "timestamp": 1792473798
+      },
+      "rgbpresetnum": {
+        "state": 5,
+        "timestamp": 1792461729
+      },
+      "network_latency": {
+        "state": 72,
+        "timestamp": 1792455895
+      },
+      "module_hardware_model": {
+        "state": "X3",
+        "timestamp": 1792455891
+      },
+      "mcu_firmware_version": {
+        "state": "8.1.39",
+        "timestamp": 1792455891
+      },
+      "colortemp": {
+        "state": 34,
+        "timestamp": 1792549886
+      },
+      "module_hardware_mac": {
+        "state": "**REDACTED**",
+        "timestamp": null
+      },
+      "muteon": {
+        "state": true,
+        "timestamp": 1792462436
+      },
+      "lighton": {
+        "state": false,
+        "timestamp": 1792551108
+      },
+      "mcu_hardware_model": {
+        "state": "CMS32/GL",
+        "timestamp": 1792455891
+      },
+      "wifi_ssid": {
+        "state": "**REDACTED**",
+        "timestamp": null
+      },
+      "windlevel": {
+        "state": 1,
+        "timestamp": 1792549892
+      },
+      "atmbri": {
+        "state": 100,
+        "timestamp": 1792551999
+      },
+      "rgbpresetsel": {
+        "state": 4,
+        "timestamp": 1792465646
+      },
+      "#_favorite": {
+        "state": "",
+        "timestamp": 1792455891
+      },
+      "module_firmware_version": {
+        "state": "1.0.48",
+        "timestamp": 1792455891
+      },
+      "wrong": {
+        "state": 0,
+        "timestamp": 1792455891
+      },
+      "connected": {
+        "state": true,
+        "timestamp": 1792455891
+      },
+      "timeroff": {
+        "state": {
+          "du": 0,
+          "ts": 1792464099
+        },
+        "timestamp": null
+      },
+      "_ota": {
+        "state": 0,
+        "timestamp": 1792455891
+      },
+      "predefine": {
+        "state": "0",
+        "timestamp": 1792455891
+      },
+      "#_effect": {
+        "state": "",
+        "timestamp": 1792455891
+      },
+      "brightness": {
+        "state": 100,
+        "timestamp": 1792548751
+      },
+      "atmon": {
+        "state": true,
+        "timestamp": 1792551382
+      },
+      "scenes": {
+        "state": "{\"mode\":0,\"du\":600,\"minbri\":1,\"maxbri\":100}",
+        "timestamp": 1792547621
+      },
+      "fanon": {
+        "state": true,
+        "timestamp": 1792548770
+      }
+    },
+    "sn": "HCF008S_1",
+    "productId": "**REDACTED**",
+    "region": "us-east-2/emq",
+    "deviceInfo": null
+  }
+}
