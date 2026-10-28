@@ -1,6 +1,7 @@
 """Dreo API for controling fans."""
 
 import logging
+import time
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
@@ -444,7 +445,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if self._timer_on == value:
             _LOGGER.debug("timer_on: timer_on - value already %s, skipping command", value)
             return
-        self._send_command(TIMERON_KEY, value)
+        self._send_command(TIMERON_KEY, {"ts": int(time.time()), "du": value})
 
     @property
     def timer_off(self) -> int | None:
@@ -464,7 +465,7 @@ class PyDreoFanBase(PyDreoBaseDevice):
         if self._timer_off == value:
             _LOGGER.debug("timer_off: timer_off - value already %s, skipping command", value)
             return
-        self._send_command(TIMEROFF_KEY, value)
+        self._send_command(TIMEROFF_KEY, {"ts": int(time.time()), "du": value})
 
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
@@ -594,9 +595,13 @@ class PyDreoFanBase(PyDreoBaseDevice):
             self._pm25 = val_pm25
 
         val_timer_on = self.get_server_update_key_value(message, TIMERON_KEY)
+        if isinstance(val_timer_on, dict):
+            val_timer_on = val_timer_on.get("du")
         if isinstance(val_timer_on, int) and self._timer_on is not None:
             self._timer_on = val_timer_on
 
         val_timer_off = self.get_server_update_key_value(message, TIMEROFF_KEY)
+        if isinstance(val_timer_off, dict):
+            val_timer_off = val_timer_off.get("du")
         if isinstance(val_timer_off, int) and self._timer_off is not None:
             self._timer_off = val_timer_off

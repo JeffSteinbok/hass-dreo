@@ -706,20 +706,37 @@ class TestPyDreoFanBase(TestBase):
         assert fan.timer_off is None
 
     def test_timer_on_off_updated_via_websocket(self):
-        """Test timer_on/timer_off are updated from raw int websocket values."""
+        """Accept both integer and object-shaped timer reports."""
         fan = self._load_htf005s()
         fan.handle_server_update({REPORTED_KEY: {TIMERON_KEY: 45, TIMEROFF_KEY: 90}})
         assert fan.timer_on == 45
         assert fan.timer_off == 90
+        fan.handle_server_update({REPORTED_KEY: {TIMERON_KEY: {"du": 1, "ts": 1793141451}, TIMEROFF_KEY: {"du": 2, "ts": 1793141533}}})
+        assert fan.timer_on == 1
+        assert fan.timer_off == 2
+        fan.handle_server_update({REPORTED_KEY: {TIMERON_KEY: {"du": 0}, TIMEROFF_KEY: {"du": 0}}})
+        assert fan.timer_on == 0
+        assert fan.timer_off == 0
+
+    def test_timer_reports_ignore_invalid_or_unsupported_values(self):
+        """Malformed reports do not corrupt state or enable unsupported timers."""
+        fan = self._load_htf005s()
+        fan.update_state({TIMERON_KEY: {"state": {"du": 10}}, TIMEROFF_KEY: {"state": None}})
+        fan.handle_server_update({REPORTED_KEY: {TIMERON_KEY: {"du": "20"}, TIMEROFF_KEY: {"du": 20}}})
+        assert fan.timer_on == 10
+        assert fan.timer_off is None
+        fan.handle_server_update({REPORTED_KEY: {TIMERON_KEY: {"ts": 1793141451}, TIMEROFF_KEY: 20}})
+        assert fan.timer_on == 10
+        assert fan.timer_off is None
 
     def test_timer_on_setter_sends_command(self):
         """Test timer_on setter sends a command when the value changes."""
         fan = self._load_htf005s()
         fan.update_state({TIMERON_KEY: {"state": {"du": 0}}})
 
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+        with patch("custom_components.dreo.pydreo.pydreofanbase.time.time", return_value=1793141451.360), patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.timer_on = 30
-            mock_send_command.assert_called_once_with(fan, {TIMERON_KEY: 30})
+            mock_send_command.assert_called_once_with(fan, {TIMERON_KEY: {"ts": 1793141451, "du": 30}})
 
     def test_timer_on_setter_noop_when_unchanged(self):
         """Test timer_on setter skips command when value hasn't changed."""
@@ -735,9 +752,18 @@ class TestPyDreoFanBase(TestBase):
         fan = self._load_htf005s()
         fan.update_state({TIMEROFF_KEY: {"state": {"du": 0}}})
 
-        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+        with patch("custom_components.dreo.pydreo.pydreofanbase.time.time", return_value=1793141533.700), patch(PATCH_SEND_COMMAND) as mock_send_command:
             fan.timer_off = 480
-            mock_send_command.assert_called_once_with(fan, {TIMEROFF_KEY: 480})
+            mock_send_command.assert_called_once_with(fan, {TIMEROFF_KEY: {"ts": 1793141533, "du": 480}})
+
+    @pytest.mark.parametrize("timer,key", [("timer_on", TIMERON_KEY), ("timer_off", TIMEROFF_KEY)])
+    def test_timer_cancel_sends_zero_duration(self, timer, key):
+        """Setting an active timer to zero sends a zero duration."""
+        fan = self._load_htf005s()
+        fan.update_state({key: {"state": {"du": 2}}})
+        with patch("custom_components.dreo.pydreo.pydreofanbase.time.time", return_value=1793141533.7), patch(PATCH_SEND_COMMAND) as mock_send_command:
+            setattr(fan, timer, 0)
+            mock_send_command.assert_called_once_with(fan, {key: {"ts": 1793141533, "du": 0}})
 
     def test_timer_off_setter_noop_when_unchanged(self):
         """Test timer_off setter skips command when value hasn't changed."""

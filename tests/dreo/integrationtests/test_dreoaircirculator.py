@@ -99,10 +99,10 @@ class TestDreoAirCirculator(IntegrationTestBase):
             timer_off_number = self.get_entity_by_key(numbers, "Timer Off")
             assert timer_off_number.native_value == 0
 
-            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            with patch("custom_components.dreo.pydreo.pydreofanbase.time.time", return_value=1793141533.7), patch(PATCH_SEND_COMMAND) as mock_send_command:
                 timer_off_number.set_native_value(480)
-                mock_send_command.assert_called_once_with(pydreo_fan, {TIMEROFF_KEY: 480})
-            pydreo_fan.handle_server_update({REPORTED_KEY: {TIMEROFF_KEY: 480}})
+                mock_send_command.assert_called_once_with(pydreo_fan, {TIMEROFF_KEY: {"ts": 1793141533, "du": 480}})
+            pydreo_fan.handle_server_update_base({REPORTED_KEY: {TIMEROFF_KEY: {"du": 480, "ts": 1793141533}}})
             assert timer_off_number.native_value == 480
 
     def test_HAF004S(self):  # pylint: disable=invalid-name
