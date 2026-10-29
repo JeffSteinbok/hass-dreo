@@ -583,6 +583,22 @@ class TestDreoCeilingFan(IntegrationTestBase):
                 rgbic_light.turn_on(**{ATTR_RGB_COLOR: (0, 255, 0)})
                 mock_send_command.assert_any_call(pydreo_fan, {ATMCOLOR_KEY: 65280})
 
+    def test_HCF007S_timer_reports(self):  # pylint: disable=invalid-name
+        """The app's timer reports update HA, including when a timer expires."""
+        self.get_devices_file_name = "get_devices_HCF007S.json"
+        self.pydreo_manager.load_devices()
+        pydreo_fan = self.pydreo_manager.devices[0]
+        numbers = number.get_entries([pydreo_fan])
+        timer_on = self.get_entity_by_key(numbers, "Timer On")
+        timer_off = self.get_entity_by_key(numbers, "Timer Off")
+
+        pydreo_fan.handle_server_update_base({REPORTED_KEY: {"timeron": {"du": 1, "ts": 1793141451}}})
+        pydreo_fan.handle_server_update_base({REPORTED_KEY: {"timeroff": {"du": 2, "ts": 1793141533}}})
+        assert timer_on.native_value == 1
+        assert timer_off.native_value == 2
+        pydreo_fan.handle_server_update_base({REPORTED_KEY: {"timeroff": {"du": 0, "ts": 1793141653}}})
+        assert timer_off.native_value == 0
+
     def test_main_power_diagnostic_entity(self):
         """The whole-device gate is exposed as a diagnostic binary sensor.
 
