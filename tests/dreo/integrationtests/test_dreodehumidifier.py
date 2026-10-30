@@ -50,7 +50,7 @@ class TestDreoDeHumidifier(IntegrationTestBase):
 
             # Check to see what numbers are added to chef makers
             numbers = number.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(numbers, ["Target Humidity"])
+            self.verify_expected_entities(numbers, ["Target Humidity", "Timer On", "Timer Off"])
 
             # Check to see what sensors are added - should include Target Humidity
             numbers = number.get_entries([pydreo_dehumidifier])
@@ -106,7 +106,7 @@ class TestDreoDeHumidifier(IntegrationTestBase):
 
             # Check number entities
             numbers = number.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(numbers, ["Target Humidity"])
+            self.verify_expected_entities(numbers, ["Target Humidity", "Timer On", "Timer Off"])
 
             # Find the Target Humidity number and verify its value
             target_humidity_number = None
@@ -148,7 +148,7 @@ class TestDreoDeHumidifier(IntegrationTestBase):
             assert ha_humidifier.min_humidity <= ha_humidifier.target_humidity <= ha_humidifier.max_humidity
 
             numbers = number.get_entries([pydreo_dehumidifier])
-            self.verify_expected_entities(numbers, ["Target Humidity"])
+            self.verify_expected_entities(numbers, ["Target Humidity", "Timer On", "Timer Off"])
             assert self.get_entity_by_key(numbers, "Target Humidity").native_value == 45
 
             sensors = sensor.get_entries([pydreo_dehumidifier])

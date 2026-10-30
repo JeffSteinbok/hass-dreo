@@ -34,7 +34,7 @@ Dreo also maintains an [official Home Assistant integration](https://github.com/
 | Switches & controls | 14 toggle types (oscillation, child lock, display, misting, schedule, …) | 5 toggle types (LED, light sensor, mute, child lock, heater fan-on-temp) |
 | RGB lighting | Basic RGB color support | Full RGB with effects (Breath, Circle), animation speed selector, brightness |
 | Oscillation angles | Angle range numbers for horizontal & vertical | More granular angle controls (pair/single/both modes, 4-boundary ranges) |
-| Timers & schedules | Timer and auto-schedule switches | Not available |
+| Timers & schedules | Auto on/off timer numbers and auto-schedule switches | Not available |
 | Support model | Community-maintained; fast iteration on new models | Officially maintained by Dreo; working toward HA core acceptance |
 
 **tl;dr** — Both integrations now cover most Dreo device types. This project exposes more sensors, diagnostics, and controls per device and uses real-time WebSocket updates. The official integration has richer RGB lighting support and is backed by Dreo's engineering team. Choose whichever fits your priorities.

@@ -2,11 +2,21 @@
 
 import threading
 import logging
+import time
 from typing import Dict
 from typing import TYPE_CHECKING
 
 from .commandoutbox import CommandOutbox, OutboxTiming
-from .constant import REPORTED_KEY, POWERON_KEY, CONNECTED_KEY, STATE_KEY, PRESET_MODE_STRINGS
+from .constant import (
+    REPORTED_KEY,
+    POWERON_KEY,
+    CONNECTED_KEY,
+    STATE_KEY,
+    PRESET_MODE_STRINGS,
+    TIMERON_KEY,
+    TIMEROFF_KEY,
+    TIMER_MAX_MINUTES,
+)
 from .models import DreoDeviceDetails
 
 if TYPE_CHECKING:
@@ -59,6 +69,8 @@ class PyDreoBaseDevice:
         self._dreo = dreo
         self._is_on = False
         self._connected = None
+        self._timer_on = None
+        self._timer_off = None
 
         self._feature_key_names: Dict[str, str] = {}
 
@@ -137,6 +149,16 @@ class PyDreoBaseDevice:
         if isinstance(val_connected, bool):
             _LOGGER.debug("handle_server_update_base: connected: %s --> %s", self._connected, val_connected)
             self._connected = val_connected
+
+        if self._timer_on is not None:
+            val_timer_on = self._timer_duration(self.get_server_update_key_value(message, TIMERON_KEY))
+            if val_timer_on is not None:
+                self._timer_on = val_timer_on
+
+        if self._timer_off is not None:
+            val_timer_off = self._timer_duration(self.get_server_update_key_value(message, TIMEROFF_KEY))
+            if val_timer_off is not None:
+                self._timer_off = val_timer_off
 
         # This method exists so that we can run the polymorphic function to process updates, and then
         # run a _do_callbacks() command safely afterwards.
@@ -239,6 +261,50 @@ class PyDreoBaseDevice:
         connected_val = self.get_state_update_value(state, CONNECTED_KEY)
         if connected_val is not None:
             self._connected = connected_val
+
+        self._timer_on = self._timer_duration(self.get_state_update_value(state, TIMERON_KEY))
+        self._timer_off = self._timer_duration(self.get_state_update_value(state, TIMEROFF_KEY))
+
+    @staticmethod
+    def _timer_duration(value) -> int | None:
+        """Extract the minutes remaining from a ``{"du": ..., "ts": ...}`` timer value."""
+        if isinstance(value, dict):
+            value = value.get("du")
+        return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+    @property
+    def timer_on(self) -> int | None:
+        """Minutes remaining on the auto turn-on timer, or None if unsupported."""
+        return self._timer_on
+
+    @timer_on.setter
+    def timer_on(self, value: int) -> None:
+        """Set the auto turn-on timer, in minutes. Use 0 to cancel the timer."""
+        self._set_timer("timer_on", TIMERON_KEY, value)
+
+    @property
+    def timer_off(self) -> int | None:
+        """Minutes remaining on the auto turn-off timer, or None if unsupported."""
+        return self._timer_off
+
+    @timer_off.setter
+    def timer_off(self, value: int) -> None:
+        """Set the auto turn-off timer, in minutes. Use 0 to cancel the timer."""
+        self._set_timer("timer_off", TIMEROFF_KEY, value)
+
+    def _set_timer(self, name: str, command_key: str, value: int) -> None:
+        _LOGGER.debug("%s: %s.setter(%s)", name, name, value)
+        current = getattr(self, f"_{name}")
+        if current is None:
+            raise NotImplementedError(f"{self.__class__.__name__}: Attempting to set {name} on a device that doesn't support it.")
+        value = int(value)
+        if not 0 <= value <= TIMER_MAX_MINUTES:
+            _LOGGER.error("%s: Timer duration %s is not in the acceptable range: (0, %s)", name, value, TIMER_MAX_MINUTES)
+            return
+        if current == value:
+            _LOGGER.debug("%s: value already %s, skipping command", name, value)
+            return
+        self._send_command(command_key, {"ts": int(time.time()), "du": value})
 
     def dispose(self) -> None:
         """Release device-owned resources (timers, workers, etc.).
