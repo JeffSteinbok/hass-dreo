@@ -1062,6 +1062,18 @@ class TestPyDreoAirCirculator(TestBase):
         assert fan.temperature is not None
         assert isinstance(fan.temperature, (int, float))
 
+    def test_HPF007S_speed_range(self):  # pylint: disable=invalid-name
+        """Verify HPF007S tops out at speed 9: the manual lists 1-9 and the cloud rejects windlevel 10."""
+        self.get_devices_file_name = "get_devices_HPF007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+        assert fan.speed_range == (1, 9)
+
+        with pytest.raises(ValueError):
+            fan.fan_speed = 10
+
     def test_HPF007S_presence_sensor(self):  # pylint: disable=invalid-name
         """Verify HPF007S exposes locatemeon and sends commands for presence tracking."""
         self.get_devices_file_name = "get_devices_HPF007S.json"
