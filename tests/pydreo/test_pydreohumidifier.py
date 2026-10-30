@@ -682,6 +682,24 @@ class TestPyDreoHumidifier(TestBase):
         humidifier.handle_server_update({REPORTED_KEY: {"filtertime": 50}})
         assert humidifier.filtertime == 50
 
+    def test_reset_filter_sends_full_filter_life(self):
+        """Test reset_filter writes filtertime=100, matching what the device reports after an app reset."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            humidifier.reset_filter()
+            mock_send_command.assert_called_once_with(humidifier, {"filtertime": 100})
+
+    def test_reset_filter_not_supported_without_filter_life(self):
+        """Test reset_filter raises when the model does not report filtertime."""
+        self.get_devices_file_name = "get_devices_HHM001S.json"
+        self.pydreo_manager.load_devices()
+        humidifier: PyDreoHumidifier = self.pydreo_manager.devices[0]
+        humidifier._filtertime = None  # pylint: disable=protected-access
+        with pytest.raises(NotImplementedError):
+            humidifier.reset_filter()
+
     def test_handle_server_update_filteron(self):
         """Test handle_server_update processes filteron."""
         self.get_devices_file_name = "get_devices_HHM001S.json"
