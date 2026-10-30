@@ -13,7 +13,7 @@ from custom_components.dreo import light
 from homeassistant.components.humidifier import HumidifierEntityFeature
 
 from .imports import *  # pylint: disable=W0401,W0614
-from .integrationtestbase import IntegrationTestBase
+from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
 PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
 PATCH_SCHEDULE_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
@@ -53,8 +53,16 @@ class TestDreoHumidifier(IntegrationTestBase):
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                numbers, ["Fog Level", "Sleep Target Humidity", "Ambient Light Threshold High", "Ambient Light Threshold Low"]
+                numbers,
+                ["Fog Level", "Sleep Target Humidity", "Ambient Light Threshold High", "Ambient Light Threshold Low", "Timer On", "Timer Off"],
             )
+            timer_off_number = self.get_entity_by_key(numbers, "Timer Off")
+            assert timer_off_number.native_value == 0
+            with patch("custom_components.dreo.pydreo.pydreobasedevice.time.time", return_value=1793141533.7), patch(PATCH_SEND_COMMAND) as mock_send_command:
+                timer_off_number.set_native_value(240)
+                mock_send_command.assert_called_once_with(pydreo_humidifier, {TIMEROFF_KEY: {"ts": 1793141533, "du": 240}})
+            pydreo_humidifier.handle_server_update_base({REPORTED_KEY: {TIMEROFF_KEY: {"du": 240, "ts": 1793141533}}})
+            assert timer_off_number.native_value == 240
 
             # Check to see what sensors are added
             sensors = sensor.get_entries([pydreo_humidifier])
@@ -175,7 +183,8 @@ class TestDreoHumidifier(IntegrationTestBase):
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                numbers, ["Fog Level", "Sleep Target Humidity", "Ambient Light Threshold High", "Ambient Light Threshold Low"]
+                numbers,
+                ["Fog Level", "Sleep Target Humidity", "Ambient Light Threshold High", "Ambient Light Threshold Low", "Timer On", "Timer Off"],
             )
 
             # Check to see what sensors are added - should include Humidity, and worktime
@@ -245,7 +254,8 @@ class TestDreoHumidifier(IntegrationTestBase):
             # Check to see what numbers are added to humidifiers
             numbers = number.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                numbers, ["Fog Level", "Sleep Target Humidity", "Ambient Light Threshold High", "Ambient Light Threshold Low"]
+                numbers,
+                ["Fog Level", "Sleep Target Humidity", "Ambient Light Threshold High", "Ambient Light Threshold Low", "Timer On", "Timer Off"],
             )
 
             # Check to see what sensors are added

@@ -13,12 +13,10 @@ from .constant import (
     MUTEON_KEY,
     POWERON_KEY,
     DEVON_KEY,
-    TIMERON_KEY,
     COOLDOWN_KEY,
     PTCON_KEY,
     LIGHTON_KEY,
     CTLSTATUS_KEY,
-    TIMEROFF_KEY,
     CHILDLOCKON_KEY,
     TEMPOFFSET_KEY,
     FIXEDCONF_KEY,
@@ -77,12 +75,10 @@ class PyDreoAC(PyDreoBaseDevice):
         self._mute_on = None
         self._fixed_conf = None
         self._dev_on = None
-        self._timer_on = None
         self._cooldown = None
         self._ptc_on = None
         self._display_auto_off = None
         self._ctlstatus = None
-        self._timer_off = None
         self._childlockon = None
         self._tempoffset = None
         self._fixed_conf = None
@@ -382,16 +378,12 @@ class PyDreoAC(PyDreoBaseDevice):
         self._osc_mode = self.get_state_update_value(state, OSCMODE_KEY)
         self._mute_on = self.get_state_update_value(state, MUTEON_KEY)
         self._dev_on = self.get_state_update_value(state, DEVON_KEY)
-        timeron = self.get_state_update_value(state, TIMERON_KEY)
-        self._timer_on = timeron["du"] if timeron is not None else None
         self._cooldown = self.get_state_update_value(state, COOLDOWN_KEY)
         self._ptc_on = self.get_state_update_value(state, PTCON_KEY)
         lighton = self.get_state_update_value(state, LIGHTON_KEY)
         if lighton is not None:
             self._display_auto_off = not lighton
         self._ctlstatus = self.get_state_update_value(state, CTLSTATUS_KEY)
-        timeroff = self.get_state_update_value(state, TIMEROFF_KEY)
-        self._timer_off = timeroff["du"] if timeroff is not None else None
         self._childlockon = self.get_state_update_value(state, CHILDLOCKON_KEY)
         self._tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
@@ -452,10 +444,6 @@ class PyDreoAC(PyDreoBaseDevice):
         if isinstance(val_devon, bool):
             self._dev_on = val_devon
 
-        val_timeron = self.get_server_update_key_value(message, TIMERON_KEY)
-        if isinstance(val_timeron, int):
-            self._timer_on = val_timeron
-
         val_cooldown = self.get_server_update_key_value(message, COOLDOWN_KEY)
         if isinstance(val_cooldown, int):
             self._cooldown = val_cooldown
@@ -471,10 +459,6 @@ class PyDreoAC(PyDreoBaseDevice):
         val_ctlstatus = self.get_server_update_key_value(message, CTLSTATUS_KEY)
         if isinstance(val_ctlstatus, str):
             self._ctlstatus = val_ctlstatus
-
-        val_timer_off = self.get_server_update_key_value(message, TIMEROFF_KEY)
-        if isinstance(val_timer_off, int):
-            self._timer_off = val_timer_off
 
         val_childlockon = self.get_server_update_key_value(message, CHILDLOCKON_KEY)
         if isinstance(val_childlockon, bool):

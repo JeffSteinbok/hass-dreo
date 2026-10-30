@@ -31,7 +31,7 @@ class TestDreoAirConditioner(IntegrationTestBase):
             assert pydreo_ac.type == "Air Conditioner"
 
             numbers = number.get_entries([pydreo_ac])
-            self.verify_expected_entities(numbers, ["Target Humidity"])
+            self.verify_expected_entities(numbers, ["Target Humidity", "Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_ac])
             self.verify_expected_entities(sensors, ["Humidity", "Target temp reached", "Use since cleaning"])
@@ -57,7 +57,7 @@ class TestDreoAirConditioner(IntegrationTestBase):
             assert pydreo_ac.type == "Air Conditioner"
 
             numbers = number.get_entries([pydreo_ac])
-            self.verify_expected_entities(numbers, ["Target Humidity"])
+            self.verify_expected_entities(numbers, ["Target Humidity", "Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_ac])
             self.verify_expected_entities(sensors, ["Humidity", "Use since cleaning", "Target temp reached"])
