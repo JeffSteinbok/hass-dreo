@@ -95,6 +95,7 @@ Depending on your device model and capabilities, the integration creates the fol
 - **Sensor** - Temperature, humidity, and other sensor readings
 - **Number** - Adjustable numeric settings
 - **Binary sensor** - Status flags (e.g. water empty; diagnostic settle-pending for some air circulators)
+- **Button** - One-shot actions (pan/tilt nudges for air circulators, filter life reset for humidifiers)
 
 ### Air circulator pan/tilt (fixedconf) notes
 
