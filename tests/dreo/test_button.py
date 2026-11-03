@@ -47,3 +47,36 @@ class TestDreoButtonHA(TestDeviceBase):
         pan_left.press()
 
         device.nudge_horizontal_left.assert_called_once_with()
+
+    def test_reset_filter_button_only_for_humidifiers_with_filter_life(self):
+        """Create the filter reset button only for humidifiers reporting filtertime."""
+        with_filter = self.create_mock_device(
+            type=DreoDeviceType.HUMIDIFIER,
+            name="Test Humidifier",
+            serial_number="HM001",
+            features={"filtertime": 85},
+        )
+        without_filter = self.create_mock_device(
+            type=DreoDeviceType.HUMIDIFIER,
+            name="Other Humidifier",
+            serial_number="HM002",
+            features={},
+        )
+
+        entities = button.get_entries([with_filter, without_filter])
+        assert [(entity.device, entity.entity_description.key) for entity in entities] == [(with_filter, "Reset Filter")]
+
+    def test_reset_filter_button_press_calls_reset_filter(self):
+        """Pressing the filter reset button should call reset_filter on the device."""
+        device = self.create_mock_device(
+            type=DreoDeviceType.HUMIDIFIER,
+            name="Test Humidifier",
+            serial_number="HM001",
+            features={"filtertime": 85},
+        )
+        device.reset_filter = MagicMock()
+
+        entities = button.get_entries([device])
+        entities[0].press()
+
+        device.reset_filter.assert_called_once_with()

@@ -41,6 +41,7 @@ WORKTIME_KEY = "worktime"
 FOGLEVEL_INTERNAL_KEY = "foglevel"
 FILTERTIME_KEY = "filtertime"
 FILTERON_KEY = "filteron"
+FILTER_LIFE_FULL = 100
 SUSPEND_KEY = "suspend"
 
 # Status for water level indicator
@@ -290,6 +291,12 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def filtertime(self):
         """Return the filter life remaining (%)."""
         return self._filtertime
+
+    def reset_filter(self) -> None:
+        """Reset the filter life to 100%, as the Dreo app does."""
+        if self._filtertime is None:
+            raise NotImplementedError("Filter life is not supported.")
+        self._send_command(FILTERTIME_KEY, FILTER_LIFE_FULL)
 
     @property
     def filteron(self) -> bool | None:

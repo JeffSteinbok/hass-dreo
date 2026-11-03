@@ -241,6 +241,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         platforms.add(Platform.SELECT)
         platforms.add(Platform.BINARY_SENSOR)
         platforms.add(Platform.LIGHT)
+        platforms.add(Platform.BUTTON)
 
     if DreoDeviceType.DEHUMIDIFIER in device_types:
         platforms.add(Platform.HUMIDIFIER)
