@@ -1210,3 +1210,107 @@ class TestPyDreoCeilingFan(TestBase):
         fan.update_state(stale)
 
         assert fan.gate_diagnostics()["rest_readback_stale"] is True
+
+    # ------------------------------------------------------------------
+    # Optimistic parameter cache: same-value guards must see our own writes
+    # ------------------------------------------------------------------
+
+    def _reported_fan(self) -> PyDreoCeilingFan:
+        """HCF002S fan with every guarded parameter reported, so each guard is armed."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update(
+            {
+                REPORTED_KEY: {
+                    POWERON_KEY: True,
+                    FANON_KEY: True,
+                    LIGHTON_KEY: True,
+                    ATMON_KEY: True,
+                    WINDLEVEL_KEY: 4,
+                    BRIGHTNESS_KEY: 45,
+                    COLORTEMP_KEY: 50,
+                    ATMBRI_KEY: 3,
+                    ATMCOLOR_KEY: 16711680,
+                },
+            }
+        )
+        return fan
+
+    def test_param_reversal_before_device_report_sends_both_commands(self):
+        """Hardware regression (DR-HCF002S, 2026-11-06): speed 33% -> 75% -> 33% and
+        brightness 115 -> 200 -> 115 issued 0.3 s apart left the device at the
+        intermediate value every time. The device had not reported the first
+        change yet, so the return value still matched the cache and the setter's
+        same-value guard skipped it. Our own pending write must be visible to the
+        guard."""
+        fan = self._reported_fan()
+
+        sent = []
+        with patch(PATCH_SEND_COMMAND, side_effect=lambda _d, p: sent.append(p)):
+            fan.fan_speed = 9
+            fan.fan_speed = 4
+            fan.turn_light_on(brightness=78)
+            fan.turn_light_on(brightness=45)
+            fan.color_temperature = 20
+            fan.color_temperature = 50
+            fan.atm_brightness = 1
+            fan.atm_brightness = 3
+            fan.atm_color_rgb = (0, 0, 255)
+            fan.atm_color_rgb = (255, 0, 0)
+
+        assert sent == [
+            {WINDLEVEL_KEY: 9},
+            {WINDLEVEL_KEY: 4},
+            {BRIGHTNESS_KEY: 78, LIGHTON_KEY: True},
+            {BRIGHTNESS_KEY: 45, LIGHTON_KEY: True},
+            {COLORTEMP_KEY: 20},
+            {COLORTEMP_KEY: 50},
+            {ATMBRI_KEY: 1},
+            {ATMBRI_KEY: 3},
+            {ATMCOLOR_KEY: 255},
+            {ATMCOLOR_KEY: 16711680},
+        ]
+        # Every reversal landed the cache back where it started.
+        final = (fan.fan_speed, fan.brightness, fan.color_temperature, fan.atm_brightness, fan.atm_color_rgb)
+        assert final == (4, 45, 50, 3, (255, 0, 0))
+
+    def test_param_guard_still_skips_a_genuinely_redundant_write(self):
+        """The guards exist to stop Adaptive Lighting's periodic same-value re-sends
+        from churning commands; the optimistic cache must not defeat them."""
+        fan = self._reported_fan()
+
+        with patch(PATCH_SEND_COMMAND) as mock_send:
+            fan.fan_speed = 9
+            fan.fan_speed = 9
+            fan.brightness = 78
+            fan.brightness = 78
+        assert mock_send.call_count == 2
+
+    def test_device_report_overrides_optimistic_param(self):
+        """The device's own report remains the authority over an optimistic value."""
+        fan = self._reported_fan()
+
+        with patch(PATCH_SEND_COMMAND):
+            fan.fan_speed = 9
+            fan.brightness = 78
+        assert (fan.fan_speed, fan.brightness) == (9, 78)
+
+        fan.handle_server_update({REPORTED_KEY: {WINDLEVEL_KEY: 6, BRIGHTNESS_KEY: 60}})
+        assert (fan.fan_speed, fan.brightness) == (6, 60)
+
+    def test_optimistic_param_leaves_unreported_keys_none(self):
+        """``None`` means the model does not report the key; feature detection and
+        the RGBIC-API latch depend on it staying ``None``, so a write to such a
+        key must not invent a cached value."""
+        self.get_devices_file_name = "get_devices_HCF002S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+        fan.handle_server_update({REPORTED_KEY: {POWERON_KEY: True, ATMON_KEY: True, LIGHTON_KEY: False, FANON_KEY: False}})
+        fan._atm_color = None  # pylint: disable=protected-access
+
+        with patch(PATCH_SEND_COMMAND, side_effect=lambda _d, p: None):
+            fan.turn_atm_on(color_rgb=(0, 255, 0))
+
+        assert fan._atm_color is None  # pylint: disable=protected-access
+        assert fan.atm_color_rgb is None
