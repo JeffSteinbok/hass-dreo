@@ -62,6 +62,17 @@ class PyDreoCeilingFan(PyDreoFanBase):
         ATMON_KEY: "_atm_light_on",
     }
 
+    # Parameter key -> attribute. Each of these setters has a same-value skip
+    # guard (kept so Adaptive Lighting's periodic re-sends do not churn
+    # commands), so the cache must reflect our own pending writes.
+    _PARAM_ATTRS = {
+        WINDLEVEL_KEY: "_fan_speed",
+        BRIGHTNESS_KEY: "_brightness",
+        COLORTEMP_KEY: "_color_temp",
+        ATMBRI_KEY: "_atm_brightness",
+        ATMCOLOR_KEY: "_atm_color",
+    }
+
     # Seconds to wait after our own command burst or a gate-open before
     # verifying state via REST; lets the device's trailing deltas land first
     # and debounces a burst into a single verification. Dreo's cloud REST
@@ -239,12 +250,24 @@ class PyDreoCeilingFan(PyDreoFanBase):
         REST refreshes are the source of truth instead. The outbox applies this at
         submit time, so the entity reflects intent immediately and
         ``_finalize_command_params`` reads post-batch load states.
+
+        Parameter keys (speed, brightness, colour temperature, atmosphere
+        brightness/colour) fold in too, because their setters skip a value that
+        matches the cache and the cache otherwise advances only on the device's
+        report, 0.3-1.4 s after a send (measured on a DR-HCF002S). A change
+        reversed inside that window - speed 4 -> 9 -> 4, or a brightness nudge
+        undone - had the return command judged redundant and silently dropped,
+        leaving the device at the intermediate value. A key whose cache is
+        ``None`` is left alone: ``None`` means the model does not report it, and
+        the guards never fire on it anyway.
         """
         for key, val in params.items():
             if key == POWERON_KEY:
                 self._poweron = val
             elif key in self._LOAD_ATTRS:
                 setattr(self, self._LOAD_ATTRS[key], val)
+            elif key in self._PARAM_ATTRS and getattr(self, self._PARAM_ATTRS[key]) is not None:
+                setattr(self, self._PARAM_ATTRS[key], val)
         self._is_on = bool(self.is_on)
         self._last_local_write = time.time()
 
