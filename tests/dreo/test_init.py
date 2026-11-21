@@ -241,6 +241,7 @@ class TestInit:
         assert Platform.SENSOR in platforms
         assert Platform.SWITCH in platforms
         assert Platform.NUMBER in platforms
+        assert Platform.BUTTON in platforms
 
     def test_successful_setup_with_dehumidifier(self):
         """Test successful setup with a DEHUMIDIFIER device."""

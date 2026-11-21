@@ -1,4 +1,4 @@
-"""Support directional angle nudge buttons for some Dreo devices."""
+"""Support stateless action buttons (angle nudges, filter reset) for some Dreo devices."""
 
 from __future__ import annotations
 
@@ -47,6 +47,13 @@ BUTTONS: tuple[DreoButtonEntityDescription, ...] = (
         icon="mdi:arrow-down-bold",
         press_method="nudge_vertical_down",
         exists_fn=lambda device: device.type == DreoDeviceType.AIR_CIRCULATOR and device.is_feature_supported("vertical_angle_nudge"),
+    ),
+    DreoButtonEntityDescription(
+        key="Reset Filter",
+        icon="mdi:air-filter",
+        entity_category=EntityCategory.CONFIG,
+        press_method="reset_filter",
+        exists_fn=lambda device: device.type == DreoDeviceType.HUMIDIFIER and device.is_feature_supported("filtertime"),
     ),
 )
 
