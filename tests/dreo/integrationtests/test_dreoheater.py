@@ -52,7 +52,23 @@ class TestDreoHeater(IntegrationTestBase):
                 assert isinstance(heater_ha.current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
+            timer_on_number = self.get_entity_by_key(numbers, "Timer On")
+            timer_off_number = self.get_entity_by_key(numbers, "Timer Off")
+            assert timer_on_number.native_value == 0
+            assert timer_off_number.native_value == 0
+
+            with patch("custom_components.dreo.pydreo.pydreobasedevice.time.time", return_value=1793141533.7), patch(PATCH_SEND_COMMAND) as mock_send_command:
+                timer_off_number.set_native_value(90)
+                mock_send_command.assert_called_once_with(pydreo_heater, {TIMEROFF_KEY: {"ts": 1793141533, "du": 90}})
+            pydreo_heater.handle_server_update_base({REPORTED_KEY: {TIMEROFF_KEY: {"du": 90, "ts": 1793141533}}})
+            assert timer_off_number.native_value == 90
+
+            with patch("custom_components.dreo.pydreo.pydreobasedevice.time.time", return_value=1793141600.2), patch(PATCH_SEND_COMMAND) as mock_send_command:
+                timer_on_number.set_native_value(30)
+                mock_send_command.assert_called_once_with(pydreo_heater, {TIMERON_KEY: {"ts": 1793141600, "du": 30}})
+            pydreo_heater.handle_server_update_base({REPORTED_KEY: {TIMERON_KEY: {"du": 30, "ts": 1793141600}}})
+            assert timer_on_number.native_value == 30
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -129,7 +145,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.min_temp == 41
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -193,7 +209,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.unique_id is not None
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -295,7 +311,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heating_sensor.is_on is False
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Temperature Offset"])
+            self.verify_expected_entities(numbers, ["Temperature Offset", "Timer On", "Timer Off"])
             offset_number = self.get_entity_by_key(numbers, "Temperature Offset")
 
             # Celsius: 1°C per 2°F, like the Dreo app.
@@ -373,7 +389,7 @@ class TestDreoHeater(IntegrationTestBase):
                 assert isinstance(heater_ha.current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -461,7 +477,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.swing_mode == "Oscillate"
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -508,7 +524,7 @@ class TestDreoHeater(IntegrationTestBase):
                 assert isinstance(heater_ha.current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -630,7 +646,7 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 3}})
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -652,7 +668,7 @@ class TestDreoHeater(IntegrationTestBase):
             # Temperature offset as measured on the device (issue #952): the app sets -2 to +2 °C, stored as
             # tempoffset in °F (2 per °C), and the reported temperature already includes it.
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, ["Temperature Offset"])
+            self.verify_expected_entities(numbers, ["Temperature Offset", "Timer On", "Timer Off"])
             offset_number = self.get_entity_by_key(numbers, "Temperature Offset")
             offset_number.hass = MagicMock()
             offset_number.hass.config.units.temperature_unit = UnitOfTemperature.CELSIUS
@@ -785,7 +801,7 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({REPORTED_KEY: {HTALEVEL_KEY: 1}})
 
             numbers = number.get_entries([pydreo_heater])
-            self.verify_expected_entities(numbers, [])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
             self.verify_expected_entities(sensors, [])
@@ -918,7 +934,15 @@ class TestDreoHeater(IntegrationTestBase):
             # plus open-window detection, and the off/on/auto display select
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(
-                numbers, ["Horizontal Angle", "Horizontal Oscillation Angle Left", "Horizontal Oscillation Angle Right", "Temperature Offset"]
+                numbers,
+                [
+                    "Horizontal Angle",
+                    "Horizontal Oscillation Angle Left",
+                    "Horizontal Oscillation Angle Right",
+                    "Temperature Offset",
+                    "Timer On",
+                    "Timer Off",
+                ],
             )
             # Temperature offset as measured on the device (issue #952): the app's +3 °C is stored as tempoffset 6, and
             # the reported temperature stays raw (64 °F) while the app shows 21 °C, so the offset is added: 64 + 6 = 70 °F.
