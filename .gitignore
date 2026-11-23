@@ -137,3 +137,6 @@ custom_components/dreo/e2e_test_data/
 # uv package lock (project uses requirements*.txt / setuptools, not uv lock tracking)
 uv.lock
 
+
+# Claude Code per-machine settings
+.claude/settings.local.json
