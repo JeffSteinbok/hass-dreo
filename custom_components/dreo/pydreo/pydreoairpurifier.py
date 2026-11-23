@@ -3,7 +3,7 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import LIFETIME_KEY, PURIFYON_KEY
+from .constant import LIFETIME_KEY, PURIFYON_KEY, RGBON_KEY, RGB_BRI, RGB_MODE, RGBEFFECTID_KEY
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
@@ -33,6 +33,16 @@ class PyDreoAirPurifier(PyDreoFanBase):
         # Purification toggle (DR-HAP010S). On that model fan speed changes have no physical
         # effect unless purification is on (issue #933).  None if the device doesn't report it.
         self._purify_on: bool | None = None
+        # DR-HAP010S RGBIC ambient light (brightness values observed: 50 and 100).
+        self._rgbon: bool | None = None
+        self._rgbbri: int | None = None
+        self._rgbmode: int | None = None
+        self._rgbeffectid: str | None = None
+        self._rgbic_effect_names: list[str] = []
+        self._rgbic_scene_effect_names: list[str] = []
+        self._rgbic_effect_name: str | None = None
+        self._rgbic_effect_pending = False
+        self._rgbic_catalog_refresh_cancel = None
 
     def parse_speed_range_from_control_node(self, control_node) -> tuple[int, int]:
         """Parse the speed range from a control node"""
@@ -97,6 +107,211 @@ class PyDreoAirPurifier(PyDreoFanBase):
             return
         self._send_command(PURIFYON_KEY, value)
 
+    @property
+    def rgbon(self) -> bool | None:
+        """Whether the DR-HAP010S RGBIC light is on."""
+        return self._rgbon
+
+    @rgbon.setter
+    def rgbon(self, value: bool) -> None:
+        if self.model != "DR-HAP010S" or self._rgbon is None:
+            raise NotImplementedError("RGBIC power is unsupported without reported RGBIC state.")
+        if self._rgbon == value:
+            return
+        self._send_command(RGBON_KEY, value)
+
+    @property
+    def rgbbri(self) -> int | None:
+        """RGBIC brightness reported by the DR-HAP010S."""
+        return self._rgbbri
+
+    @rgbbri.setter
+    def rgbbri(self, value: int) -> None:
+        if self.model != "DR-HAP010S" or self._rgbbri is None:
+            raise NotImplementedError("RGBIC brightness is unsupported without reported RGBIC state.")
+        value = int(value)
+        if self._rgbbri == value:
+            return
+        self._send_command(RGB_BRI, value)
+
+    @property
+    def rgbmode(self) -> int | None:
+        """Current DR-HAP010S RGBIC mode (1=air quality, 2=manual effects)."""
+        return self._rgbmode
+
+    @rgbmode.setter
+    def rgbmode(self, value: int) -> None:
+        """Select one of the two RGBIC modes observed on the DR-HAP010S."""
+        if self.model != "DR-HAP010S" or self._rgbmode is None:
+            raise NotImplementedError("RGBIC mode is unsupported without reported 530S state.")
+        if isinstance(value, bool) or not isinstance(value, int) or value not in (1, 2):
+            raise ValueError("DR-HAP010S RGBIC mode must be 1 (air quality) or 2 (manual effects).")
+        if self._rgbmode == value:
+            return
+        self._send_command(RGB_MODE, value)
+        self._rgbmode = value
+        if value == 1:
+            self._rgbic_effect_name = None
+        elif not self._rgbic_effect_pending:
+            self._rgbic_effect_name = None
+        self._do_callbacks()
+
+    def set_rgbic_mode(self, value: int) -> bool:
+        """Send an observed 530S mode command as an ordered WebSocket write."""
+        if (
+            self.model != "DR-HAP010S"
+            or self._rgbmode is None
+            or isinstance(value, bool)
+            or not isinstance(value, int)
+            or value not in (1, 2)
+        ):
+            return False
+        if not self._outbox.flush_now():
+            return False
+        previous_mode = self._rgbmode
+        try:
+            self.rgbmode = value
+            return self._outbox.flush_now()
+        except Exception:
+            self._rgbmode = previous_mode
+            self._do_callbacks()
+            raise
+
+    @property
+    def rgbeffectid(self) -> str | None:
+        """Last reported RGBIC effect identifier; read-only metadata on this model."""
+        return self._rgbeffectid
+
+    @property
+    def rgbic_effect_names(self) -> list[str]:
+        """Basic effects available from the live RGBIC catalog."""
+        return list(self._rgbic_effect_names)
+
+    @property
+    def rgbic_scene_effect_names(self) -> list[str]:
+        """Scene effects (effectType 3) from the live RGBIC catalog."""
+        return list(self._rgbic_scene_effect_names)
+
+    @property
+    def rgbic_selectable_effect_names(self) -> list[str]:
+        """Basic and scene effect names exposed to Home Assistant."""
+        return [*self._rgbic_effect_names, *self._rgbic_scene_effect_names]
+
+    @property
+    def rgbic_effect_name(self) -> str | None:
+        """Best known selected manual effect name."""
+        return self._rgbic_effect_name
+
+    def set_rgbic_effect_catalog(self, catalog: dict) -> None:
+        """Cache writable basic/scene effect names and the catalog's current selection."""
+        effects = [
+            item for item in (catalog.get("basicEffects") or [])
+            if isinstance(item, dict)
+            and item.get("effectType") == 0
+            and item.get("name")
+            and item.get("id")
+            and item.get("referencedId")
+        ]
+        scene_effects = [
+            item for item in (catalog.get("sceneEffects") or [])
+            if isinstance(item, dict)
+            and item.get("effectType") == 3
+            and item.get("name")
+            and item.get("id")
+            and item.get("referencedId")
+        ]
+        scene_effects.sort(
+            key=lambda item: (
+                item.get("sortOrder") is None,
+                item.get("sortOrder", 0),
+                item.get("name", ""),
+            )
+        )
+        self._rgbic_effect_names = [item["name"] for item in effects]
+        self._rgbic_scene_effect_names = [item["name"] for item in scene_effects]
+        selected = next((item["name"] for item in effects if item.get("selected") is True), None)
+        if selected is None:
+            selected = next(
+                (item["name"] for item in scene_effects if item.get("selected") is True),
+                None,
+            )
+        self._rgbic_effect_name = selected
+
+    def _schedule_rgbic_catalog_refresh(self) -> None:
+        """Refresh the selected catalog name after a manual effect WebSocket report."""
+        pending_marker = object()
+        with self._lock:
+            if self._rgbic_catalog_refresh_cancel is not None:
+                return
+            self._rgbic_catalog_refresh_cancel = pending_marker
+
+        def _refresh() -> None:
+            with self._lock:
+                if self._rgbic_catalog_refresh_cancel is pending_marker:
+                    self._rgbic_catalog_refresh_cancel = None
+            try:
+                catalog = self._dreo.get_rgbic_effect_catalog(self)
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("RGBIC catalog refresh failed for %s", self.name)
+                return
+            if catalog is not None:
+                self.set_rgbic_effect_catalog(catalog)
+                self._do_callbacks()
+
+        try:
+            cancel = self._dreo.schedule_call_later(0, _refresh)
+        except Exception:
+            with self._lock:
+                if self._rgbic_catalog_refresh_cancel is pending_marker:
+                    self._rgbic_catalog_refresh_cancel = None
+            raise
+        with self._lock:
+            if self._rgbic_catalog_refresh_cancel is pending_marker:
+                self._rgbic_catalog_refresh_cancel = cancel
+            else:
+                cancel()
+
+    def dispose(self) -> None:
+        """Cancel a pending RGBIC catalog read before tearing down the device."""
+        with self._lock:
+            cancel = self._rgbic_catalog_refresh_cancel
+            self._rgbic_catalog_refresh_cancel = None
+        if callable(cancel):
+            cancel()
+        super().dispose()
+
+    def set_rgbic_effect(self, effect_name: str) -> bool:
+        """Apply a basic or scene effect after the observed WebSocket mode transition."""
+        is_basic = effect_name in self._rgbic_effect_names
+        is_scene = effect_name in self._rgbic_scene_effect_names
+        if (
+            self.model != "DR-HAP010S"
+            or self._rgbmode is None
+            or not (is_basic or is_scene)
+        ):
+            return False
+
+        self._rgbic_effect_pending = True
+        try:
+            # First drain on/brightness writes from the light action. Then send
+            # rgbmode=2 and wait for its control reply before the dependent REST POST.
+            if not self.set_rgbic_mode(2):
+                self._rgbic_effect_pending = False
+                return False
+            if is_scene:
+                success = self._dreo.set_rgbic_scene_effect(self, effect_name)
+            else:
+                success = self._dreo.set_rgbic_effect(self, effect_name)
+        except Exception:
+            self._rgbic_effect_pending = False
+            raise
+        if success:
+            self._rgbic_effect_name = effect_name
+            self._do_callbacks()
+        else:
+            self._rgbic_effect_pending = False
+        return success
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         _LOGGER.debug("update_state: update_state")
@@ -104,6 +319,11 @@ class PyDreoAirPurifier(PyDreoFanBase):
         if self._device_definition.filter_life_percent:
             self._filter_life = self.get_state_update_value(state, LIFETIME_KEY)
         self._purify_on = self.get_state_update_value(state, PURIFYON_KEY)
+        if self.model == "DR-HAP010S":
+            self._rgbon = self.get_state_update_value(state, RGBON_KEY)
+            self._rgbbri = self.get_state_update_value(state, RGB_BRI)
+            self._rgbmode = self.get_state_update_value(state, RGB_MODE)
+            self._rgbeffectid = self.get_state_update_value(state, RGBEFFECTID_KEY)
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -117,6 +337,31 @@ class PyDreoAirPurifier(PyDreoFanBase):
         val_purify_on = self.get_server_update_key_value(message, PURIFYON_KEY)
         if isinstance(val_purify_on, bool):
             self._purify_on = val_purify_on
+
+        if self.model == "DR-HAP010S":
+            val_rgbon = self.get_server_update_key_value(message, RGBON_KEY)
+            if isinstance(val_rgbon, bool):
+                self._rgbon = val_rgbon
+            val_rgbbri = self.get_server_update_key_value(message, RGB_BRI)
+            if isinstance(val_rgbbri, int) and not isinstance(val_rgbbri, bool):
+                self._rgbbri = val_rgbbri
+            val_rgbmode = self.get_server_update_key_value(message, RGB_MODE)
+            if isinstance(val_rgbmode, int) and not isinstance(val_rgbmode, bool):
+                previous_mode = self._rgbmode
+                self._rgbmode = val_rgbmode
+                if val_rgbmode == 1 or (previous_mode != val_rgbmode and not self._rgbic_effect_pending):
+                    self._rgbic_effect_name = None
+            val_effect_id = self.get_server_update_key_value(message, RGBEFFECTID_KEY)
+            if isinstance(val_effect_id, str):
+                previous_effect_id = self._rgbeffectid
+                self._rgbeffectid = val_effect_id
+                if val_effect_id != previous_effect_id:
+                    if self._rgbic_effect_pending:
+                        self._rgbic_effect_pending = False
+                    else:
+                        self._rgbic_effect_name = None
+                    if self._rgbmode == 2:
+                        self._schedule_rgbic_catalog_refresh()
 
     def _send_command(self, command_key: str, value) -> None:
         """Override to remap the 'auto' mode command for models that reject the plain "auto" string.

@@ -83,6 +83,31 @@ class TestCollecting:
         time.sleep(0.1)
         assert sends == [{"brightness": 60}]
 
+    def test_flush_now_sends_before_returning_and_cancels_timer(self):
+        """Protocol-dependent callers can force the queued command barrier."""
+        schedule, entries = record_scheduler()
+        outbox, sends = make_outbox(schedule=schedule)
+        outbox.submit({"rgbmode": 2})
+        assert len(entries) == 1
+
+        assert outbox.flush_now() is True
+
+        assert sends == [{"rgbmode": 2}]
+        assert entries[0]["cancelled"] is True
+        assert outbox.busy is False
+
+    def test_flush_now_propagates_a_rejected_command(self):
+        """A failed control acknowledgement prevents a dependent REST operation."""
+        schedule, _entries = record_scheduler()
+
+        def reject(_params):
+            raise RuntimeError("rejected")
+
+        outbox = CommandOutbox("test-device", TIMING, reject, schedule)
+        outbox.submit({"rgbmode": 2})
+        with pytest.raises(RuntimeError, match="rejected"):
+            outbox.flush_now()
+
     def test_empty_submit_is_ignored(self):
         """An empty dict must not start a batch window or arm a timer."""
         outbox, sends = make_outbox()

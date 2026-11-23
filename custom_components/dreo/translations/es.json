@@ -324,7 +324,14 @@
         "name": "Luz"
       },
       "rgb_light": {
-        "name": "Luz RGB"
+        "name": "Luz RGB",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "air_quality_auto": "Automático (calidad del aire)"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Luz ambiental"

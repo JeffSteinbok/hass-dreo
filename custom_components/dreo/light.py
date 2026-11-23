@@ -13,6 +13,7 @@ from .haimports import *  # pylint: disable=W0401,W0614
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
 from .pydreo.pydreoceilingfan import PyDreoCeilingFan
+from .pydreo.pydreoairpurifier import PyDreoAirPurifier
 from .pydreo.constant import DreoDeviceType  # pylint: disable=C0415
 from .dreobasedevice import DreoBaseDeviceHA
 
@@ -38,6 +39,17 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
 
     for pydreo_device in pydreo_devices:
         _LOGGER.debug("get_entries: Adding Lights for %s", pydreo_device.name)
+
+        # Keep the 530S on one model-specific light entity. Other purifiers and
+        # ceiling-fan RGBIC paths continue through their existing branches.
+        if (
+            isinstance(pydreo_device, PyDreoAirPurifier)
+            and pydreo_device.model == "DR-HAP010S"
+            and pydreo_device.is_feature_supported("rgbon")
+            and pydreo_device.is_feature_supported("rgbbri")
+        ):
+            light_ha_collection.append(Dreo530SRGBICLightHA(pydreo_device))
+            continue
 
         # Check if device has a main light (display, main light with brightness/color temp)
         if pydreo_device.is_feature_supported("light_on"):
@@ -263,6 +275,55 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
                 (self.min_color_temp_kelvin, self.max_color_temp_kelvin), getattr(self.pydreo_device, self._color_temp_attr, 0)
             )
         )
+
+
+class Dreo530SRGBICLightHA(DreoLightHA):
+    """RGBIC controls for the DR-HAP010S, using its catalog and observed writes."""
+
+    AUTO_AIR_QUALITY_EFFECT = "air_quality_auto"
+
+    def __init__(self, device: PyDreoBaseDevice) -> None:
+        super().__init__(device, light_on_attr="rgbon", brightness_attr="rgbbri")
+        self._attr_translation_key = "rgb_light"
+        self._attr_unique_id = f"{device.serial_number}-rgb-light"
+        self._attr_icon = "mdi:led-strip-variant"
+
+    @property
+    def supported_features(self) -> LightEntityFeature:
+        """The 530S supports selecting effects, but not free RGB color."""
+        return LightEntityFeature.EFFECT
+
+    @property
+    def effect_list(self) -> list[str]:
+        """Use basic and scene effect names from this device's live catalog."""
+        return [*self.pydreo_device.rgbic_selectable_effect_names, self.AUTO_AIR_QUALITY_EFFECT]
+
+    @property
+    def effect(self) -> str | None:
+        """Report the air-quality mode or the last known selected basic effect."""
+        if self.pydreo_device.rgbmode == 1:
+            return self.AUTO_AIR_QUALITY_EFFECT
+        if self.pydreo_device.rgbmode == 2:
+            return self.pydreo_device.rgbic_effect_name
+        return None
+
+    async def async_added_to_hass(self) -> None:
+        """Load effect names and selected state from the authenticated catalog."""
+        await super().async_added_to_hass()
+        manager = self.pydreo_device._dreo  # pylint: disable=protected-access
+        catalog = await self.hass.async_add_executor_job(manager.get_rgbic_effect_catalog, self.pydreo_device)
+        if catalog:
+            self.pydreo_device.set_rgbic_effect_catalog(catalog)
+            self.async_write_ha_state()
+
+    def turn_on(self, **kwargs: Any) -> None:
+        """Preserve on/brightness behavior, then apply a supported mode/effect."""
+        super().turn_on(**kwargs)
+        effect = kwargs.get(ATTR_EFFECT)
+        if effect == self.AUTO_AIR_QUALITY_EFFECT:
+            self.pydreo_device.set_rgbic_mode(1)
+        elif effect in self.pydreo_device.rgbic_selectable_effect_names:
+            self.pydreo_device.set_rgbic_effect(effect)
 
 
 class DreoRGBLightHA(DreoLightHA):

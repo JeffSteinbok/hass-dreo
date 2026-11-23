@@ -324,7 +324,14 @@
         "name": "Světlo"
       },
       "rgb_light": {
-        "name": "RGB světlo"
+        "name": "RGB světlo",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "air_quality_auto": "Kvalita vzduchu (automaticky)"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Noční osvětlení"

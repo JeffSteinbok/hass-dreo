@@ -1,0 +1,15 @@
+[
+  {
+    "subEffects": [
+      {
+        "effectId": "REDACTED_ID_21",
+        "layouts": []
+      }
+    ],
+    "name": "Wave",
+    "applyToDevice": true,
+    "id": "REDACTED_ID_21",
+    "devicesn": "REDACTED_SERIAL_1",
+    "effectType": 3
+  }
+]

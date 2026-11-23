@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from custom_components.dreo import light
 from custom_components.dreo.light import DreoLightHA, DreoRGBLightHA, DreoRGBICLightHA, DreoHumidifierLightHA
+from custom_components.dreo.light import Dreo530SRGBICLightHA
 from custom_components.dreo.haimports import (
     ColorMode,
     ATTR_BRIGHTNESS,
@@ -13,6 +14,7 @@ from custom_components.dreo.haimports import (
     ATTR_EFFECT,
 )
 
+from .integrationtests.integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 from .testdevicebase import TestDeviceBase
 from .custommocks import PyDreoDeviceMock
 
@@ -20,7 +22,7 @@ PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
 PATCH_UPDATE_HA_STATE = f"{PATCH_BASE_PATH}.schedule_update_ha_state"
 
 
-class TestDreoLightHA(TestDeviceBase):
+class TestDreoLightHA(TestDeviceBase, IntegrationTestBase):
     """Test the Dreo Light entity."""
 
     def test_light_get_entries_filters_correctly(self):
@@ -82,6 +84,94 @@ class TestDreoLightHA(TestDeviceBase):
         types = [type(e).__name__ for e in entities]
         assert "DreoLightHA" in types
         assert "DreoRGBICLightHA" in types
+
+    def test_530s_get_entries_exposes_only_rgbic_light(self):
+        """A 530S gets its own RGBIC light without changing purifier entities."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.handle_server_update({"reported": {"rgbon": False, "rgbbri": 50}})
+        entities = light.get_entries([device])
+        assert len(entities) == 1
+        assert isinstance(entities[0], Dreo530SRGBICLightHA)
+        assert entities[0].supported_color_modes == {ColorMode.BRIGHTNESS}
+        assert entities[0].is_on is False
+        assert entities[0]._brightness_scale == (1, 100)
+        with patch(PATCH_UPDATE_HA_STATE), patch(PATCH_SEND_COMMAND):
+            entities[0].turn_on(brightness=255)
+        device.handle_server_update({"reported": {"rgbon": True, "rgbbri": 100}})
+        assert device.rgbbri == 100
+        assert device.rgbon is True
+        with patch(PATCH_UPDATE_HA_STATE), patch(PATCH_SEND_COMMAND):
+            entities[0].turn_on(brightness=0)
+        device.handle_server_update({"reported": {"rgbbri": 1}})
+        assert device.rgbbri == 1
+
+        # The specialized light must not be selected for other purifiers with
+        # similarly named runtime attributes.
+        other_purifier = self.pydreo_manager.devices[0].__class__(
+            self.pydreo_manager.devices[0].device_definition,
+            {"deviceName": "Other purifier", "model": "DR-HAP008S", "sn": "HAP008S_TEST"},
+            self.pydreo_manager,
+        )
+        other_purifier._rgbon = False
+        other_purifier._rgbbri = 50
+        other_entities = light.get_entries([other_purifier])
+        assert all(not isinstance(entity, Dreo530SRGBICLightHA) for entity in other_entities)
+
+    def test_530s_effect_controls_use_catalog_basics_scenes_and_auto_mode(self):
+        """The 530S light exposes catalog basics, scene effects, and air-quality auto mode."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.handle_server_update({"reported": {"rgbon": True, "rgbbri": 50, "rgbmode": 2}})
+        device.set_rgbic_effect_catalog({
+            "basicEffects": [
+                {"id": "basic-id", "referencedId": "basic-ref", "effectType": 0, "name": "Respirar"},
+                {"id": "incomplete", "effectType": 0, "name": "Incomplete"},
+            ],
+            "remoteEffects": [{"id": "remote-id", "name": "Remoto"}],
+            "sceneEffects": [{
+                "id": "scene-id",
+                "referencedId": "scene-ref",
+                "effectType": 3,
+                "name": "Wave",
+                "sortOrder": 13,
+            }],
+        })
+        entity = light.get_entries([device])[0]
+        assert isinstance(entity, Dreo530SRGBICLightHA)
+        assert entity.effect_list == [
+            "Respirar",
+            "Wave",
+            Dreo530SRGBICLightHA.AUTO_AIR_QUALITY_EFFECT,
+        ]
+
+        with patch(PATCH_UPDATE_HA_STATE), patch(PATCH_SEND_COMMAND) as send:
+            entity.turn_on(effect=Dreo530SRGBICLightHA.AUTO_AIR_QUALITY_EFFECT)
+            send.assert_called_once_with(device, {"rgbmode": 1})
+        device.handle_server_update({"reported": {"rgbmode": 1, "rgbeffectid": "1701000000000000011"}})
+        assert entity.effect == Dreo530SRGBICLightHA.AUTO_AIR_QUALITY_EFFECT
+
+        device.handle_server_update({"reported": {"rgbmode": 2}})
+
+        def _apply_manual_effect(name: str) -> bool:
+            device._rgbic_effect_name = name
+            return True
+
+        with patch(PATCH_UPDATE_HA_STATE), patch.object(
+            device, "set_rgbic_effect", side_effect=_apply_manual_effect
+        ) as set_effect:
+            entity.turn_on(effect="Respirar")
+            set_effect.assert_called_once_with("Respirar")
+        assert entity.effect == "Respirar"
+
+        with patch(PATCH_UPDATE_HA_STATE), patch.object(
+            device, "set_rgbic_effect", side_effect=_apply_manual_effect
+        ) as set_effect:
+            entity.turn_on(effect="Wave")
+            set_effect.assert_called_once_with("Wave")
+        assert entity.effect == "Wave"
 
     def test_light_get_entries_empty(self):
         """Test get_entries returns empty for devices without lights."""

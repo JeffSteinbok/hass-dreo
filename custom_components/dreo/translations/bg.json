@@ -324,7 +324,14 @@
         "name": "Осветление"
       },
       "rgb_light": {
-        "name": "RGB осветление"
+        "name": "RGB осветление",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "air_quality_auto": "Качество на въздуха (автоматично)"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Околно осветление"
