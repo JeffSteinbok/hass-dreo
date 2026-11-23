@@ -15,7 +15,7 @@ from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
 from .pydreo import PyDreo
 from .pydreo.pydreobasedevice import PyDreoBaseDevice
-from .pydreo.constant import DreoDeviceType
+from .pydreo.constant import DreoDeviceType, HEATER_AXIS_HORIZONTAL_SPANS, HEATER_AXIS_VERTICAL_SPANS
 
 from .const import DOMAIN, PYDREO_MANAGER
 
@@ -68,6 +68,25 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         options_list=["off", "on", "auto"],
         raw_values=[0, 1, 2],
         exists_fn=lambda device: device.type == DreoDeviceType.HEATER and device.is_fan_heater and device.is_feature_supported("lightmode"),
+    ),
+    # Oscillation arcs of heaters with separate horizontal and vertical oscillation (714S, DR-HSH034S).
+    DreoSelectEntityDescription(
+        key="Horizontal Oscillation Angle",
+        translation_key="horizontal_oscillation_angle",
+        attr_name="horizontal_oscillation_span",
+        icon="mdi:angle-acute",
+        options_list=[str(span) for span in HEATER_AXIS_HORIZONTAL_SPANS],
+        raw_values=list(HEATER_AXIS_HORIZONTAL_SPANS),
+        exists_fn=lambda device: device.type == DreoDeviceType.HEATER and device.is_feature_supported("horizontal_oscillation_span"),
+    ),
+    DreoSelectEntityDescription(
+        key="Vertical Oscillation Angle",
+        translation_key="vertical_oscillation_angle",
+        attr_name="vertical_oscillation_span",
+        icon="mdi:angle-acute",
+        options_list=[str(span) for span in HEATER_AXIS_VERTICAL_SPANS],
+        raw_values=list(HEATER_AXIS_VERTICAL_SPANS),
+        exists_fn=lambda device: device.type == DreoDeviceType.HEATER and device.is_feature_supported("vertical_oscillation_span"),
     ),
 )
 

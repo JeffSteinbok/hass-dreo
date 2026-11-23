@@ -317,6 +317,21 @@
           "on": "Acceso",
           "auto": "Automatico"
         }
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Angolo oscillazione orizzontale",
+        "state": {
+          "30": "30°",
+          "60": "60°",
+          "90": "90°"
+        }
+      },
+      "vertical_oscillation_angle": {
+        "name": "Angolo oscillazione verticale",
+        "state": {
+          "30": "30°",
+          "60": "60°"
+        }
       }
     },
     "light": {

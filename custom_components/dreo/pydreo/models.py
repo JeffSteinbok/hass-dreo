@@ -11,6 +11,7 @@ from .constant import (
     TEMPERATURE_OFFSET_RANGE,
     COOL_RANGE,
     HEATER_HOSC_SWING_ANGLES,
+    HEATER_AXIS_OSCMODE_SWING_MAP,
     TEMP_RANGE,
     TARGET_TEMP_RANGE,
     TARGET_TEMP_RANGE_ECO,
@@ -157,6 +158,7 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
         has_display_light: bool = False,
         temperature_includes_offset: bool = False,
         ambient_light_levels: tuple | None = None,
+        axis_oscillation: bool = False,
     ):
         # Set default ranges if not provided
         if device_ranges is None:
@@ -182,6 +184,10 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
         # When True, the reported "temperature" already has "tempoffset" applied, so it must not be
         # added again.
         self.temperature_includes_offset = temperature_includes_offset
+        # When True, horizontal and vertical oscillation are separate axes: "oscmode" is a bitmask of
+        # the oscillating axes and "cruiseconf" holds both arcs. They are exposed as per-axis switches
+        # and angle selects, and the climate swing modes are off/horizontal/vertical/both.
+        self.axis_oscillation = axis_oscillation
         if self.modes is None:
             self.modes = [
                 DreoHeaterMode.COOLAIR,
@@ -596,13 +602,12 @@ SUPPORTED_DEVICES = {
     "DR-HSH017S": DreoHeaterDeviceDetails(
         swing_modes=[SWING_OFF, SWING_ON],
     ),
+    # DR-HSH034S (714S) oscillates horizontally (30/60/90°) and vertically (30/60°), each on its own
+    # (issue #982). "oscmode" is a bitmask of the oscillating axes (1 horizontal, 2 vertical); 4 is
+    # rejected. The arcs are set through "cruiseconf" ("top,right,bottom,left" in degrees).
     "DR-HSH034S": DreoHeaterDeviceDetails(
-        swing_modes=[
-            HeaterOscillationAngles.OSC,
-            HeaterOscillationAngles.SIXTY,
-            HeaterOscillationAngles.NINETY,
-            HeaterOscillationAngles.ONE_TWENTY,
-        ],
+        swing_modes=list(HEATER_AXIS_OSCMODE_SWING_MAP.values()),
+        axis_oscillation=True,
     ),
     # DR-HSH040S (720S Whole-Room Heater) reports an empty controlsConf. Per the user manual it has
     # three heat levels (H1-H3), an ECO target of 5-35°C (41-95°F, reported in °F) and fan only,
@@ -637,13 +642,10 @@ SUPPORTED_DEVICES = {
     # HSH011S (heat levels, ECO target in °F, PTC, window-open detection), so the defaults apply (issue #928).
     "DR-HSH041S": DreoHeaterDeviceDetails(),
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
+    # "WH714S" is the series name the Dreo app gives the DR-HSH034S, so it shares that definition.
     "WH714S": DreoHeaterDeviceDetails(
-        swing_modes=[
-            HeaterOscillationAngles.OSC,
-            HeaterOscillationAngles.SIXTY,
-            HeaterOscillationAngles.NINETY,
-            HeaterOscillationAngles.ONE_TWENTY,
-        ],
+        swing_modes=list(HEATER_AXIS_OSCMODE_SWING_MAP.values()),
+        axis_oscillation=True,
     ),
     "WH719S": DreoHeaterDeviceDetails(
         swing_modes=[

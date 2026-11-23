@@ -317,6 +317,21 @@
           "on": "Zapnuto",
           "auto": "Automaticky"
         }
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Horizontální úhel oscilace",
+        "state": {
+          "30": "30°",
+          "60": "60°",
+          "90": "90°"
+        }
+      },
+      "vertical_oscillation_angle": {
+        "name": "Vertikální úhel oscilace",
+        "state": {
+          "30": "30°",
+          "60": "60°"
+        }
       }
     },
     "light": {

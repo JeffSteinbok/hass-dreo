@@ -419,6 +419,7 @@ class TestDreoHeaterHA(TestDeviceBase):
             "oscangle": None,
         }
         features.update(overrides.pop("features_override", {}))
+        axis_oscillation = overrides.pop("axis_oscillation", False)
         swing_modes = overrides.pop(
             "swing_modes",
             [
@@ -446,6 +447,7 @@ class TestDreoHeaterHA(TestDeviceBase):
         device_ranges = features.get("device_ranges", {})
         mock.device_definition.device_ranges = device_ranges
         mock.device_definition.swing_modes = swing_modes
+        mock.device_definition.axis_oscillation = axis_oscillation
         mock.heat_range = device_ranges.get(HEAT_RANGE, (1, 3))
         return mock, climate.DreoHeaterHA(mock)
 
@@ -651,6 +653,24 @@ class TestDreoHeaterHA(TestDeviceBase):
         mock, heater = self._create_full_heater(features_override={"oscmode": 0})
         heater.set_swing_mode(HeaterOscillationAngles.SIXTY)
         assert mock.oscmode == 2  # HEATER_SWING_OSCMODE_MAP maps SIXTY to 2
+
+    def test_swing_mode_with_oscillation_axes(self):
+        """714S (issue #982): oscmode is a bitmask of the oscillating axes."""
+        axis_swing_modes = [SWING_OFF, "horizontal", "vertical", "both"]
+        for oscmode, expected in ((0, SWING_OFF), (1, "horizontal"), (2, "vertical"), (3, "both")):
+            mock, heater = self._create_full_heater(features_override={"oscmode": oscmode}, swing_modes=axis_swing_modes, axis_oscillation=True)
+            assert heater.swing_mode == expected
+
+    def test_set_swing_mode_oscillation_axes(self):
+        """714S (issue #982): each swing mode sets the matching axes; other modes are ignored."""
+        axis_swing_modes = [SWING_OFF, "horizontal", "vertical", "both"]
+        for swing_mode, expected in (("horizontal", 1), ("vertical", 2), ("both", 3), (SWING_OFF, 0)):
+            mock, heater = self._create_full_heater(features_override={"oscmode": None}, swing_modes=axis_swing_modes, axis_oscillation=True)
+            heater.set_swing_mode(swing_mode)
+            assert mock.oscmode == expected
+        mock, heater = self._create_full_heater(features_override={"oscmode": 1}, swing_modes=axis_swing_modes, axis_oscillation=True)
+        heater.set_swing_mode(HeaterOscillationAngles.ONE_TWENTY)
+        assert mock.oscmode == 1
 
     def test_set_swing_mode_oscon(self):
         """Test set_swing_mode with oscon-based device."""

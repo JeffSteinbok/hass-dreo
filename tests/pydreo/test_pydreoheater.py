@@ -57,6 +57,9 @@ class TestPyDreoHeater(TestBase):
         _ = heater.horizontal_osc_angle_left
         _ = heater.horizontal_osc_angle_right
         _ = heater.horizontal_angle
+        _ = heater.vertically_oscillating
+        _ = heater.horizontal_oscillation_span
+        _ = heater.vertical_oscillation_span
         _ = heater.lightmode
         _ = heater.window_detection
 
@@ -152,6 +155,23 @@ class TestPyDreoHeater(TestBase):
         if heater.horizontally_oscillating is not None:
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater.horizontally_oscillating = not bool(heater.horizontally_oscillating)
+                mock_send_command.assert_called_once()
+
+        if heater.vertically_oscillating is not None:
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.vertically_oscillating = not bool(heater.vertically_oscillating)
+                mock_send_command.assert_called_once()
+
+        if heater.horizontal_oscillation_span is not None:
+            new_span = 30 if heater.horizontal_oscillation_span != 30 else 90
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.horizontal_oscillation_span = new_span
+                mock_send_command.assert_called_once()
+
+        if heater.vertical_oscillation_span is not None:
+            new_span = 30 if heater.vertical_oscillation_span != 30 else 60
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater.vertical_oscillation_span = new_span
                 mock_send_command.assert_called_once()
 
         if heater.horizontal_angle is not None:
@@ -1017,6 +1037,151 @@ class TestPyDreoHeater(TestBase):
             heater.coolmode = DreoHeaterFanMode.AUTO
         with pytest.raises(ValueError):
             heater.coollevel = 3
+
+    @pytest.mark.parametrize("devices_file", ["get_devices_HSH009S.json", "get_devices_HSH016S.json"])
+    def test_other_heaters_have_no_oscillation_axes(self, devices_file: str):
+        """The 714S axis controls must not appear on other heaters, even with a cruiseconf in their state."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        heater.handle_server_update({REPORTED_KEY: {CRUISECONF_KEY: "45,45,-15,-45"}})
+        assert heater.vertically_oscillating is None
+        assert heater.horizontal_oscillation_span is None
+        assert heater.vertical_oscillation_span is None
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.vertically_oscillating = True
+            heater.horizontal_oscillation_span = 60
+            heater.vertical_oscillation_span = 30
+            mock_send_command.assert_not_called()
+
+    def test_HSH016S_horizontal_oscillation_still_uses_hoscon(self):  # pylint: disable=invalid-name
+        """The 706S keeps its own "hoscon" switch; it is not an oscmode bit."""
+        self.get_devices_file_name = "get_devices_HSH016S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        assert heater.horizontally_oscillating is False
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontally_oscillating = True
+            mock_send_command.assert_called_once_with(heater, {HORIZONTAL_OSCILLATION_KEY: True})
+
+    def test_HSH034S_oscillation_axes(self):  # pylint: disable=invalid-name
+        """714S: "oscmode" is a bitmask of the oscillating axes and "cruiseconf" holds both arcs (issue #982)."""
+        self.get_devices_file_name = "get_devices_HSH034S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+
+        # Initial poll: oscmode 0, cruiseconf "45,45,-15,-45"
+        assert heater.oscmode == 0
+        assert heater.horizontally_oscillating is False
+        assert heater.vertically_oscillating is False
+        assert heater.horizontal_oscillation_span == 90
+        assert heater.vertical_oscillation_span == 60
+        # The 706S range keys are not used on this model
+        assert heater.horizontal_osc_angle_left is None
+
+        # Turning one axis on right after the other composes, even before the device reports back
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontally_oscillating = True
+            heater.vertically_oscillating = True
+            assert mock_send_command.call_args_list == [call(heater, {OSCMODE_KEY: 1}), call(heater, {OSCMODE_KEY: 3})]
+        assert heater.oscmode == 3
+        # Already on: nothing to send
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontally_oscillating = True
+            mock_send_command.assert_not_called()
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontally_oscillating = False
+            mock_send_command.assert_called_once_with(heater, {OSCMODE_KEY: 2})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.vertically_oscillating = False
+            mock_send_command.assert_called_once_with(heater, {OSCMODE_KEY: 0})
+
+        # Websocket reports of oscmode
+        for oscmode, horizontal, vertical in ((1, True, False), (2, False, True), (3, True, True), (0, False, False)):
+            heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: oscmode}})
+            assert (heater.horizontally_oscillating, heater.vertically_oscillating) == (horizontal, vertical)
+
+        # The device rejects oscmode 4 ("instruction validate failed"), so it is never sent
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.oscmode = 4
+            mock_send_command.assert_not_called()
+        assert heater.oscmode == 0
+
+        # Horizontal arc: "right" and "left" move symmetrically, the vertical arc is kept
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_oscillation_span = 30
+            mock_send_command.assert_called_once_with(heater, {CRUISECONF_KEY: "45,15,-15,-15"})
+        # Vertical arc: the bottom stays and the top moves; a change made before the report composes
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.vertical_oscillation_span = 30
+            mock_send_command.assert_called_once_with(heater, {CRUISECONF_KEY: "15,15,-15,-15"})
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_oscillation_span = 60
+            mock_send_command.assert_called_once_with(heater, {CRUISECONF_KEY: "15,30,-15,-30"})
+        assert (heater.horizontal_oscillation_span, heater.vertical_oscillation_span) == (60, 30)
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_oscillation_span = 60
+            heater.vertical_oscillation_span = 30
+            mock_send_command.assert_not_called()
+
+        # Arcs the app does not offer are rejected
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_oscillation_span = 120
+            heater.vertical_oscillation_span = 90
+            heater.vertical_oscillation_span = 45
+            mock_send_command.assert_not_called()
+
+        # Websocket reports of cruiseconf, as logged from the Dreo app in issue #982
+        for conf, horizontal, vertical in (
+            ("15,15,-15,-15", 30, 30),
+            ("15,30,-15,-30", 60, 30),
+            ("15,45,-15,-45", 90, 30),
+            ("45,45,-15,-45", 90, 60),
+        ):
+            heater.handle_server_update({REPORTED_KEY: {CRUISECONF_KEY: conf}})
+            assert (heater.horizontal_oscillation_span, heater.vertical_oscillation_span) == (horizontal, vertical)
+
+        # A malformed report is ignored
+        heater.handle_server_update({REPORTED_KEY: {CRUISECONF_KEY: "garbage"}})
+        assert (heater.horizontal_oscillation_span, heater.vertical_oscillation_span) == (90, 60)
+
+    def test_HSH034S_oscillation_axes_from_initial_state(self):  # pylint: disable=invalid-name
+        """WH714S fixture (a DR-HSH034S): both axes on at their widest arcs."""
+        self.get_devices_file_name = "get_devices_WH714S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        assert heater.oscmode == 3
+        assert heater.horizontally_oscillating is True
+        assert heater.vertically_oscillating is True
+        assert heater.horizontal_oscillation_span == 90
+        assert heater.vertical_oscillation_span == 60
+
+        # No cruiseconf in the state: no arcs, but the axis switches still work
+        heater.update_state({OSCMODE_KEY: {"state": 2}})
+        assert heater.horizontal_oscillation_span is None
+        assert heater.vertical_oscillation_span is None
+        assert heater.vertically_oscillating is True
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            heater.horizontal_oscillation_span = 30
+            mock_send_command.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            ("15,15,-15,-15", (15, 15, -15, -15)),
+            ("45,45,-15,-45", (45, 45, -15, -45)),
+            (" 15, 30 ,-15,-30", (15, 30, -15, -30)),
+            ("15,15,-15", None),
+            ("15,15,-15,-15,0", None),
+            ("a,b,c,d", None),
+            ("", None),
+            (None, None),
+            (15, None),
+        ],
+    )
+    def test_parse_cruise_conf(self, value, expected):
+        """Parse "top,right,bottom,left" oscillation arcs."""
+        assert PyDreoHeater._parse_cruise_conf(value) == expected  # pylint: disable=protected-access
 
     @pytest.mark.parametrize("devices_file", HEATER_EXHAUSTIVE_MODELS)
     def test_all_settable_properties_for_each_model(self, devices_file: str):

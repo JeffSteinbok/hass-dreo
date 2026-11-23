@@ -35,6 +35,10 @@ from .constant import (
     HORIZONTAL_OSCILLATION_KEY,
     HORIZONTAL_OSCILLATION_ANGLE_KEY,
     HORIZONTAL_ANGLE_ADJ_KEY,
+    CRUISECONF_KEY,
+    HEATER_AXIS_HORIZONTAL_SPANS,
+    HEATER_AXIS_VERTICAL_SPANS,
+    OscillationMode,
     DreoHeaterMode,
     DreoHeaterFunction,
     DreoHeaterHeatMode,
@@ -105,6 +109,10 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._hoscon = None
         self._hoscangle = None
         self._hangleadj = None
+
+        # Heaters with separate horizontal and vertical oscillation (axis_oscillation): the oscillation
+        # arcs as (top, right, bottom, left) degrees, parsed from "cruiseconf".
+        self._cruise_conf = None
 
         # Check if the device has a speed range defined in the device definition
         # If not, parse the speed range from the details
@@ -313,6 +321,15 @@ class PyDreoHeater(PyDreoBaseDevice):
         if self._oscmode is not None:
             if self._oscmode == value:
                 _LOGGER.debug("oscmode: oscmode - value already %s, skipping command", value)
+                return
+            if self._heaterDeviceDefinition.axis_oscillation:
+                if value not in range(OscillationMode.BOTH + 1):
+                    # Only the horizontal and vertical bits exist; the device rejects anything else (issue #982).
+                    _LOGGER.error("oscmode: oscmode %s is not a combination of the horizontal and vertical axes.", value)
+                    return
+                # The per-axis switches build on this value, so keep it locally once sent.
+                self._send_command(OSCMODE_KEY, value)
+                self._oscmode = value
                 return
             self._send_command(OSCMODE_KEY, value)
         else:
@@ -596,13 +613,17 @@ class PyDreoHeater(PyDreoBaseDevice):
     @property
     def horizontally_oscillating(self) -> bool:
         """Returns `True` if horizontal oscillation is on."""
+        if self._heaterDeviceDefinition.axis_oscillation:
+            return self._axis_oscillating(OscillationMode.HORIZONTAL)
         return self._hoscon
 
     @horizontally_oscillating.setter
     def horizontally_oscillating(self, value: bool) -> None:
         """Enable or disable horizontal oscillation"""
         _LOGGER.debug("horizontally_oscillating: horizontally_oscillating.setter(%s) --> %s", self.name, value)
-        if self._hoscon is not None:
+        if self._heaterDeviceDefinition.axis_oscillation:
+            self._set_axis_oscillating(OscillationMode.HORIZONTAL, value)
+        elif self._hoscon is not None:
             if self._hoscon == value:
                 _LOGGER.debug("horizontally_oscillating: horizontally_oscillating - value already %s, skipping command", value)
                 return
@@ -667,6 +688,100 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._send_command(HORIZONTAL_ANGLE_ADJ_KEY, value)
 
     @property
+    def vertically_oscillating(self) -> bool | None:
+        """Returns `True` if vertical oscillation is on, on heaters with separate oscillation axes."""
+        if not self._heaterDeviceDefinition.axis_oscillation:
+            return None
+        return self._axis_oscillating(OscillationMode.VERTICAL)
+
+    @vertically_oscillating.setter
+    def vertically_oscillating(self, value: bool) -> None:
+        """Enable or disable vertical oscillation"""
+        _LOGGER.debug("vertically_oscillating: vertically_oscillating.setter(%s) --> %s", self.name, value)
+        if not self._heaterDeviceDefinition.axis_oscillation:
+            _LOGGER.error("vertically_oscillating: Attempting to set vertical oscillation on a device that doesn't support it.")
+            return
+        self._set_axis_oscillating(OscillationMode.VERTICAL, value)
+
+    def _axis_oscillating(self, axis: OscillationMode) -> bool | None:
+        """Whether the given axis bit is set in "oscmode"."""
+        if self._oscmode is None:
+            return None
+        return bool(self._oscmode & axis)
+
+    def _set_axis_oscillating(self, axis: OscillationMode, value: bool) -> None:
+        """Turn one oscillation axis on or off, keeping the other as it is.
+
+        Both axes travel in one "oscmode" bitmask, which the oscmode setter keeps locally once sent:
+        turning one axis on right after the other then composes instead of the second overwriting the first.
+        """
+        if self._oscmode is None:
+            _LOGGER.error("_set_axis_oscillating: Attempting to set oscillation on a device that doesn't report oscmode.")
+            return
+        new_oscmode = (self._oscmode | axis) if value else (self._oscmode & ~axis)
+        self.oscmode = new_oscmode & OscillationMode.BOTH
+
+    @property
+    def horizontal_oscillation_span(self) -> int | None:
+        """Get the horizontal oscillation arc in degrees, on heaters with separate oscillation axes."""
+        if not self._heaterDeviceDefinition.axis_oscillation or self._cruise_conf is None:
+            return None
+        _, right, _, left = self._cruise_conf
+        return right - left
+
+    @horizontal_oscillation_span.setter
+    def horizontal_oscillation_span(self, value: int) -> None:
+        """Set the horizontal oscillation arc. It is kept centred where it is (straight ahead in the app)."""
+        value = int(value)
+        _LOGGER.debug("horizontal_oscillation_span: horizontal_oscillation_span.setter(%s) --> %s", self.name, value)
+        if self.horizontal_oscillation_span is None:
+            _LOGGER.error("horizontal_oscillation_span: Attempting to set horizontal oscillation angle on a device that doesn't support it.")
+            return
+        if value not in HEATER_AXIS_HORIZONTAL_SPANS:
+            _LOGGER.error("horizontal_oscillation_span: %s is not one of %s", value, HEATER_AXIS_HORIZONTAL_SPANS)
+            return
+        if self.horizontal_oscillation_span == value:
+            _LOGGER.debug("horizontal_oscillation_span: value already %s, skipping command", value)
+            return
+        top, right, bottom, left = self._cruise_conf
+        center = (right + left) // 2
+        self._send_cruise_conf((top, center + value // 2, bottom, center - value // 2))
+
+    @property
+    def vertical_oscillation_span(self) -> int | None:
+        """Get the vertical oscillation arc in degrees, on heaters with separate oscillation axes."""
+        if not self._heaterDeviceDefinition.axis_oscillation or self._cruise_conf is None:
+            return None
+        top, _, bottom, _ = self._cruise_conf
+        return top - bottom
+
+    @vertical_oscillation_span.setter
+    def vertical_oscillation_span(self, value: int) -> None:
+        """Set the vertical oscillation arc. The bottom stays where it is and the top moves."""
+        value = int(value)
+        _LOGGER.debug("vertical_oscillation_span: vertical_oscillation_span.setter(%s) --> %s", self.name, value)
+        if self.vertical_oscillation_span is None:
+            _LOGGER.error("vertical_oscillation_span: Attempting to set vertical oscillation angle on a device that doesn't support it.")
+            return
+        if value not in HEATER_AXIS_VERTICAL_SPANS:
+            _LOGGER.error("vertical_oscillation_span: %s is not one of %s", value, HEATER_AXIS_VERTICAL_SPANS)
+            return
+        if self.vertical_oscillation_span == value:
+            _LOGGER.debug("vertical_oscillation_span: value already %s, skipping command", value)
+            return
+        _, right, bottom, left = self._cruise_conf
+        self._send_cruise_conf((bottom + value, right, bottom, left))
+
+    def _send_cruise_conf(self, conf: tuple[int, int, int, int]) -> None:
+        """Send both oscillation arcs as "top,right,bottom,left".
+
+        Both arcs travel in one key, so the value is kept locally once sent: a horizontal and a vertical
+        change made back to back then compose instead of the second overwriting the first.
+        """
+        self._send_command(CRUISECONF_KEY, ",".join(str(part) for part in conf))
+        self._cruise_conf = conf
+
+    @property
     def lightmode(self) -> int | None:
         """Get the display mode: 0 off, 1 on, 2 auto-brightness"""
         return self._lightmode
@@ -706,6 +821,20 @@ class PyDreoHeater(PyDreoBaseDevice):
             return None
         return (left, right)
 
+    @staticmethod
+    def _parse_cruise_conf(value) -> tuple[int, int, int, int] | None:
+        """Parse a "top,right,bottom,left" oscillation arcs string into a tuple of degrees."""
+        if not isinstance(value, str):
+            return None
+        parts = value.split(",")
+        if len(parts) != 4:
+            return None
+        try:
+            top, right, bottom, left = (int(part) for part in parts)
+        except ValueError:
+            return None
+        return (top, right, bottom, left)
+
     def update_state(self, state: dict):
         """Process the state dictionary from the REST API."""
         super().update_state(state)  # handles _is_on
@@ -730,6 +859,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._hoscon = self.get_state_update_value(state, HORIZONTAL_OSCILLATION_KEY)
         self._hoscangle = self._parse_hoscangle(self.get_state_update_value(state, HORIZONTAL_OSCILLATION_ANGLE_KEY))
         self._hangleadj = self.get_state_update_value(state, HORIZONTAL_ANGLE_ADJ_KEY)
+        self._cruise_conf = self._parse_cruise_conf(self.get_state_update_value(state, CRUISECONF_KEY))
         self._oscon = self.get_state_update_value(state, OSCON_KEY)
         self._oscangle = self.get_state_update_value(state, OSCANGLE_KEY)
         self._oscmode = self.get_state_update_value(state, OSCMODE_KEY)
@@ -811,6 +941,10 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_hangleadj = self.get_server_update_key_value(message, HORIZONTAL_ANGLE_ADJ_KEY)
         if isinstance(val_hangleadj, int) and not isinstance(val_hangleadj, bool):
             self._hangleadj = val_hangleadj
+
+        val_cruise_conf = self._parse_cruise_conf(self.get_server_update_key_value(message, CRUISECONF_KEY))
+        if val_cruise_conf is not None:
+            self._cruise_conf = val_cruise_conf
 
         val_oscon = self.get_server_update_key_value(message, OSCON_KEY)
         if isinstance(val_oscon, bool):

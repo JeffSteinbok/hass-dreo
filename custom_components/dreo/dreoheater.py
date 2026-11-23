@@ -24,6 +24,8 @@ from .pydreo.constant import (
     HEATER_OSCMODE_SWING_MAP,
     HEATER_SWING_OSCMODE_MAP,
     HEATER_HOSC_SWING_ANGLES,
+    HEATER_AXIS_OSCMODE_SWING_MAP,
+    HEATER_AXIS_SWING_OSCMODE_MAP,
 )
 
 from .const import (
@@ -426,7 +428,10 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     @property
     def swing_mode(self) -> str | None:
-        if self.device.is_feature_supported("horizontally_oscillating"):
+        if self.device.device_definition.axis_oscillation:
+            # Separate horizontal/vertical axes: oscmode is a bitmask of the oscillating axes.
+            self._attr_swing_mode = HEATER_AXIS_OSCMODE_SWING_MAP.get(self.device.oscmode, SWING_OFF)
+        elif self.device.is_feature_supported("horizontally_oscillating"):
             # Tower fan/heater combos oscillate over a "left,right" range; report the nearest symmetric preset.
             if self.device.horizontally_oscillating is True and self.device.horizontal_osc_angle_left is not None:
                 width = self.device.horizontal_osc_angle_right - self.device.horizontal_osc_angle_left
@@ -447,7 +452,14 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
     def set_swing_mode(self, swing_mode: str) -> None:
         """Set new target swing operation."""
         _LOGGER.debug("DreoHeaterHA:set_swing_mode(%s) -> %s", self.device.name, swing_mode)
-        if self.device.is_feature_supported("horizontally_oscillating"):
+        if self.device.device_definition.axis_oscillation:
+            # Separate horizontal/vertical axes: off, horizontal, vertical or both. The arcs are set with
+            # the oscillation angle selects.
+            if swing_mode not in HEATER_AXIS_SWING_OSCMODE_MAP:
+                _LOGGER.error("set_swing_mode: set_swing_mode(%s) invalid swing mode: %s", self.device.name, swing_mode)
+                return
+            self.device.oscmode = HEATER_AXIS_SWING_OSCMODE_MAP[swing_mode]
+        elif self.device.is_feature_supported("horizontally_oscillating"):
             # Tower fan/heater combos: a preset angle sets a symmetric range and turns oscillation on.
             if swing_mode in HEATER_HOSC_SWING_ANGLES:
                 half_angle = HEATER_HOSC_SWING_ANGLES[swing_mode]

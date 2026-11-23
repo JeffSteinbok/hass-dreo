@@ -8,6 +8,8 @@ Heaters are modeled as climate devices in Home Assistant, which enables the abil
 
 Oscillation is supported, but shown under "swing mode" since this is how Home Assistant's climate device models that feature.
 
+The 714S (DR-HSH034S) oscillates horizontally and vertically, each on its own. It gets *Horizontal Oscillation* and *Vertical Oscillation* switches, plus *Horizontal Oscillation Angle* (`30°`, `60°`, `90°`) and *Vertical Oscillation Angle* (`30°`, `60°`) selects, matching the Dreo app. Its climate swing mode is `off`, `horizontal`, `vertical` or `both`.
+
 ### Tower Fan & Heater Combos
 
 The Tower Fan & Heater 706S (DR-HSH016S) is a heater and a 12-speed tower fan in one unit, so its climate entity carries a few extra controls:
