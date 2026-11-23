@@ -95,8 +95,8 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
         _ = ac.hvac_modes
         _ = ac.fan_mode
         _ = ac.fan_modes
-        _ = ac.current_temperature
-        _ = ac.target_temperature
+        _ = ac.native_current_temperature
+        _ = ac.native_target_temperature
         _ = ac.current_humidity
         _ = ac.target_humidity
         _ = ac.unique_id
@@ -119,8 +119,8 @@ class TestRegressionPropertyCoverage(IntegrationTestBase):
         _ = heater.hvac_modes
         _ = heater.preset_mode
         _ = heater.preset_modes
-        _ = heater.current_temperature
-        _ = heater.target_temperature
+        _ = heater.native_current_temperature
+        _ = heater.native_target_temperature
         _ = heater.min_temp
         _ = heater.max_temp
         _ = heater.unique_id

@@ -224,7 +224,7 @@ class TestDreoHeaterHA(TestDeviceBase):
     def test_set_temperature_in_off_mode(self):
         """Test that set_temperature sends a command to the device even when in OFF mode.
 
-        Regression test: previously the else branch hardcoded _attr_native_target_temperature=4
+        Regression test: previously the else branch hardcoded _attr_target_temperature=4
         and never called self.device.ecolevel, so no command reached the device.
         """
         mocked_pydreo_heater: PyDreoDeviceMock = self.create_mock_device(
@@ -262,7 +262,7 @@ class TestDreoHeaterHA(TestDeviceBase):
     def test_set_temperature_in_fan_only_mode(self):
         """Test that set_temperature sends a command to the device when in FAN_ONLY mode.
 
-        Regression test: previously the else branch hardcoded _attr_native_target_temperature=4
+        Regression test: previously the else branch hardcoded _attr_target_temperature=4
         and never called self.device.ecolevel, so no command reached the device.
         """
         mocked_pydreo_heater: PyDreoDeviceMock = self.create_mock_device(

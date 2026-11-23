@@ -48,8 +48,8 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.is_on is True
 
             # Test temperature reading
-            if heater_ha.current_temperature is not None:
-                assert isinstance(heater_ha.current_temperature, (int, float))
+            if heater_ha.native_current_temperature is not None:
+                assert isinstance(heater_ha.native_current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
@@ -249,8 +249,8 @@ class TestDreoHeater(IntegrationTestBase):
             assert sorted(heater_ha.hvac_modes) == sorted([HVACMode.HEAT, HVACMode.FAN_ONLY, HVACMode.OFF])
             assert heater_ha.preset_mode == PRESET_ECO
             assert sorted(heater_ha.preset_modes) == sorted([PRESET_ECO, "H1", "H2", "H3"])
-            assert heater_ha.current_temperature == 70
-            assert heater_ha.target_temperature == 68
+            assert heater_ha.native_current_temperature == 70
+            assert heater_ha.native_target_temperature == 68
             assert heater_ha.min_temp == 41
             assert heater_ha.max_temp == 95
             assert heater_ha.swing_modes is None
@@ -326,7 +326,7 @@ class TestDreoHeater(IntegrationTestBase):
             # The reported temperature already includes the offset; it must not be added twice.
             pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: -4, TEMPERATURE_KEY: 66}})
             assert offset_number.native_value == -2
-            assert heater_ha.current_temperature == 66
+            assert heater_ha.native_current_temperature == 66
 
             # Fahrenheit: the device value as is.
             offset_number.hass.config.units.temperature_unit = UnitOfTemperature.FAHRENHEIT
@@ -385,8 +385,8 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.is_on is True
 
             # Test temperature reading
-            if heater_ha.current_temperature is not None:
-                assert isinstance(heater_ha.current_temperature, (int, float))
+            if heater_ha.native_current_temperature is not None:
+                assert isinstance(heater_ha.native_current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
@@ -520,8 +520,8 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.translation_key == "heater"
 
             # Test temperature reading
-            if heater_ha.current_temperature is not None:
-                assert isinstance(heater_ha.current_temperature, (int, float))
+            if heater_ha.native_current_temperature is not None:
+                assert isinstance(heater_ha.native_current_temperature, (int, float))
 
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
@@ -663,7 +663,7 @@ class TestDreoHeater(IntegrationTestBase):
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             # Diagnostics: poweron=False, mode=coolair, temperature=70, tempoffset=0.
             assert heater_ha.hvac_mode == HVACMode.OFF
-            assert heater_ha.current_temperature == 70
+            assert heater_ha.native_current_temperature == 70
 
             # Temperature offset as measured on the device (issue #952): the app sets -2 to +2 °C, stored as
             # tempoffset in °F (2 per °C), and the reported temperature already includes it.
@@ -678,7 +678,7 @@ class TestDreoHeater(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_heater, {TEMPOFFSET_KEY: 4})
             pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 4, TEMPERATURE_KEY: 74}})
             assert offset_number.native_value == 2
-            assert heater_ha.current_temperature == 74  # not 78: the offset is not added a second time
+            assert heater_ha.native_current_temperature == 74  # not 78: the offset is not added a second time
 
     @pytest.mark.parametrize(
         "devices_file, sequence",
@@ -736,7 +736,7 @@ class TestDreoHeater(IntegrationTestBase):
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.unique_id is not None
             assert heater_ha.hvac_mode == HVACMode.OFF  # poweron=False
-            assert heater_ha.current_temperature == 74
+            assert heater_ha.native_current_temperature == 74
 
             from homeassistant.components.climate import ClimateEntityFeature
 
@@ -837,8 +837,8 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.fan_mode == "5"
             assert heater_ha.swing_modes == [SWING_OFF, "30°", "60°", "90°", "120°"]
             assert heater_ha.swing_mode == SWING_OFF
-            assert heater_ha.current_temperature == 66
-            assert heater_ha.target_temperature == 85
+            assert heater_ha.native_current_temperature == 66
+            assert heater_ha.native_target_temperature == 85
             assert (heater_ha.min_temp, heater_ha.max_temp) == (41, 95)
             assert heater_ha.preset_modes == [PRESET_ECO, "H1", "H2", "H3", "H4", "H5", PRESET_NONE, "Natural", "Sleep", "Auto"]
 
@@ -955,7 +955,7 @@ class TestDreoHeater(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_heater, {TEMPOFFSET_KEY: 6})
             pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 6, TEMPERATURE_KEY: 64}})
             assert offset_number.native_value == 3
-            assert heater_ha.current_temperature == 70
+            assert heater_ha.native_current_temperature == 70
             pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 0}})
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 self.get_entity_by_key(numbers, "Horizontal Angle").set_native_value(-20)
