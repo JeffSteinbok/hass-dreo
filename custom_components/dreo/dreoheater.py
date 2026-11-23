@@ -11,6 +11,7 @@ import math
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
+from .climatecompat import NativeClimateTemperatureCompat
 from .pydreo import (
     PyDreoHeater,
     ECOLEVEL_RANGE,
@@ -76,7 +77,7 @@ PRESET_TO_FAN_MODE = {v: k for k, v in FAN_MODE_TO_PRESET.items()}
 
 
 # Implementation of the heater
-class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
+class DreoHeaterHA(DreoBaseDeviceHA, NativeClimateTemperatureCompat, ClimateEntity):
     """Representation of a Dreo heater as a climate entity."""
 
     # Heaters take whole °F targets. Halves keep a converted °C target readable (69°F shows as 20.5°C).

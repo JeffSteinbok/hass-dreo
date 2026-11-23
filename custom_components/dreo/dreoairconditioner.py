@@ -10,6 +10,7 @@ import logging
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
+from .climatecompat import NativeClimateTemperatureCompat
 
 from .pydreo import (
     PyDreoAC,
@@ -87,7 +88,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 # Implementation of the air conditioner
-class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
+class DreoAirConditionerHA(DreoBaseDeviceHA, NativeClimateTemperatureCompat, ClimateEntity):
     """Representation of a Dreo air conditioner as a climate entity."""
 
     _attr_precision = PRECISION_WHOLE
