@@ -99,7 +99,7 @@ class TestDreoAirConditionerHA(TestDeviceBase):
             assert not hasattr(ac, "_attr_name")
             assert ac.unique_id is not None
             assert ac.is_on is True
-            assert ac.current_temperature == 72
+            assert ac.native_current_temperature == 72
 
     def test_ac_hvac_mode_when_on(self):
         """Test hvac_mode reflects device mode when powered on."""
@@ -304,8 +304,8 @@ class TestDreoAirConditionerHA(TestDeviceBase):
             device = self._create_ac_device()
             ac = DreoAirConditionerHA(device)
 
-            assert ac.current_temperature == 72
-            assert ac.target_temperature == 70
+            assert ac.native_current_temperature == 72
+            assert ac.native_target_temperature == 70
 
             ac.set_temperature(**{ATTR_TEMPERATURE: 75})
             assert device.target_temperature == 75

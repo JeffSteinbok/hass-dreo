@@ -81,9 +81,9 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     # Heaters take whole °F targets. Halves keep a converted °C target readable (69°F shows as 20.5°C).
     _attr_precision = PRECISION_HALVES
-    _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
-    _attr_target_temperature = None
-    _attr_current_temperature = None
+    _attr_native_temperature_unit = UnitOfTemperature.FAHRENHEIT
+    _attr_native_target_temperature = None
+    _attr_native_current_temperature = None
     _attr_has_entity_name = True
     _attr_hvac_mode = HVACMode.OFF
     _attr_hvac_modes = None
@@ -107,8 +107,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
         del self._attr_name
         self._attr_translation_key = "heater"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
-        self._attr_target_temperature = self.device.ecolevel
-        self._attr_current_temperature = self.device.temperature
+        self._attr_native_target_temperature = self.device.ecolevel
+        self._attr_native_current_temperature = self.device.temperature
         self._attr_swing_mode = self.device.device_definition.swing_modes[0] if self.device.device_definition.swing_modes else None
         self._attr_swing_modes = self.device.device_definition.swing_modes
 
@@ -145,8 +145,8 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             self._attr_translation_key,
             self._attr_unique_id,
             self._attr_hvac_mode,
-            self._attr_target_temperature,
-            self._attr_current_temperature,
+            self._attr_native_target_temperature,
+            self._attr_native_current_temperature,
             self._attr_swing_mode,
             self._attr_swing_modes,
         )
@@ -318,7 +318,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
 
     ### Implementation of climate methods
     @property
-    def current_temperature(self) -> int:
+    def native_current_temperature(self) -> int:
         return self.device.temperature
 
     def set_temperature(self, **kwargs: Any) -> None:
@@ -331,7 +331,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, ClimateEntity):
             self.schedule_update_ha_state()
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         """Return the target temperature.
 
         Returns the ecolevel (target temperature) if the device supports it,
