@@ -429,12 +429,21 @@ class PyDreo:  # pylint: disable=function-redefined
 
         return setting_value
 
-    def _call_authenticated_api(self, path: str, method: str, payload) -> tuple:
+    def _call_authenticated_api(
+        self,
+        path: str,
+        method: str,
+        payload,
+        header_overrides: dict | None = None,
+    ) -> tuple:
         """Call a Dreo endpoint and retry once after refreshing an expired token."""
         api_url = DREO_API_URL_FORMAT.format(self.api_server_region)
 
         def _call():
-            return Helpers.call_api(api_url, path, method, payload, Helpers.req_headers(self))
+            # Build defaults for each attempt so a refreshed token is used after
+            # a 401; endpoint-specific headers override general account defaults.
+            request_headers = {**Helpers.req_headers(self), **(header_overrides or {})}
+            return Helpers.call_api(api_url, path, method, payload, request_headers)
 
         response, status_code = _call()
         if status_code == 401:
@@ -449,6 +458,7 @@ class PyDreo:  # pylint: disable=function-redefined
             "/api/device/rgb-effect/all/list",
             "get",
             {"devicesn": device.serial_number},  # RGBIC API expects lowercase, not deviceSn
+            header_overrides={"lang": "es", "country": "ES", "appversion": "3.8.2"},
         )
         if status_code != 200 or not isinstance(response, dict) or response.get("code") != 0:
             _LOGGER.warning(
@@ -488,10 +498,15 @@ class PyDreo:  # pylint: disable=function-redefined
                 )
                 return None
 
+            # Catalogs can put wholeColorList on multiple layouts, so update every
+            # matching layout instead of assuming the color is always in layouts[0].
             for layout in whole_color_layouts:
                 layout["currentSelected"] = "whole"
                 layout["wholeColorList"] = [color.upper()]
 
+        # `id` identifies this catalog record; `referencedId` is the effect
+        # resource used by the REST subEffects payload. Keep them separate: for
+        # the DR-HAP010S, WebSocket rgbeffectid matches the catalog `id`.
         referenced_id = effect.get("referencedId")
         if not referenced_id:
             _LOGGER.warning(
@@ -504,6 +519,7 @@ class PyDreo:  # pylint: disable=function-redefined
             "applyToDevice": True,
             "devicesn": device.serial_number,
             "effectType": effect.get("effectType", 0),
+            # Preserve the selected catalog-record ID in the outer edit entry.
             "id": effect.get("id"),
             "name": effect.get("name"),
             "subEffects": [{

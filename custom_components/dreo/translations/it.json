@@ -328,7 +328,7 @@
         "state_attributes": {
           "effect": {
             "state": {
-              "air_quality_auto": "Qualità dell'aria (automatico)"
+              "indicator": "Indicatore"
             }
           }
         }

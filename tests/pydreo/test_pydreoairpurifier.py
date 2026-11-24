@@ -442,6 +442,14 @@ class TestPyDreoAirPurifier(TestBase):
             "get",
             {"devicesn": device.serial_number},
         )
+        catalog_headers = call_api.call_args_list[0].args[4]
+        expected_catalog_headers = {
+            **Helpers.req_headers(self.pydreo_manager),
+            "lang": "es",
+            "country": "ES",
+            "appversion": "3.8.2",
+        }
+        assert catalog_headers == expected_catalog_headers
         assert call_api.call_args_list[1].args[1:4] == (
             "/api/device/rgb-effect/edit/batch",
             "post",
@@ -457,7 +465,38 @@ class TestPyDreoAirPurifier(TestBase):
                 }],
             }],
         )
+        write_headers = call_api.call_args_list[1].args[4]
+        assert write_headers == Helpers.req_headers(self.pydreo_manager)
+        assert write_headers["lang"] == "en"
+        assert "country" not in write_headers
         assert device.rgbic_effect_name == "Respirar"
+
+    def test_HAP010S_catalog_reads_always_use_spanish_app_headers(self):  # pylint: disable=invalid-name
+        """Initial and later reads share RGBIC-only locale headers."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        response = {"code": 0, "data": {"basicEffects": [], "sceneEffects": []}}
+        expected_headers = {
+            **Helpers.req_headers(self.pydreo_manager),
+            "lang": "es",
+            "country": "ES",
+            "appversion": "3.8.2",
+        }
+
+        with patch("custom_components.dreo.pydreo.Helpers.call_api", return_value=(response, 200)) as call_api:
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) == response["data"]
+            # Catalog refresh after a later WebSocket change uses the same path.
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) == response["data"]
+
+        assert len(call_api.call_args_list) == 2
+        for call in call_api.call_args_list:
+            assert call.args[1:4] == (
+                "/api/device/rgb-effect/all/list",
+                "get",
+                {"devicesn": device.serial_number},
+            )
+            assert call.args[4] == expected_headers
 
     def test_HAP010S_auto_mode_command_and_websocket_state(self):  # pylint: disable=invalid-name
         """Automatic air-quality mode is selected only by the captured rgbmode=1 command."""
@@ -490,30 +529,114 @@ class TestPyDreoAirPurifier(TestBase):
         assert not device.is_feature_supported("rgbmode")
         assert not device.is_feature_supported("rgbeffectid")
 
-    def test_HAP010S_websocket_effect_report_refreshes_catalog_selection(self):  # pylint: disable=invalid-name
-        """A changed manual effect report refreshes the selected catalog name off-thread."""
+    def test_HAP010S_websocket_effect_report_resolves_from_loaded_catalog(self):  # pylint: disable=invalid-name
+        """A changed effect ID resolves immediately without another catalog request."""
         self.get_devices_file_name = "get_devices_HAP010S.json"
         self.pydreo_manager.load_devices()
         device = self.pydreo_manager.devices[0]
-        device.handle_server_update({REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "old-id"}})
-        scheduled = self.install_manual_scheduler()
-        selected_catalog = {
+        device.set_rgbic_effect_catalog({
             "basicEffects": [{
-                "id": "catalog-id",
+                "id": "old-id",
+                "referencedId": "old-ref",
+                "effectType": 0,
+                "name": "Previous effect",
+            }, {
+                "id": "new-id",
                 "referencedId": "referenced-id",
                 "effectType": 0,
                 "name": "Wave from current catalog",
-                "selected": True,
             }],
-        }
-        with patch.object(self.pydreo_manager, "get_rgbic_effect_catalog", return_value=selected_catalog) as get_catalog:
-            device.handle_server_update({REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "new-id"}})
-            assert len(scheduled) == 1
-            self.fire_last_scheduled(scheduled)
+        })
+        device.handle_server_update({REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "old-id"}})
+        with patch.object(self.pydreo_manager, "get_rgbic_effect_catalog") as get_catalog:
+            device.handle_server_update({REPORTED_KEY: {"rgbeffectid": "new-id"}})
 
-        get_catalog.assert_called_once_with(device)
+        get_catalog.assert_not_called()
         assert device.rgbeffectid == "new-id"
         assert device.rgbic_effect_name == "Wave from current catalog"
+
+    def test_HAP010S_effect_id_only_update_is_string_and_keeps_unknown_unlabeled(self):  # pylint: disable=invalid-name
+        """An ID-only WebSocket message is retained without guessing from selected flags."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.set_rgbic_effect_catalog({
+            "basicEffects": [{
+                "id": "catalog-basic-id",
+                "referencedId": "1700000000000000011",
+                "effectType": 0,
+                "name": "Wrong if matched by prefix",
+                "selected": True,
+            }],
+        })
+        device.handle_server_update({REPORTED_KEY: {"rgbeffectid": 1701000000000000011}})
+        assert device.rgbmode is None
+        assert device.rgbeffectid == "1701000000000000011"
+        assert isinstance(device.rgbeffectid, str)
+        assert device.rgbic_effect_name is None
+
+    def test_HAP010S_catalog_id_matches_websocket_id_not_referenced_id(self):  # pylint: disable=invalid-name
+        """The 530S uses catalog id; the response's English name is not displayed."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.handle_server_update({REPORTED_KEY: {"rgbmode": 2}})
+        localized_catalog = {
+            "basicEffects": [{
+                "id": "2124876509150707714",
+                "referencedId": "1700000000000000003",
+                "effectType": 0,
+                "name": "Círculo",
+                "layouts": [],
+            }],
+        }
+        device.set_rgbic_effect_catalog(localized_catalog)
+
+        def fake_send(dev, params):
+            _ack_control_send(self.pydreo_manager, dev, params)
+
+        posted_payloads = []
+
+        def fake_call_api(_url, api, _method, payload, _headers):
+            if api == "/api/device/rgb-effect/all/list":
+                return {"code": 0, "data": localized_catalog}, 200
+            if api == "/api/device/rgb-effect/edit/batch":
+                posted_payloads.append(payload)
+                return {"code": 0, "data": {
+                    "id": "2124876509150707714",
+                    "referencedId": "1700000000000000003",
+                    "name": "Cycle",
+                }}, 200
+            return None, 500
+
+        with patch(PATCH_SEND_COMMAND, side_effect=fake_send), patch(
+            "custom_components.dreo.pydreo.Helpers.call_api", side_effect=fake_call_api
+        ):
+            assert device.set_rgbic_effect("Círculo") is True
+
+        assert device.rgbic_effect_name == "Círculo"
+        assert posted_payloads[0][0]["effectType"] == 0
+        assert posted_payloads[0][0]["id"] == "2124876509150707714"
+        assert posted_payloads[0][0]["subEffects"][0]["effectId"] == "1700000000000000003"
+        device.handle_server_update({REPORTED_KEY: {"rgbeffectid": "2124876509150707714"}})
+        assert device.rgbic_effect_name == "Círculo"
+
+    def test_HAP010S_real_websocket_id_is_not_guessed_from_remote_catalog(self):  # pylint: disable=invalid-name
+        """The observed 1701 ID stays unresolved when no catalog ID matches exactly."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.set_rgbic_effect_catalog({
+            "remoteEffects": [{
+                "id": "remote-entry-id",
+                "referencedId": "remote-base-id",
+                "name": "Example remote name",
+                "subRemoteEffect": {"effectId": "remote-base-id", "effectName": "Example remote name"},
+            }],
+        })
+        device.handle_server_update({REPORTED_KEY: {"rgbeffectid": "1701000000000000011"}})
+        assert device.rgbeffectid == "1701000000000000011"
+        assert device.rgbic_effect_name is None
 
     def test_purifyon_not_supported_without_state(self):
         """Purifiers that don't report purifyon must not get the switch."""
@@ -684,3 +807,32 @@ class TestPyDreoAirPurifier(TestBase):
         assert ws_batches[rgbmode_idx] == {"rgbmode": 2}
         assert len(ws_batches) == rgbmode_idx + 1
         assert rest_posts[0][0]["name"] == HAP010S_BASIC_EFFECT_NAMES[0]
+
+    def test_HAP010S_reapplying_effect_does_not_require_selected_flag(self):  # pylint: disable=invalid-name
+        """A successful local command remains visible even if the catalog is unselected."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        catalog = _hap010s_rgbic_catalog()
+        selected_name = HAP010S_BASIC_EFFECT_NAMES[0]
+        catalog["basicEffects"][0]["selected"] = True
+        device.set_rgbic_effect_catalog(catalog)
+        device.handle_server_update({REPORTED_KEY: {"rgbmode": 2}})
+
+        def fake_send(dev, params):
+            _ack_control_send(self.pydreo_manager, dev, params)
+
+        def fake_call_api(_url, api, _method, _payload, _headers):
+            if api == "/api/device/rgb-effect/all/list":
+                return {"code": 0, "data": catalog}, 200
+            if api == "/api/device/rgb-effect/edit/batch":
+                return {"code": 0, "data": {}}, 200
+            return None, 500
+
+        with patch(PATCH_SEND_COMMAND, side_effect=fake_send), patch(
+            "custom_components.dreo.pydreo.Helpers.call_api", side_effect=fake_call_api
+        ):
+            assert device.set_rgbic_effect(selected_name) is True
+
+        assert device.rgbic_effect_name == selected_name
+        assert device._rgbic_effect_pending is False

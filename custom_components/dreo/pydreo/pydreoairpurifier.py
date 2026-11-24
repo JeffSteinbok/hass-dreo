@@ -30,16 +30,18 @@ class PyDreoAirPurifier(PyDreoFanBase):
         self._auto_mode_command_value: str | None = None
         # Remaining filter life in percent ("lifetime"), only for models flagged filter_life_percent.
         self._filter_life: int | None = None
-        # Purification toggle (DR-HAP010S). On that model fan speed changes have no physical
+        # Purification toggle. On this model fan speed changes have no physical
         # effect unless purification is on (issue #933).  None if the device doesn't report it.
         self._purify_on: bool | None = None
-        # DR-HAP010S RGBIC ambient light (brightness values observed: 50 and 100).
+        # RGBIC mode-based ambient light (brightness values physically observed: 30, 50, 70, and 100).
         self._rgbon: bool | None = None
         self._rgbbri: int | None = None
         self._rgbmode: int | None = None
         self._rgbeffectid: str | None = None
         self._rgbic_effect_names: list[str] = []
         self._rgbic_scene_effect_names: list[str] = []
+        self._rgbic_effect_id_to_name: dict[str, str] = {}
+        self._rgbic_effect_catalog_loaded = False
         self._rgbic_effect_name: str | None = None
         self._rgbic_effect_pending = False
         self._rgbic_catalog_refresh_cancel = None
@@ -109,12 +111,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
     @property
     def rgbon(self) -> bool | None:
-        """Whether the DR-HAP010S RGBIC light is on."""
+        """Whether the RGBIC mode light is on."""
         return self._rgbon
 
     @rgbon.setter
     def rgbon(self, value: bool) -> None:
-        if self.model != "DR-HAP010S" or self._rgbon is None:
+        if not self._device_definition.supports_rgbic_mode_light or self._rgbon is None:
             raise NotImplementedError("RGBIC power is unsupported without reported RGBIC state.")
         if self._rgbon == value:
             return
@@ -122,12 +124,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
     @property
     def rgbbri(self) -> int | None:
-        """RGBIC brightness reported by the DR-HAP010S."""
+        """RGBIC brightness reported by this device."""
         return self._rgbbri
 
     @rgbbri.setter
     def rgbbri(self, value: int) -> None:
-        if self.model != "DR-HAP010S" or self._rgbbri is None:
+        if not self._device_definition.supports_rgbic_mode_light or self._rgbbri is None:
             raise NotImplementedError("RGBIC brightness is unsupported without reported RGBIC state.")
         value = int(value)
         if self._rgbbri == value:
@@ -136,30 +138,32 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
     @property
     def rgbmode(self) -> int | None:
-        """Current DR-HAP010S RGBIC mode (1=air quality, 2=manual effects)."""
+        """Current RGBIC mode (1=air quality, 2=manual effects)."""
         return self._rgbmode
 
     @rgbmode.setter
     def rgbmode(self, value: int) -> None:
-        """Select one of the two RGBIC modes observed on the DR-HAP010S."""
-        if self.model != "DR-HAP010S" or self._rgbmode is None:
+        """Select one of the two supported RGBIC modes."""
+        if not self._device_definition.supports_rgbic_mode_light or self._rgbmode is None:
             raise NotImplementedError("RGBIC mode is unsupported without reported 530S state.")
         if isinstance(value, bool) or not isinstance(value, int) or value not in (1, 2):
-            raise ValueError("DR-HAP010S RGBIC mode must be 1 (air quality) or 2 (manual effects).")
+            raise ValueError("RGBIC mode must be 1 (air quality) or 2 (manual effects).")
         if self._rgbmode == value:
             return
         self._send_command(RGB_MODE, value)
         self._rgbmode = value
         if value == 1:
             self._rgbic_effect_name = None
-        elif not self._rgbic_effect_pending:
+        elif not self._rgbic_effect_pending and not (
+            self._rgbic_effect_name in self.rgbic_selectable_effect_names
+        ):
             self._rgbic_effect_name = None
         self._do_callbacks()
 
     def set_rgbic_mode(self, value: int) -> bool:
-        """Send an observed 530S mode command as an ordered WebSocket write."""
+        """Send a mode command as an ordered WebSocket write."""
         if (
-            self.model != "DR-HAP010S"
+            not self._device_definition.supports_rgbic_mode_light
             or self._rgbmode is None
             or isinstance(value, bool)
             or not isinstance(value, int)
@@ -179,7 +183,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
     @property
     def rgbeffectid(self) -> str | None:
-        """Last reported RGBIC effect identifier; read-only metadata on this model."""
+        """Last reported RGBIC effect identifier; read-only metadata."""
         return self._rgbeffectid
 
     @property
@@ -203,7 +207,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
         return self._rgbic_effect_name
 
     def set_rgbic_effect_catalog(self, catalog: dict) -> None:
-        """Cache writable basic/scene effect names and the catalog's current selection."""
+        """Cache selectable basic/scene effects and resolve WebSocket IDs by entry id."""
         effects = [
             item for item in (catalog.get("basicEffects") or [])
             if isinstance(item, dict)
@@ -229,16 +233,24 @@ class PyDreoAirPurifier(PyDreoFanBase):
         )
         self._rgbic_effect_names = [item["name"] for item in effects]
         self._rgbic_scene_effect_names = [item["name"] for item in scene_effects]
-        selected = next((item["name"] for item in effects if item.get("selected") is True), None)
-        if selected is None:
-            selected = next(
-                (item["name"] for item in scene_effects if item.get("selected") is True),
-                None,
-            )
-        self._rgbic_effect_name = selected
+        # DREO's WebSocket rgbeffectid equals the catalog entry `id` for both
+        # basicEffects and sceneEffects. `referencedId` is the REST sub-effect
+        # resource and is deliberately not used as a lookup key. remoteEffects
+        # have a separate schema and are not exposed for this purifier.
+        self._rgbic_effect_id_to_name = {
+            str(item["id"]): item["name"]
+            for item in [*effects, *scene_effects]
+            if item.get("id") is not None
+        }
+        self._rgbic_effect_catalog_loaded = True
+        self._resolve_rgbic_effect_id()
+
+    def _resolve_rgbic_effect_id(self) -> None:
+        """Resolve the current device ID from the localized selectable catalog."""
+        self._rgbic_effect_name = self._rgbic_effect_id_to_name.get(self._rgbeffectid)
 
     def _schedule_rgbic_catalog_refresh(self) -> None:
-        """Refresh the selected catalog name after a manual effect WebSocket report."""
+        """Load the catalog once when an effect ID arrives before the catalog."""
         pending_marker = object()
         with self._lock:
             if self._rgbic_catalog_refresh_cancel is not None:
@@ -256,7 +268,9 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 return
             if catalog is not None:
                 self.set_rgbic_effect_catalog(catalog)
-                self._do_callbacks()
+            # The WebSocket update itself must reach HA even when the catalog
+            # request fails or cannot resolve the ID.
+            self._do_callbacks()
 
         try:
             cancel = self._dreo.schedule_call_later(0, _refresh)
@@ -285,7 +299,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
         is_basic = effect_name in self._rgbic_effect_names
         is_scene = effect_name in self._rgbic_scene_effect_names
         if (
-            self.model != "DR-HAP010S"
+            not self._device_definition.supports_rgbic_mode_light
             or self._rgbmode is None
             or not (is_basic or is_scene)
         ):
@@ -306,7 +320,11 @@ class PyDreoAirPurifier(PyDreoFanBase):
             self._rgbic_effect_pending = False
             raise
         if success:
+            # The catalog may omit its selected marker even though the effect POST
+            # succeeded. Keep the requested name optimistically until a different
+            # device effect ID is reported; no correlated ACK is exposed by DREO.
             self._rgbic_effect_name = effect_name
+            self._rgbic_effect_pending = False
             self._do_callbacks()
         else:
             self._rgbic_effect_pending = False
@@ -319,11 +337,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
         if self._device_definition.filter_life_percent:
             self._filter_life = self.get_state_update_value(state, LIFETIME_KEY)
         self._purify_on = self.get_state_update_value(state, PURIFYON_KEY)
-        if self.model == "DR-HAP010S":
+        if self._device_definition.supports_rgbic_mode_light:
             self._rgbon = self.get_state_update_value(state, RGBON_KEY)
             self._rgbbri = self.get_state_update_value(state, RGB_BRI)
             self._rgbmode = self.get_state_update_value(state, RGB_MODE)
-            self._rgbeffectid = self.get_state_update_value(state, RGBEFFECTID_KEY)
+            effect_id = self.get_state_update_value(state, RGBEFFECTID_KEY)
+            self._rgbeffectid = str(effect_id) if effect_id is not None else None
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -338,7 +357,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
         if isinstance(val_purify_on, bool):
             self._purify_on = val_purify_on
 
-        if self.model == "DR-HAP010S":
+        if self._device_definition.supports_rgbic_mode_light:
             val_rgbon = self.get_server_update_key_value(message, RGBON_KEY)
             if isinstance(val_rgbon, bool):
                 self._rgbon = val_rgbon
@@ -352,16 +371,19 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 if val_rgbmode == 1 or (previous_mode != val_rgbmode and not self._rgbic_effect_pending):
                     self._rgbic_effect_name = None
             val_effect_id = self.get_server_update_key_value(message, RGBEFFECTID_KEY)
-            if isinstance(val_effect_id, str):
+            if isinstance(val_effect_id, (str, int)) and not isinstance(val_effect_id, bool):
+                val_effect_id = str(val_effect_id)
                 previous_effect_id = self._rgbeffectid
                 self._rgbeffectid = val_effect_id
                 if val_effect_id != previous_effect_id:
-                    if self._rgbic_effect_pending:
-                        self._rgbic_effect_pending = False
+                    # The catalog `id` is the verified WebSocket identifier.
+                    # Resolve immediately when cached; otherwise fetch once.
+                    if self._rgbic_effect_catalog_loaded:
+                        self._resolve_rgbic_effect_id()
                     else:
                         self._rgbic_effect_name = None
-                    if self._rgbmode == 2:
                         self._schedule_rgbic_catalog_refresh()
+                    self._rgbic_effect_pending = False
 
     def _send_command(self, command_key: str, value) -> None:
         """Override to remap the 'auto' mode command for models that reject the plain "auto" string.

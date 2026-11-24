@@ -44,7 +44,7 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
         # ceiling-fan RGBIC paths continue through their existing branches.
         if (
             isinstance(pydreo_device, PyDreoAirPurifier)
-            and pydreo_device.model == "DR-HAP010S"
+            and pydreo_device.device_definition.supports_rgbic_mode_light
             and pydreo_device.is_feature_supported("rgbon")
             and pydreo_device.is_feature_supported("rgbbri")
         ):
@@ -278,9 +278,13 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
 
 
 class Dreo530SRGBICLightHA(DreoLightHA):
-    """RGBIC controls for the DR-HAP010S, using its catalog and observed writes."""
+    """RGBIC controls for mode-based devices, using their catalog and observed writes.
 
-    AUTO_AIR_QUALITY_EFFECT = "air_quality_auto"
+    Effect labels come from DREO's cloud catalog, using the language configured in
+    the DREO app. Automations should use the names returned by that catalog.
+    """
+
+    INDICATOR_EFFECT = "indicator"
 
     def __init__(self, device: PyDreoBaseDevice) -> None:
         super().__init__(device, light_on_attr="rgbon", brightness_attr="rgbbri")
@@ -296,14 +300,16 @@ class Dreo530SRGBICLightHA(DreoLightHA):
     @property
     def effect_list(self) -> list[str]:
         """Use basic and scene effect names from this device's live catalog."""
-        return [*self.pydreo_device.rgbic_selectable_effect_names, self.AUTO_AIR_QUALITY_EFFECT]
+        return [*self.pydreo_device.rgbic_selectable_effect_names, self.INDICATOR_EFFECT]
 
     @property
     def effect(self) -> str | None:
-        """Report the air-quality mode or the last known selected basic effect."""
+        """Report a resolved effect name; unknown device IDs remain unlabeled."""
         if self.pydreo_device.rgbmode == 1:
-            return self.AUTO_AIR_QUALITY_EFFECT
+            return self.INDICATOR_EFFECT
         if self.pydreo_device.rgbmode == 2:
+            return self.pydreo_device.rgbic_effect_name
+        if self.pydreo_device.rgbeffectid is not None:
             return self.pydreo_device.rgbic_effect_name
         return None
 
@@ -311,8 +317,12 @@ class Dreo530SRGBICLightHA(DreoLightHA):
         """Load effect names and selected state from the authenticated catalog."""
         await super().async_added_to_hass()
         manager = self.pydreo_device._dreo  # pylint: disable=protected-access
-        catalog = await self.hass.async_add_executor_job(manager.get_rgbic_effect_catalog, self.pydreo_device)
-        if catalog:
+        try:
+            catalog = await self.hass.async_add_executor_job(manager.get_rgbic_effect_catalog, self.pydreo_device)
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("Unable to load RGBIC effect catalog for %s", self.pydreo_device.name)
+            return
+        if catalog is not None:
             self.pydreo_device.set_rgbic_effect_catalog(catalog)
             self.async_write_ha_state()
 
@@ -320,10 +330,12 @@ class Dreo530SRGBICLightHA(DreoLightHA):
         """Preserve on/brightness behavior, then apply a supported mode/effect."""
         super().turn_on(**kwargs)
         effect = kwargs.get(ATTR_EFFECT)
-        if effect == self.AUTO_AIR_QUALITY_EFFECT:
+        if effect == self.INDICATOR_EFFECT:
             self.pydreo_device.set_rgbic_mode(1)
         elif effect in self.pydreo_device.rgbic_selectable_effect_names:
             self.pydreo_device.set_rgbic_effect(effect)
+        elif effect is not None:
+            _LOGGER.warning("turn_on: Unknown RGBIC effect %s for %s", effect, self.pydreo_device.name)
 
 
 class DreoRGBLightHA(DreoLightHA):
