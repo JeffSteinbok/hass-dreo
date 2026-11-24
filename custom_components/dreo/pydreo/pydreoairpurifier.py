@@ -154,9 +154,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
         self._rgbmode = value
         if value == 1:
             self._rgbic_effect_name = None
-        elif not self._rgbic_effect_pending and not (
-            self._rgbic_effect_name in self.rgbic_selectable_effect_names
-        ):
+        elif not self._rgbic_effect_pending and self._rgbic_effect_name not in self.rgbic_selectable_effect_names:
             self._rgbic_effect_name = None
         self._do_callbacks()
 
