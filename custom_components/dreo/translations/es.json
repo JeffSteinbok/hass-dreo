@@ -55,6 +55,13 @@
       },
       "main_power": {
         "name": "Alimentación principal"
+      },
+      "heater_fault": {
+        "name": "Problema",
+        "state": {
+          "off": "OK",
+          "on": "Fallo"
+        }
       }
     },
     "fan": {
@@ -227,6 +234,14 @@
         "state": {
           "yes": "Sí",
           "no": "No"
+        }
+      },
+      "heater_fault": {
+        "name": "Fallo",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Volcado (P4)",
+          "other": "Otro fallo"
         }
       }
     },

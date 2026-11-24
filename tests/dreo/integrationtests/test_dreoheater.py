@@ -14,8 +14,11 @@ from custom_components.dreo import select
 
 from homeassistant.components.climate import ATTR_TEMPERATURE, PRESET_ECO, PRESET_NONE, SWING_OFF, ClimateEntityFeature, HVACMode
 from homeassistant.components.light import ATTR_BRIGHTNESS, ColorMode
-from homeassistant.const import UnitOfTemperature
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass
+from homeassistant.const import EntityCategory, UnitOfTemperature
 
+from custom_components.dreo.pydreo.pydreoheater import FAULT_CODE_KEY
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import PATCH_SEND_COMMAND, IntegrationTestBase
 
@@ -71,7 +74,7 @@ class TestDreoHeater(IntegrationTestBase):
             assert timer_on_number.native_value == 30
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
             switches = switch.get_entries([pydreo_heater])
             # Display Light reads/writes ledkepton: the fixture has no lighton (#964).
@@ -148,7 +151,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
             # Test multiple HVAC mode changes
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -212,7 +215,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
             # Test turning heater on and setting mode
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
@@ -372,7 +375,7 @@ class TestDreoHeater(IntegrationTestBase):
                 mock_send_command.assert_called_once_with(pydreo_heater, {LIGHTON_KEY: True})
 
             binary_sensors = binary_sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(binary_sensors, ["heating"])
+            self.verify_expected_entities(binary_sensors, ["heating", "heater_fault"])
             lights = light.get_entries([pydreo_heater])
             assert len(lights) == 1
             ambient_light = lights[0]
@@ -438,7 +441,7 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 0, TEMPERATURE_KEY: 70}})
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_preset_mode("H2")
@@ -491,7 +494,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
             # Test preset modes (H1, H2, H3)
             assert "H1" in heater_ha.preset_modes
@@ -589,7 +592,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
             # Test turning heater on and setting mode
             # Device is already ON. Setting HEAT should still send poweron command
@@ -636,7 +639,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
             # Test preset modes (H1, H2, H3)
             assert "H1" in heater_ha.preset_modes
@@ -758,7 +761,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
     def test_HSH006S(self):  # pylint: disable=invalid-name
         """Load DR-HSH006S (Atom 316S) from the issue #953 diagnostics and test HA entities."""
@@ -913,7 +916,7 @@ class TestDreoHeater(IntegrationTestBase):
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
 
     def test_HSH016S(self):  # pylint: disable=invalid-name
         """Load DR-HSH016S (Tower Fan & Heater 706S) and test the combined heat/fan climate entity."""
@@ -1086,4 +1089,69 @@ class TestDreoHeater(IntegrationTestBase):
                 mock_send_command.assert_any_call(pydreo_heater, {LIGHTMODE_KEY: 0})
 
             sensors = sensor.get_entries([pydreo_heater])
-            self.verify_expected_entities(sensors, [])
+            self.verify_expected_entities(sensors, ["Fault"])
+
+    def test_HSH006S_fault_entities(self):  # pylint: disable=invalid-name
+        """Issue #979: the heater fault sensor and problem binary sensor follow the "wrong" code over the websocket."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH006S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+
+            fault_sensor = self.get_entity_by_key(sensor.get_entries([pydreo_heater]), "Fault")
+            problem_sensor = self.get_entity_by_key(binary_sensor.get_entries([pydreo_heater]), "heater_fault")
+            assert fault_sensor is not None and problem_sensor is not None
+
+            assert fault_sensor.entity_category == EntityCategory.DIAGNOSTIC
+            assert fault_sensor.device_class == SensorDeviceClass.ENUM
+            assert fault_sensor.options == ["ok", "tip_over", "other"]
+            assert fault_sensor.translation_key == "heater_fault"
+            assert fault_sensor.unique_id == f"{pydreo_heater.serial_number}-Fault"
+            assert problem_sensor.entity_category == EntityCategory.DIAGNOSTIC
+            assert problem_sensor.device_class == BinarySensorDeviceClass.PROBLEM
+            assert problem_sensor.unique_id == f"{pydreo_heater.serial_number}-heater_fault"
+
+            # Fixture state: wrong=0.
+            assert fault_sensor.native_value == "ok"
+            assert fault_sensor.extra_state_attributes == {"fault_code": 0}
+            assert problem_sensor.is_on is False
+
+            # Issue #979 log 13:39:16: tipped over (P4).
+            pydreo_heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: 64}})
+            assert fault_sensor.native_value == "tip_over"
+            assert fault_sensor.extra_state_attributes == {"fault_code": 64}
+            assert problem_sensor.is_on is True
+            assert problem_sensor.extra_state_attributes == {"fault": "tip_over", "fault_code": 64}
+            assert problem_sensor.icon == "mdi:alert-circle"
+
+            # A code not mapped yet still raises the problem sensor and shows the raw code.
+            pydreo_heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: 3}})
+            assert fault_sensor.native_value == "other"
+            assert fault_sensor.extra_state_attributes == {"fault_code": 3}
+            assert problem_sensor.is_on is True
+
+            # Issue #979 log 13:39:18: stood back up.
+            pydreo_heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: 0}})
+            assert fault_sensor.native_value == "ok"
+            assert problem_sensor.is_on is False
+            assert problem_sensor.icon == "mdi:check-circle-outline"
+
+    def test_fault_entities_absent_without_wrong_field(self):
+        """A heater that doesn't report "wrong" gets neither fault entity."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH006S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            pydreo_heater.update_state({HTALEVEL_KEY: {"state": 2}})
+            assert self.get_entity_by_key(sensor.get_entries([pydreo_heater]), "Fault") is None
+            assert self.get_entity_by_key(binary_sensor.get_entries([pydreo_heater]), "heater_fault") is None
+
+    @pytest.mark.parametrize("devices_file", ["get_devices_HDH002S.json", "get_devices_HHM001S.json", "get_devices_HAP003S.json"])
+    def test_fault_entities_only_on_heaters(self, devices_file):
+        """Other device types also report "wrong" (with other meanings); they don't get the heater fault entities."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = devices_file
+            self.pydreo_manager.load_devices()
+            for device in self.pydreo_manager.devices:
+                assert self.get_entity_by_key(sensor.get_entries([device]), "Fault") is None
+                assert self.get_entity_by_key(binary_sensor.get_entries([device]), "heater_fault") is None

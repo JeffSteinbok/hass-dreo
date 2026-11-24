@@ -55,6 +55,13 @@
       },
       "main_power": {
         "name": "Hoofdvoeding"
+      },
+      "heater_fault": {
+        "name": "Probleem",
+        "state": {
+          "off": "OK",
+          "on": "Storing"
+        }
       }
     },
     "fan": {
@@ -227,6 +234,14 @@
         "state": {
           "yes": "Ja",
           "no": "Nee"
+        }
+      },
+      "heater_fault": {
+        "name": "Storing",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Omgevallen (P4)",
+          "other": "Andere storing"
         }
       }
     },

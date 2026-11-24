@@ -4,6 +4,7 @@
 import logging
 from unittest.mock import patch, call
 import pytest
+from custom_components.dreo.pydreo.pydreoheater import FAULT_CODE_KEY, FAULT_OK, FAULT_OTHER, FAULT_TIP_OVER
 from .imports import *  # pylint: disable=W0401,W0614
 from .testbase import TestBase, PATCH_SEND_COMMAND
 
@@ -1192,3 +1193,68 @@ class TestPyDreoHeater(TestBase):
         for device in self.pydreo_manager.devices:
             heater: PyDreoHeater = device
             self._exercise_all_settable_properties(heater)
+
+    # --- Fault code ("wrong"), issue #979 ---
+
+    @pytest.mark.parametrize("devices_file", HEATER_EXHAUSTIVE_MODELS)
+    def test_fault_code_parsed_from_initial_state(self, devices_file: str):
+        """Every heater fixture reports wrong=0 in its REST state: no fault."""
+        self.get_devices_file_name = devices_file
+        self.pydreo_manager.load_devices()
+        for heater in self.pydreo_manager.devices:
+            assert heater.fault_code == 0
+            assert heater.fault == FAULT_OK
+            assert heater.has_fault is False
+
+    def test_HSH006S_tip_over_fault(self):  # pylint: disable=invalid-name
+        """Replay issue #979's log: a DR-HSH026S (reports DR-HSH006S) tipped over sends wrong=64, then wrong=0 upright."""
+        self.get_devices_file_name = "get_devices_HSH006S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        assert heater.fault == FAULT_OK
+
+        heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: 64}})
+        assert heater.fault_code == 64
+        assert heater.fault == FAULT_TIP_OVER
+        assert heater.has_fault is True
+
+        # An unrelated update leaves the fault in place.
+        heater.handle_server_update({REPORTED_KEY: {TEMPERATURE_KEY: 66}})
+        assert heater.fault == FAULT_TIP_OVER
+
+        heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: 0}})
+        assert heater.fault_code == 0
+        assert heater.fault == FAULT_OK
+        assert heater.has_fault is False
+
+    @pytest.mark.parametrize("code", [1, 2, 3, 32, 65, 128])
+    def test_unmapped_fault_code_is_other(self, code: int):
+        """Codes not mapped yet (E1/E2/FF haven't been captured) read as "other", with the raw code kept."""
+        self.get_devices_file_name = "get_devices_HSH006S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: code}})
+        assert heater.fault_code == code
+        assert heater.fault == FAULT_OTHER
+        assert heater.has_fault is True
+
+    @pytest.mark.parametrize("value", [True, False, "64", None, 6.4, {"state": 64}])
+    def test_non_int_fault_code_ignored(self, value):
+        """Only integer codes are accepted from websocket updates; anything else keeps the last known code."""
+        self.get_devices_file_name = "get_devices_HSH006S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: 64}})
+        heater.handle_server_update({REPORTED_KEY: {FAULT_CODE_KEY: value}})
+        assert heater.fault_code == 64
+
+    def test_fault_code_absent_from_state(self):
+        """A heater whose state has no "wrong" field reports no fault code at all."""
+        self.get_devices_file_name = "get_devices_HSH006S.json"
+        self.pydreo_manager.load_devices()
+        heater: PyDreoHeater = self.pydreo_manager.devices[0]
+        heater.update_state({HTALEVEL_KEY: {"state": 2}})
+        assert heater.fault_code is None
+        assert heater.fault is None
+        assert heater.has_fault is None
+        assert heater.is_feature_supported("fault_code") is False

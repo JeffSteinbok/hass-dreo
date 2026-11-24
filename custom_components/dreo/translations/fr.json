@@ -55,6 +55,13 @@
       },
       "main_power": {
         "name": "Alimentation principale"
+      },
+      "heater_fault": {
+        "name": "Problème",
+        "state": {
+          "off": "OK",
+          "on": "Défaut"
+        }
       }
     },
     "fan": {
@@ -227,6 +234,14 @@
         "state": {
           "yes": "Oui",
           "no": "Non"
+        }
+      },
+      "heater_fault": {
+        "name": "Défaut",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Basculement (P4)",
+          "other": "Autre défaut"
         }
       }
     },

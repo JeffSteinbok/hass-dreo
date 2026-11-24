@@ -25,6 +25,15 @@ The Tower Fan & Heater 706S (DR-HSH016S) is a heater and a 12-speed tower fan in
 
 Heaters whose Dreo app has a plain *Display* on/off toggle (such as the DR-HSH017S, which reports it as `ledkepton`) get a *Display Light* switch. Models where the app instead offers *Display Auto Off* get that switch.
 
+### Safety Faults
+
+Heaters that report a fault code get two diagnostic entities, for automations that notify you when the heater shuts itself off:
+
+- **Fault** (sensor): `ok`, `tip_over` (the heater was knocked over and shows *P4*), or `other`. The raw code from the heater is in the `fault_code` attribute.
+- **Problem** (binary sensor): on while any fault is reported, whatever the code.
+
+Only tip-over has been confirmed so far (code `64`, on a DR-HSH026S). The other faults in the manuals (*E1*/*E2* temperature sensor open/short circuit, *FF* overheat) show as `other`. If you see one, please open an issue with the `fault_code` value so it can be named.
+
 ### Remote Control Timeout
 
 **Important:** To satisfy UL safety listings, the remote control is disabled if it has not been used for 24 hours. If you find the heater is not responding to commands, you will need to give a quick tap on the WiFi button on the physical heater to resume the ability to control the device remotely via either the Dreo app or this Home Assistant integration.

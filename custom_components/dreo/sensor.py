@@ -33,6 +33,8 @@ from .pydreo.pydreochefmaker import (
     MODE_COMPLETE,
 )
 
+from .pydreo.pydreoheater import FAULT_OPTIONS as HEATER_FAULT_OPTIONS
+
 from .pydreo.pydreohumidifier import (
     WORKTIME_KEY,
     FILTERTIME_KEY,
@@ -56,6 +58,7 @@ class DreoSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[DreoBaseDeviceHA], StateType] = None
     exists_fn: Callable[[DreoBaseDeviceHA], bool] = None
     native_unit_of_measurement_fn: Callable[[DreoBaseDeviceHA], str] = None
+    attrs_fn: Callable[[DreoBaseDeviceHA], dict] = None
 
 
 SENSORS: tuple[DreoSensorEntityDescription, ...] = (
@@ -201,6 +204,18 @@ SENSORS: tuple[DreoSensorEntityDescription, ...] = (
         value_fn=lambda device: device.follow_me_angle,
         exists_fn=lambda device: device.is_feature_supported("follow_me_angle"),
     ),
+    DreoSensorEntityDescription(
+        # Heater safety faults (issue #979): tip-over (P4) is mapped; other codes read "other" with the raw code attached.
+        key="Fault",
+        translation_key="heater_fault",
+        icon="mdi:alert-circle-outline",
+        device_class=SensorDeviceClass.ENUM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        options=HEATER_FAULT_OPTIONS,
+        value_fn=lambda device: device.fault,
+        exists_fn=lambda device: (device.type == DreoDeviceType.HEATER) and device.is_feature_supported("fault_code"),
+        attrs_fn=lambda device: {"fault_code": device.fault_code},
+    ),
 )
 
 
@@ -272,3 +287,10 @@ class DreoSensorHA(DreoBaseDeviceHA, SensorEntity):
     def native_value(self) -> StateType:
         """Return the state of the sensor."""
         return self.entity_description.value_fn(self.device)
+
+    @property
+    def extra_state_attributes(self) -> dict | None:
+        """Return extra attributes, for sensors that define them."""
+        if self.entity_description.attrs_fn is None:
+            return None
+        return self.entity_description.attrs_fn(self.device)

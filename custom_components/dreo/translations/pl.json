@@ -55,6 +55,13 @@
       },
       "main_power": {
         "name": "Zasilanie główne"
+      },
+      "heater_fault": {
+        "name": "Problem",
+        "state": {
+          "off": "OK",
+          "on": "Usterka"
+        }
       }
     },
     "fan": {
@@ -227,6 +234,14 @@
         "state": {
           "yes": "Tak",
           "no": "Nie"
+        }
+      },
+      "heater_fault": {
+        "name": "Usterka",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Przewrócenie (P4)",
+          "other": "Inna usterka"
         }
       }
     },
