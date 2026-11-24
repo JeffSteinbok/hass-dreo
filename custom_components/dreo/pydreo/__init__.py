@@ -481,9 +481,9 @@ class PyDreo:  # pylint: disable=function-redefined
         """Build one ``/api/device/rgb-effect/edit/batch`` item from a catalog entry."""
         layouts = json.loads(json.dumps(effect.get("layouts") or []))
         if color is not None:
-            if effect_name != "Constant" or not layouts:
+            if not layouts:
                 _LOGGER.warning(
-                    "set_rgbic_effect: color override is only supported by Constant"
+                    "set_rgbic_effect: color override requires a wholeColorList layout"
                 )
                 return None
 
@@ -502,7 +502,12 @@ class PyDreo:  # pylint: disable=function-redefined
             # matching layout instead of assuming the color is always in layouts[0].
             for layout in whole_color_layouts:
                 layout["currentSelected"] = "whole"
-                layout["wholeColorList"] = [color.upper()]
+                # Keep the existing HCF color casing, while matching the captured
+                # lowercase hexadecimal format used by the DR-HAP010S app.
+                if device.device_definition.supports_rgbic_mode_light:
+                    layout["wholeColorList"] = [color.lower()]
+                else:
+                    layout["wholeColorList"] = [color.upper()]
 
         # `id` identifies this catalog record; `referencedId` is the effect
         # resource used by the REST subEffects payload. Keep them separate: for
