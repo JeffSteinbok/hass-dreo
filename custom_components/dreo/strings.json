@@ -328,6 +328,21 @@
           "on": "On",
           "auto": "Auto"
         }
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Horizontal Oscillation Angle",
+        "state": {
+          "30": "30°",
+          "60": "60°",
+          "90": "90°"
+        }
+      },
+      "vertical_oscillation_angle": {
+        "name": "Vertical Oscillation Angle",
+        "state": {
+          "30": "30°",
+          "60": "60°"
+        }
       }
     }
   }

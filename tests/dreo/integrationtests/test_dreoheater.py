@@ -231,6 +231,105 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "eco"}})
             assert heater_ha.hvac_mode == HVACMode.HEAT
 
+    def test_HSH034S_axis_oscillation(self):  # pylint: disable=invalid-name
+        """The 714S has separate horizontal and vertical oscillation switches and angle selects (issue #982)."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HSH034S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_heater: PyDreoHeater = self.pydreo_manager.devices[0]
+            # Fixture: oscmode 0 (not oscillating), cruiseconf "45,45,-15,-45" (horizontal 90°, vertical 60°)
+
+            switches = switch.get_entries([pydreo_heater])
+            self.verify_expected_entities(
+                switches,
+                [
+                    "Child Lock",
+                    "Display Auto Off",
+                    "Horizontally Oscillating",
+                    "PTC",
+                    "Panel Sound",
+                    "Vertically Oscillating",
+                    "Window Detection",
+                ],
+            )
+            hosc = self.get_entity_by_key(switches, "Horizontally Oscillating")
+            vosc = self.get_entity_by_key(switches, "Vertically Oscillating")
+            assert hosc.translation_key == "horizontally_oscillating"
+            assert vosc.translation_key == "vertically_oscillating"
+            assert hosc.is_on is False
+            assert vosc.is_on is False
+
+            selects = select.get_entries([pydreo_heater])
+            self.verify_expected_entities(selects, ["Horizontal Oscillation Angle", "Vertical Oscillation Angle"])
+            hangle = self.get_entity_by_key(selects, "Horizontal Oscillation Angle")
+            vangle = self.get_entity_by_key(selects, "Vertical Oscillation Angle")
+            assert hangle.translation_key == "horizontal_oscillation_angle"
+            assert vangle.translation_key == "vertical_oscillation_angle"
+            assert hangle.options == ["30", "60", "90"]
+            assert vangle.options == ["30", "60"]
+            assert hangle.current_option == "90"
+            assert vangle.current_option == "60"
+
+            # No angle numbers: the arcs are discrete in the app
+            numbers = number.get_entries([pydreo_heater])
+            self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])
+
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.supported_features & ClimateEntityFeature.SWING_MODE
+            assert heater_ha.swing_modes == [SWING_OFF, "horizontal", "vertical", "both"]
+            assert heater_ha.swing_mode == SWING_OFF
+
+            # Each switch sets its own bit and keeps the other axis
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                hosc.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_heater, {OSCMODE_KEY: 1})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 1}})
+            assert hosc.is_on is True
+            assert vosc.is_on is False
+            assert heater_ha.swing_mode == "horizontal"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                vosc.turn_on()
+                mock_send_command.assert_called_once_with(pydreo_heater, {OSCMODE_KEY: 3})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 3}})
+            assert heater_ha.swing_mode == "both"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                hosc.turn_off()
+                mock_send_command.assert_called_once_with(pydreo_heater, {OSCMODE_KEY: 2})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 2}})
+            assert hosc.is_on is False
+            assert vosc.is_on is True
+            assert heater_ha.swing_mode == "vertical"
+
+            # Angles: each select changes its own arc in cruiseconf and keeps the other one
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                hangle.select_option("30")
+                mock_send_command.assert_called_once_with(pydreo_heater, {CRUISECONF_KEY: "45,15,-15,-15"})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {CRUISECONF_KEY: "45,15,-15,-15"}})
+            assert hangle.current_option == "30"
+            assert vangle.current_option == "60"
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                vangle.select_option("30")
+                mock_send_command.assert_called_once_with(pydreo_heater, {CRUISECONF_KEY: "15,15,-15,-15"})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {CRUISECONF_KEY: "15,15,-15,-15"}})
+            assert vangle.current_option == "30"
+
+            # The values the Dreo app reported in the issue #982 log
+            pydreo_heater.handle_server_update({REPORTED_KEY: {CRUISECONF_KEY: "15,30,-15,-30"}})
+            assert (hangle.current_option, vangle.current_option) == ("60", "30")
+            pydreo_heater.handle_server_update({REPORTED_KEY: {CRUISECONF_KEY: "45,45,-15,-45"}})
+            assert (hangle.current_option, vangle.current_option) == ("90", "60")
+
+            # Climate swing modes map straight onto the axes
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_swing_mode("both")
+                mock_send_command.assert_called_once_with(pydreo_heater, {OSCMODE_KEY: 3})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_swing_mode(SWING_OFF)
+                mock_send_command.assert_called_once_with(pydreo_heater, {OSCMODE_KEY: 0})
+
     def test_HSH040S(self):  # pylint: disable=invalid-name
         """Load HSH040S (720S) heater and test sending commands."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
@@ -446,8 +545,10 @@ class TestDreoHeater(IntegrationTestBase):
             assert pydreo_heater.poweron is True
             assert pydreo_heater.mode == "eco"
 
-            # WH714S uses oscmode (integer) for oscillation - oscmode 3 = 90°
+            # The 714S reports oscmode as a bitmask of the oscillating axes - 3 = horizontal and vertical
             assert pydreo_heater.oscmode == 3
+            assert pydreo_heater.horizontally_oscillating is True
+            assert pydreo_heater.vertically_oscillating is True
 
             heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
             assert heater_ha.hvac_mode == HVACMode.HEAT
@@ -459,22 +560,30 @@ class TestDreoHeater(IntegrationTestBase):
 
             assert heater_ha.supported_features & ClimateEntityFeature.SWING_MODE
 
-            # Current swing mode should map oscmode 3 -> "90°"
-            assert heater_ha.swing_mode == "90°"
+            # Swing modes are the oscillating axes (issue #982)
+            assert heater_ha.swing_modes == [SWING_OFF, "horizontal", "vertical", "both"]
+            assert heater_ha.swing_mode == "both"
 
-            # Setting swing mode should send oscmode command (set to "Oscillate" = oscmode 1, different from current 3)
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
-                heater_ha.set_swing_mode("Oscillate")
-                mock_send_command.assert_any_call(pydreo_heater, {OSCMODE_KEY: 1})
+                heater_ha.set_swing_mode("horizontal")
+                mock_send_command.assert_called_once_with(pydreo_heater, {OSCMODE_KEY: 1})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 1}})
 
             with patch(PATCH_SEND_COMMAND) as mock_send_command:
                 heater_ha.set_swing_mode("off")
-                mock_send_command.assert_any_call(pydreo_heater, {OSCMODE_KEY: 0})
+                mock_send_command.assert_called_once_with(pydreo_heater, {OSCMODE_KEY: 0})
+
+            # The old angle swing modes are no longer accepted, so nothing can send oscmode 4
+            pydreo_heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 0}})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_swing_mode("120°")
+                heater_ha.set_swing_mode("Oscillate")
+                mock_send_command.assert_not_called()
 
             # Server update for oscmode
-            pydreo_heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 1}})
-            assert pydreo_heater.oscmode == 1
-            assert heater_ha.swing_mode == "Oscillate"
+            pydreo_heater.handle_server_update({REPORTED_KEY: {OSCMODE_KEY: 2}})
+            assert pydreo_heater.oscmode == 2
+            assert heater_ha.swing_mode == "vertical"
 
             numbers = number.get_entries([pydreo_heater])
             self.verify_expected_entities(numbers, ["Timer On", "Timer Off"])

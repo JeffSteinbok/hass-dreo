@@ -240,6 +240,24 @@ HEATER_OSCMODE_SWING_MAP = {
     4: HeaterOscillationAngles.ONE_TWENTY,
 }
 HEATER_SWING_OSCMODE_MAP = {v: k for k, v in HEATER_OSCMODE_SWING_MAP.items()}
+
+# Heaters with separate horizontal and vertical oscillation (714S, DR-HSH034S; issue #982) report
+# "oscmode" as a bitmask of the oscillating axes (see OscillationMode): 0 off, 1 horizontal,
+# 2 vertical, 3 both. Anything else (e.g. 4) is rejected by the device. The climate swing modes
+# use Home Assistant's standard axis names for these values.
+SWING_HORIZONTAL = "horizontal"
+SWING_VERTICAL = "vertical"
+SWING_BOTH = "both"
+HEATER_AXIS_OSCMODE_SWING_MAP = {
+    0: SWING_OFF,
+    1: SWING_HORIZONTAL,
+    2: SWING_VERTICAL,
+    3: SWING_BOTH,
+}
+HEATER_AXIS_SWING_OSCMODE_MAP = {v: k for k, v in HEATER_AXIS_OSCMODE_SWING_MAP.items()}
+# Oscillation arcs (in degrees) the Dreo app offers on these heaters, set through "cruiseconf".
+HEATER_AXIS_HORIZONTAL_SPANS = (30, 60, 90)
+HEATER_AXIS_VERTICAL_SPANS = (30, 60)
 # Possible fan state
 FAN_ON = "on"
 FAN_OFF = "off"

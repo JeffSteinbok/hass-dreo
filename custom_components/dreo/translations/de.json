@@ -317,6 +317,21 @@
           "on": "Ein",
           "auto": "Automatisch"
         }
+      },
+      "horizontal_oscillation_angle": {
+        "name": "Horizontaler Oszillationswinkel",
+        "state": {
+          "30": "30°",
+          "60": "60°",
+          "90": "90°"
+        }
+      },
+      "vertical_oscillation_angle": {
+        "name": "Vertikaler Oszillationswinkel",
+        "state": {
+          "30": "30°",
+          "60": "60°"
+        }
       }
     },
     "light": {
