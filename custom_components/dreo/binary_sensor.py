@@ -95,6 +95,18 @@ BINARY_SENSORS: tuple[DreoBinarySensorEntityDescription, ...] = (
         },
         unique_id_suffix="water-empty",  # pre-dates the key-derived default; do not change
     ),
+    # Heaters (issue #979): on while the heater reports any safety fault (tip-over P4, E1/E2, FF, ...).
+    DreoBinarySensorEntityDescription(
+        key="heater_fault",
+        translation_key="heater_fault",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        entity_registry_enabled_default=True,
+        value_fn=lambda device: device.has_fault,
+        exists_fn=lambda device: device.type == DreoDeviceType.HEATER and device.is_feature_supported("fault_code"),
+        icon_fn=lambda device: "mdi:alert-circle" if device.has_fault else "mdi:check-circle-outline",
+        attrs_fn=lambda device: {"fault": device.fault, "fault_code": device.fault_code},
+    ),
     DreoBinarySensorEntityDescription(
         key="main_power",
         translation_key="main_power",

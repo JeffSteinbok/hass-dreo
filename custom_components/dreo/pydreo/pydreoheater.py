@@ -60,6 +60,18 @@ _LOGGER = logging.getLogger(__name__)
 AIRFLOWMODE_DIRECT = 1
 AIRFLOWMODE_360 = 2
 
+# Heaters report faults in the "wrong" field (the same field dehumidifiers use for their error code).
+# 0 means no fault. A DR-HSH026S (reports itself as DR-HSH006S) sent 64 while it was tipped over
+# and showing P4, and 0 once it was stood back up (issue #979). The codes behind the other faults in
+# the manual (E1/E2 temperature sensor open/short circuit, FF overheat) haven't been captured yet,
+# so any other non-zero value is reported as FAULT_OTHER, with the raw value in fault_code.
+FAULT_CODE_KEY = "wrong"
+FAULT_OK = "ok"
+FAULT_TIP_OVER = "tip_over"
+FAULT_OTHER = "other"
+FAULT_OPTIONS = [FAULT_OK, FAULT_TIP_OVER, FAULT_OTHER]
+FAULT_CODE_MAP = {0: FAULT_OK, 64: FAULT_TIP_OVER}
+
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
@@ -80,6 +92,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._temperature = None
         self._mute_on = None
         self._fixed_conf = None
+        self._fault_code = None
         self._dev_on = None
         self._cooldown = None
         self._ptc_on = None
@@ -476,6 +489,31 @@ class PyDreoHeater(PyDreoBaseDevice):
     def mcu_hardware_model(self) -> str | None:
         """Get the MCU hardware model."""
         return self._mcu_hardware_model
+
+    @property
+    def fault_code(self) -> int | None:
+        """The raw fault code ("wrong") the heater reports; 0 means no fault, None if never reported."""
+        return self._fault_code
+
+    @property
+    def fault(self) -> str | None:
+        """The current fault: FAULT_OK, FAULT_TIP_OVER, or FAULT_OTHER for a code that isn't mapped yet."""
+        if self._fault_code is None:
+            return None
+        return FAULT_CODE_MAP.get(self._fault_code, FAULT_OTHER)
+
+    @property
+    def has_fault(self) -> bool | None:
+        """True while the heater reports any fault."""
+        if self._fault_code is None:
+            return None
+        return self._fault_code != 0
+
+    @staticmethod
+    def _parse_fault_code(value) -> int | None:
+        if isinstance(value, int) and not isinstance(value, bool):
+            return value
+        return None
 
     @property
     def ctlstatus(self) -> bool:
@@ -880,6 +918,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         self._mcu_firmware_version = self.get_state_update_value(state, MCU_FIRMWARE_VERSION_KEY)
         self._mcu_hardware_model = self.get_state_update_value(state, MCU_HARDWARE_MODEL_KEY)
         self._fixed_conf = self.get_state_update_value(state, FIXEDCONF_KEY)
+        self._fault_code = self._parse_fault_code(self.get_state_update_value(state, FAULT_CODE_KEY))
 
     def handle_server_update(self, message):
         """Process a websocket update"""
@@ -1022,3 +1061,9 @@ class PyDreoHeater(PyDreoBaseDevice):
         val_fixed_conf = self.get_server_update_key_value(message, FIXEDCONF_KEY)
         if isinstance(val_fixed_conf, str):
             self._fixed_conf = val_fixed_conf
+
+        val_fault_code = self._parse_fault_code(self.get_server_update_key_value(message, FAULT_CODE_KEY))
+        if val_fault_code is not None:
+            if val_fault_code != self._fault_code:
+                _LOGGER.debug("handle_server_update: %s fault code %s -> %s", self.name, self._fault_code, val_fault_code)
+            self._fault_code = val_fault_code

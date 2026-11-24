@@ -55,6 +55,13 @@
       },
       "main_power": {
         "name": "Alimentazione principale"
+      },
+      "heater_fault": {
+        "name": "Problema",
+        "state": {
+          "off": "OK",
+          "on": "Guasto"
+        }
       }
     },
     "fan": {
@@ -227,6 +234,14 @@
         "state": {
           "yes": "Sì",
           "no": "No"
+        }
+      },
+      "heater_fault": {
+        "name": "Guasto",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Ribaltamento (P4)",
+          "other": "Altro guasto"
         }
       }
     },

@@ -55,6 +55,13 @@
       },
       "main_power": {
         "name": "Main Power"
+      },
+      "heater_fault": {
+        "name": "Problem",
+        "state": {
+          "off": "OK",
+          "on": "Fault"
+        }
       }
     },
     "fan": {
@@ -238,6 +245,14 @@
         "state": {
           "yes": "Yes",
           "no": "No"
+        }
+      },
+      "heater_fault": {
+        "name": "Fault",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Tip-over (P4)",
+          "other": "Other fault"
         }
       }
     },

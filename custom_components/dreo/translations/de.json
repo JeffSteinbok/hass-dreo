@@ -55,6 +55,13 @@
       },
       "main_power": {
         "name": "Hauptstromversorgung"
+      },
+      "heater_fault": {
+        "name": "Problem",
+        "state": {
+          "off": "OK",
+          "on": "Störung"
+        }
       }
     },
     "fan": {
@@ -227,6 +234,14 @@
         "state": {
           "yes": "Ja",
           "no": "Nein"
+        }
+      },
+      "heater_fault": {
+        "name": "Störung",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Umgekippt (P4)",
+          "other": "Andere Störung"
         }
       }
     },

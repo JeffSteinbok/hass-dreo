@@ -55,6 +55,13 @@
           "off": "Nečinný",
           "on": "Topí"
         }
+      },
+      "heater_fault": {
+        "name": "Problém",
+        "state": {
+          "off": "OK",
+          "on": "Porucha"
+        }
       }
     },
     "fan": {
@@ -227,6 +234,14 @@
         "state": {
           "yes": "Ano",
           "no": "Ne"
+        }
+      },
+      "heater_fault": {
+        "name": "Porucha",
+        "state": {
+          "ok": "OK",
+          "tip_over": "Převrácení (P4)",
+          "other": "Jiná porucha"
         }
       }
     },
