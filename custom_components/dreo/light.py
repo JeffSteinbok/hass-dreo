@@ -45,8 +45,6 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
         if (
             isinstance(pydreo_device, PyDreoAirPurifier)
             and pydreo_device.device_definition.supports_rgbic_mode_light
-            and pydreo_device.is_feature_supported("rgbon")
-            and pydreo_device.is_feature_supported("rgbbri")
         ):
             light_ha_collection.append(Dreo530SRGBICLightHA(pydreo_device))
             continue
@@ -328,14 +326,25 @@ class Dreo530SRGBICLightHA(DreoLightHA):
 
     def turn_on(self, **kwargs: Any) -> None:
         """Preserve on/brightness behavior, then apply a supported mode/effect."""
-        super().turn_on(**kwargs)
         effect = kwargs.get(ATTR_EFFECT)
+        selectable_effects = self.pydreo_device.rgbic_selectable_effect_names
+        if effect is not None and effect != self.INDICATOR_EFFECT and effect not in selectable_effects:
+            _LOGGER.warning("turn_on: Unknown RGBIC effect %s for %s", effect, self.pydreo_device.name)
+            return
+
+        # A reported initial state is required before the base light setters can
+        # write power or brightness. Effect selection remains independent: its
+        # own mode setter safely declines when rgbmode has not been reported.
+        can_write_light_state = self.pydreo_device.rgbon is not None and (
+            ATTR_BRIGHTNESS not in kwargs or self.pydreo_device.rgbbri is not None
+        )
+        if can_write_light_state:
+            super().turn_on(**kwargs)
+
         if effect == self.INDICATOR_EFFECT:
             self.pydreo_device.set_rgbic_mode(1)
-        elif effect in self.pydreo_device.rgbic_selectable_effect_names:
+        elif effect in selectable_effects:
             self.pydreo_device.set_rgbic_effect(effect)
-        elif effect is not None:
-            _LOGGER.warning("turn_on: Unknown RGBIC effect %s for %s", effect, self.pydreo_device.name)
 
 
 class DreoRGBLightHA(DreoLightHA):

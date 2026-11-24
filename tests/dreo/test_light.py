@@ -440,7 +440,7 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         entity = light.get_entries([device])[0]
         device.set_rgbic_effect_catalog({
             "basicEffects": [{"id": "basic", "referencedId": "basic-ref", "effectType": 0, "name": "Respirar"}],
-            "sceneEffects": [{"id": "scene", "referencedId": "scene-ref", "effectType": 3,
+            "sceneEffects": [{"id": "scene-id", "referencedId": "scene-ref", "effectType": 3,
                               "name": "Wave", "sortOrder": 1}],
         })
         callback_updates = []
@@ -600,7 +600,7 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
                 side_effect=lambda fn, *args: fn(*args)
             )})()
             asyncio.run(entity.async_added_to_hass())
-        assert entity.effect_list == [Dreo530SRGBICLightHA.INDICATOR_EFFECT]
+        assert entity.effect_list == ["Effect One", Dreo530SRGBICLightHA.INDICATOR_EFFECT]
 
         with patch.object(manager, "get_rgbic_effect_catalog", side_effect=RuntimeError("catalog unavailable")), patch.object(
             entity, "async_write_ha_state"
@@ -609,7 +609,7 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
                 side_effect=lambda fn, *args: fn(*args)
             )})()
             asyncio.run(entity.async_added_to_hass())
-        assert entity.effect_list == [Dreo530SRGBICLightHA.INDICATOR_EFFECT]
+        assert entity.effect_list == ["Effect One", Dreo530SRGBICLightHA.INDICATOR_EFFECT]
 
     def test_unknown_effect_is_logged_and_not_silently_ignored(self, caplog):
         device = self._make_530s()
@@ -617,6 +617,8 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         with patch(PATCH_UPDATE_HA_STATE):
             entity.turn_on(effect="missing effect")
         assert "Unknown RGBIC effect" in caplog.text
+        assert device.rgbon is None
+        assert device.rgbbri is None
 
 
 class TestDreoRGBICLightHA(TestDeviceBase):
