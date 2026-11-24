@@ -173,8 +173,8 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         translation_key="ambient_light_threshold_low",
         attr_name="rgbth_low",
         icon="mdi:water-percent",
-        min_value=0,
-        max_value=100,
+        min_value=15,
+        max_value=85,
         step=1,
         exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
         and device.is_feature_supported("rgbth"),
@@ -184,8 +184,8 @@ NUMBERS: tuple[DreoNumberEntityDescription, ...] = (
         translation_key="ambient_light_threshold_high",
         attr_name="rgbth_high",
         icon="mdi:water-percent",
-        min_value=0,
-        max_value=100,
+        min_value=15,
+        max_value=85,
         step=1,
         exists_fn=lambda device: device.type in {DreoDeviceType.HUMIDIFIER, DreoDeviceType.EVAPORATIVE_COOLER}
         and device.is_feature_supported("rgbth"),
