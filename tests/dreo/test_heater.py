@@ -70,7 +70,7 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert test_heater.translation_key == "heater"
         assert not hasattr(test_heater, "_attr_name")
         assert test_heater.unique_id is not None
-        assert test_heater.current_temperature == 75
+        assert test_heater.native_current_temperature == 75
         assert test_heater.hvac_mode == HVACMode.HEAT
 
         # Test HVAC mode changes: turning off must NOT change the mode to "off".
@@ -158,7 +158,7 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert test_heater.hvac_mode == HVACMode.OFF
 
         # Verify target temperature is available (ecolevel is set)
-        assert test_heater.target_temperature == 72
+        assert test_heater.native_target_temperature == 72
         assert mocked_pydreo_heater.ecolevel == 72
 
         # The key assertion: TARGET_TEMPERATURE feature should be supported
@@ -175,7 +175,7 @@ class TestDreoHeaterHA(TestDeviceBase):
         test_heater.set_preset_mode(PRESET_ECO)
 
         assert test_heater.preset_mode == PRESET_ECO
-        assert test_heater.target_temperature == 72
+        assert test_heater.native_target_temperature == 72
         supported_features_eco = test_heater.supported_features
         assert supported_features_eco & ClimateEntityFeature.TARGET_TEMPERATURE, "TARGET_TEMPERATURE feature should be supported in ECO mode"
 
@@ -210,7 +210,7 @@ class TestDreoHeaterHA(TestDeviceBase):
         assert test_heater.preset_mode == PRESET_ECO
 
         # Verify target temperature is initially 72
-        assert test_heater.target_temperature == 72
+        assert test_heater.native_target_temperature == 72
 
         # Set a new target temperature
         from homeassistant.components.climate import ATTR_TEMPERATURE
@@ -219,7 +219,7 @@ class TestDreoHeaterHA(TestDeviceBase):
 
         # Verify the target temperature was updated
         assert mocked_pydreo_heater.ecolevel == 80
-        assert test_heater.target_temperature == 80
+        assert test_heater.native_target_temperature == 80
 
     def test_set_temperature_in_off_mode(self):
         """Test that set_temperature sends a command to the device even when in OFF mode.
@@ -257,7 +257,7 @@ class TestDreoHeaterHA(TestDeviceBase):
 
         # The command must reach the device (ecolevel updated), not silently dropped
         assert mocked_pydreo_heater.ecolevel == 80
-        assert test_heater.target_temperature == 80
+        assert test_heater.native_target_temperature == 80
 
     def test_set_temperature_in_fan_only_mode(self):
         """Test that set_temperature sends a command to the device when in FAN_ONLY mode.
@@ -295,7 +295,7 @@ class TestDreoHeaterHA(TestDeviceBase):
 
         # The command must reach the device (ecolevel updated), not silently dropped
         assert mocked_pydreo_heater.ecolevel == 78
-        assert test_heater.target_temperature == 78
+        assert test_heater.native_target_temperature == 78
 
     def test_set_temperature_rounds_up(self):
         """set_temperature rounds the Fahrenheit target up, as the Dreo app does (issue #951).
@@ -329,7 +329,7 @@ class TestDreoHeaterHA(TestDeviceBase):
             test_heater.set_temperature(**{ATTR_TEMPERATURE: fahrenheit})
             assert mocked_pydreo_heater.ecolevel == expected
             # Fahrenheit users see the device value unchanged.
-            assert test_heater.target_temperature == expected
+            assert test_heater.native_target_temperature == expected
 
     def _celsius_heater(self):
         """A heater whose HA instance uses Celsius."""
@@ -360,7 +360,7 @@ class TestDreoHeaterHA(TestDeviceBase):
 
     def _shown_celsius(self, test_heater):
         """The target as HA shows it: converted to °C and rounded to the entity's precision."""
-        return display_temp(test_heater.hass, test_heater.target_temperature, test_heater.temperature_unit, test_heater.precision)
+        return display_temp(test_heater.hass, test_heater.native_target_temperature, test_heater.native_temperature_unit, test_heater.precision)
 
     def test_celsius_target_matches_dreo_app(self):
         """Every whole °C from 5 to 35 sends the ecolevel the Dreo app sends (issue #951).
@@ -757,4 +757,4 @@ class TestDreoHeaterHA(TestDeviceBase):
     def test_target_temperature_none_when_no_ecolevel(self):
         """Test target_temperature returns None when ecolevel is None."""
         mock, heater = self._create_full_heater(features_override={"ecolevel": None})
-        assert heater.target_temperature is None
+        assert heater.native_target_temperature is None

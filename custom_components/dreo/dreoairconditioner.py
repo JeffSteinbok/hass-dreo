@@ -10,6 +10,7 @@ import logging
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .dreobasedevice import DreoBaseDeviceHA
+from .climatecompat import NativeClimateTemperatureCompat
 
 from .pydreo import (
     PyDreoAC,
@@ -87,13 +88,13 @@ _LOGGER = logging.getLogger(__name__)
 
 
 # Implementation of the air conditioner
-class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
+class DreoAirConditionerHA(DreoBaseDeviceHA, NativeClimateTemperatureCompat, ClimateEntity):
     """Representation of a Dreo air conditioner as a climate entity."""
 
     _attr_precision = PRECISION_WHOLE
-    _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT  # TODO
-    _attr_target_temperature = None
-    _attr_current_temperature = None
+    _attr_native_temperature_unit = UnitOfTemperature.FAHRENHEIT  # TODO
+    _attr_native_target_temperature = None
+    _attr_native_current_temperature = None
     _attr_fan_mode = None
     _attr_fan_modes = [FAN_LOW, FAN_MEDIUM, FAN_HIGH, FAN_AUTO]
     _attr_has_entity_name = True
@@ -122,8 +123,8 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         del self._attr_name
         self._attr_translation_key = "air_conditioner"
         self._attr_unique_id = f"{super().unique_id}-{self.device.device_id}"
-        self._attr_target_temperature = self.device.target_temperature
-        self._attr_current_temperature = self.device.temperature
+        self._attr_native_target_temperature = self.device.target_temperature
+        self._attr_native_current_temperature = self.device.temperature
         self._attr_swing_mode = self.device.device_definition.swing_modes[0] if self.device.device_definition.swing_modes else None
         self._attr_swing_modes = self.device.device_definition.swing_modes
 
@@ -157,8 +158,8 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
             self._attr_translation_key,
             self._attr_unique_id,
             self._attr_hvac_mode,
-            self._attr_target_temperature,
-            self._attr_current_temperature,
+            self._attr_native_target_temperature,
+            self._attr_native_current_temperature,
             self._attr_swing_mode,
             self._attr_swing_modes,
             self._attr_oscon,
@@ -317,7 +318,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
 
     ### Implementation of climate methods
     @property
-    def current_temperature(self) -> int:
+    def native_current_temperature(self) -> int:
         return self.device.temperature
 
     @property
@@ -332,17 +333,17 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         """Set new target temperature."""
         self.device.target_temperature = int(kwargs.get(ATTR_TEMPERATURE))
         _LOGGER.debug(
-            "set_temperature: :set_temperature(%s) %s --> %s", self.device.name, self._attr_target_temperature, self.device.target_temperature
+            "set_temperature: :set_temperature(%s) %s --> %s", self.device.name, self._attr_native_target_temperature, self.device.target_temperature
         )
-        self._attr_target_temperature = self.device.target_temperature
+        self._attr_native_target_temperature = self.device.target_temperature
         self.schedule_update_ha_state()
 
     @property
-    def target_temperature(self) -> int | None:
+    def native_target_temperature(self) -> int | None:
         return self.device.target_temperature
 
     @property
-    def target_temperature_low(self) -> int | None:
+    def native_target_temperature_low(self) -> int | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TARGET_TEMP_RANGE_ECO
         else:
@@ -350,7 +351,7 @@ class DreoAirConditionerHA(DreoBaseDeviceHA, ClimateEntity):
         return self.device.device_definition.device_ranges[range_key][0]
 
     @property
-    def target_temperature_high(self) -> int | None:
+    def native_target_temperature_high(self) -> int | None:
         if self.device.preset_mode == PRESET_ECO:
             range_key = TARGET_TEMP_RANGE_ECO
         else:
