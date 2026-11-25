@@ -548,6 +548,7 @@ SUPPORTED_DEVICES = {
         device_type=DreoDeviceType.AIR_PURIFIER,
         preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
         device_ranges={SPEED_RANGE: (1, 4)},
+        ambient_light_levels=(1, 2, 3),
         override_fn=_hap009s_override,
     ),
     # DR-HAP010S (Air Purifier 530S) diagnostics report an empty controlsConf object, so the

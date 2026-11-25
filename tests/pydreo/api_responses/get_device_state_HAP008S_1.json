@@ -35,6 +35,14 @@
         "state": true,
         "timestamp": 0
       },
+      "rgbalwayson": {
+        "state": true,
+        "timestamp": 0
+      },
+      "rgblevel": {
+        "state": 2,
+        "timestamp": 0
+      },
       "connected": {
         "state": true,
         "timestamp": 0
