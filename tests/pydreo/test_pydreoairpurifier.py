@@ -2,6 +2,7 @@
 
 # pylint: disable=used-before-assignment
 import logging
+from threading import Event, Thread
 from unittest.mock import patch
 
 import pytest
@@ -71,6 +72,48 @@ def _ack_control_send(manager, device, params: dict) -> None:
 
 class TestPyDreoAirPurifier(TestBase):
     """Test TestPyDreoAirPurifier class."""
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            ("#aBcD09", (171, 205, 9)),
+            ("#000000", (0, 0, 0)),
+            ("#FFFFFF", (255, 255, 255)),
+        ],
+    )
+    def test_rgbic_color_from_effect_accepts_six_digit_hex(self, value, expected):
+        """A whole-ring color must parse exactly six hexadecimal digits."""
+        effect = {
+            "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST",
+                "currentSelected": "whole",
+                "wholeColorList": [value],
+            }]
+        }
+        assert PyDreoAirPurifier._rgbic_color_from_effect(effect) == expected
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "#abcde",
+            "#1234567",
+            "123456",
+            "##123456",
+            "#12G456",
+            " #123456",
+            "#１２３４５６",
+        ],
+    )
+    def test_rgbic_color_from_effect_rejects_invalid_hex(self, value):
+        """Malformed or non-RGB hex values must not be treated as colors."""
+        effect = {
+            "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST",
+                "currentSelected": "whole",
+                "wholeColorList": [value],
+            }]
+        }
+        assert PyDreoAirPurifier._rgbic_color_from_effect(effect) is None
 
     def test_HAP002S(self):  # pylint: disable=invalid-name
         """Test DR-HAP002S Air Purifier (Macro Pro S)."""
@@ -648,6 +691,77 @@ class TestPyDreoAirPurifier(TestBase):
         assert callback_colors[-1] == (255, 2, 10)
         assert "Received 530S RGBIC rgbeffectid report=2124876509150707712 changed=False" in caplog.text
         assert "RGBIC catalog color refreshed from DREO RGB=(255, 2, 10)" in caplog.text
+
+    def test_HAP010S_catalog_refresh_does_not_lose_event_during_worker_release(self):  # pylint: disable=invalid-name
+        """An event between a completed pass and worker release causes another read."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+
+        def catalog_with_color(color):
+            return {"basicEffects": [{
+                "id": "constant-id",
+                "referencedId": "constant-ref",
+                "effectType": 0,
+                "name": "Constante",
+                "layouts": [{
+                    "viewType": "SEGMENT_COLOR_LIST",
+                    "currentSelected": "whole",
+                    "wholeColorList": [color],
+                }],
+            }]}
+
+        device.set_rgbic_effect_catalog(catalog_with_color("#00ff00"))
+        scheduled = []
+        device._dreo.set_schedule_call_later(
+            lambda _delay, callback: scheduled.append(callback) or (lambda: None)
+        )
+        device.handle_server_update_base({
+            REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "constant-id"}
+        })
+        assert len(scheduled) == 1
+
+        pass_finished = Event()
+        allow_worker_release = Event()
+        original_pass = device._rgbic_catalog_refresh_pass
+        pass_count = 0
+
+        def pause_after_first_pass():
+            nonlocal pass_count
+            completed_sequence = original_pass()
+            pass_count += 1
+            if pass_count == 1:
+                pass_finished.set()
+                if not allow_worker_release.wait(timeout=5):
+                    raise AssertionError("test did not release the catalog worker")
+            return completed_sequence
+
+        worker = Thread(target=scheduled[0])
+        with patch.object(
+            device._dreo,
+            "get_rgbic_effect_catalog",
+            side_effect=[catalog_with_color("#ff0000"), catalog_with_color("#0000ff")],
+        ) as get_catalog, patch.object(
+            device, "_rgbic_catalog_refresh_pass", side_effect=pause_after_first_pass
+        ):
+            worker.start()
+            try:
+                assert pass_finished.wait(timeout=5)
+                # This is the vulnerable window: the GET/pass finished but the worker
+                # has not yet atomically released its running state.
+                device.handle_server_update_base({REPORTED_KEY: {"rgbeffectid": "constant-id"}})
+                assert len(scheduled) == 1
+            finally:
+                allow_worker_release.set()
+            worker.join(timeout=5)
+
+        assert not worker.is_alive()
+        assert pass_count == 2
+        assert get_catalog.call_count == 2
+        assert device.rgbic_color == (0, 0, 255)
+        assert len(scheduled) == 1
+        assert device._rgbic_catalog_refresh_running is False
+        assert device._rgbic_catalog_refresh_cancel is None
 
     def test_HAP010S_catalog_refresh_releases_handle_after_api_error(self):  # pylint: disable=invalid-name
         """A failed read clears the pending handle so a later report can retry once."""

@@ -765,6 +765,78 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         assert entity.rgb_color == (0, 102, 255)
         write_state.assert_called_once()
 
+    def test_stale_initial_catalog_cannot_replace_newer_websocket_catalog(self):
+        """A WebSocket refresh applied during startup wins over the pending initial read."""
+        async def run_race():
+            device = self._make_530s()
+            manager = device._dreo
+            entity = light.get_entries([device])[0]
+            entity.hass = self._hass_stub(manager)
+            initial_started = asyncio.Event()
+            initial_response = asyncio.get_running_loop().create_future()
+            initial_jobs = []
+
+            async def hold_initial_request(fn, *args):
+                initial_jobs.append((fn, args))
+                initial_started.set()
+                return await initial_response
+
+            entity.hass.async_add_executor_job = hold_initial_request
+            scheduled = []
+            manager.set_schedule_call_later(
+                lambda _delay, callback: scheduled.append(callback) or (lambda: None)
+            )
+
+            def catalog_with(name, color):
+                return {"basicEffects": [{
+                    "id": "constant-id",
+                    "referencedId": "constant-ref",
+                    "effectType": 0,
+                    "name": name,
+                    "layouts": [{
+                        "viewType": "SEGMENT_COLOR_LIST",
+                        "currentSelected": "whole",
+                        "wholeColorList": [color],
+                    }],
+                }]}
+
+            old_catalog = catalog_with("Constante antigua", "#ff0000")
+            new_catalog = catalog_with("Constante actual", "#0000ff")
+            load_task = asyncio.create_task(entity.async_added_to_hass())
+            try:
+                await initial_started.wait()
+                assert initial_jobs[0][0].__name__ == "get_rgbic_effect_catalog"
+                assert initial_jobs[0][1] == (device,)
+                device.handle_server_update_base({"reported": {
+                    "rgbmode": 2,
+                    "rgbeffectid": "constant-id",
+                }})
+                assert len(scheduled) == 1
+
+                with patch.object(manager, "get_rgbic_effect_catalog", return_value=new_catalog) as get_catalog, patch.object(
+                    entity, "async_write_ha_state"
+                ), patch(PATCH_UPDATE_HA_STATE):
+                    scheduled[0]()
+                    assert device.rgbic_color == (0, 0, 255)
+                    assert device.rgbic_effect_name == "Constante actual"
+                    assert entity.effect == "Constante actual"
+                    get_catalog.assert_called_once_with(device)
+
+                    initial_response.set_result(old_catalog)
+                    await load_task
+            finally:
+                if not load_task.done():
+                    initial_response.cancel()
+                    await asyncio.gather(load_task, return_exceptions=True)
+
+            assert device.rgbic_color == (0, 0, 255)
+            assert device.rgbic_effect_name == "Constante actual"
+            assert entity.effect == "Constante actual"
+            assert device._rgbic_catalog_refresh_running is False
+            assert device._rgbic_catalog_refresh_cancel is None
+
+        asyncio.run(run_race())
+
     def test_initial_catalog_load_cannot_overwrite_color_changed_during_request(self):
         """An initial response captured before a local color write is discarded for RGB."""
         device = self._make_530s()

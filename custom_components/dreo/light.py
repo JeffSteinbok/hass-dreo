@@ -359,19 +359,24 @@ class Dreo530SRGBICLightHA(DreoLightHA):
         """Load selectable effect names and persisted whole-ring color from DREO."""
         await super().async_added_to_hass()
         manager: PyDreo = self.hass.data[DOMAIN][PYDREO_MANAGER]
-        color_write_revision = self.pydreo_device.rgbic_color_write_revision
-        effect_write_revision = self.pydreo_device.rgbic_effect_write_revision
+        read_revisions = self.pydreo_device.begin_rgbic_catalog_read()
+        if read_revisions is None:
+            return
+        catalog_revision, color_write_revision, effect_write_revision = read_revisions
         try:
             catalog = await self.hass.async_add_executor_job(manager.get_rgbic_effect_catalog, self.pydreo_device)
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unable to load RGBIC effect catalog for %s", self.pydreo_device.name)
             return
-        if catalog is not None:
-            self.pydreo_device.set_rgbic_effect_catalog(
-                catalog,
-                expected_rgbic_color_write_revision=color_write_revision,
-                expected_rgbic_effect_write_revision=effect_write_revision,
-            )
+        if catalog is None:
+            return
+        catalog_applied = self.pydreo_device.set_rgbic_effect_catalog(
+            catalog,
+            expected_rgbic_color_write_revision=color_write_revision,
+            expected_rgbic_effect_write_revision=effect_write_revision,
+            expected_catalog_revision=catalog_revision,
+        )
+        if catalog_applied:
             self.async_write_ha_state()
 
     def turn_on(self, **kwargs: Any) -> None:

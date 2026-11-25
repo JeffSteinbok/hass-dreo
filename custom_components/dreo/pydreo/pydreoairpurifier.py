@@ -1,6 +1,7 @@
 """Dreo API for controling air purifiers."""
 
 import logging
+import re
 from typing import TYPE_CHECKING, Dict
 
 from .constant import (
@@ -56,6 +57,8 @@ class PyDreoAirPurifier(PyDreoFanBase):
         self._rgbic_scene_effect_names: list[str] = []
         self._rgbic_effect_id_to_name: dict[str, str] = {}
         self._rgbic_effect_catalog_loaded = False
+        self._rgbic_catalog_request_revision = 0
+        self._rgbic_catalog_applied_revision = 0
         self._rgbic_effect_name: str | None = None
         self._rgbic_effect_write_revision = 0
         self._rgbic_color_effect_name: str | None = None
@@ -307,6 +310,18 @@ class PyDreoAirPurifier(PyDreoFanBase):
         with self._lock:
             return self._rgbic_effect_write_revision
 
+    def begin_rgbic_catalog_read(self) -> tuple[int, int, int] | None:
+        """Reserve a catalog-read revision and snapshot local write revisions."""
+        with self._lock:
+            if self._rgbic_catalog_refresh_disposed:
+                return None
+            self._rgbic_catalog_request_revision += 1
+            return (
+                self._rgbic_catalog_request_revision,
+                self._rgbic_color_write_revision,
+                self._rgbic_effect_write_revision,
+            )
+
     @staticmethod
     def _rgbic_color_effect(catalog: dict) -> dict | None:
         """Find the unique basic effect exposing the whole-ring segment layout."""
@@ -342,7 +357,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
             if not isinstance(colors, list) or not colors or not isinstance(colors[0], str):
                 continue
             value = colors[0]
-            if len(value) != 7 or not value.startswith("#"):
+            if re.fullmatch(r"#[0-9A-Fa-f]{6}", value) is None:
                 continue
             try:
                 packed = int(value[1:], 16)
@@ -358,7 +373,8 @@ class PyDreoAirPurifier(PyDreoFanBase):
         update_rgbic_color: bool = True,
         expected_rgbic_color_write_revision: int | None = None,
         expected_rgbic_effect_write_revision: int | None = None,
-    ) -> None:
+        expected_catalog_revision: int | None = None,
+    ) -> bool:
         """Cache selectable basic/scene effects and resolve WebSocket IDs by entry id."""
         effects = [
             item for item in (catalog.get("basicEffects") or [])
@@ -383,22 +399,38 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 item.get("name", ""),
             )
         )
-        self._rgbic_effect_names = [item["name"] for item in effects]
         color_effect = self._rgbic_color_effect(catalog)
-        self._rgbic_color_effect_name = color_effect.get("name") if color_effect else None
-        self._rgbic_color_effect_id = str(color_effect["id"]) if color_effect else None
-        self._rgbic_scene_effect_names = [item["name"] for item in scene_effects]
         # DREO's WebSocket rgbeffectid equals the catalog entry `id` for both
         # basicEffects and sceneEffects. `referencedId` is the REST sub-effect
         # resource and is deliberately not used as a lookup key. remoteEffects
         # have a separate schema and are not exposed for this purifier.
-        self._rgbic_effect_id_to_name = {
+        effect_id_to_name = {
             str(item["id"]): item["name"]
             for item in [*effects, *scene_effects]
             if item.get("id") is not None
         }
-        self._rgbic_effect_catalog_loaded = True
+        color = self._rgbic_color_from_effect(color_effect) if update_rgbic_color else None
         with self._lock:
+            if self._rgbic_catalog_refresh_disposed:
+                return False
+            if expected_catalog_revision is None:
+                self._rgbic_catalog_request_revision += 1
+                expected_catalog_revision = self._rgbic_catalog_request_revision
+            if expected_catalog_revision <= self._rgbic_catalog_applied_revision:
+                _LOGGER.debug(
+                    "Ignoring stale RGBIC catalog response revision=%s applied=%s",
+                    expected_catalog_revision,
+                    self._rgbic_catalog_applied_revision,
+                )
+                return False
+
+            self._rgbic_catalog_applied_revision = expected_catalog_revision
+            self._rgbic_effect_names = [item["name"] for item in effects]
+            self._rgbic_color_effect_name = color_effect.get("name") if color_effect else None
+            self._rgbic_color_effect_id = str(color_effect["id"]) if color_effect else None
+            self._rgbic_scene_effect_names = [item["name"] for item in scene_effects]
+            self._rgbic_effect_id_to_name = effect_id_to_name
+            self._rgbic_effect_catalog_loaded = True
             if (
                 expected_rgbic_effect_write_revision is None
                 or expected_rgbic_effect_write_revision == self._rgbic_effect_write_revision
@@ -406,9 +438,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 self._resolve_rgbic_effect_id()
             else:
                 _LOGGER.debug("Preserving newer local RGBIC effect selection after catalog refresh")
-        if update_rgbic_color:
-            color = self._rgbic_color_from_effect(color_effect)
-            with self._lock:
+            if update_rgbic_color:
                 if (
                     expected_rgbic_color_write_revision is not None
                     and expected_rgbic_color_write_revision != self._rgbic_color_write_revision
@@ -427,6 +457,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 else:
                     self._rgbic_color = None
                     _LOGGER.debug("RGBIC catalog color is not active for the reported device state")
+        return True
 
     def _resolve_rgbic_effect_id(self) -> None:
         """Map ``rgbeffectid`` to a catalog name; unknown IDs stay unlabeled."""
@@ -444,11 +475,13 @@ class PyDreoAirPurifier(PyDreoFanBase):
         ):
             self._rgbic_catalog_refresh_cancel = None
 
-    def _rgbic_catalog_refresh_pass(self) -> bool:
-        """Run one debounced catalog GET; return True if a newer event needs another pass."""
+    def _rgbic_catalog_refresh_pass(self) -> int | None:
+        """Run one catalog GET and return its sequence, or None if disposed."""
         with self._lock:
             if self._rgbic_catalog_refresh_disposed:
-                return False
+                return None
+            self._rgbic_catalog_request_revision += 1
+            catalog_revision = self._rgbic_catalog_request_revision
             sequence = self._rgbic_catalog_refresh_requested
             write_revision = self._rgbic_color_write_revision
             effect_write_revision = self._rgbic_effect_write_revision
@@ -471,25 +504,36 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
         with self._lock:
             if self._rgbic_catalog_refresh_disposed:
-                return False
+                return None
             if sequence != self._rgbic_catalog_refresh_requested:
                 _LOGGER.debug(
                     "RGBIC catalog response superseded by a newer WebSocket event; refreshing again"
                 )
-                return True
+                return sequence
 
         if catalog is not None:
-            self.set_rgbic_effect_catalog(
+            catalog_applied = self.set_rgbic_effect_catalog(
                 catalog,
                 update_rgbic_color=False,
                 expected_rgbic_effect_write_revision=effect_write_revision,
+                expected_catalog_revision=catalog_revision,
             )
+            if not catalog_applied:
+                with self._lock:
+                    return None if self._rgbic_catalog_refresh_disposed else sequence
 
         with self._lock:
             if self._rgbic_catalog_refresh_disposed:
-                return False
+                return None
             if sequence != self._rgbic_catalog_refresh_requested:
-                return True
+                return sequence
+            if catalog_revision < self._rgbic_catalog_applied_revision:
+                _LOGGER.debug(
+                    "Ignoring stale RGBIC catalog response revision=%s applied=%s",
+                    catalog_revision,
+                    self._rgbic_catalog_applied_revision,
+                )
+                return sequence
             if effect_write_revision != self._rgbic_effect_write_revision:
                 _LOGGER.debug("Preserving newer local RGBIC effect selection after stale catalog read")
             if write_revision != self._rgbic_color_write_revision:
@@ -517,7 +561,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
         if catalog is not None or self._rgbic_color is None:
             self._do_callbacks()
-        return False
+        return sequence
 
     def _schedule_rgbic_catalog_refresh(self) -> None:
         """Refresh the catalog once per WebSocket burst, then catch up newer events."""
@@ -539,15 +583,44 @@ class PyDreoAirPurifier(PyDreoFanBase):
                     return
                 self._rgbic_catalog_refresh_running = True
 
+            attempted_sequence = None
             try:
-                while self._rgbic_catalog_refresh_pass():
-                    pass
+                while True:
+                    with self._lock:
+                        if self._rgbic_catalog_refresh_disposed:
+                            self._rgbic_catalog_refresh_running = False
+                            self._clear_rgbic_catalog_refresh_cancel_locked(pending_marker, cancel_handle)
+                            return
+                        attempted_sequence = self._rgbic_catalog_refresh_requested
+
+                    completed_sequence = self._rgbic_catalog_refresh_pass()
+
+                    with self._lock:
+                        if self._rgbic_catalog_refresh_disposed or completed_sequence is None:
+                            self._rgbic_catalog_refresh_running = False
+                            self._clear_rgbic_catalog_refresh_cancel_locked(pending_marker, cancel_handle)
+                            return
+                        if completed_sequence != self._rgbic_catalog_refresh_requested:
+                            continue
+
+                        # Check the sequence and release the running flag atomically.
+                        # An event after this point sees an idle worker and schedules
+                        # another one; an earlier event is caught by the comparison.
+                        self._rgbic_catalog_refresh_running = False
+                        self._clear_rgbic_catalog_refresh_cancel_locked(pending_marker, cancel_handle)
+                        return
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("RGBIC catalog refresh processing failed for %s", self.name)
-            finally:
                 with self._lock:
+                    retry_for_new_event = (
+                        not self._rgbic_catalog_refresh_disposed
+                        and attempted_sequence is not None
+                        and attempted_sequence != self._rgbic_catalog_refresh_requested
+                    )
                     self._rgbic_catalog_refresh_running = False
                     self._clear_rgbic_catalog_refresh_cancel_locked(pending_marker, cancel_handle)
+                if retry_for_new_event:
+                    self._schedule_rgbic_catalog_refresh()
 
         try:
             cancel = self._dreo.schedule_call_later(0, _refresh)
