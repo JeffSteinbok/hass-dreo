@@ -411,6 +411,31 @@ class TestPyDreoCeilingFan(TestBase):
         fan.dispose()
         assert self.pending_scheduled(scheduled) == []
 
+    def test_rgbic_scene_effect_api_matches_catalog_structure(self):
+        """Scene effects POST with empty layouts and effectType 3 (no capture, catalog-derived)."""
+        self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoCeilingFan = self.pydreo_manager.devices[0]
+
+        catalog = get_response_from_file("get_rgb_effect_catalog_HCF002S_CFRGB.json")
+        expected = get_response_from_file(
+            "post_rgb_effect_edit_batch_scene_wave_catalog_derived.json"
+        )
+
+        with patch("custom_components.dreo.pydreo.Helpers.call_api") as mock_call_api:
+            mock_call_api.side_effect = [
+                (catalog, 200),
+                ({"code": 0, "data": {}}, 200),
+            ]
+            assert self.pydreo_manager.set_rgbic_scene_effect(fan, "Wave") is True
+
+        post_args = mock_call_api.call_args_list[1].args
+        payload = post_args[3]
+        expected[0]["devicesn"] = payload[0]["devicesn"]
+        expected[0]["id"] = payload[0]["id"]
+        expected[0]["subEffects"][0]["effectId"] = payload[0]["subEffects"][0]["effectId"]
+        assert payload == expected
+
     def test_rgbic_effect_api_matches_captured_constant_app_request(self):
         """RGBIC Constant payload must match a captured Dreo app request."""
         self.get_devices_file_name = "get_devices_HCF002S_CFRGB.json"

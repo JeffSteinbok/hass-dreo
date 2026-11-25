@@ -101,7 +101,14 @@
         "name": "Light"
       },
       "rgb_light": {
-        "name": "RGB Light"
+        "name": "RGB Light",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "indicator": "Indicator"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Ambient Light"

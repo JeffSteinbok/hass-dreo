@@ -121,6 +121,7 @@ class CommandOutbox:
         self._on_sent = on_sent
 
         self._lock = threading.Lock()
+        self._condition = threading.Condition(self._lock)
         self._pending: dict = {}
         self._cancel_scheduled: Callable[[], None] | None = None
         self._disposed = False
@@ -164,6 +165,25 @@ class CommandOutbox:
             if self._pending:
                 _LOGGER.debug("outbox %s: dropping unsent %s", self._name, self._pending)
                 self._pending = {}
+            self._condition.notify_all()
+
+    def flush_now(self) -> bool:
+        """Synchronously send pending keys and wait for their transport ack.
+
+        This is an ordering barrier for protocol flows that must complete a
+        WebSocket control before issuing a dependent REST request. Normal
+        submissions retain their configured batching and pacing behavior.
+        """
+        while True:
+            with self._condition:
+                while self._in_flight and not self._disposed:
+                    self._condition.wait()
+                if self._disposed:
+                    return False
+                self._cancel_scheduled_locked()
+                if not self._pending:
+                    return True
+            self._flush(force=True)
 
     @property
     def busy(self) -> bool:
@@ -219,7 +239,7 @@ class CommandOutbox:
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("outbox %s: error flushing command batch", self._name)
 
-    def _claim_batch(self) -> dict | None:
+    def _claim_batch(self, *, force: bool = False) -> dict | None:
         """Claim the pending batch if it is ready to send.
 
         Returns the finalized params, or None if there is nothing to do or a
@@ -231,7 +251,7 @@ class CommandOutbox:
         with self._lock:
             if not self._pending or self._in_flight:
                 return None
-            if not self.timing.is_immediate:
+            if not force and not self.timing.is_immediate:
                 delay = self._delay_until_ready(time.monotonic())
                 if delay > 0:
                     self._arm(delay)
@@ -252,10 +272,10 @@ class CommandOutbox:
             self._in_flight = True
             return params
 
-    def _flush(self) -> None:
+    def _flush(self, *, force: bool = False) -> None:
         """Send the ready batch; drain anything submitted during the send."""
         while True:
-            params = self._claim_batch()
+            params = self._claim_batch(force=force)
             if params is None:
                 return
             send_error: Exception | None = None
@@ -269,10 +289,11 @@ class CommandOutbox:
             with self._lock:
                 self._last_send = time.monotonic()
                 self._in_flight = False
+                self._condition.notify_all()
                 if self._pending:
                     # Drain step: keys arrived during the send. Without this
                     # they would sit here until some future submit.
-                    if self.timing.is_immediate:
+                    if force or self.timing.is_immediate:
                         drain_inline = True
                     else:
                         self._arm(self._delay_until_ready(time.monotonic()))
@@ -281,13 +302,17 @@ class CommandOutbox:
                     self._on_sent()
                 except Exception:  # pylint: disable=broad-except
                     _LOGGER.exception("outbox %s: post-send hook failed", self._name)
-            if send_error is not None and self.timing.is_immediate:
+            if send_error is not None and (force or self.timing.is_immediate):
                 # Immediate mode still has the submitting caller on the stack, and
                 # that caller owns the error - device classes unwind their own
                 # in-flight bookkeeping in an `except` around the setter. Deferred
                 # batches have no caller left to tell, so there the failure is only
                 # logged and the batch dropped (never re-queued: a zombie command
                 # firing after a reconnect outlives the user's action).
+                if force and not self.timing.is_immediate:
+                    with self._lock:
+                        if self._pending and not self._disposed:
+                            self._arm(self._delay_until_ready(time.monotonic()))
                 raise send_error
             if not drain_inline:
                 return

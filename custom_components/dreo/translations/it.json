@@ -354,7 +354,14 @@
         "name": "Luce"
       },
       "rgb_light": {
-        "name": "Luce RGB"
+        "name": "Luce RGB",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "indicator": "Indicatore"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Luce ambientale"

@@ -354,7 +354,14 @@
         "name": "Światło"
       },
       "rgb_light": {
-        "name": "Światło RGB"
+        "name": "Światło RGB",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "indicator": "Wskaźnik"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Światło otoczenia"

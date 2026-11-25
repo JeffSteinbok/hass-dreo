@@ -354,7 +354,14 @@
         "name": "Světlo"
       },
       "rgb_light": {
-        "name": "RGB světlo"
+        "name": "RGB světlo",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "indicator": "Indikátor"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Noční osvětlení"

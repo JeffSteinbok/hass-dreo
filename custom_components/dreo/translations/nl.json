@@ -354,7 +354,14 @@
         "name": "Licht"
       },
       "rgb_light": {
-        "name": "RGB-licht"
+        "name": "RGB-licht",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "indicator": "Indicator"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Sfeerverlichting"

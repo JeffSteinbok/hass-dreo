@@ -354,7 +354,14 @@
         "name": "Осветление"
       },
       "rgb_light": {
-        "name": "RGB осветление"
+        "name": "RGB осветление",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "indicator": "Индикатор"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Околно осветление"

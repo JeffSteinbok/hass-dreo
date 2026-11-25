@@ -27,6 +27,18 @@ TRANSLATIONS_DIR = DREO_DIR / "translations"
 # Home Assistant translation key slug rule (mirrors hassfest).
 SLUG_RE = re.compile(r"^[a-z0-9]([a-z0-9_-]*[a-z0-9])?$")
 
+INDICATOR_TRANSLATIONS = {
+    "es": "Indicador",
+    "en": "Indicator",
+    "de": "Anzeige",
+    "fr": "Indicateur",
+    "it": "Indicatore",
+    "nl": "Indicator",
+    "cs": "Indikátor",
+    "pl": "Wskaźnik",
+    "bg": "Индикатор",
+}
+
 
 def _translation_files() -> list[Path]:
     return sorted(TRANSLATIONS_DIR.glob("*.json"))
@@ -104,3 +116,12 @@ def test_state_keys_are_valid_slugs(path: Path):
         f"{path.name} has invalid state translation keys "
         f"(must be lowercase slug [a-z0-9_-]): {invalid}"
     )
+
+
+@pytest.mark.parametrize(("language", "label"), INDICATOR_TRANSLATIONS.items())
+def test_rgbic_indicator_effect_translation(language: str, label: str):
+    """The internal indicator effect value has a localized label in every language."""
+    translation = _load(TRANSLATIONS_DIR / f"{language}.json")
+    effect_states = translation["entity"]["light"]["rgb_light"]["state_attributes"]["effect"]["state"]
+
+    assert effect_states["indicator"] == label

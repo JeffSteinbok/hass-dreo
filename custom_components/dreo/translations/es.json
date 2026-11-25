@@ -354,7 +354,14 @@
         "name": "Luz"
       },
       "rgb_light": {
-        "name": "Luz RGB"
+        "name": "Luz RGB",
+        "state_attributes": {
+          "effect": {
+            "state": {
+              "indicator": "Indicador"
+            }
+          }
+        }
       },
       "ambient_light": {
         "name": "Luz ambiental"

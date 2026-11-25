@@ -91,6 +91,9 @@ class DreoDeviceDetails:
     supports_rgbic_effect_api: bool
     """Whether this model supports the RGBIC effect REST API."""
 
+    supports_rgbic_mode_light: bool
+    """Whether this model supports the RGBIC mode-based ambient light controls."""
+
     def __init__(
         self,
         device_type: DreoDeviceType = None,
@@ -105,6 +108,7 @@ class DreoDeviceDetails:
         ambient_light_levels: tuple | None = None,
         filter_life_percent: bool = False,
         supports_rgbic_effect_api: bool = False,
+        supports_rgbic_mode_light: bool = False,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -123,6 +127,7 @@ class DreoDeviceDetails:
         self.ambient_light_levels = ambient_light_levels
         self.filter_life_percent = filter_life_percent
         self.supports_rgbic_effect_api = supports_rgbic_effect_api
+        self.supports_rgbic_mode_light = supports_rgbic_mode_light
 
 
 @dataclass
@@ -554,6 +559,7 @@ SUPPORTED_DEVICES = {
         preset_modes=[("auto", "auto"), ("manual", "manual"), ("sleep", "sleep"), ("turbo", "turbo")],
         device_ranges={SPEED_RANGE: (1, 4)},
         override_fn=_hap009s_override,
+        supports_rgbic_mode_light=True,
     ),
     # DR-HAP007S (Air Purifier 337S/337AS) diagnostics report an empty controlsConf object, so the
     # speed range and preset modes cannot be auto-detected; it reports mode "turbo" with windlevel 4.
