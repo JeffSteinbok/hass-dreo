@@ -6,6 +6,9 @@
 [![Release Automation](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml/badge.svg)](https://github.com/JeffSteinbok/hass-dreo/actions/workflows/release.yaml)
 [![PyPI](https://img.shields.io/pypi/v/pydreo-community?label=pydreo-community)](https://pypi.org/project/pydreo-community/)
 
+> [!WARNING]
+> **Trouble updating from Home Assistant 2026.11?** If you previously installed the official Dreo integration (`dreo-team/hass-dreoverse`) through HACS, Home Assistant's new Marketplace may refuse to update this integration with "The dreo directory belongs to dreo-team/hass-dreoverse". This is a Home Assistant bug ([home-assistant/core#190454](https://github.com/home-assistant/core/issues/190454), [proposed fix](https://github.com/home-assistant/core/pull/193106)). There's a workaround in [#992](https://github.com/JeffSteinbok/hass-dreo/issues/992); other users report it works. Make a backup first. **Don't uninstall the official Dreo entry in Marketplace**: it would delete this integration's files.
+
 <p align="center">
   <img src="custom_components/dreo/brand/logo@2x.png" alt="Dreo" width="300">
 </p>
