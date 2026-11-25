@@ -3,7 +3,16 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import LIFETIME_KEY, PURIFYON_KEY, RGBON_KEY, RGB_BRI, RGB_MODE, RGBEFFECTID_KEY
+from .constant import (
+    LIFETIME_KEY,
+    PURIFYON_KEY,
+    RGB_ALWAYS_ON,
+    RGB_BRI,
+    RGB_LEVEL,
+    RGB_MODE,
+    RGBEFFECTID_KEY,
+    RGBON_KEY,
+)
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
@@ -33,6 +42,8 @@ class PyDreoAirPurifier(PyDreoFanBase):
         # Purification toggle. On this model fan speed changes have no physical
         # effect unless purification is on (issue #933).  None if the device doesn't report it.
         self._purify_on: bool | None = None
+        self._ambient_light_on: bool | None = None
+        self._ambient_light_level: int | None = None
         # RGBIC mode-based ambient light (brightness values physically observed: 30, 50, 70, and 100).
         self._rgbon: bool | None = None
         self._rgbbri: int | None = None
@@ -108,6 +119,47 @@ class PyDreoAirPurifier(PyDreoFanBase):
             _LOGGER.debug("purifyon: purifyon - value already %s, skipping command", value)
             return
         self._send_command(PURIFYON_KEY, value)
+
+    @property
+    def ambient_light_on(self) -> bool | None:
+        """Return whether the ambient light is on."""
+        return self._ambient_light_on
+
+    @property
+    def ambient_light_level(self) -> int | None:
+        """Return the last ambient light brightness level."""
+        return self._ambient_light_level
+
+    def set_ambient_light(self, on: bool, level: int | None = None) -> None:
+        """Send changed power and brightness together."""
+        levels = self.device_definition.ambient_light_levels
+        if levels is None:
+            raise NotImplementedError("Ambient light levels are unsupported.")
+        if level is not None and (type(level) is not int or level not in levels):
+            raise ValueError(f"Ambient light level must be one of {levels}.")
+
+        params = {RGB_ALWAYS_ON: on}
+        if level is not None:
+            params[RGB_LEVEL] = level
+        self._send_command_batch(params)
+
+    def _finalize_command_params(self, params: dict) -> dict:
+        """Skip unchanged light fields after queued changes have been merged."""
+        params = super()._finalize_command_params(params)
+        if RGB_ALWAYS_ON in params and params[RGB_ALWAYS_ON] == self._ambient_light_on:
+            del params[RGB_ALWAYS_ON]
+        if RGB_LEVEL in params and params[RGB_LEVEL] == self._ambient_light_level:
+            del params[RGB_LEVEL]
+        return params
+
+    def _update_ambient_light(self, on: bool | None, level: int | None) -> None:
+        """Merge ambient light fields independently when present and valid."""
+        levels = self.device_definition.ambient_light_levels
+        if levels is not None:
+            if isinstance(on, bool):
+                self._ambient_light_on = on
+            if type(level) is int and level in levels:
+                self._ambient_light_level = level
 
     @property
     def rgbon(self) -> bool | None:
@@ -335,6 +387,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
         if self._device_definition.filter_life_percent:
             self._filter_life = self.get_state_update_value(state, LIFETIME_KEY)
         self._purify_on = self.get_state_update_value(state, PURIFYON_KEY)
+
+        if self.device_definition.ambient_light_levels is not None:
+            self._update_ambient_light(
+                self.get_state_update_value(state, RGB_ALWAYS_ON),
+                self.get_state_update_value(state, RGB_LEVEL),
+            )
         if self._device_definition.supports_rgbic_mode_light:
             self._rgbon = self.get_state_update_value(state, RGBON_KEY)
             self._rgbbri = self.get_state_update_value(state, RGB_BRI)
@@ -354,6 +412,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
         val_purify_on = self.get_server_update_key_value(message, PURIFYON_KEY)
         if isinstance(val_purify_on, bool):
             self._purify_on = val_purify_on
+
+        if self.device_definition.ambient_light_levels is not None:
+            self._update_ambient_light(
+                self.get_server_update_key_value(message, RGB_ALWAYS_ON),
+                self.get_server_update_key_value(message, RGB_LEVEL),
+            )
 
         if self._device_definition.supports_rgbic_mode_light:
             val_rgbon = self.get_server_update_key_value(message, RGBON_KEY)

@@ -4,9 +4,11 @@ import asyncio
 import math
 from unittest.mock import AsyncMock, patch
 
+import pytest
+
 from custom_components.dreo import light
 from custom_components.dreo.light import DreoLightHA, DreoRGBLightHA, DreoRGBICLightHA, DreoHumidifierLightHA
-from custom_components.dreo.light import Dreo530SRGBICLightHA
+from custom_components.dreo.light import Dreo530SRGBICLightHA, DreoAirPurifierAmbientLightHA
 from custom_components.dreo.haimports import (
     ColorMode,
     ATTR_BRIGHTNESS,
@@ -353,6 +355,103 @@ class TestDreoRGBLightHA(TestDeviceBase):
 
             rgb_light.turn_off()
             assert device.atm_light_on is False
+
+
+class TestDreoAirPurifierAmbientLightHA(IntegrationTestBase):
+    """Exercise the purifier ambient light with REST state and WebSocket reports."""
+
+    @pytest.mark.parametrize("model", ["HAP007S", "HAP008S", "HAP009S", "HAP010S"])
+    def test_entity_uses_model_capability(self, model):
+        self.get_devices_file_name = f"get_devices_{model}.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.handle_server_update({"reported": {"rgbalwayson": True, "rgblevel": 2}})
+        entities = light.get_entries([device])
+        if model == "HAP008S":
+            (entity,) = entities
+            assert isinstance(entity, DreoAirPurifierAmbientLightHA)
+            assert entity.translation_key == "ambient_light"
+            assert entity.supported_color_modes == {ColorMode.BRIGHTNESS}
+        else:
+            assert all(not isinstance(entity, DreoAirPurifierAmbientLightHA) for entity in entities)
+
+    def test_power_and_brightness_commands_skip_unchanged_values(self):
+        self.get_devices_file_name = "get_devices_HAP008S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        (entity,) = light.get_entries([device])
+        assert entity.is_on is True
+        assert entity.brightness == 170
+
+        def report_command(target, params):
+            target.handle_server_update({"reported": params})
+
+        with patch(PATCH_SEND_COMMAND, side_effect=report_command) as send:
+            entity.turn_on(brightness=170)
+            send.assert_not_called()
+            entity.turn_off()
+            send.assert_called_once_with(device, {"rgbalwayson": False})
+            assert entity.brightness == 170
+            send.reset_mock()
+            entity.turn_off()
+            send.assert_not_called()
+            entity.turn_on()
+            send.assert_called_once_with(device, {"rgbalwayson": True})
+
+        with patch(PATCH_SEND_COMMAND, side_effect=report_command) as send:
+            entity.turn_off()
+            send.reset_mock()
+            entity.turn_on(brightness=85)
+            send.assert_called_once_with(device, {"rgbalwayson": True, "rgblevel": 1})
+            send.reset_mock()
+            entity.turn_on(brightness=255)
+            send.assert_called_once_with(device, {"rgblevel": 3})
+            send.reset_mock()
+            entity.turn_on(brightness=170)
+            send.assert_called_once_with(device, {"rgblevel": 2})
+
+    @pytest.mark.parametrize("brightness, level", [(1, 1), (42, 1), (43, 1), (254, 3), (255, 3)])
+    def test_turn_on_at_brightness_boundaries(self, brightness, level):
+        self.get_devices_file_name = "get_devices_HAP008S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.handle_server_update({"reported": {"rgbalwayson": False}})
+        (entity,) = light.get_entries([device])
+
+        with patch(PATCH_SEND_COMMAND) as send:
+            entity.turn_on(brightness=brightness)
+            send.assert_called_once_with(device, {"rgbalwayson": True, "rgblevel": level})
+
+    def test_missing_report_does_not_suppress_retry(self):
+        self.get_devices_file_name = "get_devices_HAP008S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        (entity,) = light.get_entries([device])
+
+        with patch(PATCH_SEND_COMMAND) as send:
+            entity.turn_off()
+            entity.turn_off()
+            assert send.call_count == 2
+            send.assert_called_with(device, {"rgbalwayson": False})
+        assert entity.is_on is True
+
+    def test_websocket_reports_match_app_sequence(self):
+        self.get_devices_file_name = "get_devices_HAP008S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        (entity,) = light.get_entries([device])
+        for report, on, brightness in (
+            ({"rgbalwayson": False}, False, 170),
+            ({"rgbalwayson": True, "rgblevel": 1}, True, 85),
+            ({"rgblevel": 2}, True, 170),
+            ({"rgblevel": 3}, True, 255),
+            ({"rgbalwayson": False}, False, 255),
+        ):
+            self.pydreo_manager._transport_consume_message(
+                {"method": "control-report", "devicesn": device.serial_number, "reported": report}
+            )
+            assert entity.is_on is on
+            assert entity.brightness == brightness
 
 
 class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):

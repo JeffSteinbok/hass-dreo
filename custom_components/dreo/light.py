@@ -49,6 +49,12 @@ def get_entries(pydreo_devices: list[PyDreoBaseDevice]) -> list[DreoLightHA]:
             light_ha_collection.append(Dreo530SRGBICLightHA(pydreo_device))
             continue
 
+        if (
+            isinstance(pydreo_device, PyDreoAirPurifier)
+            and pydreo_device.device_definition.ambient_light_levels is not None
+        ):
+            light_ha_collection.append(DreoAirPurifierAmbientLightHA(pydreo_device))
+
         # Check if device has a main light (display, main light with brightness/color temp)
         if pydreo_device.is_feature_supported("light_on"):
             _LOGGER.debug("get_entries: Adding Light for %s", pydreo_device.name)
@@ -273,6 +279,35 @@ class DreoLightHA(DreoBaseDeviceHA, LightEntity):  # pylint: disable=abstract-me
                 (self.min_color_temp_kelvin, self.max_color_temp_kelvin), getattr(self.pydreo_device, self._color_temp_attr, 0)
             )
         )
+
+
+class DreoAirPurifierAmbientLightHA(DreoLightHA):
+    """Expose a purifier's discrete ambient light levels."""
+
+    def __init__(self, device: PyDreoAirPurifier) -> None:
+        levels = device.device_definition.ambient_light_levels
+        super().__init__(
+            device,
+            light_on_attr="ambient_light_on",
+            brightness_attr="ambient_light_level",
+            brightness_scale=(levels[0], levels[-1]),
+        )
+        self._color_mode = ColorMode.BRIGHTNESS
+        self._attr_translation_key = "ambient_light"
+        self._attr_unique_id = f"{device.serial_number}-ambient-light"
+
+    def turn_on(self, **kwargs: Any) -> None:
+        """Turn on at the requested or last-used level."""
+        level = None
+        if ATTR_BRIGHTNESS in kwargs:
+            level = round(brightness_to_value(self._brightness_scale, kwargs[ATTR_BRIGHTNESS]))
+            low, high = self._brightness_scale
+            level = max(low, min(high, level))
+        self.pydreo_device.set_ambient_light(True, level)
+
+    def turn_off(self, **kwargs: Any) -> None:
+        """Turn off and preserve the last brightness level."""
+        self.pydreo_device.set_ambient_light(False)
 
 
 class Dreo530SRGBICLightHA(DreoLightHA):
