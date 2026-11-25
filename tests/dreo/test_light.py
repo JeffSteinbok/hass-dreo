@@ -410,6 +410,18 @@ class TestDreoAirPurifierAmbientLightHA(IntegrationTestBase):
             entity.turn_on(brightness=170)
             send.assert_called_once_with(device, {"rgblevel": 2})
 
+    @pytest.mark.parametrize("brightness, level", [(1, 1), (42, 1), (43, 1), (254, 3), (255, 3)])
+    def test_turn_on_at_brightness_boundaries(self, brightness, level):
+        self.get_devices_file_name = "get_devices_HAP008S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.handle_server_update({"reported": {"rgbalwayson": False}})
+        (entity,) = light.get_entries([device])
+
+        with patch(PATCH_SEND_COMMAND) as send:
+            entity.turn_on(brightness=brightness)
+            send.assert_called_once_with(device, {"rgbalwayson": True, "rgblevel": level})
+
     def test_missing_report_does_not_suppress_retry(self):
         self.get_devices_file_name = "get_devices_HAP008S.json"
         self.pydreo_manager.load_devices()

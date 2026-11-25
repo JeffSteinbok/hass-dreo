@@ -301,6 +301,8 @@ class DreoAirPurifierAmbientLightHA(DreoLightHA):
         level = None
         if ATTR_BRIGHTNESS in kwargs:
             level = round(brightness_to_value(self._brightness_scale, kwargs[ATTR_BRIGHTNESS]))
+            low, high = self._brightness_scale
+            level = max(low, min(high, level))
         self.pydreo_device.set_ambient_light(True, level)
 
     def turn_off(self, **kwargs: Any) -> None:

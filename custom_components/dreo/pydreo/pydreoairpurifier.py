@@ -3,7 +3,16 @@
 import logging
 from typing import TYPE_CHECKING, Dict
 
-from .constant import LIFETIME_KEY, PURIFYON_KEY, RGBON_KEY, RGB_ALWAYS_ON, RGB_BRI, RGB_LEVEL, RGB_MODE, RGBEFFECTID_KEY
+from .constant import (
+    LIFETIME_KEY,
+    PURIFYON_KEY,
+    RGB_ALWAYS_ON,
+    RGB_BRI,
+    RGB_LEVEL,
+    RGB_MODE,
+    RGBEFFECTID_KEY,
+    RGBON_KEY,
+)
 from .pydreofanbase import PyDreoFanBase
 from .models import DreoDeviceDetails
 
