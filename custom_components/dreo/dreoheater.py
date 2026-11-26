@@ -135,11 +135,12 @@ class DreoHeaterHA(DreoBaseDeviceHA, NativeClimateTemperatureCompat, ClimateEnti
         heat_level_presets = list(self._heat_level_to_preset.values()) if self.device.htalevel is not None else []
         # Tower fan/heater combos: the fan function modes are presets and its speeds are the fan modes.
         # PRESET_NONE is offered so the normal (fixed speed) fan mode can be selected again.
-        self._is_fan_heater = self.device.is_feature_supported("coolmode") and self.device.is_feature_supported("coollevel_range")
-        fan_presets = [PRESET_NONE] + list(FAN_MODE_TO_PRESET.values()) if self._is_fan_heater else []
+        has_fan_speeds = self.device.is_feature_supported("coollevel_range")
+        self._has_fan_presets = has_fan_speeds and self.device.is_feature_supported("coolmode")
+        fan_presets = [PRESET_NONE] + list(FAN_MODE_TO_PRESET.values()) if self._has_fan_presets else []
         self._attr_preset_modes = list(preset_modes_set) + heat_level_presets + fan_presets
         self._attr_fan_modes = None
-        if self._is_fan_heater:
+        if has_fan_speeds:
             low, high = self.device.coollevel_range
             self._attr_fan_modes = [str(level) for level in range(low, high + 1)]
 
@@ -209,7 +210,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, NativeClimateTemperatureCompat, ClimateEnti
                 return preset
 
         # Tower fan/heater combo in the fan function: natural/sleep/auto are presets, normal is PRESET_NONE
-        if self._is_fan_heater and self.device.poweron and self.device.mode == DreoHeaterMode.COOLAIR:
+        if self._has_fan_presets and self.device.poweron and self.device.mode == DreoHeaterMode.COOLAIR:
             preset = FAN_MODE_TO_PRESET.get(self.device.coolmode, PRESET_NONE)
             _LOGGER.debug("preset_mode: preset_mode(%s): %s (coolmode: %s)", self.device.name, preset, self.device.coolmode)
             return preset
@@ -236,7 +237,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, NativeClimateTemperatureCompat, ClimateEnti
             return
 
         # Check if this is a fan function mode preset (Natural/Sleep/Auto) of a tower fan/heater combo
-        if self._is_fan_heater and preset_mode in PRESET_TO_FAN_MODE:
+        if self._has_fan_presets and preset_mode in PRESET_TO_FAN_MODE:
             _LOGGER.debug("set_preset_mode: set_preset_mode(%s) setting fan function mode to %s", self.device.name, preset_mode)
             # Set the fan function mode and ensure we're in the fan function
             self.device.poweron = True
@@ -254,7 +255,7 @@ class DreoHeaterHA(DreoBaseDeviceHA, NativeClimateTemperatureCompat, ClimateEnti
             self.schedule_update_ha_state()
         elif preset_mode == PRESET_NONE:
             # Tower fan/heater combo in the fan function: no preset means the normal (fixed speed) mode
-            if self._is_fan_heater and self.device.mode == DreoHeaterMode.COOLAIR:
+            if self._has_fan_presets and self.device.mode == DreoHeaterMode.COOLAIR:
                 self.device.coolmode = DreoHeaterFanMode.NORMAL
                 self.schedule_update_ha_state()
         else:

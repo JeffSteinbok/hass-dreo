@@ -164,6 +164,7 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
         temperature_includes_offset: bool = False,
         ambient_light_levels: tuple | None = None,
         axis_oscillation: bool = False,
+        uses_integer_mode: bool = False,
     ):
         # Set default ranges if not provided
         if device_ranges is None:
@@ -193,6 +194,7 @@ class DreoHeaterDeviceDetails(DreoDeviceDetails):
         # the oscillating axes and "cruiseconf" holds both arcs. They are exposed as per-axis switches
         # and angle selects, and the climate swing modes are off/horizontal/vertical/both.
         self.axis_oscillation = axis_oscillation
+        self.uses_integer_mode = uses_integer_mode
         if self.modes is None:
             self.modes = [
                 DreoHeaterMode.COOLAIR,
@@ -585,9 +587,10 @@ SUPPORTED_DEVICES = {
     ),
     # Temperature offset measured by the owner (issue #952): the app sets -2 to +2 °C, stored as "tempoffset"
     # in °F (2 per °C), and the reported temperature already includes it.
+    # Fan-only speeds F1-F3 use "coollevel" (issue #983).
     "DR-HSH006S": DreoHeaterDeviceDetails(
         swing_modes=[SWING_OFF, SWING_ON],
-        device_ranges={TEMPERATURE_OFFSET_RANGE: (-4, 4)},
+        device_ranges={TEMPERATURE_OFFSET_RANGE: (-4, 4), COOL_RANGE: (1, 3)},
         temperature_includes_offset=True,
     ),
     "DR-HSH009S": DreoHeaterDeviceDetails(
@@ -612,7 +615,9 @@ SUPPORTED_DEVICES = {
     # DR-HSH034S (714S) oscillates horizontally (30/60/90°) and vertically (30/60°), each on its own
     # (issue #982). "oscmode" is a bitmask of the oscillating axes (1 horizontal, 2 vertical); 4 is
     # rejected. The arcs are set through "cruiseconf" ("top,right,bottom,left" in degrees).
+    # Fan-only speeds F1-F3 use "coollevel" (issue #983).
     "DR-HSH034S": DreoHeaterDeviceDetails(
+        device_ranges={COOL_RANGE: (1, 3)},
         swing_modes=list(HEATER_AXIS_OSCMODE_SWING_MAP.values()),
         axis_oscillation=True,
     ),
@@ -641,6 +646,7 @@ SUPPORTED_DEVICES = {
     # Temperature offset measured by the owner (issue #952): the app sets -5 to +5 °C, stored as "tempoffset"
     # in °F (2 per °C); the reported temperature is raw, so the offset is added to it.
     "DR-HSH016S": DreoHeaterDeviceDetails(
+        uses_integer_mode=True,
         device_ranges={HEAT_RANGE: (1, 5), COOL_RANGE: (1, 12), TEMPERATURE_OFFSET_RANGE: (-10, 10)},
         ptc_read_only=True,
         swing_modes=[SWING_OFF, *HEATER_HOSC_SWING_ANGLES.keys()],
@@ -651,6 +657,7 @@ SUPPORTED_DEVICES = {
     # Are these even used?  They don't show up as model numbers.  Should they be a DR prefix?
     # "WH714S" is the series name the Dreo app gives the DR-HSH034S, so it shares that definition.
     "WH714S": DreoHeaterDeviceDetails(
+        device_ranges={COOL_RANGE: (1, 3)},
         swing_modes=list(HEATER_AXIS_OSCMODE_SWING_MAP.values()),
         axis_oscillation=True,
     ),
