@@ -19,6 +19,7 @@ from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import EntityCategory, UnitOfTemperature
 
 from custom_components.dreo.pydreo.pydreoheater import FAULT_CODE_KEY
+from . import call_json
 from .imports import *  # pylint: disable=W0401,W0614
 from .integrationtestbase import PATCH_SEND_COMMAND, IntegrationTestBase
 
@@ -49,6 +50,8 @@ class TestDreoHeater(IntegrationTestBase):
             assert heater_ha.unique_id is not None
             assert heater_ha.translation_key == "heater"
             assert heater_ha.is_on is True
+            assert heater_ha.fan_modes is None
+            assert not heater_ha.supported_features & ClimateEntityFeature.FAN_MODE
 
             # Test temperature reading
             if heater_ha.native_current_temperature is not None:
@@ -233,6 +236,63 @@ class TestDreoHeater(IntegrationTestBase):
             pydreo_heater.handle_server_update({REPORTED_KEY: {POWERON_KEY: True}})
             pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "eco"}})
             assert heater_ha.hvac_mode == HVACMode.HEAT
+
+    @pytest.mark.parametrize(
+        ("devices_fixture", "initial_fan_mode"),
+        [
+            ("get_devices_HSH034S.json", "3"),
+            ("get_devices_HSH006S.json", None),
+        ],
+    )
+    def test_three_speed_heater_fan(self, devices_fixture, initial_fan_mode):
+        """Expose and control F1-F3 on string-mode heaters without fan sub-modes."""
+        self.get_devices_file_name = devices_fixture
+        self.pydreo_manager.load_devices()
+        pydreo_heater = self.pydreo_manager.devices[0]
+
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+            assert heater_ha.supported_features & ClimateEntityFeature.FAN_MODE
+            assert heater_ha.fan_modes == ["1", "2", "3"]
+            assert heater_ha.fan_mode == initial_fan_mode
+            assert set(heater_ha.preset_modes) == {PRESET_ECO, "H1", "H2", "H3"}
+
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "hotair", POWERON_KEY: True}})
+            assert heater_ha.hvac_mode == HVACMode.HEAT
+            # Like the 706S, keep the advertised speed choices while heating.
+            assert heater_ha.fan_modes == ["1", "2", "3"]
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                heater_ha.set_hvac_mode(HVACMode.FAN_ONLY)
+                mock_send_command.assert_any_call(pydreo_heater, {MODE_KEY: "coolair"})
+            pydreo_heater.handle_server_update({REPORTED_KEY: {MODE_KEY: "coolair"}})
+            assert heater_ha.hvac_mode == HVACMode.FAN_ONLY
+
+            for level in (1, 2, 3):
+                with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                    heater_ha.set_fan_mode(str(level))
+                    mock_send_command.assert_called_once_with(pydreo_heater, {COOLLEVEL_KEY: level})
+                pydreo_heater.handle_server_update({REPORTED_KEY: {COOLLEVEL_KEY: level}})
+                assert heater_ha.fan_mode == str(level)
+
+    def test_WH714S_alias_has_fan_modes(self):
+        """Expose three fan speeds when the device reports the WH714S model alias."""
+        self.get_devices_file_name = "get_devices_HSH034S.json"
+        read_response = call_json.get_response_from_file
+
+        def read_alias_response(filename):
+            response = read_response(filename)
+            if filename == self.get_devices_file_name:
+                response["data"]["list"][0]["model"] = "WH714S"
+            return response
+
+        with patch.object(call_json, "get_response_from_file", side_effect=read_alias_response):
+            self.pydreo_manager.load_devices()
+
+        pydreo_heater = self.pydreo_manager.devices[0]
+        assert pydreo_heater.model == "WH714S"
+        heater_ha = dreoheater.DreoHeaterHA(pydreo_heater)
+        assert heater_ha.supported_features & ClimateEntityFeature.FAN_MODE
+        assert heater_ha.fan_modes == ["1", "2", "3"]
 
     def test_HSH034S_axis_oscillation(self):  # pylint: disable=invalid-name
         """The 714S has separate horizontal and vertical oscillation switches and angle selects (issue #982)."""

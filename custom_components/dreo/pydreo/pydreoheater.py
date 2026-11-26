@@ -1,4 +1,4 @@
-"""Dreo API for controling heaters."""
+"""Dreo API for controlling heaters."""
 
 import logging
 from typing import TYPE_CHECKING, Dict
@@ -575,8 +575,8 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @property
     def is_fan_heater(self) -> bool:
-        """Returns `True` for tower fan/heater combos, which report an integer function instead of a mode string."""
-        return self._coollevel_range is not None
+        """Return whether this heater uses the integer heat/fan function protocol."""
+        return self._heaterDeviceDefinition.uses_integer_mode
 
     def _mode_from_function(self) -> DreoHeaterMode:
         """Derive the heater mode from the function and heat sub-mode of a tower fan/heater combo.
@@ -637,7 +637,7 @@ class PyDreoHeater(PyDreoBaseDevice):
         """Set the fan speed of the fan function."""
         coollevel = int(coollevel)  # ensure it's an int
         _LOGGER.debug("coollevel: coollevel.setter(%s) --> %s", self.name, coollevel)
-        if self._coollevel is None or self._coollevel_range is None:
+        if self._coollevel_range is None:
             _LOGGER.error("coollevel: Attempting to set fan speed on a device that doesn't support it.")
             raise ValueError("Attempting to set fan speed on a device that doesn't support it.")
         if not (self._coollevel_range[0] <= coollevel <= self._coollevel_range[1]):

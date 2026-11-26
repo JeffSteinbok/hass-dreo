@@ -1,4 +1,4 @@
-"""Dreo API for controling air purifiers."""
+"""Dreo API for controlling air purifiers."""
 
 import logging
 import re

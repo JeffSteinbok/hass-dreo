@@ -1,4 +1,4 @@
-"""Dreo API for controling fans."""
+"""Dreo API for controlling fans."""
 
 import logging
 from typing import TYPE_CHECKING, Dict
