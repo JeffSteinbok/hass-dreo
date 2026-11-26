@@ -473,6 +473,12 @@ class TestPyDreoCeilingFan(TestBase):
 
         payload = post_args[3]
         assert isinstance(payload, list) and len(payload) == 1
+        color_layout = next(
+            layout
+            for layout in payload[0]["subEffects"][0]["layouts"]
+            if layout.get("effectParamKey") == "colors"
+        )
+        assert color_layout["wholeColorList"] == ["#B941FF"]
 
         # The capture and catalog were independently anonymized. Normalize only
         # device-specific identifiers before comparing the request structure.

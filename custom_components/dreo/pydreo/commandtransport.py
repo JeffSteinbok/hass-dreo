@@ -28,7 +28,7 @@ RETRY_DELAY = 5  # seconds between send retries
 class CommandTransport:
     """Command transport class for Dreo API."""
 
-    def __init__(self, recv_callback: Callable[[dict], None]):
+    def __init__(self, recv_callback: Callable[[dict], None], reconnect_callback: Callable[[], None] | None = None):
 
         self._event_thread = None
         self._ws = None
@@ -42,6 +42,7 @@ class CommandTransport:
         self._api_server_region = None
         self._token = None
         self._recv_callback = recv_callback
+        self._reconnect_callback = reconnect_callback
 
     @property
     def auto_reconnect(self) -> bool:
@@ -109,6 +110,7 @@ class CommandTransport:
         self._ws_send_lock = asyncio.Lock()
 
         try:
+            connected_once = False
             while not self._signal_close:
                 # Rebuild URL each attempt so a refreshed token is always used
                 url = f"wss://wsb-{self._api_server_region}.dreo-tech.com/websocket?accessToken={self._token}&timestamp={Helpers.api_timestamp()}"
@@ -121,6 +123,12 @@ class CommandTransport:
                         try:
                             self._ws = ws
                             _LOGGER.info("_start_websocket: WebSocket successfully opened")
+                            if connected_once and self._reconnect_callback is not None:
+                                try:
+                                    self._reconnect_callback()
+                                except Exception:  # pylint: disable=broad-except
+                                    _LOGGER.exception("_start_websocket: Reconnect callback failed")
+                            connected_once = True
                             await self._ws_handler(ws)
                         except websockets.exceptions.ConnectionClosed:
                             pass

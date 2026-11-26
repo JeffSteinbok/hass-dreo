@@ -124,6 +124,14 @@ See **[SUPPORTED_MODELS.md](SUPPORTED_MODELS.md)** for the model-specific settle
 If logs show a **rejected angle** command, recalibrate pan/tilt in the Dreo app (device
 settings / calibration), then reload this integration if Home Assistant stays out of sync.
 
+### DR-HAP010S (530S) RGB color
+
+The 530S ambient ring color picker edits the DREO **Constant** effect: Home Assistant sends
+`rgb-effect/edit/batch` with `applyToDevice`, updates `wholeColorList`, and sets
+`currentSelected` to `whole`. A segment-based Constant design from the DREO app is preserved
+in the catalog; reopen segments in the app to use it again. See
+**[SUPPORTED_MODELS.md](SUPPORTED_MODELS.md#dr-hap010s-530s-rgbic-color)** for details.
+
 ## Installation
 
 ### HACS (Recommended)

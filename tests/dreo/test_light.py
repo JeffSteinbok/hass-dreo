@@ -1,12 +1,14 @@
 """Tests for the Dreo Light entity."""
 
 import asyncio
+import logging
 import math
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from custom_components.dreo import light
+from custom_components.dreo.const import DOMAIN, PYDREO_MANAGER
 from custom_components.dreo.light import DreoLightHA, DreoRGBLightHA, DreoRGBICLightHA, DreoHumidifierLightHA
 from custom_components.dreo.light import Dreo530SRGBICLightHA, DreoAirPurifierAmbientLightHA
 from custom_components.dreo.haimports import (
@@ -462,6 +464,14 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         self.pydreo_manager.load_devices()
         return self.pydreo_manager.devices[0]
 
+    @staticmethod
+    def _hass_stub(manager):
+        """Minimal hass with the integration manager, matching production setup."""
+        return type("Hass", (), {
+            "async_add_executor_job": AsyncMock(side_effect=lambda fn, *args: fn(*args)),
+            "data": {DOMAIN: {PYDREO_MANAGER: manager}},
+        })()
+
     def test_get_entries_exposes_only_rgbic_light_and_brightness_range(self):
         device = self._make_530s()
         device.handle_server_update({"reported": {"rgbon": False, "rgbbri": 50}})
@@ -469,7 +479,7 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         assert len(entities) == 1
         entity = entities[0]
         assert isinstance(entity, Dreo530SRGBICLightHA)
-        assert entity.supported_color_modes == {ColorMode.BRIGHTNESS}
+        assert entity.supported_color_modes == {ColorMode.RGB}
         assert entity.is_on is False
         assert entity._brightness_scale == (1, 100)
         with patch(PATCH_UPDATE_HA_STATE), patch(PATCH_SEND_COMMAND):
@@ -481,6 +491,59 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
             entity.turn_on(brightness=0)
         device.handle_server_update({"reported": {"rgbbri": 1}})
         assert device.rgbbri == 1
+
+    def test_rgb_color_uses_existing_530s_entity_and_catalog_constant_entry(self):
+        device = self._make_530s()
+        device.handle_server_update({"reported": {
+            "rgbon": True,
+            "rgbbri": 50,
+            "rgbmode": 2,
+            "rgbeffectid": "constant-id",
+        }})
+        device.set_rgbic_effect_catalog({
+            "basicEffects": [{
+                "id": "constant-id",
+                "referencedId": "constant-ref",
+                "effectType": 0,
+                "name": "Luz constante",
+                "layouts": [{
+                    "viewType": "SEGMENT_COLOR_LIST",
+                    "currentSelected": "whole",
+                    "wholeColorList": ["#ffffff"],
+                    "colorList": ["#abcdef"] * 17,
+                }],
+            }, {
+                "id": "breath-id",
+                "referencedId": "breath-ref",
+                "effectType": 0,
+                "name": "Respirar",
+                "layouts": [],
+            }],
+            "sceneEffects": [{
+                "id": "scene-id",
+                "referencedId": "scene-ref",
+                "effectType": 3,
+                "name": "Wave",
+                "layouts": [],
+            }],
+        })
+        entities = light.get_entries([device])
+        assert len(entities) == 1
+        entity = entities[0]
+        assert isinstance(entity, Dreo530SRGBICLightHA)
+        assert entity.rgb_color == (255, 255, 255)
+
+        with patch(PATCH_UPDATE_HA_STATE), patch.object(
+            device._dreo, "set_rgbic_effect", return_value=True
+        ) as set_effect:
+            entity.turn_on(**{ATTR_RGB_COLOR: (255, 0, 0)})
+            entity.turn_on(**{ATTR_EFFECT: "Respirar"})
+
+        assert set_effect.call_args_list[0].args == (device, "Luz constante", "#ff0000")
+        assert set_effect.call_args_list[1].args == (device, "Respirar")
+        assert entity.rgb_color is None
+        assert entity.effect == "Respirar"
+        assert "Wave" in entity.effect_list
 
     def test_effect_controls_use_catalog_basics_scenes_and_auto_mode(self):
         device = self._make_530s()
@@ -550,6 +613,275 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         assert device.rgbic_effect_name == "Wave"
         assert entity.effect == "Wave"
         assert callback_updates[-1] == "Wave"
+
+    def test_530s_startup_effect_uses_websocket_id_not_stale_rest_snapshot(self):
+        """REST seeds the startup name; WebSocket then confirms or replaces it."""
+        constant_id = "2124876509150707712"
+        circle_id = "2124876509150707714"
+        ola_id = "1702000000000000001"
+        catalog = {
+            "basicEffects": [
+                {
+                    "id": constant_id,
+                    "referencedId": "1700000000000000001",
+                    "effectType": 0,
+                    "name": "Constante",
+                    "layouts": [{
+                        "viewType": "SEGMENT_COLOR_LIST",
+                        "currentSelected": "whole",
+                        "wholeColorList": ["#0066ff"],
+                    }],
+                },
+                {
+                    "id": circle_id,
+                    "referencedId": "1700000000000000003",
+                    "effectType": 0,
+                    "name": "Círculo",
+                    "layouts": [],
+                },
+            ],
+            "sceneEffects": [{
+                "id": ola_id,
+                "referencedId": ola_id,
+                "effectType": 3,
+                "name": "Ola",
+            }],
+        }
+        known_effects = {
+            constant_id: "Constante",
+            circle_id: "Círculo",
+            ola_id: "Ola",
+        }
+        startup_orders = ("rest_catalog_ws", "rest_ws_catalog", "catalog_rest_ws")
+
+        for rest_id, rest_name in known_effects.items():
+            for startup_order in startup_orders:
+                # Exercise both a matching WebSocket report and one that
+                # corrects a stale REST selection.
+                websocket_ids = (rest_id, next(key for key in known_effects if key != rest_id))
+                for reported_id in websocket_ids:
+                    expected_name = known_effects[reported_id]
+                    for previous_device in self.pydreo_manager.devices:
+                        previous_device.dispose()
+                    self.pydreo_manager.devices.clear()
+                    self.pydreo_manager._device_list_by_sn.clear()
+                    device = self._make_530s()
+                    entity = light.get_entries([device])[0]
+                    rest_state = {
+                        "rgbmode": {"state": 2},
+                        "rgbeffectid": {"state": rest_id},
+                    }
+                    if startup_order == "catalog_rest_ws":
+                        device.set_rgbic_effect_catalog(catalog)
+                    device.update_state(rest_state)
+
+                    if startup_order == "rest_ws_catalog":
+                        device.handle_server_update({"reported": {"rgbeffectid": reported_id}})
+                        assert entity.effect is None  # no names until the catalog arrives
+                        device.set_rgbic_effect_catalog(catalog)
+                    else:
+                        if startup_order == "rest_catalog_ws":
+                            device.set_rgbic_effect_catalog(catalog)
+                        # Before WS, the catalog may resolve REST provisionally.
+                        assert entity.effect == rest_name
+                        device.handle_server_update({"reported": {"rgbeffectid": reported_id}})
+
+                    assert device.rgbeffectid == reported_id
+                    assert entity.effect == expected_name
+
+                    # REST arriving after the live report cannot revert either
+                    # the identifier or the displayed effect name.
+                    device.update_state(rest_state)
+                    assert device.rgbeffectid == reported_id
+                    assert entity.effect == expected_name
+
+    def test_entity_registers_before_rgbic_state_and_updates_when_report_arrives(self):
+        """Static model support is enough to register; reports then fill live attributes."""
+        device = self._make_530s()
+        entity = light.get_entries([device])[0]
+        assert isinstance(entity, Dreo530SRGBICLightHA)
+        assert device.rgbon is None
+        assert device.rgbbri is None
+        assert entity.is_on is None
+        assert entity.brightness is None
+
+        with patch(PATCH_SEND_COMMAND) as send_command, patch.object(
+            device._dreo, "set_rgbic_effect"
+        ) as set_effect:
+            entity.turn_on(brightness=255)
+            entity.turn_on(effect=Dreo530SRGBICLightHA.INDICATOR_EFFECT)
+            entity.turn_on(**{ATTR_RGB_COLOR: (0, 255, 0)})
+            entity.turn_off()
+        send_command.assert_not_called()
+        set_effect.assert_not_called()
+
+        # Register the ordinary entity callback, then deliver the first state
+        # report as the WebSocket thread would after platform setup.
+        manager = device._dreo
+        entity.hass = self._hass_stub(manager)
+        with patch.object(manager, "get_rgbic_effect_catalog", return_value=None), patch.object(
+            entity, "async_write_ha_state"
+        ), patch(PATCH_UPDATE_HA_STATE) as schedule_update:
+            asyncio.run(entity.async_added_to_hass())
+            device.handle_server_update_base({
+                "reported": {"rgbon": True, "rgbbri": 100, "rgbmode": 2}
+            })
+        assert entity.is_on is True
+        assert entity.brightness == 255
+        schedule_update.assert_called_with(True)
+
+        with patch(PATCH_SEND_COMMAND) as send_command:
+            entity.turn_on(effect=Dreo530SRGBICLightHA.INDICATOR_EFFECT)
+            send_command.assert_called_once_with(device, {"rgbmode": 1})
+
+    def test_turn_off_before_rgbon_reported_logs_info(self, caplog):
+        """turn_off is ignored without rgbon and logged at INFO."""
+        caplog.set_level(logging.INFO, logger="custom_components.dreo.light")
+        device = self._make_530s()
+        entity = light.get_entries([device])[0]
+        assert device.rgbon is None
+        entity.turn_off()
+        assert "Ignoring 530S light off command until rgbon is reported" in caplog.text
+
+    def test_initial_catalog_load_recovers_color_for_reported_constant_effect(self):
+        """The initial catalog read recovers color when REST reports the Constant ID."""
+        device = self._make_530s()
+        device.update_state({
+            "rgbmode": {"state": 2},
+            "rgbeffectid": {"state": "constant-id"},
+        })
+        entity = light.get_entries([device])[0]
+        catalog = {"basicEffects": [{
+            "id": "constant-id",
+            "referencedId": "constant-ref",
+            "effectType": 0,
+            "name": "Constante",
+            "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST",
+                "currentSelected": "whole",
+                "wholeColorList": ["#0066ff"],
+                "colorList": ["#ffffff"] * 17,
+            }],
+        }]}
+        entity.hass = self._hass_stub(device._dreo)
+
+        with patch.object(device._dreo, "get_rgbic_effect_catalog", return_value=catalog), patch.object(
+            entity, "async_write_ha_state"
+        ) as write_state:
+            asyncio.run(entity.async_added_to_hass())
+
+        assert device.rgbeffectid == "constant-id"
+        assert device.rgbmode == 2
+        assert entity.rgb_color == (0, 102, 255)
+        write_state.assert_called_once()
+
+    def test_stale_initial_catalog_cannot_replace_newer_websocket_catalog(self):
+        """A WebSocket refresh applied during startup wins over the pending initial read."""
+        import threading
+
+        device = self._make_530s()
+        manager = device._dreo
+        entity = light.get_entries([device])[0]
+        entity.hass = self._hass_stub(manager)
+        started = threading.Event()
+        release = threading.Event()
+        phase = {"block": True}
+        scheduled = []
+        manager.set_schedule_call_later(
+            lambda _delay, callback: scheduled.append(callback) or (lambda: None)
+        )
+
+        def catalog_with(name, color):
+            return {"basicEffects": [{
+                "id": "constant-id",
+                "referencedId": "constant-ref",
+                "effectType": 0,
+                "name": name,
+                "layouts": [{
+                    "viewType": "SEGMENT_COLOR_LIST",
+                    "currentSelected": "whole",
+                    "wholeColorList": [color],
+                }],
+            }]}
+
+        old_catalog = catalog_with("Constante antigua", "#ff0000")
+        new_catalog = catalog_with("Constante actual", "#0000ff")
+
+        def get_catalog(_device):
+            if phase["block"]:
+                started.set()
+                if not release.wait(timeout=5):
+                    raise AssertionError("initial catalog read was not released")
+                return old_catalog
+            return new_catalog
+
+        errors: list[BaseException] = []
+
+        def run_added() -> None:
+            try:
+                asyncio.run(entity.async_added_to_hass())
+            except BaseException as exc:  # pragma: no cover - failure is re-raised below
+                errors.append(exc)
+
+        with patch.object(manager, "get_rgbic_effect_catalog", side_effect=get_catalog), patch(
+            PATCH_UPDATE_HA_STATE
+        ), patch.object(entity, "async_write_ha_state"):
+            thread = threading.Thread(target=run_added)
+            thread.start()
+            try:
+                assert started.wait(timeout=5)
+                device.handle_server_update_base({"reported": {
+                    "rgbmode": 2,
+                    "rgbeffectid": "constant-id",
+                }})
+                assert len(scheduled) == 1
+                phase["block"] = False
+                scheduled[0]()
+                assert device.rgbic_color == (0, 0, 255)
+                assert device.rgbic_effect_name == "Constante actual"
+            finally:
+                release.set()
+                thread.join(timeout=5)
+
+        assert not thread.is_alive()
+        if errors:
+            raise errors[0]
+        assert device.rgbic_color == (0, 0, 255)
+        assert device.rgbic_effect_name == "Constante actual"
+        assert entity.effect == "Constante actual"
+        assert device._rgbic_catalog_refresh_running is False
+        assert device._rgbic_catalog_refresh_cancel is None
+
+    def test_initial_catalog_load_cannot_overwrite_color_changed_during_request(self):
+        """An initial response captured before a local color write is discarded for RGB."""
+        device = self._make_530s()
+        device.handle_server_update({"reported": {"rgbon": True, "rgbbri": 50, "rgbmode": 2}})
+        catalog = {"basicEffects": [{
+            "id": "constant-id",
+            "referencedId": "constant-ref",
+            "effectType": 0,
+            "name": "Constante",
+            "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST",
+                "currentSelected": "whole",
+                "wholeColorList": ["#0066ff"],
+                "colorList": ["#ffffff"] * 17,
+            }],
+        }]}
+        device.set_rgbic_effect_catalog(catalog)
+        entity = light.get_entries([device])[0]
+        entity.hass = self._hass_stub(device._dreo)
+
+        def stale_catalog(_device):
+            assert device.set_rgbic_effect(color_rgb=(255, 0, 0)) is True
+            return catalog
+
+        with patch.object(device._dreo, "get_rgbic_effect_catalog", side_effect=stale_catalog), patch.object(
+            device._dreo, "set_rgbic_effect", return_value=True
+        ), patch.object(entity, "async_write_ha_state"):
+            asyncio.run(entity.async_added_to_hass())
+
+        assert entity.rgb_color == (255, 0, 0)
 
     def test_websocket_effect_report_notifies_entity_even_when_catalog_fails(self, caplog):
         device = self._make_530s()
@@ -681,13 +1013,14 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
 
     def test_async_added_loads_catalog_and_handles_none_or_failure(self):
         device = self._make_530s()
+        device.handle_server_update({"reported": {"rgbon": True, "rgbbri": 50, "rgbmode": 2}})
         entity = light.get_entries([device])[0]
         catalog = {"basicEffects": [{"id": "one", "referencedId": "ref", "effectType": 0, "name": "Effect One"}]}
         manager = device._dreo
         with patch.object(manager, "get_rgbic_effect_catalog", return_value=catalog), patch.object(
             entity, "async_write_ha_state"
         ) as write_state:
-            entity.hass = type("Hass", (), {"async_add_executor_job": AsyncMock(side_effect=lambda fn, *args: fn(*args))})()
+            entity.hass = self._hass_stub(manager)
             asyncio.run(entity.async_added_to_hass())
         assert entity.effect_list == ["Effect One", Dreo530SRGBICLightHA.INDICATOR_EFFECT]
         write_state.assert_called_once()
@@ -695,18 +1028,16 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         with patch.object(manager, "get_rgbic_effect_catalog", return_value=None), patch.object(
             entity, "async_write_ha_state"
         ), patch("custom_components.dreo.light.DreoLightHA.async_added_to_hass"):
-            entity.hass = type("Hass", (), {"async_add_executor_job": AsyncMock(
-                side_effect=lambda fn, *args: fn(*args)
-            )})()
+            entity.hass = self._hass_stub(manager)
             asyncio.run(entity.async_added_to_hass())
+        # A failed/empty later fetch must not discard the last successfully
+        # loaded catalog from this PyDreo device.
         assert entity.effect_list == ["Effect One", Dreo530SRGBICLightHA.INDICATOR_EFFECT]
 
         with patch.object(manager, "get_rgbic_effect_catalog", side_effect=RuntimeError("catalog unavailable")), patch.object(
             entity, "async_write_ha_state"
         ), patch("custom_components.dreo.light.DreoLightHA.async_added_to_hass"):
-            entity.hass = type("Hass", (), {"async_add_executor_job": AsyncMock(
-                side_effect=lambda fn, *args: fn(*args)
-            )})()
+            entity.hass = self._hass_stub(manager)
             asyncio.run(entity.async_added_to_hass())
         assert entity.effect_list == ["Effect One", Dreo530SRGBICLightHA.INDICATOR_EFFECT]
 
