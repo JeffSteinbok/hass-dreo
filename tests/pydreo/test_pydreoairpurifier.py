@@ -1211,6 +1211,48 @@ class TestPyDreoAirPurifier(TestBase):
         assert device.rgbmode == 2
         assert device.rgbeffectid == "new-live-id"
 
+    def test_reconnect_refresh_failure_does_not_block_other_devices(self, caplog):
+        """A failed device refresh is logged and later devices still recover."""
+        import copy
+
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        first_device = self.pydreo_manager.devices[0]
+        second_details = copy.deepcopy(self.pydreo_manager.raw_response["data"]["list"][0])
+        second_details["deviceId"] = "second-device-id"
+        second_details["sn"] = "HAP010S_2"
+        second_details["deviceName"] = "Second 530S"
+        self.pydreo_manager._process_devices([second_details])
+        second_device = self.pydreo_manager.devices[1]
+        scheduled = []
+        self.pydreo_manager.set_schedule_call_later(
+            lambda _delay, work: scheduled.append(work) or (lambda: None)
+        )
+
+        def load_state(device, *, expected_transport_reconnect_generation):
+            assert expected_transport_reconnect_generation == self.pydreo_manager._transport_reconnect_generation
+            if device is first_device:
+                raise RuntimeError("simulated first-device recovery failure")
+            return True
+
+        with patch.object(self.pydreo_manager, "load_device_state", side_effect=load_state) as load, patch.object(
+            first_device, "fetch_rgbic_catalog"
+        ) as first_catalog, patch.object(
+            second_device, "fetch_rgbic_catalog", return_value=True
+        ) as second_catalog, patch.object(second_device, "_do_callbacks") as second_callbacks:
+            self.pydreo_manager._transport_reconnected()
+            assert len(scheduled) == 1
+            scheduled[0]()
+
+        assert load.call_count == 2
+        assert load.call_args_list[0].args == (first_device,)
+        assert load.call_args_list[1].args == (second_device,)
+        first_catalog.assert_not_called()
+        second_catalog.assert_called_once_with()
+        second_callbacks.assert_called_once_with()
+        assert f"RGBIC state refresh failed for {first_device.name}" in caplog.text
+        assert "simulated first-device recovery failure" in caplog.text
+
     def test_non_rgbic_purifier_reconnect_does_not_schedule_rgbic_recovery(self):
         """Purifiers without RGBIC mode lighting do not trigger extra recovery calls."""
         self.get_devices_file_name = "get_devices_HAP009S.json"
