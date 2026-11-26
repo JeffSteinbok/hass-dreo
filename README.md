@@ -7,7 +7,15 @@
 [![PyPI](https://img.shields.io/pypi/v/pydreo-community?label=pydreo-community)](https://pypi.org/project/pydreo-community/)
 
 > [!WARNING]
-> **Trouble updating from Home Assistant 2026.11?** If you previously installed the official Dreo integration (`dreo-team/hass-dreoverse`) through HACS, Home Assistant's new Marketplace may refuse to update this integration with "The dreo directory belongs to dreo-team/hass-dreoverse". This is a Home Assistant bug ([home-assistant/core#190454](https://github.com/home-assistant/core/issues/190454), [proposed fix](https://github.com/home-assistant/core/pull/193106)). There's a workaround in [#992](https://github.com/JeffSteinbok/hass-dreo/issues/992); other users report it works. Make a backup first. **Don't uninstall the official Dreo entry in Marketplace**: it would delete this integration's files.
+> **Can't update from Home Assistant 2026.11+? ("The dreo directory belongs to dreo-team/hass-dreoverse")**
+> If you once installed the official Dreo integration (`dreo-team/hass-dreoverse`) through HACS, Home Assistant's new Marketplace may still think it's installed and block updates to this integration. This is a Home Assistant bug ([home-assistant/core#190454](https://github.com/home-assistant/core/issues/190454), [proposed fix](https://github.com/home-assistant/core/pull/193106)). Users have confirmed this one-time workaround:
+>
+> 1. Make a full Home Assistant backup.
+> 2. Open `http://<your-home-assistant>/config/integrations/integration/marketplace` (Marketplace is a system integration, so it isn't listed under Devices & services) and choose **⋮ → Disable**.
+> 3. Edit `/config/.storage/marketplace.repositories` (e.g. with the Studio Code Server add-on or SSH; the File editor add-on hides `.storage` unless you remove it from its `ignore_pattern`). Find the entry whose `"full_name"` is `"dreo-team/hass-dreoverse"` and change its `"installed"` value to `false`. Keep the JSON valid.
+> 4. Go back to the same page and **Enable** Marketplace, then update Dreo as usual.
+>
+> If that doesn't take, make the same edit with Home Assistant core stopped (`ha core stop`, edit, `ha core start`) from a real SSH client, not the web Terminal. **Don't uninstall the official Dreo entry in Marketplace**: it would delete this integration's files. Background and discussion: [#992](https://github.com/JeffSteinbok/hass-dreo/issues/992).
 
 <p align="center">
   <img src="custom_components/dreo/brand/logo@2x.png" alt="Dreo" width="300">
