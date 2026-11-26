@@ -1,4 +1,4 @@
-"""Dreo API for controling fans."""
+"""Dreo API for controlling fans."""
 
 import logging
 import time

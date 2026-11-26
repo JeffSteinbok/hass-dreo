@@ -1,4 +1,4 @@
-"""Dreo API for controling evaporative coolers."""
+"""Dreo API for controlling evaporative coolers."""
 
 import logging
 from typing import TYPE_CHECKING, Dict, Optional

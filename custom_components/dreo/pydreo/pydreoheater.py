@@ -1,4 +1,4 @@
-"""Dreo API for controling heaters."""
+"""Dreo API for controlling heaters."""
 
 import logging
 from typing import TYPE_CHECKING, Dict
