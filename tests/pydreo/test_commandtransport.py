@@ -623,7 +623,8 @@ class TestCommandTransport:
 
         async def _test():
             callback = MagicMock()
-            transport = CommandTransport(callback)
+            reconnect_callback = MagicMock()
+            transport = CommandTransport(callback, reconnect_callback)
             transport._api_server_region = "us"
             transport._token = "test_token"
             transport._auto_reconnect = True
@@ -675,6 +676,7 @@ class TestCommandTransport:
 
             # Handler should be called twice (once on first connection, once on reconnect)
             assert call_count[0] == 2
+            reconnect_callback.assert_called_once_with()
 
         asyncio.run(_test())
 

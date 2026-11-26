@@ -2,6 +2,7 @@
 
 import logging
 import re
+import time
 from typing import TYPE_CHECKING, Dict, NamedTuple
 
 from .constant import (
@@ -65,9 +66,10 @@ class PyDreoAirPurifier(PyDreoFanBase):
         # or a successful HA effect/color write committed. A failed read releases
         # its claim so an older in-flight response can still apply.
         # ``_skip_next_constant_refresh`` skips one Constant GET after a successful
-        # HA color write. The next Constant report fetches normally.
+        # HA color write. DREO is expected to echo that write over WebSocket;
+        # expiry limits the impact if that echo never arrives.
         self._rgbic_effect_id_reported = False
-        self._skip_next_constant_refresh = False
+        self._skip_next_constant_refresh: float | None = None
         self._rgbic_effect_names: list[str] = []
         self._rgbic_scene_effect_names: list[str] = []
         self._rgbic_effect_id_to_name: dict[str, str] = {}
@@ -242,7 +244,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
         if value == 1:
             self._rgbic_effect_name = None
             self._rgbic_color = None
-            self._skip_next_constant_refresh = False
+            self._skip_next_constant_refresh = None
         elif previous_mode != value and self._rgbic_effect_name not in self.rgbic_selectable_effect_names:
             self._rgbic_effect_name = None
 
@@ -304,6 +306,17 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 return None
             self._rgbic_generation += 1
             return self._rgbic_generation
+
+    def handle_websocket_reconnect(self) -> None:
+        """Let REST seed RGBIC state again after the transport reconnects."""
+        if not self._device_definition.supports_rgbic_mode_light:
+            return
+        with self._lock:
+            self._rgbic_mode_authoritative = False
+            self._rgbic_effect_id_reported = False
+            self._skip_next_constant_refresh = None
+            # Invalidate catalog requests started before this reconnect.
+            self._rgbic_generation += 1
 
     def _abandon_rgbic_catalog_read(self, generation: int) -> None:
         """Drop this read's claim when it failed and no newer read or HA write took over."""
@@ -579,7 +592,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
             self._rgbic_generation += 1
             self._rgbic_effect_name = write_effect_name
             self._rgbic_color = requested_color
-            self._skip_next_constant_refresh = requested_color is not None
+            self._skip_next_constant_refresh = time.monotonic() + 5 if requested_color is not None else None
             self._rgbic_mode_authoritative = True
             self._rgbic_effect_id_reported = True
         self._do_callbacks()
@@ -661,6 +674,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 changed = val_effect_id != self._rgbeffectid
                 self._rgbeffectid = val_effect_id
                 self._rgbic_effect_id_reported = True
+                echo_expired = (
+                    self._skip_next_constant_refresh is not None
+                    and time.monotonic() >= self._skip_next_constant_refresh
+                )
+                if echo_expired:
+                    self._skip_next_constant_refresh = None
                 effect_log = (val_effect_id, changed)
                 if self._rgbic_effect_catalog_loaded:
                     self._rgbic_effect_name = self._rgbic_effect_id_to_name.get(val_effect_id)
@@ -677,12 +696,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 if not self._rgbic_effect_catalog_loaded:
                     if changed or not was_reported:
                         schedule_catalog_refresh = True
-                elif constant_active and self._skip_next_constant_refresh:
-                    self._skip_next_constant_refresh = False
+                elif constant_active and self._skip_next_constant_refresh is not None:
+                    self._skip_next_constant_refresh = None
                 elif constant_active:
                     schedule_catalog_refresh = True
                 else:
-                    self._skip_next_constant_refresh = False
+                    self._skip_next_constant_refresh = None
 
         if effect_log is not None:
             _LOGGER.debug(

@@ -4,7 +4,7 @@
 import logging
 from collections.abc import Callable
 from threading import Barrier, Event, Lock, Thread
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -1115,6 +1115,173 @@ class TestPyDreoAirPurifier(TestBase):
         device.handle_server_update_base({REPORTED_KEY: {"rgbeffectid": "constant-id"}})
         assert scheduled == []
 
+    def test_HAP010S_constant_echo_before_expiry_skips_get(self):  # pylint: disable=invalid-name
+        """A Constant echo before its five-second deadline consumes the marker."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.set_rgbic_effect_catalog(self._hap010s_constant_contrast_catalog())
+        scheduled = []
+        device._dreo.set_schedule_call_later(
+            lambda _delay, callback: scheduled.append(callback) or (lambda: None)
+        )
+        device.handle_server_update_base({REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "contrast-id"}})
+        with patch.object(device._dreo, "set_rgbic_effect", return_value=True), patch.object(
+            device._outbox, "flush_now", return_value=True
+        ), patch("custom_components.dreo.pydreo.pydreoairpurifier.time.monotonic", return_value=10):
+            assert device.set_rgbic_effect(color_rgb=(255, 0, 0)) is True
+        with patch("custom_components.dreo.pydreo.pydreoairpurifier.time.monotonic", return_value=14.9):
+            device.handle_server_update_base({REPORTED_KEY: {"rgbeffectid": "constant-id"}})
+
+        assert device._skip_next_constant_refresh is None
+        assert scheduled == []
+
+    def test_HAP010S_constant_echo_after_expiry_refreshes_catalog(self):  # pylint: disable=invalid-name
+        """When the expected echo is absent, a later Constant report refreshes."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.set_rgbic_effect_catalog(self._hap010s_constant_contrast_catalog())
+        scheduled = []
+        device._dreo.set_schedule_call_later(
+            lambda _delay, callback: scheduled.append(callback) or (lambda: None)
+        )
+        device.handle_server_update_base({REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "contrast-id"}})
+        with patch.object(device._dreo, "set_rgbic_effect", return_value=True), patch.object(
+            device._outbox, "flush_now", return_value=True
+        ), patch("custom_components.dreo.pydreo.pydreoairpurifier.time.monotonic", return_value=10):
+            assert device.set_rgbic_effect(color_rgb=(255, 0, 0)) is True
+        with patch("custom_components.dreo.pydreo.pydreoairpurifier.time.monotonic", return_value=15):
+            device.handle_server_update_base({REPORTED_KEY: {"rgbeffectid": "constant-id"}})
+
+        assert device._skip_next_constant_refresh is None
+        assert len(scheduled) == 1
+
+    def test_HAP010S_reconnect_recovers_rgbic_and_keeps_newer_websocket_state(self):  # pylint: disable=invalid-name
+        """Reconnect recovery reloads state/catalog while a newer WS report wins over REST."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.set_rgbic_effect_catalog(self._hap010s_constant_contrast_catalog())
+        scheduled = []
+        self.pydreo_manager.set_schedule_call_later(
+            lambda _delay, work: scheduled.append(work) or (lambda: None)
+        )
+        device.handle_server_update_base({REPORTED_KEY: {"rgbmode": 1, "rgbeffectid": "indicator-id"}})
+        stale_catalog_generation = device.begin_rgbic_catalog_read()
+
+        self.pydreo_manager._transport_reconnected()
+        assert device._rgbic_mode_authoritative is False
+        assert device._rgbic_effect_id_reported is False
+        assert device._rgbic_generation > stale_catalog_generation
+        assert device.set_rgbic_effect_catalog(
+            self._hap010s_constant_contrast_catalog(),
+            expected_rgbic_generation=stale_catalog_generation,
+        ) is False
+        self.pydreo_manager._transport_reconnected()
+        assert len(scheduled) == 2
+
+        def _load_with_new_websocket_report(
+            _device,
+            *,
+            expected_transport_reconnect_generation,
+        ):
+            assert expected_transport_reconnect_generation == self.pydreo_manager._transport_reconnect_generation
+            device.handle_server_update_base({
+                REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "new-live-id"}
+            })
+            device.update_state({
+                "rgbmode": {"state": 1},
+                "rgbeffectid": {"state": "stale-rest-id"},
+            })
+            return True
+
+        with patch.object(self.pydreo_manager, "load_device_state", side_effect=_load_with_new_websocket_report) as load_state, patch.object(
+            device, "fetch_rgbic_catalog", return_value=True
+        ) as fetch_catalog, patch.object(device, "_do_callbacks"):
+            scheduled[0]()
+            load_state.assert_not_called()
+            scheduled[1]()
+
+        load_state.assert_called_once_with(
+            device,
+            expected_transport_reconnect_generation=self.pydreo_manager._transport_reconnect_generation,
+        )
+        fetch_catalog.assert_called_once_with()
+        assert device.rgbmode == 2
+        assert device.rgbeffectid == "new-live-id"
+
+    def test_non_rgbic_purifier_reconnect_does_not_schedule_rgbic_recovery(self):
+        """Purifiers without RGBIC mode lighting do not trigger extra recovery calls."""
+        self.get_devices_file_name = "get_devices_HAP009S.json"
+        self.pydreo_manager.load_devices()
+        scheduler = MagicMock()
+        self.pydreo_manager.set_schedule_call_later(scheduler)
+
+        self.pydreo_manager._transport_reconnected()
+
+        scheduler.assert_not_called()
+
+    def test_pending_reconnect_recovery_is_ignored_after_unload(self):
+        """A queued recovery becomes inert once transport teardown advances its generation."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        scheduled = []
+        self.pydreo_manager.set_schedule_call_later(
+            lambda _delay, work: scheduled.append(work) or (lambda: None)
+        )
+        self.pydreo_manager._transport_reconnected()
+
+        with patch.object(self.pydreo_manager._transport, "stop_transport"), patch.object(
+            self.pydreo_manager, "load_device_state"
+        ) as load_state:
+            self.pydreo_manager.stop_transport()
+            scheduled[0]()
+
+        load_state.assert_not_called()
+
+    def test_inflight_reconnect_rest_response_is_ignored_after_second_reconnect(self):
+        """An older in-flight REST snapshot cannot apply after a newer reconnect report."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.set_rgbic_effect_catalog(self._hap010s_constant_contrast_catalog())
+        scheduled = []
+        self.pydreo_manager.set_schedule_call_later(
+            lambda _delay, work: scheduled.append(work) or (lambda: None)
+        )
+        device.handle_server_update_base({
+            REPORTED_KEY: {"rgbmode": 1, "rgbeffectid": "old-id"}
+        })
+        self.pydreo_manager._transport_reconnected()
+        request_generation = self.pydreo_manager._transport_reconnect_generation
+
+        def _reconnect_while_request_is_inflight(*_args, **_kwargs):
+            self.pydreo_manager._transport_reconnected()
+            device.handle_server_update_base({
+                REPORTED_KEY: {"rgbmode": 2, "rgbeffectid": "new-live-id"}
+            })
+            return {
+                "code": 0,
+                "data": {"mixed": {
+                    "rgbmode": {"state": 1},
+                    "rgbeffectid": {"state": "stale-rest-id"},
+                }},
+            }, 200
+
+        with patch.object(
+            self.pydreo_manager,
+            "call_dreo_api",
+            side_effect=_reconnect_while_request_is_inflight,
+        ):
+            assert self.pydreo_manager.load_device_state(
+                device,
+                expected_transport_reconnect_generation=request_generation,
+            ) is False
+
+        assert device.rgbmode == 2
+        assert device.rgbeffectid == "new-live-id"
+
     def test_HAP010S_constant_echo_marker_cleared_by_intermediate_effect(self):  # pylint: disable=invalid-name
         """C. A non-Constant report clears the marker so a later Constant report refreshes."""
         self.get_devices_file_name = "get_devices_HAP010S.json"
@@ -1132,10 +1299,10 @@ class TestPyDreoAirPurifier(TestBase):
             device._outbox, "flush_now", return_value=True
         ):
             assert device.set_rgbic_effect(color_rgb=(10, 20, 30)) is True
-        assert device._skip_next_constant_refresh is True
+        assert device._skip_next_constant_refresh is not None
 
         device.handle_server_update_base({REPORTED_KEY: {"rgbeffectid": "contrast-id"}})
-        assert device._skip_next_constant_refresh is False
+        assert device._skip_next_constant_refresh is None
 
         device.handle_server_update_base({REPORTED_KEY: {"rgbeffectid": "constant-id"}})
         assert len(scheduled) == 1
@@ -1211,7 +1378,7 @@ class TestPyDreoAirPurifier(TestBase):
         ):
             assert device.set_rgbic_effect(color_rgb=(255, 0, 0)) is False
 
-        assert device._skip_next_constant_refresh is False
+        assert device._skip_next_constant_refresh is None
         assert device.rgbic_color == (0, 255, 0)
         assert device.rgbic_effect_name == "Constante"
 
@@ -2014,7 +2181,7 @@ class TestPyDreoAirPurifier(TestBase):
         with patch.object(device, "set_rgbic_mode", return_value=False):
             assert device.set_rgbic_effect(color_rgb=(1, 2, 3)) is False
 
-        assert device._skip_next_constant_refresh is False
+        assert device._skip_next_constant_refresh is None
         assert device.rgbic_color is None
         assert device.rgbic_effect_name is None
 
@@ -2045,7 +2212,7 @@ class TestPyDreoAirPurifier(TestBase):
 
         set_mode.assert_called_once_with(2)
         rest_write.assert_called_once()
-        assert device._skip_next_constant_refresh is False
+        assert device._skip_next_constant_refresh is None
         assert device.rgbic_color == (0, 102, 255)
         assert device.rgbic_effect_name == "Constante"
         assert not device._rgbic_effect_id_reported
@@ -2075,7 +2242,7 @@ class TestPyDreoAirPurifier(TestBase):
             with pytest.raises(RuntimeError, match="REST failed"):
                 device.set_rgbic_effect(color_rgb=(1, 2, 3))
 
-        assert device._skip_next_constant_refresh is False
+        assert device._skip_next_constant_refresh is None
         assert device.rgbic_color is None
         assert device.rgbic_effect_name is None
 
@@ -2489,7 +2656,7 @@ class TestPyDreoAirPurifier(TestBase):
             assert device.set_rgbic_effect(selected_name) is True
 
         assert device.rgbic_effect_name == selected_name
-        assert device._skip_next_constant_refresh is False
+        assert device._skip_next_constant_refresh is None
 
     @pytest.mark.parametrize(
         ("rgb", "expected_hex"),

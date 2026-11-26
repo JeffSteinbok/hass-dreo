@@ -107,7 +107,9 @@ class PyDreo:  # pylint: disable=function-redefined
         region: str | None = None,
     ) -> None:
         """Initialize Dreo class with username, password and time zone."""
-        self._transport = CommandTransport(self._transport_consume_message)
+        self._transport = CommandTransport(self._transport_consume_message, self._transport_reconnected)
+        self._transport_reconnect_generation = 0
+        self._transport_reconnect_lock = threading.Lock()
 
         if region in (DREO_AUTH_REGION_NA, DREO_AUTH_REGION_EU):
             self.auth_region = region
@@ -309,7 +311,12 @@ class PyDreo:  # pylint: disable=function-redefined
 
         return proc_return
 
-    def load_device_state(self, device: PyDreoBaseDevice) -> bool:
+    def load_device_state(
+        self,
+        device: PyDreoBaseDevice,
+        *,
+        expected_transport_reconnect_generation: int | None = None,
+    ) -> bool:
         """Load device state from API. This is called once upon initialization for each supported device."""
         _LOGGER.debug("load_device_state: %s, enabled: %s", device.name, self.enabled)
         if not self.enabled:
@@ -332,8 +339,16 @@ class PyDreo:  # pylint: disable=function-redefined
         if response and Helpers.code_check(response):
             if DATA_KEY in response and MIXED_KEY in response[DATA_KEY]:
                 device_state = response[DATA_KEY][MIXED_KEY]
-                device.update_state(device_state)
-                proc_return = True
+                if expected_transport_reconnect_generation is None:
+                    device.update_state(device_state)
+                    proc_return = True
+                else:
+                    with self._transport_reconnect_lock:
+                        if expected_transport_reconnect_generation == self._transport_reconnect_generation:
+                            device.update_state(device_state)
+                            proc_return = True
+                        else:
+                            _LOGGER.debug("load_device_state: Ignoring stale reconnect snapshot for %s", device.name)
             else:
                 _LOGGER.error("load_device_state: Mixed state in response not found: %s", device.name)
         else:
@@ -730,8 +745,42 @@ class PyDreo:  # pylint: disable=function-redefined
         if not self.debug_test_mode:
             self._transport.start_transport(self.api_server_region, self.token)
 
+    def _transport_reconnected(self) -> None:
+        """Refresh RGBIC state after an established WebSocket reconnects."""
+        devices = [
+            device for device in self.devices
+            if isinstance(device, PyDreoAirPurifier) and device.device_definition.supports_rgbic_mode_light
+        ]
+        with self._transport_reconnect_lock:
+            self._transport_reconnect_generation += 1
+            reconnect_generation = self._transport_reconnect_generation
+            for device in devices:
+                device.handle_websocket_reconnect()
+        if not devices:
+            return
+
+        def _refresh() -> None:
+            for device in devices:
+                if reconnect_generation != self._transport_reconnect_generation:
+                    return
+                self.load_device_state(
+                    device,
+                    expected_transport_reconnect_generation=reconnect_generation,
+                )
+                if reconnect_generation != self._transport_reconnect_generation:
+                    return
+                device.fetch_rgbic_catalog()
+                device._do_callbacks()
+
+        try:
+            self.schedule_call_later(0, _refresh)
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception("_transport_reconnected: Could not schedule RGBIC state refresh")
+
     def stop_transport(self) -> None:
         """Close down the transport socket and dispose device resources."""
+        with self._transport_reconnect_lock:
+            self._transport_reconnect_generation += 1
         # Cancel device-owned delayed work before tearing down the WebSocket so
         # callbacks cannot run after unload.
         for device in list(self.devices):
