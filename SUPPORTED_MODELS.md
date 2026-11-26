@@ -68,7 +68,7 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HAP005S
 - DR-HAP007S (337S/337AS)
 - DR-HAP008S
-- DR-HAP010S (530S)
+- DR-HAP010S (530S) — RGBIC ambient ring; see [530S RGB color notes](#dr-hap010s-530s-rgbic-color)
 
 ## Humidifiers (DR-HHM Series)
 
@@ -126,6 +126,21 @@ This document lists all Dreo device models that have been tested and confirmed t
 - DR-HEC006S (DR-HEC516S TurboCool Misting Fan 516S)
 
 ---
+
+## DR-HAP010S (530S) RGBIC color
+
+Home Assistant exposes the 530S ambient ring as an RGB light plus effect list. Selecting a
+color does not send a standalone RGB command; it edits the existing **Constant** effect from
+the authenticated DREO catalog through `/api/device/rgb-effect/edit/batch` with
+`applyToDevice`.
+
+The write updates the Constant layout `wholeColorList` and sets `currentSelected` to
+`whole`. If you had configured Constant in **segments** mode in the DREO app, that segment
+layout is not deleted—it remains saved in the catalog. Switching back to segments in the DREO
+app restores your prior design.
+
+Constant **segment** editing from Home Assistant is not supported yet (only whole-ring color
+via `wholeColorList`).
 
 ## Model Not Listed?
 

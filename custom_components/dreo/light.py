@@ -316,8 +316,16 @@ class Dreo530SRGBICLightHA(DreoLightHA):
     Effect names are resolved only from ``rgbeffectid`` against the authenticated
     catalog (no inference from layout ``selected`` flags or remote effects). Color
     comes from the Constant effect ``wholeColorList`` when the reported id matches
-    that catalog entry. Firmware may report a stale scene id while another effect is
-    physically active — Home Assistant shows the reported id's catalog label.
+    that catalog entry, including when the DREO app has that effect saved in
+    ``segments`` layout mode. Firmware may report a stale scene id while another effect
+    is physically active — Home Assistant shows the reported id's catalog label.
+
+    A Home Assistant RGB selection edits the existing Constant effect from the live
+    catalog via ``/api/device/rgb-effect/edit/batch`` with ``applyToDevice``. The write
+    updates ``wholeColorList`` and sets ``currentSelected`` to ``whole``. Custom
+    segment designs are not deleted; choosing segments again in the DREO app restores
+    that saved configuration. Constant segment editing from Home Assistant is not
+    supported yet.
     """
 
     INDICATOR_EFFECT = "indicator"
@@ -358,24 +366,11 @@ class Dreo530SRGBICLightHA(DreoLightHA):
     async def async_added_to_hass(self) -> None:
         """Load selectable effect names and persisted whole-ring color from DREO."""
         await super().async_added_to_hass()
-        manager: PyDreo = self.hass.data[DOMAIN][PYDREO_MANAGER]
-        read_revisions = self.pydreo_device.begin_rgbic_catalog_read()
-        if read_revisions is None:
-            return
-        catalog_revision, color_write_revision, effect_write_revision = read_revisions
         try:
-            catalog = await self.hass.async_add_executor_job(manager.get_rgbic_effect_catalog, self.pydreo_device)
+            catalog_applied = await self.hass.async_add_executor_job(self.pydreo_device.fetch_rgbic_catalog)
         except Exception:  # pylint: disable=broad-except
             _LOGGER.exception("Unable to load RGBIC effect catalog for %s", self.pydreo_device.name)
             return
-        if catalog is None:
-            return
-        catalog_applied = self.pydreo_device.set_rgbic_effect_catalog(
-            catalog,
-            expected_rgbic_color_write_revision=color_write_revision,
-            expected_rgbic_effect_write_revision=effect_write_revision,
-            expected_catalog_revision=catalog_revision,
-        )
         if catalog_applied:
             self.async_write_ha_state()
 
@@ -408,7 +403,7 @@ class Dreo530SRGBICLightHA(DreoLightHA):
     def turn_off(self, **kwargs: Any) -> None:
         """Avoid an off write until the device has reported its current power state."""
         if self.pydreo_device.rgbon is None:
-            _LOGGER.debug("Ignoring 530S light off command until rgbon is reported")
+            _LOGGER.info("Ignoring 530S light off command until rgbon is reported")
             return
         super().turn_off(**kwargs)
 
