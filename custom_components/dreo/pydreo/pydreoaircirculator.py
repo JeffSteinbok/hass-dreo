@@ -1,4 +1,4 @@
-"""Dreo API for controling fans."""
+"""Dreo API for controlling fans."""
 
 import logging
 import threading
@@ -355,7 +355,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self._osc_mode is not None:
             return (self._osc_mode & OscillationMode.HORIZONTAL) != OscillationMode.OFF
 
-        # Note we do not consider a fan with JUST horizontal oscillation to have a seperate
+        # Note we do not consider a fan with JUST horizontal oscillation to have a separate
         # horizontal oscillation switch.
         return None
 
