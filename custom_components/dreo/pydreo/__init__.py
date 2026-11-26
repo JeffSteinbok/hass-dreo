@@ -776,14 +776,15 @@ class PyDreo:  # pylint: disable=function-redefined
                 if reconnect_generation != self._transport_reconnect_generation:
                     return
                 try:
-                    self.load_device_state(
+                    state_applied = self.load_device_state(
                         device,
                         expected_transport_reconnect_generation=reconnect_generation,
                     )
                     if reconnect_generation != self._transport_reconnect_generation:
                         return
-                    device.fetch_rgbic_catalog()
-                    device._do_callbacks()
+                    catalog_applied = device.fetch_rgbic_catalog()
+                    if state_applied or catalog_applied:
+                        device._do_callbacks()
                 except Exception:  # pylint: disable=broad-except
                     _LOGGER.exception(
                         "_transport_reconnected: RGBIC state refresh failed for %s",

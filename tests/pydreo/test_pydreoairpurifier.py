@@ -1253,6 +1253,43 @@ class TestPyDreoAirPurifier(TestBase):
         assert f"RGBIC state refresh failed for {first_device.name}" in caplog.text
         assert "simulated first-device recovery failure" in caplog.text
 
+    @pytest.mark.parametrize(
+        ("state_applied", "catalog_applied", "should_notify"),
+        [
+            (True, True, True),
+            (True, False, True),
+            (False, True, True),
+            (False, False, False),
+        ],
+    )
+    def test_reconnect_refresh_notifies_when_either_operation_succeeds(
+        self, state_applied, catalog_applied, should_notify
+    ):
+        """Notify after reconnect only when state or catalog was applied."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        scheduled = []
+        self.pydreo_manager.set_schedule_call_later(
+            lambda _delay, work: scheduled.append(work) or (lambda: None)
+        )
+
+        with patch.object(
+            self.pydreo_manager, "load_device_state", return_value=state_applied
+        ) as load_state, patch.object(
+            device, "fetch_rgbic_catalog", return_value=catalog_applied
+        ) as fetch_catalog, patch.object(device, "_do_callbacks") as callbacks:
+            self.pydreo_manager._transport_reconnected()
+            assert len(scheduled) == 1
+            scheduled[0]()
+
+        load_state.assert_called_once_with(
+            device,
+            expected_transport_reconnect_generation=self.pydreo_manager._transport_reconnect_generation,
+        )
+        fetch_catalog.assert_called_once_with()
+        assert callbacks.call_count == int(should_notify)
+
     def test_non_rgbic_purifier_reconnect_does_not_schedule_rgbic_recovery(self):
         """Purifiers without RGBIC mode lighting do not trigger extra recovery calls."""
         self.get_devices_file_name = "get_devices_HAP009S.json"
