@@ -575,7 +575,7 @@ class PyDreoHeater(PyDreoBaseDevice):
 
     @property
     def is_fan_heater(self) -> bool:
-        """Returns `True` for tower fan/heater combos, which report an integer function instead of a mode string."""
+        """Return whether this heater uses the integer heat/fan function protocol."""
         return self._heaterDeviceDefinition.uses_integer_mode
 
     def _mode_from_function(self) -> DreoHeaterMode:
