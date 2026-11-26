@@ -126,10 +126,11 @@ settings / calibration), then reload this integration if Home Assistant stays ou
 
 ### DR-HAP010S (530S) RGB color
 
-The 530S ambient ring color picker edits the DREO **Constant** effect: Home Assistant sends
-`rgb-effect/edit/batch` with `applyToDevice`, updates `wholeColorList`, and sets
-`currentSelected` to `whole`. A segment-based Constant design from the DREO app is preserved
-in the catalog; reopen segments in the app to use it again. See
+Home Assistant exposes the 530S ambient ring's **Constant** effect and a **Constant (segments)**
+variant. Selecting **Constant (segments)** activates the segment design previously configured
+and saved in the DREO app. Home Assistant cannot edit individual segment colors. Selecting an
+RGB color or **Constant** uses the uniform ring color and preserves the saved segment design.
+See
 **[SUPPORTED_MODELS.md](SUPPORTED_MODELS.md#dr-hap010s-530s-rgbic-color)** for details.
 
 ## Installation

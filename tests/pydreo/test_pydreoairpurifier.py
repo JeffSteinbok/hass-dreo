@@ -219,14 +219,14 @@ class TestPyDreoAirPurifier(TestBase):
 
     def test_rgbic_color_effect_detects_constant_segments_mode(self):
         """Constant is found when the DREO app saved segments mode."""
-        catalog = self._constant_catalog_effect(current_selected="segments")
+        catalog = self._constant_catalog_effect(current_selected="segment")
         effect = PyDreoAirPurifier._rgbic_color_effect(catalog)
         assert effect is not None
         assert effect["name"] == "Constante"
 
     def test_rgbic_color_from_effect_reads_whole_color_in_segments_mode(self):
         """wholeColorList color is read while segments is selected in the catalog."""
-        effect = self._constant_catalog_effect(current_selected="segments")["basicEffects"][0]
+        effect = self._constant_catalog_effect(current_selected="segment")["basicEffects"][0]
         assert PyDreoAirPurifier._rgbic_color_from_effect(effect) == (0, 102, 255)
 
     def test_HAP010S_color_write_from_segments_catalog_forces_whole(self):  # pylint: disable=invalid-name
@@ -243,7 +243,7 @@ class TestPyDreoAirPurifier(TestBase):
             "#5500aa",
         ]
         catalog = self._constant_catalog_effect(
-            current_selected="segments",
+            current_selected="segment",
             color_list=segment_colors,
         )
         device.set_rgbic_effect_catalog(catalog)
@@ -1210,6 +1210,85 @@ class TestPyDreoAirPurifier(TestBase):
         fetch_catalog.assert_called_once_with()
         assert device.rgbmode == 2
         assert device.rgbeffectid == "new-live-id"
+
+    def test_reconnect_refresh_failure_does_not_block_other_devices(self, caplog):
+        """A failed device refresh is logged and later devices still recover."""
+        import copy
+
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        first_device = self.pydreo_manager.devices[0]
+        second_details = copy.deepcopy(self.pydreo_manager.raw_response["data"]["list"][0])
+        second_details["deviceId"] = "second-device-id"
+        second_details["sn"] = "HAP010S_2"
+        second_details["deviceName"] = "Second 530S"
+        self.pydreo_manager._process_devices([second_details])
+        second_device = self.pydreo_manager.devices[1]
+        scheduled = []
+        self.pydreo_manager.set_schedule_call_later(
+            lambda _delay, work: scheduled.append(work) or (lambda: None)
+        )
+
+        def load_state(device, *, expected_transport_reconnect_generation):
+            assert expected_transport_reconnect_generation == self.pydreo_manager._transport_reconnect_generation
+            if device is first_device:
+                raise RuntimeError("simulated first-device recovery failure")
+            return True
+
+        with patch.object(self.pydreo_manager, "load_device_state", side_effect=load_state) as load, patch.object(
+            first_device, "fetch_rgbic_catalog"
+        ) as first_catalog, patch.object(
+            second_device, "fetch_rgbic_catalog", return_value=True
+        ) as second_catalog, patch.object(second_device, "_do_callbacks") as second_callbacks:
+            self.pydreo_manager._transport_reconnected()
+            assert len(scheduled) == 1
+            scheduled[0]()
+
+        assert load.call_count == 2
+        assert load.call_args_list[0].args == (first_device,)
+        assert load.call_args_list[1].args == (second_device,)
+        first_catalog.assert_not_called()
+        second_catalog.assert_called_once_with()
+        second_callbacks.assert_called_once_with()
+        assert f"RGBIC state refresh failed for {first_device.name}" in caplog.text
+        assert "simulated first-device recovery failure" in caplog.text
+
+    @pytest.mark.parametrize(
+        ("state_applied", "catalog_applied", "should_notify"),
+        [
+            (True, True, True),
+            (True, False, True),
+            (False, True, True),
+            (False, False, False),
+        ],
+    )
+    def test_reconnect_refresh_notifies_when_either_operation_succeeds(
+        self, state_applied, catalog_applied, should_notify
+    ):
+        """Notify after reconnect only when state or catalog was applied."""
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        scheduled = []
+        self.pydreo_manager.set_schedule_call_later(
+            lambda _delay, work: scheduled.append(work) or (lambda: None)
+        )
+
+        with patch.object(
+            self.pydreo_manager, "load_device_state", return_value=state_applied
+        ) as load_state, patch.object(
+            device, "fetch_rgbic_catalog", return_value=catalog_applied
+        ) as fetch_catalog, patch.object(device, "_do_callbacks") as callbacks:
+            self.pydreo_manager._transport_reconnected()
+            assert len(scheduled) == 1
+            scheduled[0]()
+
+        load_state.assert_called_once_with(
+            device,
+            expected_transport_reconnect_generation=self.pydreo_manager._transport_reconnect_generation,
+        )
+        fetch_catalog.assert_called_once_with()
+        assert callbacks.call_count == int(should_notify)
 
     def test_non_rgbic_purifier_reconnect_does_not_schedule_rgbic_recovery(self):
         """Purifiers without RGBIC mode lighting do not trigger extra recovery calls."""
@@ -2716,3 +2795,25 @@ class TestPyDreoAirPurifier(TestBase):
         assert layout["currentSelected"] == "whole"
         assert device.rgbic_effect_name == "Luz constante"
         assert device.rgbic_color == rgb
+
+    def test_segments_effect_payload_uses_original_catalog_identity_and_preserves_colors(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        segment_colors = ["#110022", "#220044"]
+        effect = {
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constante", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "currentSelected": "whole",
+                "wholeColorList": ["#abcdef"], "colorList": segment_colors,
+            }],
+        }
+        entry = self.pydreo_manager._prepare_rgbic_edit_batch_entry(
+            device, effect, effect_name="Constante", current_selected="segment"
+        )
+        assert entry["id"] == "constant-id"
+        assert entry["name"] == "Constante"
+        layout = entry["subEffects"][0]["layouts"][0]
+        assert layout["currentSelected"] == "segment"
+        assert layout["wholeColorList"] == ["#abcdef"]
+        assert layout["colorList"] == segment_colors

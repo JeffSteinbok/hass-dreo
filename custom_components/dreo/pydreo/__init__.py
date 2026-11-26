@@ -492,9 +492,14 @@ class PyDreo:  # pylint: disable=function-redefined
         *,
         effect_name: str,
         color: str | None = None,
+        current_selected: str | None = None,
     ) -> dict | None:
         """Build one ``/api/device/rgb-effect/edit/batch`` item from a catalog entry."""
         layouts = json.loads(json.dumps(effect.get("layouts") or []))
+        if current_selected is not None:
+            for layout in layouts:
+                if isinstance(layout, dict) and layout.get("viewType") == "SEGMENT_COLOR_LIST":
+                    layout["currentSelected"] = current_selected
         if color is not None:
             if not layouts:
                 _LOGGER.warning(
@@ -567,7 +572,13 @@ class PyDreo:  # pylint: disable=function-redefined
             return False
         return True
 
-    def set_rgbic_effect(self, device: PyDreoBaseDevice, effect_name: str, color: str | None = None) -> bool:
+    def set_rgbic_effect(
+        self,
+        device: PyDreoBaseDevice,
+        effect_name: str,
+        color: str | None = None,
+        current_selected: str | None = None,
+    ) -> bool:
         """Apply a basic RGBIC effect, optionally overriding Constant's whole-ring color."""
         catalog = self.get_rgbic_effect_catalog(device)
         if not catalog:
@@ -582,7 +593,8 @@ class PyDreo:  # pylint: disable=function-redefined
             return False
 
         entry = self._prepare_rgbic_edit_batch_entry(
-            device, effect, effect_name=effect_name, color=color
+            device, effect, effect_name=effect_name, color=color,
+            current_selected=current_selected,
         )
         if entry is None:
             return False
@@ -763,14 +775,21 @@ class PyDreo:  # pylint: disable=function-redefined
             for device in devices:
                 if reconnect_generation != self._transport_reconnect_generation:
                     return
-                self.load_device_state(
-                    device,
-                    expected_transport_reconnect_generation=reconnect_generation,
-                )
-                if reconnect_generation != self._transport_reconnect_generation:
-                    return
-                device.fetch_rgbic_catalog()
-                device._do_callbacks()
+                try:
+                    state_applied = self.load_device_state(
+                        device,
+                        expected_transport_reconnect_generation=reconnect_generation,
+                    )
+                    if reconnect_generation != self._transport_reconnect_generation:
+                        return
+                    catalog_applied = device.fetch_rgbic_catalog()
+                    if state_applied or catalog_applied:
+                        device._do_callbacks()
+                except Exception:  # pylint: disable=broad-except
+                    _LOGGER.exception(
+                        "_transport_reconnected: RGBIC state refresh failed for %s",
+                        device.name,
+                    )
 
         try:
             self.schedule_call_later(0, _refresh)

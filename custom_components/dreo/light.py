@@ -323,9 +323,8 @@ class Dreo530SRGBICLightHA(DreoLightHA):
     A Home Assistant RGB selection edits the existing Constant effect from the live
     catalog via ``/api/device/rgb-effect/edit/batch`` with ``applyToDevice``. The write
     updates ``wholeColorList`` and sets ``currentSelected`` to ``whole``. Custom
-    segment designs are not deleted; choosing segments again in the DREO app restores
-    that saved configuration. Constant segment editing from Home Assistant is not
-    supported yet.
+    segment designs are not deleted. The catalog-backed ``<Constant name> (segments)``
+    effect selects the saved segment configuration without editing either color list.
     """
 
     INDICATOR_EFFECT = "indicator"
