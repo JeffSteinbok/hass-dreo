@@ -129,18 +129,14 @@ This document lists all Dreo device models that have been tested and confirmed t
 
 ## DR-HAP010S (530S) RGBIC color
 
-Home Assistant exposes the 530S ambient ring as an RGB light plus effect list. Selecting a
-color does not send a standalone RGB command; it edits the existing **Constant** effect from
-the authenticated DREO catalog through `/api/device/rgb-effect/edit/batch` with
-`applyToDevice`.
+Home Assistant exposes the 530S ambient ring as an RGB light with effect selection. The effect
+list includes **Constant (segments)**, which activates the segment design previously configured
+and saved in the DREO app. Home Assistant cannot edit the individual segment colors; configure
+and save that design in the DREO app first.
 
-The write updates the Constant layout `wholeColorList` and sets `currentSelected` to
-`whole`. If you had configured Constant in **segments** mode in the DREO app, that segment
-layout is not deleted—it remains saved in the catalog. Switching back to segments in the DREO
-app restores your prior design.
-
-Constant **segment** editing from Home Assistant is not supported yet (only whole-ring color
-via `wholeColorList`).
+Selecting an RGB color edits the existing **Constant** effect through the DREO catalog and uses
+the uniform ring color. Selecting **Constant** also restores uniform mode. Both operations
+preserve the saved segment color list, which can be selected again with **Constant (segments)**.
 
 ## Model Not Listed?
 

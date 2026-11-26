@@ -219,14 +219,14 @@ class TestPyDreoAirPurifier(TestBase):
 
     def test_rgbic_color_effect_detects_constant_segments_mode(self):
         """Constant is found when the DREO app saved segments mode."""
-        catalog = self._constant_catalog_effect(current_selected="segments")
+        catalog = self._constant_catalog_effect(current_selected="segment")
         effect = PyDreoAirPurifier._rgbic_color_effect(catalog)
         assert effect is not None
         assert effect["name"] == "Constante"
 
     def test_rgbic_color_from_effect_reads_whole_color_in_segments_mode(self):
         """wholeColorList color is read while segments is selected in the catalog."""
-        effect = self._constant_catalog_effect(current_selected="segments")["basicEffects"][0]
+        effect = self._constant_catalog_effect(current_selected="segment")["basicEffects"][0]
         assert PyDreoAirPurifier._rgbic_color_from_effect(effect) == (0, 102, 255)
 
     def test_HAP010S_color_write_from_segments_catalog_forces_whole(self):  # pylint: disable=invalid-name
@@ -243,7 +243,7 @@ class TestPyDreoAirPurifier(TestBase):
             "#5500aa",
         ]
         catalog = self._constant_catalog_effect(
-            current_selected="segments",
+            current_selected="segment",
             color_list=segment_colors,
         )
         device.set_rgbic_effect_catalog(catalog)
@@ -2716,3 +2716,25 @@ class TestPyDreoAirPurifier(TestBase):
         assert layout["currentSelected"] == "whole"
         assert device.rgbic_effect_name == "Luz constante"
         assert device.rgbic_color == rgb
+
+    def test_segments_effect_payload_uses_original_catalog_identity_and_preserves_colors(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        segment_colors = ["#110022", "#220044"]
+        effect = {
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constante", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "currentSelected": "whole",
+                "wholeColorList": ["#abcdef"], "colorList": segment_colors,
+            }],
+        }
+        entry = self.pydreo_manager._prepare_rgbic_edit_batch_entry(
+            device, effect, effect_name="Constante", current_selected="segment"
+        )
+        assert entry["id"] == "constant-id"
+        assert entry["name"] == "Constante"
+        layout = entry["subEffects"][0]["layouts"][0]
+        assert layout["currentSelected"] == "segment"
+        assert layout["wholeColorList"] == ["#abcdef"]
+        assert layout["colorList"] == segment_colors

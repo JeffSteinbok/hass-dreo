@@ -775,6 +775,143 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         assert entity.rgb_color == (0, 102, 255)
         write_state.assert_called_once()
 
+    def test_constant_segments_variant_preserves_catalog_colors_and_hides_whole_color(self):
+        device = self._make_530s()
+        device.handle_server_update({"reported": {
+            "rgbon": True,
+            "rgbbri": 50,
+            "rgbmode": 2,
+            "rgbeffectid": "constant-id",
+        }})
+        entity = light.get_entries([device])[0]
+        colors = [f"#{index:06x}" for index in range(17)]
+        catalog = {"basicEffects": [{
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Luz constante", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "currentSelected": "segment",
+                "wholeColorList": ["#123456"], "colorList": colors,
+            }],
+        }]}
+        device.set_rgbic_effect_catalog(catalog)
+        variant = "Luz constante (segments)"
+        assert variant in entity.effect_list
+        assert entity.rgb_color is None
+        assert entity.effect == variant
+
+        with patch.object(device._dreo, "set_rgbic_effect", return_value=True) as write:
+            assert device.set_rgbic_effect(variant) is True
+        assert write.call_args.args == (device, "Luz constante")
+        assert write.call_args.kwargs == {"current_selected": "segment"}
+        assert entity.rgb_color is None
+
+        whole_catalog = {"basicEffects": [{
+            **catalog["basicEffects"][0],
+            "layouts": [{**catalog["basicEffects"][0]["layouts"][0], "currentSelected": "whole"}],
+        }]}
+        device.set_rgbic_effect_catalog(whole_catalog)
+        assert entity.effect == "Luz constante"
+        assert entity.rgb_color == (18, 52, 86)
+
+    def test_constant_selection_and_rgb_color_return_to_whole_mode(self):
+        device = self._make_530s()
+        device.handle_server_update({"reported": {"rgbmode": 2}})
+        catalog = {"basicEffects": [{
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constante", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "currentSelected": "segment",
+                "wholeColorList": ["#123456"], "colorList": ["#abcdef"] * 17,
+            }],
+        }]}
+        device.set_rgbic_effect_catalog(catalog)
+        with patch.object(device._dreo, "set_rgbic_effect", return_value=True) as write:
+            assert device.set_rgbic_effect("Constante") is True
+            assert write.call_args.args == (device, "Constante")
+            assert write.call_args.kwargs == {"current_selected": "whole"}
+            assert device.rgbic_color == (18, 52, 86)
+            assert device.set_rgbic_effect(color_rgb=(255, 0, 0)) is True
+        assert write.call_args.args == (device, "Constante", "#ff0000")
+        assert device.rgbic_color == (255, 0, 0)
+
+    def test_segments_variant_requires_segment_color_list(self):
+        device = self._make_530s()
+        for color_list in (None, [], ["#ffffff", "not-a-color"]):
+            layout = {
+                "viewType": "SEGMENT_COLOR_LIST",
+                "wholeColorList": ["#ffffff"],
+            }
+            if color_list is not None:
+                layout["colorList"] = color_list
+            device.set_rgbic_effect_catalog({"basicEffects": [{
+                "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+                "name": "Constant", "layouts": [layout],
+            }]})
+            assert "Constant (segments)" not in device.rgbic_selectable_effect_names
+
+    def test_same_effect_id_report_refreshes_selected_layout_from_catalog(self):
+        device = self._make_530s()
+        callbacks = []
+        device._dreo.set_schedule_call_later(
+            lambda _delay, callback: callbacks.append(callback) or (lambda: None)
+        )
+        device.handle_server_update({"reported": {"rgbmode": 2, "rgbeffectid": "constant-id"}})
+        segments_catalog = {"basicEffects": [{
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constant", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "currentSelected": "segment",
+                "wholeColorList": ["#123456"], "colorList": ["#abcdef"] * 17,
+            }],
+        }]}
+        whole_catalog = {"basicEffects": [{
+            **segments_catalog["basicEffects"][0],
+            "layouts": [{**segments_catalog["basicEffects"][0]["layouts"][0],
+                         "currentSelected": "whole"}],
+        }]}
+        device.set_rgbic_effect_catalog(segments_catalog)
+        entity = light.get_entries([device])[0]
+        with patch.object(device._dreo, "get_rgbic_effect_catalog", return_value=whole_catalog):
+            device.handle_server_update_base({"reported": {"rgbeffectid": "constant-id"}})
+            assert len(callbacks) == 1
+            callbacks[0]()
+        assert entity.effect == "Constant"
+        assert entity.rgb_color == (18, 52, 86)
+
+    def test_segments_selection_updates_ha_state_without_new_effect_id_report(self):
+        device = self._make_530s()
+        device.handle_server_update({"reported": {"rgbmode": 2, "rgbeffectid": "constant-id"}})
+        device.set_rgbic_effect_catalog({"basicEffects": [
+            {
+                "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+                "name": "Constant", "layouts": [{
+                    "viewType": "SEGMENT_COLOR_LIST", "currentSelected": "whole",
+                    "wholeColorList": ["#123456"], "colorList": ["#abcdef"] * 17,
+                }],
+            },
+            {
+                "id": "other-id", "referencedId": "other-ref", "effectType": 0,
+                "name": "Other (segments)", "layouts": [],
+            },
+            {
+                "id": "plain-id", "referencedId": "plain-ref", "effectType": 0,
+                "name": "Plain", "layouts": [],
+            },
+        ]})
+        assert device.rgbic_selectable_effect_names == [
+            "Constant", "Constant (segments)", "Other (segments)", "Plain",
+        ]
+        entity = light.get_entries([device])[0]
+
+        with patch.object(device._dreo, "set_rgbic_effect", return_value=True):
+            assert device.set_rgbic_effect("Constant (segments)") is True
+            assert entity.effect == "Constant (segments)"
+            assert entity.rgb_color is None
+
+            assert device.set_rgbic_effect("Other (segments)") is True
+            assert device._rgbic_color_mode is None
+            assert device.set_rgbic_effect("Plain") is True
+
+        assert entity.effect == "Plain"
+        assert device._rgbic_color_mode is None
+
     def test_stale_initial_catalog_cannot_replace_newer_websocket_catalog(self):
         """A WebSocket refresh applied during startup wins over the pending initial read."""
         import threading
