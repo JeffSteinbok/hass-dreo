@@ -30,6 +30,16 @@
       }
     }
   },
+  "services": {
+    "set_rgbic_segments": {
+      "name": "Задаване на RGBIC цветове на сегментите",
+      "description": "Задава цветовете по ред на сегментите на съвместим Dreo 530S.",
+      "fields": {
+        "device_id": {"name": "Устройство", "description": "Изберете съвместим пречиствател Dreo 530S."},
+        "colors": {"name": "Цветове на сегментите", "description": "Въведете цвят #RRGGBB за всеки сегмент по реда в каталога."}
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "water_empty": {

@@ -30,6 +30,16 @@
       }
     }
   },
+  "services": {
+    "set_rgbic_segments": {
+      "name": "Set RGBIC segment colors",
+      "description": "Set the ordered segment colors on a compatible Dreo 530S.",
+      "fields": {
+        "device_id": {"name": "Device", "description": "Select a compatible Dreo 530S purifier."},
+        "colors": {"name": "Segment colors", "description": "Enter one #RRGGBB color for each segment in catalog order."}
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "water_empty": {

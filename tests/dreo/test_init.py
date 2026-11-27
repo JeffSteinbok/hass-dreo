@@ -9,6 +9,39 @@ from custom_components.dreo.const import DEBUG_TEST_MODE
 
 
 class TestInit:
+    def test_rgbic_segment_device_resolution_requires_integration_identifier_and_support(self):
+        from custom_components.dreo import _resolve_rgbic_segment_device
+
+        compatible = MagicMock()
+        compatible.serial_number = "530S-SERIAL"
+        compatible.device_definition.supports_rgbic_mode_light = True
+        incompatible = MagicMock()
+        incompatible.serial_number = "OTHER-SERIAL"
+        incompatible.device_definition.supports_rgbic_mode_light = False
+        registry_device = MagicMock()
+        registry_device.identifiers = {("dreo", "530S-SERIAL")}
+        registry = MagicMock()
+        registry.async_get.return_value = registry_device
+        hass = MagicMock()
+        manager = MagicMock(devices=[incompatible, compatible])
+
+        with patch("custom_components.dreo.dr.async_get", return_value=registry):
+            assert _resolve_rgbic_segment_device(hass, manager, "ha-device-id") is compatible
+            registry_device.identifiers = {("other_integration", "530S-SERIAL")}
+            assert _resolve_rgbic_segment_device(hass, manager, "ha-device-id") is None
+            registry_device.identifiers = {("dreo", "OTHER-SERIAL")}
+            assert _resolve_rgbic_segment_device(hass, manager, "ha-device-id") is None
+
+    def test_rgbic_segment_action_selector_is_model_filtered(self):
+        from pathlib import Path
+
+        services = Path("custom_components/dreo/services.yaml").read_text(encoding="utf-8")
+        assert "set_rgbic_segments:" in services
+        assert "device_id:" in services
+        assert "integration: dreo" in services
+        assert "model: DR-HAP010S" in services
+        assert "serial_number" not in services
+
     def test_debug_test_mode(self):
         """Test that DEBUG_TEST_MODE is set to False."""
         assert DEBUG_TEST_MODE is False, "DEBUG_TEST_MODE should be False to merge changes."

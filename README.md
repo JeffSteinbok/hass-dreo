@@ -128,8 +128,22 @@ settings / calibration), then reload this integration if Home Assistant stays ou
 
 Home Assistant exposes the 530S ambient ring's **Constant** effect and a **Constant (segments)**
 variant. Selecting **Constant (segments)** activates the segment design previously configured
-and saved in the DREO app. Home Assistant cannot edit individual segment colors. Selecting an
-RGB color or **Constant** uses the uniform ring color and preserves the saved segment design.
+and saved in the DREO app. The `segment_colors` light attribute reports the ordered saved
+colors, regardless of the active effect or whole/segment mode. The `dreo.set_rgbic_segments`
+action edits them; select the 530S and provide one `#RRGGBB` value per segment. For example:
+
+```yaml
+action: dreo.set_rgbic_segments
+data:
+  device_id: "SELECTED_DEVICE_ID"
+  colors:
+    - "#ff0000"
+    - "#00ff00"
+    # Continue in catalog order for every segment.
+```
+
+Selecting an RGB color or **Constant** uses the uniform ring color and preserves the saved
+segment colors.
 See
 **[SUPPORTED_MODELS.md](SUPPORTED_MODELS.md#dr-hap010s-530s-rgbic-color)** for details.
 

@@ -30,6 +30,16 @@
       }
     }
   },
+  "services": {
+    "set_rgbic_segments": {
+      "name": "Nastavit barvy segmentů RGBIC",
+      "description": "Nastaví barvy segmentů kompatibilního zařízení Dreo 530S v pořadí katalogu.",
+      "fields": {
+        "device_id": {"name": "Zařízení", "description": "Vyberte kompatibilní čističku Dreo 530S."},
+        "colors": {"name": "Barvy segmentů", "description": "Zadejte barvu #RRGGBB pro každý segment v pořadí katalogu."}
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "water_empty": {

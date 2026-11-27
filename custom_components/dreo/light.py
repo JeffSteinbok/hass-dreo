@@ -322,9 +322,10 @@ class Dreo530SRGBICLightHA(DreoLightHA):
 
     A Home Assistant RGB selection edits the existing Constant effect from the live
     catalog via ``/api/device/rgb-effect/edit/batch`` with ``applyToDevice``. The write
-    updates ``wholeColorList`` and sets ``currentSelected`` to ``whole``. Custom
-    segment designs are not deleted. The catalog-backed ``<Constant name> (segments)``
-    effect selects the saved segment configuration without editing either color list.
+    updates ``wholeColorList`` and sets ``currentSelected`` to ``whole``. The ``rgb_color``
+    property is ``None`` while segment mode is active. Custom segment designs are not
+    deleted. The catalog-backed ``<Constant name> (segments)`` effect selects the saved
+    segment configuration without editing either color list.
     """
 
     INDICATOR_EFFECT = "indicator"
@@ -340,6 +341,12 @@ class Dreo530SRGBICLightHA(DreoLightHA):
     def rgb_color(self) -> tuple[int, int, int] | None:
         """Whole-ring color from the catalog or a recent Home Assistant write."""
         return self.pydreo_device.rgbic_color
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose saved per-segment colors for compatible 530S devices."""
+        colors = self.pydreo_device.rgbic_segment_colors
+        return {"segment_colors": colors} if colors is not None else None
 
     @property
     def supported_features(self) -> LightEntityFeature:

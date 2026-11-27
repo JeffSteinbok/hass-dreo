@@ -773,7 +773,40 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         assert device.rgbeffectid == "constant-id"
         assert device.rgbmode == 2
         assert entity.rgb_color == (0, 102, 255)
+        assert entity.extra_state_attributes["segment_colors"] == ["#ffffff"] * 17
         write_state.assert_called_once()
+
+    def test_segment_colors_attribute_is_catalog_backed_and_write_updates_only_on_success(self):
+        device = self._make_530s()
+        device.handle_server_update({"reported": {"rgbmode": 2, "rgbeffectid": "scene-id"}})
+        colors = [f"#{index:06x}" for index in range(17)]
+        catalog = {"basicEffects": [{
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constante", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "currentSelected": "whole",
+                "wholeColorList": ["#123456"], "colorList": colors,
+            }],
+        }], "sceneEffects": [{
+            "id": "scene-id", "referencedId": "scene-ref", "effectType": 3,
+            "name": "Scene", "layouts": [],
+        }]}
+        device.set_rgbic_effect_catalog(catalog)
+        entity = light.get_entries([device])[0]
+        assert entity.extra_state_attributes["segment_colors"] == colors
+        assert entity.rgb_color is None
+
+        requested = ["#ff0000"] * 17
+        with patch.object(device._dreo, "set_rgbic_segment_colors", return_value=False):
+            assert not device.set_rgbic_segment_colors(requested)
+        assert entity.extra_state_attributes["segment_colors"] == colors
+        assert entity.effect == "Scene"
+
+        with patch.object(device._dreo, "set_rgbic_segment_colors", return_value=True):
+            assert device.set_rgbic_segment_colors(requested)
+        assert entity.extra_state_attributes["segment_colors"] == requested
+        assert device._rgbic_color_mode == "segment"
+        assert entity.rgb_color is None
+        assert entity.effect == "Constante (segments)"
 
     def test_constant_segments_variant_preserves_catalog_colors_and_hides_whole_color(self):
         device = self._make_530s()
@@ -864,7 +897,7 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         whole_catalog = {"basicEffects": [{
             **segments_catalog["basicEffects"][0],
             "layouts": [{**segments_catalog["basicEffects"][0]["layouts"][0],
-                         "currentSelected": "whole"}],
+                         "currentSelected": "whole", "colorList": ["#112233"] * 17}],
         }]}
         device.set_rgbic_effect_catalog(segments_catalog)
         entity = light.get_entries([device])[0]
@@ -874,6 +907,7 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
             callbacks[0]()
         assert entity.effect == "Constant"
         assert entity.rgb_color == (18, 52, 86)
+        assert entity.extra_state_attributes["segment_colors"] == ["#112233"] * 17
 
     def test_segments_selection_updates_ha_state_without_new_effect_id_report(self):
         device = self._make_530s()

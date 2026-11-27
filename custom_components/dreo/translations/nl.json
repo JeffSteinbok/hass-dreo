@@ -30,6 +30,16 @@
       }
     }
   },
+  "services": {
+    "set_rgbic_segments": {
+      "name": "RGBIC-segmentkleuren instellen",
+      "description": "Stelt de segmentkleuren van een compatibele Dreo 530S in op catalogusvolgorde.",
+      "fields": {
+        "device_id": {"name": "Apparaat", "description": "Selecteer een compatibele Dreo 530S-luchtreiniger."},
+        "colors": {"name": "Segmentkleuren", "description": "Voer voor elk segment in catalogusvolgorde een kleur in #RRGGBB-formaat in."}
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "water_empty": {

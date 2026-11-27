@@ -1,0 +1,20 @@
+set_rgbic_segments:
+  name: Set RGBIC segment colors
+  description: Set the ordered colors of a compatible Dreo RGBIC device's segments.
+  fields:
+    device_id:
+      name: Device
+      description: Select a compatible Dreo 530S purifier.
+      required: true
+      selector:
+        device:
+          filter:
+            - integration: dreo
+              model: DR-HAP010S
+    colors:
+      name: Segment colors
+      description: Provide one #RRGGBB color for each segment in catalog order.
+      required: true
+      selector:
+        text:
+          multiple: true

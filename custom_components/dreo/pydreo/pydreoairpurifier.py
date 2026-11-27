@@ -25,13 +25,14 @@ if TYPE_CHECKING:
 
 
 class _RgbicCatalogParse(NamedTuple):
-    """Selectable effects and whole-ring color data extracted from one catalog."""
+    """Selectable effects and persisted color data extracted from one catalog."""
 
     effects: list[dict]
     scene_effects: list[dict]
     color_effect: dict | None
     effect_id_to_name: dict[str, str]
     whole_ring_color: tuple[int, int, int] | None
+    segment_colors: list[str] | None
 
 
 class PyDreoAirPurifier(PyDreoFanBase):
@@ -79,6 +80,7 @@ class PyDreoAirPurifier(PyDreoFanBase):
         self._rgbic_color_effect_name: str | None = None
         self._rgbic_color: tuple[int, int, int] | None = None
         self._rgbic_whole_color: tuple[int, int, int] | None = None
+        self._rgbic_segment_colors: list[str] | None = None
         self._rgbic_color_effect_id: str | None = None
         self._rgbic_segments_supported = False
         self._rgbic_color_mode: str | None = None
@@ -316,6 +318,14 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Last known whole-ring color from a local write or the live catalog."""
         return self._rgbic_color
 
+    @property
+    def rgbic_segment_colors(self) -> list[str] | None:
+        """Last catalog-backed segment colors, independent of the active color mode."""
+        if not self._device_definition.supports_rgbic_mode_light:
+            return None
+        with self._lock:
+            return list(self._rgbic_segment_colors) if self._rgbic_segment_colors is not None else None
+
     def begin_rgbic_catalog_read(self) -> int | None:
         """Claim the next catalog-read generation, or None if the device is disposed."""
         with self._lock:
@@ -366,6 +376,31 @@ class PyDreoAirPurifier(PyDreoFanBase):
         )
 
     @staticmethod
+    def _rgbic_whole_color_list_valid(layout: object) -> bool:
+        """True when the layout's preserved whole-ring color list is valid hex."""
+        if not isinstance(layout, dict):
+            return False
+        colors = layout.get("wholeColorList")
+        return (
+            isinstance(colors, list)
+            and bool(colors)
+            and all(
+                isinstance(color, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", color) is not None
+                for color in colors
+            )
+        )
+
+    @staticmethod
+    def _rgbic_segment_layout(effect: dict | None) -> dict | None:
+        """Return the first valid segment layout that also stores whole-ring color."""
+        if effect is None:
+            return None
+        return next((layout for layout in (effect.get("layouts") or [])
+                     if PyDreoAirPurifier._rgbic_whole_color_layout(layout)
+                     and PyDreoAirPurifier._rgbic_segment_color_list_valid(layout)
+                     and PyDreoAirPurifier._rgbic_whole_color_list_valid(layout)), None)
+
+    @staticmethod
     def _rgbic_color_effect(catalog: dict) -> dict | None:
         """Find the unique basic effect exposing whole-ring color in its layouts."""
         candidates = []
@@ -374,10 +409,8 @@ class PyDreoAirPurifier(PyDreoFanBase):
                 continue
             if not effect.get("id") or not effect.get("name") or not effect.get("referencedId"):
                 continue
-            if any(
-                PyDreoAirPurifier._rgbic_whole_color_layout(layout)
-                for layout in (effect.get("layouts") or [])
-            ):
+            if any(PyDreoAirPurifier._rgbic_whole_color_layout(layout)
+                   for layout in (effect.get("layouts") or [])):
                 candidates.append(effect)
         return candidates[0] if len(candidates) == 1 else None
 
@@ -386,21 +419,20 @@ class PyDreoAirPurifier(PyDreoFanBase):
         """Parse wholeColorList hex regardless of whether segments or whole is selected."""
         if effect is None:
             return None
-        for layout in effect.get("layouts") or []:
-            if not PyDreoAirPurifier._rgbic_whole_color_layout(layout):
-                continue
-            colors = layout.get("wholeColorList")
-            if not isinstance(colors, list) or not colors or not isinstance(colors[0], str):
-                continue
-            value = colors[0]
-            if re.fullmatch(r"#[0-9A-Fa-f]{6}", value) is None:
-                continue
-            try:
-                packed = int(value[1:], 16)
-            except ValueError:
-                continue
-            return ((packed >> 16) & 0xFF, (packed >> 8) & 0xFF, packed & 0xFF)
-        return None
+        layout = PyDreoAirPurifier._rgbic_segment_layout(effect) or next(
+            (item for item in (effect.get("layouts") or [])
+             if PyDreoAirPurifier._rgbic_whole_color_layout(item)), None
+        )
+        if layout is None:
+            return None
+        colors = layout.get("wholeColorList") if layout else None
+        if not isinstance(colors, list) or not colors or not isinstance(colors[0], str):
+            return None
+        value = colors[0]
+        if re.fullmatch(r"#[0-9A-Fa-f]{6}", value) is None:
+            return None
+        packed = int(value[1:], 16)
+        return ((packed >> 16) & 0xFF, (packed >> 8) & 0xFF, packed & 0xFF)
 
     @staticmethod
     def _parse_rgbic_catalog_side_effects(catalog: dict) -> _RgbicCatalogParse:
@@ -439,12 +471,15 @@ class PyDreoAirPurifier(PyDreoFanBase):
             if item.get("id") is not None
         }
         whole_ring_color = PyDreoAirPurifier._rgbic_color_from_effect(color_effect)
+        segment_layout = PyDreoAirPurifier._rgbic_segment_layout(color_effect)
+        segment_colors = list(segment_layout["colorList"]) if segment_layout else None
         return _RgbicCatalogParse(
             effects,
             scene_effects,
             color_effect,
             effect_id_to_name,
             whole_ring_color,
+            segment_colors,
         )
 
     def set_rgbic_effect_catalog(
@@ -468,9 +503,9 @@ class PyDreoAirPurifier(PyDreoFanBase):
             self._rgbic_effect_id_to_name = parsed.effect_id_to_name
             self._rgbic_color_effect_name = color_effect.get("name") if color_effect else None
             self._rgbic_color_effect_id = str(color_effect["id"]) if color_effect else None
-            color_layout = next((layout for layout in (color_effect or {}).get("layouts", [])
-                                 if self._rgbic_whole_color_layout(layout)), {})
-            self._rgbic_segments_supported = self._rgbic_segment_color_list_valid(color_layout)
+            color_layout = self._rgbic_segment_layout(color_effect) or {}
+            self._rgbic_segments_supported = color_layout != {}
+            self._rgbic_segment_colors = parsed.segment_colors
             self._rgbic_effect_catalog_loaded = True
             self._rgbic_effect_name = self._rgbic_effect_id_to_name.get(self._rgbeffectid)
             constant_active = (
@@ -491,6 +526,32 @@ class PyDreoAirPurifier(PyDreoFanBase):
             _LOGGER.debug("RGBIC catalog confirmed no identifiable whole-ring color")
         else:
             _LOGGER.debug("RGBIC catalog color is not active for the reported device state")
+        return True
+
+    def apply_rgbic_segment_colors(self, colors: list[str]) -> None:
+        """Apply a successful segment write locally and notify Home Assistant."""
+        if not self._device_definition.supports_rgbic_mode_light:
+            return
+        with self._lock:
+            self._rgbic_generation += 1
+            self._rgbic_segment_colors = list(colors)
+            self._rgbic_color_mode = "segment"
+            self._rgbic_color = None
+            self._rgbic_effect_name = self._rgbic_color_effect_name
+            self._rgbeffectid = self._rgbic_color_effect_id
+            self._rgbmode = 2
+            self._rgbic_mode_authoritative = True
+            self._rgbic_effect_id_reported = True
+            self._skip_next_constant_refresh = None
+        self._do_callbacks()
+
+    def set_rgbic_segment_colors(self, colors: list[str]) -> bool:
+        """Write saved segment colors and update local state only after success."""
+        if not self._device_definition.supports_rgbic_mode_light:
+            return False
+        if not self._dreo.set_rgbic_segment_colors(self, colors):
+            return False
+        self.apply_rgbic_segment_colors([color.lower() for color in colors])
         return True
 
     def fetch_rgbic_catalog(self) -> bool:
