@@ -150,6 +150,9 @@
       "humidify": {
         "name": "Bevochtigen"
       },
+      "warm_mist": {
+        "name": "Warme nevel"
+      },
       "display_light": {
         "name": "Displayverlichting"
       },

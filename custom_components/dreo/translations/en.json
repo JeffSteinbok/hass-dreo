@@ -150,6 +150,9 @@
       "humidify": {
         "name": "Humidify"
       },
+      "warm_mist": {
+        "name": "Warm Mist"
+      },
       "display_light": {
         "name": "Display Light"
       },

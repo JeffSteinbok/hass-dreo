@@ -150,6 +150,9 @@
       "humidify": {
         "name": "Nawilżanie"
       },
+      "warm_mist": {
+        "name": "Ciepła mgiełka"
+      },
       "display_light": {
         "name": "Podświetlenie wyświetlacza"
       },
