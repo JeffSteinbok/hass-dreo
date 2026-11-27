@@ -144,6 +144,9 @@
       "humidify": {
         "name": "Zvlhčování"
       },
+      "warm_mist": {
+        "name": "Teplá mlha"
+      },
       "display_light": {
         "name": "Osvětlení displeje"
       },

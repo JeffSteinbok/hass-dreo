@@ -150,6 +150,9 @@
       "humidify": {
         "name": "Humidifier"
       },
+      "warm_mist": {
+        "name": "Brume chaude"
+      },
       "display_light": {
         "name": "Éclairage de l'écran"
       },

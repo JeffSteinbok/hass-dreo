@@ -43,6 +43,7 @@ FILTERTIME_KEY = "filtertime"
 FILTERON_KEY = "filteron"
 FILTER_LIFE_FULL = 100
 SUSPEND_KEY = "suspend"
+HOTFOGON_KEY = "hotfogon"
 
 # Status for water level indicator
 WATER_LEVEL_OK = "ok"
@@ -104,6 +105,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._filtertime = None
         self._filteron = None
         self._suspend = None
+        self._warm_mist = None
         # Newer firmware uses atm* keys instead of rgb* keys for the ambient light ring.
         self._atm_on = None       # ambient_switch (bool): on/off
         self._atm_mode = None     # atmmode (str): mode name e.g. "Breath", "Circle"
@@ -307,6 +309,19 @@ class PyDreoHumidifier(PyDreoBaseDevice):
     def suspend(self) -> bool | None:
         """Return True if humidifier is suspended (target humidity reached)."""
         return self._suspend        
+
+    @property
+    def warm_mist(self) -> bool | None:
+        """Return whether warm mist is enabled."""
+        return self._warm_mist
+
+    @warm_mist.setter
+    def warm_mist(self, value: bool) -> None:
+        """Set whether warm mist is enabled."""
+        if self._warm_mist == value:
+            return
+        self._warm_mist = value
+        self._send_command(HOTFOGON_KEY, value)
 
     @property
     def display_light(self) -> bool | None:
@@ -609,6 +624,7 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         self._filtertime = self.get_state_update_value(state, FILTERTIME_KEY)
         self._filteron = self.get_state_update_value(state, FILTERON_KEY)
         self._suspend = self.get_state_update_value(state, SUSPEND_KEY)
+        self._warm_mist = self.get_state_update_value(state, HOTFOGON_KEY)
         # Newer firmware ambient light (atm* keys).
         self._atm_on = self.get_state_update_value(state, AMBIENT_SWITCH_KEY)
         self._atm_mode = self.get_state_update_value(state, ATMMODE_KEY)
@@ -716,6 +732,10 @@ class PyDreoHumidifier(PyDreoBaseDevice):
         val_suspend = self.get_server_update_key_value(message, SUSPEND_KEY)
         if isinstance(val_suspend, bool):
             self._suspend = val_suspend
+
+        val_warm_mist = self.get_server_update_key_value(message, HOTFOGON_KEY)
+        if isinstance(val_warm_mist, bool):
+            self._warm_mist = val_warm_mist
 
         # Newer firmware ambient light keys (atm* / ambient_switch).
         val_atm_on = self.get_server_update_key_value(message, AMBIENT_SWITCH_KEY)

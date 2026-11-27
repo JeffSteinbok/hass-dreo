@@ -13,6 +13,7 @@ from custom_components.dreo import light
 from homeassistant.components.humidifier import HumidifierEntityFeature
 
 from .imports import *  # pylint: disable=W0401,W0614
+from . import call_json
 from .integrationtestbase import IntegrationTestBase, PATCH_SEND_COMMAND
 
 PATCH_BASE_PATH = "homeassistant.helpers.entity.Entity"
@@ -215,8 +216,9 @@ class TestDreoHumidifier(IntegrationTestBase):
             # Check to see what switches are added
             switches = switch.get_entries([pydreo_humidifier])
             self.verify_expected_entities(
-                switches, ["Display Light", "Panel Sound", "Schedule"]
+                switches, ["Display Light", "Panel Sound", "Schedule", "Warm Mist"]
             )
+            assert self.get_entity_by_key(switches, "Warm Mist").is_on is False
 
             # Check to see what lights are added
             lights = light.get_entries([pydreo_humidifier])
@@ -225,6 +227,31 @@ class TestDreoHumidifier(IntegrationTestBase):
             # Check to see what binary sensors are added - water empty
             binary_sensors = binary_sensor.get_entries([pydreo_humidifier])
             assert len(binary_sensors) == 1
+
+    def test_hhm003s_warm_mist(self):
+        """Use the issue #1002 state and verify warm mist reports and commands."""
+        self.get_devices_file_name = "get_devices_HHM003S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        assert device.model == "DR-HHM003S"
+        device.update_state(call_json.get_response_from_file("hhm003s_warm_mist_state.json"))
+
+        warm_mist = self.get_entity_by_key(switch.get_entries([device]), "Warm Mist")
+        assert warm_mist is not None
+        assert warm_mist.is_on is True
+
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            device.handle_server_update_base({"reported": {"hotfogon": False}})
+            assert warm_mist.is_on is False
+            device.handle_server_update_base({"reported": {"hotfogon": True}})
+            assert warm_mist.is_on is True
+
+        with patch(PATCH_SEND_COMMAND) as send_command:
+            warm_mist.turn_off()
+            send_command.assert_called_once_with(device, {"hotfogon": False})
+            send_command.reset_mock()
+            warm_mist.turn_on()
+            send_command.assert_called_once_with(device, {"hotfogon": True})
 
     def test_HHM015S(self):  # pylint: disable=invalid-name
         """Load HHM015S (HM755S) humidifier and test sending commands."""
