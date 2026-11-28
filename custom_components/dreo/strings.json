@@ -364,6 +364,15 @@
           "auto": "Auto"
         }
       },
+      "sensor_light_theme": {
+        "name": "Sensor Light Theme",
+        "state": {
+          "purple_pink": "Purple/Pink",
+          "blue_green": "Blue/Green",
+          "green_blue": "Green/Blue",
+          "orange_yellow": "Orange/Yellow"
+        }
+      },
       "horizontal_oscillation_angle": {
         "name": "Horizontal Oscillation Angle",
         "state": {

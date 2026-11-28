@@ -346,6 +346,15 @@
           "auto": "Automatisch"
         }
       },
+      "sensor_light_theme": {
+        "name": "Sensorlicht-Farbthema",
+        "state": {
+          "purple_pink": "Lila/Pink",
+          "blue_green": "Blau/Grün",
+          "green_blue": "Grün/Blau",
+          "orange_yellow": "Orange/Gelb"
+        }
+      },
       "horizontal_oscillation_angle": {
         "name": "Horizontaler Oszillationswinkel",
         "state": {

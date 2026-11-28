@@ -346,6 +346,15 @@
           "auto": "Automatyczny"
         }
       },
+      "sensor_light_theme": {
+        "name": "Motyw światła czujnika",
+        "state": {
+          "purple_pink": "Fioletowy/Różowy",
+          "blue_green": "Niebieski/Zielony",
+          "green_blue": "Zielony/Niebieski",
+          "orange_yellow": "Pomarańczowy/Żółty"
+        }
+      },
       "horizontal_oscillation_angle": {
         "name": "Kąt oscylacji poziomej",
         "state": {

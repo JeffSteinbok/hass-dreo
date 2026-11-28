@@ -346,6 +346,15 @@
           "auto": "Automaticky"
         }
       },
+      "sensor_light_theme": {
+        "name": "Motiv světla senzoru",
+        "state": {
+          "purple_pink": "Fialová/Růžová",
+          "blue_green": "Modrá/Zelená",
+          "green_blue": "Zelená/Modrá",
+          "orange_yellow": "Oranžová/Žlutá"
+        }
+      },
       "horizontal_oscillation_angle": {
         "name": "Horizontální úhel oscilace",
         "state": {

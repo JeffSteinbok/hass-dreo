@@ -1089,6 +1089,131 @@ class TestPyDreoAirCirculator(TestBase):
         fan.handle_server_update({REPORTED_KEY: {LOCATEMEON_KEY: True}})
         assert fan.locatemeon is True
 
+    def _load_hpf007s(self) -> PyDreoAirCirculator:
+        """Load the DR-HPF007S fixture (lightmode=2, tempoffset=0, Green/Blue sensor light, temperature=74)."""
+        self.get_devices_file_name = "get_devices_HPF007S.json"
+        self.pydreo_manager.load_devices()
+        assert len(self.pydreo_manager.devices) == 1
+        return self.pydreo_manager.devices[0]
+
+    def test_HPF007S_lightmode(self):  # pylint: disable=invalid-name
+        """lightmode is the display setting: 0 = off, 1 = on, 2 = auto. Unchanged values send nothing."""
+        fan = self._load_hpf007s()
+        assert fan.lightmode == 2
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.lightmode = 1
+            mock_send_command.assert_called_once_with(fan, {LIGHTMODE_KEY: 1})
+        fan.handle_server_update({REPORTED_KEY: {LIGHTMODE_KEY: 1}})
+        assert fan.lightmode == 1
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.lightmode = 1
+            mock_send_command.assert_not_called()
+
+        # HA hands numbers over as floats; they must still be sent as ints.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.lightmode = 0.0
+            mock_send_command.assert_called_once_with(fan, {LIGHTMODE_KEY: 0})
+
+    def test_HPF007S_sensor_light_theme(self):  # pylint: disable=invalid-name
+        """The sensor light theme is a (batmcolor, fatmcolor) pair sent as one command."""
+        fan = self._load_hpf007s()
+
+        # Fixture pair 36728 / 255 is the third theme in the app (Green/Blue).
+        assert fan.sensor_light_theme == 2
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.sensor_light_theme = 0
+            mock_send_command.assert_called_once_with(fan, {BATMCOLOR_KEY: 2556027, FATMCOLOR_KEY: 13315839})
+        fan.handle_server_update({REPORTED_KEY: {BATMCOLOR_KEY: 2556027, FATMCOLOR_KEY: 13315839}})
+        assert fan.sensor_light_theme == 0
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.sensor_light_theme = 3
+            mock_send_command.assert_called_once_with(fan, {BATMCOLOR_KEY: 6894848, FATMCOLOR_KEY: 16769838})
+
+        # Setting the current theme sends nothing.
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.sensor_light_theme = 0
+            mock_send_command.assert_not_called()
+
+        # Out of range
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            with pytest.raises(ValueError):
+                fan.sensor_light_theme = 4
+            with pytest.raises(ValueError):
+                fan.sensor_light_theme = -1
+            mock_send_command.assert_not_called()
+
+        # A colour pair that is not one of the known themes reads as None.
+        fan.handle_server_update({REPORTED_KEY: {BATMCOLOR_KEY: 1, FATMCOLOR_KEY: 2}})
+        assert fan.sensor_light_theme is None
+
+    def test_HPF007S_temperature_offset(self):  # pylint: disable=invalid-name
+        """The reported temperature already includes tempoffset, so it is not offset a second time."""
+        fan = self._load_hpf007s()
+        assert fan.temperature_offset_range == (-10, 10)
+        assert fan.temperature_offset == 0
+        assert fan.temperature == 74
+
+        # The device applies the offset itself: +1 moves the reported reading 74 -> 75.
+        fan.handle_server_update({REPORTED_KEY: {TEMPOFFSET_KEY: 1, TEMPERATURE_KEY: 75}})
+        assert fan.temperature_offset == 1
+        assert fan.temperature == 75
+
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.temperature_offset = -3
+            mock_send_command.assert_called_once_with(fan, {TEMPOFFSET_KEY: -3})
+
+        # Skip if unchanged
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.temperature_offset = 1
+            mock_send_command.assert_not_called()
+
+        # Range check: -10..+10 inclusive
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.temperature_offset = 11
+            fan.temperature_offset = -11
+            mock_send_command.assert_not_called()
+        with patch(PATCH_SEND_COMMAND) as mock_send_command:
+            fan.temperature_offset = 10
+            mock_send_command.assert_called_once_with(fan, {TEMPOFFSET_KEY: 10})
+
+    def test_HPF007S_fixed_conf_while_calibrating(self):  # pylint: disable=invalid-name
+        """While calibrating, the device reports fixedconf with blank axes (",", ",0", "0,")."""
+        fan = self._load_hpf007s()
+        assert fan.horizontal_angle == 0
+        assert fan.vertical_angle == 0
+
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: ","}})
+        assert fan._fixed_conf_axis(0) is None  # pylint: disable=protected-access
+        assert fan._fixed_conf_axis(1) is None  # pylint: disable=protected-access
+        assert fan.horizontal_angle is None
+        assert fan.vertical_angle is None
+
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: ",0"}})
+        assert fan.vertical_angle is None
+        assert fan.horizontal_angle == 0
+
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,"}})
+        assert fan.vertical_angle == 0
+        assert fan.horizontal_angle is None
+
+        fan.handle_server_update({REPORTED_KEY: {FIXEDCONF_KEY: "0,0"}})
+        assert fan.horizontal_angle == 0
+        assert fan.vertical_angle == 0
+
+    def test_display_mode_and_sensor_light_are_opt_in(self):  # pylint: disable=invalid-name
+        """Other circulators report lightmode too, but it is only a verified display setting on opted-in models."""
+        self.get_devices_file_name = "get_devices_HPF008S.json"
+        self.pydreo_manager.load_devices()
+        fan: PyDreoAirCirculator = self.pydreo_manager.devices[0]
+        assert fan.device_definition.supports_display_mode is False
+        assert fan.device_definition.sensor_light_themes is None
+        assert fan.sensor_light_theme is None
+        assert fan.temperature_offset_range is None
+
     @pytest.mark.parametrize("devices_file", ["get_devices_HPF005S.json", "get_devices_HPF007S.json", "get_devices_HPF020S.json"])
     def test_additional_hpf_models(self, devices_file: str):  # pylint: disable=invalid-name
         """Load additional HPF models and test core command paths."""

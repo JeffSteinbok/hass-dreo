@@ -32,6 +32,11 @@ from .constant import (
     WINDLEVEL_KEY,
     WINDTYPE_KEY,
     WIND_MODE_KEY,
+    TEMPOFFSET_KEY,
+    TEMPERATURE_OFFSET_RANGE,
+    LIGHTMODE_KEY,
+    BATMCOLOR_KEY,
+    FATMCOLOR_KEY,
 )
 
 from .commandoutbox import OutboxTiming
@@ -165,6 +170,12 @@ class PyDreoAirCirculator(PyDreoFanBase):
 
         # Panel/display light (e.g. DR-HPF015S)
         self._display_light: bool = None
+
+        # Display mode (0 = off, 1 = on, 2 = auto) and temperature calibration offset (e.g. DR-HPF007S)
+        self._lightmode: int = None
+        self._tempoffset: int = None
+        self._sensor_light_bcolor: int = None
+        self._sensor_light_fcolor: int = None
 
         # Presence-based follow support (e.g. DR-HPF007S)
         self._follow_me: bool = None
@@ -576,9 +587,23 @@ class PyDreoAirCirculator(PyDreoFanBase):
         if self._horizontal_angle_adj is not None:
             return self._horizontal_angle_adj
         # Otherwise use fixedconf (more complex angle control)
-        if self._fixed_conf is not None:
-            return int(self._fixed_conf.split(",")[1])
-        return None
+        return self._fixed_conf_axis(1)
+
+    def _fixed_conf_axis(self, index: int) -> int | None:
+        """Return one axis (0 = vertical, 1 = horizontal) of the reported fixedconf.
+
+        The device reports fixedconf as "," (no values) while it is calibrating, so a
+        value that cannot be parsed yields None instead of raising.
+        """
+        if self._fixed_conf is None:
+            return None
+        parts = self._fixed_conf.split(",")
+        if len(parts) != 2:
+            return None
+        try:
+            return int(parts[index].strip())
+        except ValueError:
+            return None
 
     @staticmethod
     def _normalize_fixed_conf(value: str) -> str | None:
@@ -983,9 +1008,7 @@ class PyDreoAirCirculator(PyDreoFanBase):
     @property
     def vertical_angle(self) -> int:
         """Get the current fixed vertical angle."""
-        if self._fixed_conf is not None:
-            return int(self._fixed_conf.split(",")[0])
-        return None
+        return self._fixed_conf_axis(0)
 
     @vertical_angle.setter
     def vertical_angle(self, value: int) -> None:
@@ -1168,6 +1191,104 @@ class PyDreoAirCirculator(PyDreoFanBase):
         return super().is_feature_supported(feature)
 
     @property
+    def lightmode(self) -> int | None:
+        """Get the display mode: 0 off, 1 on, 2 auto-brightness."""
+        return self._lightmode
+
+    @lightmode.setter
+    def lightmode(self, value: int) -> None:
+        """Set the display mode."""
+        value = int(value)
+        _LOGGER.debug("lightmode: lightmode.setter(%s) --> %s", self.name, value)
+        if self._lightmode is None:
+            raise NotImplementedError("Attempting to set display mode on a device that doesn't support it.")
+        if self._lightmode == value:
+            _LOGGER.debug("lightmode: value already %s, skipping command", value)
+            return
+        self._send_command(LIGHTMODE_KEY, value)
+
+    @property
+    def sensor_light_theme(self) -> int | None:
+        """Index into the model's sensor light themes for the presence-sensor light, or None if unknown/unsupported."""
+        themes = self._sensor_light_themes
+        if themes is None or self._sensor_light_bcolor is None or self._sensor_light_fcolor is None:
+            return None
+        colors = (self._sensor_light_bcolor, self._sensor_light_fcolor)
+        try:
+            return themes.index(colors)
+        except ValueError:
+            _LOGGER.debug(
+                "sensor_light_theme: %s reported an unknown colour pair batmcolor=%s fatmcolor=%s",
+                self.name,
+                colors[0],
+                colors[1],
+            )
+            return None
+
+    @property
+    def _sensor_light_themes(self) -> tuple | None:
+        """Colour themes this model supports (from models.py), or None."""
+        return self._device_definition.sensor_light_themes
+
+    @sensor_light_theme.setter
+    def sensor_light_theme(self, value: int) -> None:
+        """Set the presence-sensor light colour theme (index into the model's themes)."""
+        value = int(value)
+        _LOGGER.debug("sensor_light_theme: sensor_light_theme.setter(%s) --> %s", self.name, value)
+        themes = self._sensor_light_themes
+        if themes is None or self._sensor_light_bcolor is None or self._sensor_light_fcolor is None:
+            raise NotImplementedError("Attempting to set sensor light theme on a device that doesn't support it.")
+        if not 0 <= value < len(themes):
+            raise ValueError(f"Sensor light theme {value} is not in the acceptable range 0-{len(themes) - 1}")
+        if self.sensor_light_theme == value:
+            _LOGGER.debug("sensor_light_theme: value already %s, skipping command", value)
+            return
+        bcolor, fcolor = themes[value]
+        # The two colours always change together, so ship them as one command.
+        self._send_command_batch({BATMCOLOR_KEY: bcolor, FATMCOLOR_KEY: fcolor})
+
+    @property
+    def temperature_offset_range(self) -> tuple | None:
+        """Settable temperature calibration range in °F, on models that report/accept ``tempoffset``."""
+        return (self._device_definition.device_ranges or {}).get(TEMPERATURE_OFFSET_RANGE)
+
+    @property
+    def temperature(self):
+        """Get the temperature.
+
+        Models that report ``tempoffset`` over the websocket already include the offset
+        in the temperature they report, so it must not be added a second time.
+        """
+        if self.temperature_offset_range is not None:
+            return self._temperature
+        return super().temperature
+
+    @property
+    def temperature_offset(self):
+        """Get the temperature calibration value."""
+        if self.temperature_offset_range is not None:
+            return self._tempoffset
+        return super().temperature_offset
+
+    @temperature_offset.setter
+    def temperature_offset(self, value: int) -> None:
+        """Set the temperature calibration value."""
+        offset_range = self.temperature_offset_range
+        if offset_range is None:
+            # Legacy path: offset stored as an app setting.
+            PyDreoFanBase.temperature_offset.fset(self, value)
+            return
+        value = int(value)
+        _LOGGER.debug("temperature_offset: temperature_offset.setter(%s) --> %s", self.name, value)
+        if not offset_range[0] <= value <= offset_range[1]:
+            _LOGGER.error("temperature_offset: Offset %s is not in the acceptable range: %s", value, offset_range)
+            return
+        if self._tempoffset == value:
+            _LOGGER.debug("temperature_offset: value already %s, skipping command", value)
+            return
+        self._send_command(TEMPOFFSET_KEY, value)
+
+    @property
     def display_light(self) -> bool:
         """Is the panel display light on."""
         return self._display_light
@@ -1235,6 +1356,16 @@ class PyDreoAirCirculator(PyDreoFanBase):
         self._atm_mode = self.get_state_update_value(state, ATMMODE_KEY)
 
         self._display_light = self.get_state_update_value(state, LIGHTON_KEY)
+
+        val_lightmode = self.get_state_update_value(state, LIGHTMODE_KEY)
+        self._lightmode = val_lightmode if isinstance(val_lightmode, int) and not isinstance(val_lightmode, bool) else None
+        val_tempoffset = self.get_state_update_value(state, TEMPOFFSET_KEY)
+        self._tempoffset = val_tempoffset if isinstance(val_tempoffset, int) and not isinstance(val_tempoffset, bool) else None
+        val_bcolor = self.get_state_update_value(state, BATMCOLOR_KEY)
+        self._sensor_light_bcolor = val_bcolor if isinstance(val_bcolor, int) and not isinstance(val_bcolor, bool) else None
+        val_fcolor = self.get_state_update_value(state, FATMCOLOR_KEY)
+        self._sensor_light_fcolor = val_fcolor if isinstance(val_fcolor, int) and not isinstance(val_fcolor, bool) else None
+
         self._follow_me = self.get_state_update_value(state, HWFPON_KEY)
         self._follow_me_angle = self.get_state_update_value(state, HWFPANGLE_KEY)
         self._people_detected = self.get_state_update_value(state, HBODYCNT_KEY)
@@ -1333,6 +1464,22 @@ class PyDreoAirCirculator(PyDreoFanBase):
         val_display_light = self.get_server_update_key_value(message, LIGHTON_KEY)
         if isinstance(val_display_light, bool):
             self._display_light = val_display_light
+
+        val_lightmode = self.get_server_update_key_value(message, LIGHTMODE_KEY)
+        if isinstance(val_lightmode, int) and not isinstance(val_lightmode, bool):
+            self._lightmode = val_lightmode
+
+        val_tempoffset = self.get_server_update_key_value(message, TEMPOFFSET_KEY)
+        if isinstance(val_tempoffset, int) and not isinstance(val_tempoffset, bool):
+            self._tempoffset = val_tempoffset
+
+        val_bcolor = self.get_server_update_key_value(message, BATMCOLOR_KEY)
+        if isinstance(val_bcolor, int) and not isinstance(val_bcolor, bool):
+            self._sensor_light_bcolor = val_bcolor
+
+        val_fcolor = self.get_server_update_key_value(message, FATMCOLOR_KEY)
+        if isinstance(val_fcolor, int) and not isinstance(val_fcolor, bool):
+            self._sensor_light_fcolor = val_fcolor
 
         val_follow_me = self.get_server_update_key_value(message, HWFPON_KEY)
         if isinstance(val_follow_me, bool):
