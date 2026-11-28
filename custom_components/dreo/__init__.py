@@ -186,9 +186,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         if debug__test_mode_payload is None:
             _LOGGER.error("async_setup_entry: Unable to get debug test mode payload.  Exiting setup.")
             return False
-        pydreo_manager = PyDreo("TEST_EMAIL", "TEST_PASSWORD", redact=True, debug_test_mode=True, debug_test_mode_payload=debug__test_mode_payload)
+        pydreo_manager = PyDreo("TEST_EMAIL", "TEST_PASSWORD", redact=True, debug_test_mode=True, debug_test_mode_payload=debug__test_mode_payload, language=hass.config.language)
     else:
-        pydreo_manager = PyDreo(username, password, region=region)
+        pydreo_manager = PyDreo(username, password, region=region, language=hass.config.language)
         pydreo_manager.auto_reconnect = auto_reconnect
 
     # Prefer HA event-loop timers over raw threading.Timer for delayed device work.
