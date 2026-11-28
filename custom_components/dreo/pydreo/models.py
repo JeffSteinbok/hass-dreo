@@ -94,6 +94,15 @@ class DreoDeviceDetails:
     supports_rgbic_mode_light: bool
     """Whether this model supports the RGBIC mode-based ambient light controls."""
 
+    supports_display_mode: bool
+    """True if the "lightmode" key is a verified display setting (0 = off, 1 = on, 2 = auto-brightness)
+    on this air circulator. Opt-in per model: other circulators report "lightmode" too, but its values
+    have not been verified for them."""
+
+    sensor_light_themes: tuple | None
+    """Presence-sensor light colour themes, in the order the Dreo app lists them. Each theme is a
+    (batmcolor, fatmcolor) pair of packed 24-bit RGB ints that must be sent together. None = not supported."""
+
     def __init__(
         self,
         device_type: DreoDeviceType = None,
@@ -109,6 +118,8 @@ class DreoDeviceDetails:
         filter_life_percent: bool = False,
         supports_rgbic_effect_api: bool = False,
         supports_rgbic_mode_light: bool = False,
+        supports_display_mode: bool = False,
+        sensor_light_themes: tuple | None = None,
     ):
         if device_type is None:
             raise ValueError("device_type is required")
@@ -128,6 +139,8 @@ class DreoDeviceDetails:
         self.filter_life_percent = filter_life_percent
         self.supports_rgbic_effect_api = supports_rgbic_effect_api
         self.supports_rgbic_mode_light = supports_rgbic_mode_light
+        self.supports_display_mode = supports_display_mode
+        self.sensor_light_themes = sensor_light_themes
 
 
 @dataclass
@@ -445,7 +458,24 @@ SUPPORTED_DEVICES = {
     "DR-HPF007S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,
         preset_modes=[("normal", 1), ("natural", 2), ("sleep", 3), ("auto", 4), ("turbo", 5), ("custom", 6)],
-        device_ranges={SPEED_RANGE: (1, 9), HORIZONTAL_ANGLE_RANGE: (-75, 75), VERTICAL_ANGLE_RANGE: (-30, 90)},
+        # tempoffset is a whole-degree (°F) offset, -10..+10 in the Dreo app. The reported temperature
+        # already includes it (verified from app logs: setting +1 moved the reading 74 -> 75).
+        device_ranges={
+            SPEED_RANGE: (1, 9),
+            HORIZONTAL_ANGLE_RANGE: (-75, 75),
+            VERTICAL_ANGLE_RANGE: (-30, 90),
+            TEMPERATURE_OFFSET_RANGE: (-10, 10),
+        },
+        # lightmode verified from app logs: 0 = off, 1 = on, 2 = auto.
+        supports_display_mode=True,
+        # Sensor light colour themes verified from app logs, in the order the app lists them:
+        # Purple/Pink, Blue/Green, Green/Blue, Orange/Yellow.
+        sensor_light_themes=(
+            (2556027, 13315839),
+            (11131, 3080097),
+            (36728, 255),
+            (6894848, 16769838),
+        ),
     ),
     "DR-HPF005S": DreoDeviceDetails(
         device_type=DreoDeviceType.AIR_CIRCULATOR,

@@ -346,6 +346,15 @@
           "auto": "Автоматичен"
         }
       },
+      "sensor_light_theme": {
+        "name": "Тема на светлината на сензора",
+        "state": {
+          "purple_pink": "Лилаво/Розово",
+          "blue_green": "Синьо/Зелено",
+          "green_blue": "Зелено/Синьо",
+          "orange_yellow": "Оранжево/Жълто"
+        }
+      },
       "horizontal_oscillation_angle": {
         "name": "Хоризонтален ъгъл на осцилация",
         "state": {

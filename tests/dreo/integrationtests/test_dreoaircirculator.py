@@ -327,6 +327,45 @@ class TestDreoAirCirculator(IntegrationTestBase):
                 ["Child Lock", "Follow Me", "Horizontally Oscillating", "Panel Sound", "Presence Sensor", "Vertically Oscillating"],
             )
 
+    def test_HPF007S_display_mode_theme_and_offset_entities(self):  # pylint: disable=invalid-name
+        """DR-HPF007S gets Display Mode, Sensor Light Theme and Temperature Offset."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HPF007S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_fan = self.pydreo_manager.devices[0]
+
+            selects = select.get_entries([pydreo_fan])
+            display_mode = self.get_entity_by_key(selects, "Display Mode")
+            sensor_light_theme = self.get_entity_by_key(selects, "Sensor Light Theme")
+
+            # Fixture: lightmode=2 (auto), batmcolor/fatmcolor = 36728/255 (Green/Blue)
+            assert display_mode.current_option == "auto"
+            assert sensor_light_theme.current_option == "green_blue"
+            assert sensor_light_theme.options == ["purple_pink", "blue_green", "green_blue", "orange_yellow"]
+
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                display_mode.select_option("off")
+                mock_send_command.assert_called_once_with(pydreo_fan, {"lightmode": 0})
+            with patch(PATCH_SEND_COMMAND) as mock_send_command:
+                sensor_light_theme.select_option("orange_yellow")
+                mock_send_command.assert_called_once_with(pydreo_fan, {"batmcolor": 6894848, "fatmcolor": 16769838})
+
+            numbers = number.get_entries([pydreo_fan])
+            offset = self.get_entity_by_key(numbers, "Temperature Offset")
+            assert offset.native_value == 0
+
+    def test_HPF008S_has_no_display_mode_select(self):  # pylint: disable=invalid-name
+        """DR-HPF008S reports lightmode, but its values are unverified, so it gets no Display Mode select."""
+        with patch(PATCH_SCHEDULE_UPDATE_HA_STATE):
+            self.get_devices_file_name = "get_devices_HPF008S.json"
+            self.pydreo_manager.load_devices()
+            pydreo_fan = self.pydreo_manager.devices[0]
+            assert pydreo_fan.is_feature_supported("lightmode")
+
+            keys = [entity.entity_description.key for entity in select.get_entries([pydreo_fan])]
+            assert "Display Mode" not in keys
+            assert "Sensor Light Theme" not in keys
+
     def test_HPF008S(self):  # pylint: disable=invalid-name
         """Test HPF008S fan."""
         with patch(PATCH_SCHEDULE_UPDATE_HA_STATE) as mock_update_ha_state:

@@ -346,6 +346,15 @@
           "auto": "Automatisch"
         }
       },
+      "sensor_light_theme": {
+        "name": "Sensorlichtthema",
+        "state": {
+          "purple_pink": "Paars/Roze",
+          "blue_green": "Blauw/Groen",
+          "green_blue": "Groen/Blauw",
+          "orange_yellow": "Oranje/Geel"
+        }
+      },
       "horizontal_oscillation_angle": {
         "name": "Horizontale zwenkhoek",
         "state": {

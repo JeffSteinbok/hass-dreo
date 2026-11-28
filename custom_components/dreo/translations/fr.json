@@ -346,6 +346,15 @@
           "auto": "Automatique"
         }
       },
+      "sensor_light_theme": {
+        "name": "Thème de la lumière du capteur",
+        "state": {
+          "purple_pink": "Violet/Rose",
+          "blue_green": "Bleu/Vert",
+          "green_blue": "Vert/Bleu",
+          "orange_yellow": "Orange/Jaune"
+        }
+      },
       "horizontal_oscillation_angle": {
         "name": "Angle d'oscillation horizontale",
         "state": {

@@ -59,7 +59,8 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         icon="mdi:axis-arrow",
         exists_fn=lambda device: device.type == DreoDeviceType.AIR_CIRCULATOR and device.is_feature_supported("angle_preset"),
     ),
-    # Display off / on / auto-brightness. Only the tower fan/heater combo has had its lightmode values verified.
+    # Display off / on / auto-brightness. Values verified on the tower fan/heater combo, and on air circulators
+    # that opt in with supports_display_mode (DR-HPF007S).
     DreoSelectEntityDescription(
         key="Display Mode",
         translation_key="display_mode",
@@ -67,7 +68,22 @@ SELECTS: tuple[DreoSelectEntityDescription, ...] = (
         icon="mdi:monitor",
         options_list=["off", "on", "auto"],
         raw_values=[0, 1, 2],
-        exists_fn=lambda device: device.type == DreoDeviceType.HEATER and device.is_fan_heater and device.is_feature_supported("lightmode"),
+        exists_fn=lambda device: (
+            (device.type == DreoDeviceType.HEATER and device.is_fan_heater)
+            or (device.type == DreoDeviceType.AIR_CIRCULATOR and device.device_definition.supports_display_mode)
+        )
+        and device.is_feature_supported("lightmode"),
+    ),
+    # Presence-sensor light colour theme. Themes (colour pairs) are defined per model in models.py;
+    # the options here are in the same order.
+    DreoSelectEntityDescription(
+        key="Sensor Light Theme",
+        translation_key="sensor_light_theme",
+        attr_name="sensor_light_theme",
+        icon="mdi:palette",
+        options_list=["purple_pink", "blue_green", "green_blue", "orange_yellow"],
+        raw_values=[0, 1, 2, 3],
+        exists_fn=lambda device: device.type == DreoDeviceType.AIR_CIRCULATOR and device.is_feature_supported("sensor_light_theme"),
     ),
     # Oscillation arcs of heaters with separate horizontal and vertical oscillation (714S, DR-HSH034S).
     DreoSelectEntityDescription(
