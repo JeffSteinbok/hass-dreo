@@ -692,7 +692,7 @@ class TestPyDreoAirPurifier(TestBase):
         catalog_headers = call_api.call_args_list[0].args[4]
         expected_catalog_headers = {
             **Helpers.req_headers(self.pydreo_manager),
-            "lang": "es",
+            "lang": "en",
             "country": "ES",
             "appversion": "3.8.2",
         }
@@ -718,32 +718,123 @@ class TestPyDreoAirPurifier(TestBase):
         assert "country" not in write_headers
         assert device.rgbic_effect_name == "Respirar"
 
-    def test_HAP010S_catalog_reads_always_use_spanish_app_headers(self):  # pylint: disable=invalid-name
-        """Initial and later reads share RGBIC-only locale headers."""
+    def test_HAP010S_catalog_uses_configured_language_and_english_fallback(self):  # pylint: disable=invalid-name
+        """530S catalog reads use HA language and retry in English after failure."""
         self.get_devices_file_name = "get_devices_HAP010S.json"
         self.pydreo_manager.load_devices()
         device = self.pydreo_manager.devices[0]
-        response = {"code": 0, "data": {"basicEffects": [], "sceneEffects": []}}
-        expected_headers = {
-            **Helpers.req_headers(self.pydreo_manager),
-            "lang": "es",
-            "country": "ES",
-            "appversion": "3.8.2",
-        }
+        response = {"code": 0, "data": _hap010s_rgbic_catalog()}
+        self.pydreo_manager.catalog_language = "fr"
 
-        with patch("custom_components.dreo.pydreo.Helpers.call_api", return_value=(response, 200)) as call_api:
-            assert self.pydreo_manager.get_rgbic_effect_catalog(device) == response["data"]
-            # Catalog refresh after a later WebSocket change uses the same path.
+        with patch("custom_components.dreo.pydreo.Helpers.call_api", side_effect=[({"code": 8}, 200), (response, 200)]) as call_api:
             assert self.pydreo_manager.get_rgbic_effect_catalog(device) == response["data"]
 
         assert len(call_api.call_args_list) == 2
-        for call in call_api.call_args_list:
+        for call, language in zip(call_api.call_args_list, ("fr", "en")):
             assert call.args[1:4] == (
                 "/api/device/rgb-effect/all/list",
                 "get",
                 {"devicesn": device.serial_number},
             )
-            assert call.args[4] == expected_headers
+            assert call.args[4] == {
+                **Helpers.req_headers(self.pydreo_manager),
+                "lang": language,
+                "country": "ES",
+                "appversion": "3.8.2",
+            }
+
+    def test_HAP010S_regional_empty_catalog_recovers_in_english(self):
+        self.pydreo_manager.catalog_language = PyDreo(
+            "EMAIL", "PASSWORD", language="pt-BR"
+        ).catalog_language
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        empty = {"code": 0, "data": {"basicEffects": [], "sceneEffects": []}}
+        english = {"code": 0, "data": _hap010s_rgbic_catalog()}
+
+        with patch(
+            "custom_components.dreo.pydreo.Helpers.call_api",
+            side_effect=[(empty, 200), (english, 200)],
+        ) as call_api:
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) == english["data"]
+
+        assert [call.args[4]["lang"] for call in call_api.call_args_list] == ["pt", "en"]
+
+    def test_HAP010S_empty_english_fallback_catalog_returns_none(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        self.pydreo_manager.catalog_language = "pt"
+        empty = {"code": 0, "data": {"basicEffects": [], "sceneEffects": []}}
+
+        with patch(
+            "custom_components.dreo.pydreo.Helpers.call_api",
+            side_effect=[(empty, 200), (empty, 200)],
+        ) as call_api:
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) is None
+
+        assert [call.args[4]["lang"] for call in call_api.call_args_list] == ["pt", "en"]
+
+    def test_HAP010S_empty_requested_english_catalog_does_not_retry(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        self.pydreo_manager.catalog_language = "en"
+        empty = {"code": 0, "data": {"basicEffects": [], "sceneEffects": []}}
+
+        with patch("custom_components.dreo.pydreo.Helpers.call_api", return_value=(empty, 200)) as call_api:
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) is None
+
+        assert call_api.call_count == 1
+
+    def test_HAP010S_valid_localized_catalog_does_not_retry(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        self.pydreo_manager.catalog_language = "de"
+        localized = {"code": 0, "data": _hap010s_rgbic_catalog()}
+
+        with patch("custom_components.dreo.pydreo.Helpers.call_api", return_value=(localized, 200)) as call_api:
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) == localized["data"]
+
+        assert call_api.call_count == 1
+        assert call_api.call_args.args[4]["lang"] == "de"
+
+    def test_HAP010S_catalog_does_not_retry_when_language_is_english(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        self.pydreo_manager.catalog_language = "en"
+        with patch("custom_components.dreo.pydreo.Helpers.call_api", return_value=({"code": 1}, 200)) as call_api:
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) is None
+        assert call_api.call_count == 1
+
+    def test_other_device_catalog_keeps_spanish_language(self):
+        self.get_devices_file_name = "get_devices_HAP003S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        self.pydreo_manager.catalog_language = "fr"
+        response = {"code": 0, "data": {}}
+        with patch("custom_components.dreo.pydreo.Helpers.call_api", return_value=(response, 200)) as call_api:
+            assert self.pydreo_manager.get_rgbic_effect_catalog(device) == {}
+        assert call_api.call_count == 1
+        assert call_api.call_args.args[4]["lang"] == "es"
+        assert call_api.call_args.args[4]["country"] == "ES"
+
+    def test_HAP010S_segment_suffix_stays_english_with_localized_effect_name(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        device.set_rgbic_effect_catalog({"basicEffects": [{
+            "id": "1", "name": "Constante", "effectType": 0,
+            "referencedId": "2", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST",
+                "wholeColorList": ["#000000"],
+                "colorList": ["#000000"],
+            }],
+        }], "sceneEffects": []})
+        assert "Constante (segments)" in device.rgbic_selectable_effect_names
 
     def test_HAP010S_auto_mode_command_and_websocket_state(self):  # pylint: disable=invalid-name
         """Automatic air-quality mode is selected only by the captured rgbmode=1 command."""

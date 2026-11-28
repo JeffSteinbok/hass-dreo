@@ -31,6 +31,17 @@ class TestPyDreoApiServerRegion:
             _ = pydreo.api_server_region
 
 
+class TestCatalogLanguage:
+    @pytest.mark.parametrize(("configured", "expected"), [
+        ("en-GB", "en"), ("pt-BR", "pt"), ("zh-Hans", "zh"), ("es-419", "es"),
+        ("es-AR", "es"), ("es-MX", "es"),
+        ("", "en"), ("not a language", "en"), (None, "en"),
+    ])
+    def test_catalog_language_is_normalized(self, configured, expected):
+        manager = PyDreo("user", "pass", language=configured)
+        assert manager.catalog_language == expected
+
+
 class TestPyDreoAuthRegionInit:
     """Test auth region initialization."""
 

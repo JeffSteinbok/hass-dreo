@@ -3,6 +3,7 @@
 # flake8: noqa
 # from .pydreo import PyDreo
 import logging
+import re
 import threading
 import sys
 
@@ -33,6 +34,34 @@ _LOGGER = logging.getLogger(__name__)
 _COMMAND_ACK_TIMEOUT = 2  # seconds to wait for server to confirm command
 _ACK_METHOD_NAMES = {"control-report", "control-reply"}  # consider fast server reply and later device confirmation as ack
 _MAX_COMMAND_RETRIES = 2  # retry failed commands up to this many times
+
+
+def _normalize_catalog_language(language: str | None) -> str:
+    """Return a valid BCP-47 base language, defaulting to English."""
+    if not isinstance(language, str):
+        return "en"
+    language = language.strip()
+    if not re.fullmatch(r"[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8})*", language):
+        return "en"
+    return language.split("-", maxsplit=1)[0].lower()
+
+
+def _rgbic_catalog_has_effects(catalog: dict) -> bool:
+    """Return whether a DREO catalog contains selectable basic or scene effects."""
+    for key, effect_type in (("basicEffects", 0), ("sceneEffects", 3)):
+        effects = catalog.get(key)
+        if not isinstance(effects, list):
+            continue
+        if any(
+            isinstance(effect, dict)
+            and effect.get("effectType") == effect_type
+            and effect.get("id")
+            and effect.get("referencedId")
+            and effect.get("name")
+            for effect in effects
+        ):
+            return True
+    return False
 
 # Host delayed scheduler: (delay_seconds, work) -> cancel_fn.
 # Home Assistant installs async_call_later; tests inject a manual scheduler.
@@ -105,6 +134,7 @@ class PyDreo:  # pylint: disable=function-redefined
         debug_test_mode_payload=None,
         token=None,
         region: str | None = None,
+        language: str | None = None,
     ) -> None:
         """Initialize Dreo class with username, password and time zone."""
         self._transport = CommandTransport(self._transport_consume_message, self._transport_reconnected)
@@ -119,6 +149,7 @@ class PyDreo:  # pylint: disable=function-redefined
                 _LOGGER.warning("__init__: Invalid auth region %s. Defaulting to %s", region, DREO_AUTH_REGION_NA)
 
         self._redact = redact
+        self.catalog_language = _normalize_catalog_language(language)
         if redact:
             self.redact = redact
         self.raw_response = None
@@ -469,13 +500,41 @@ class PyDreo:  # pylint: disable=function-redefined
 
     def get_rgbic_effect_catalog(self, device: PyDreoBaseDevice) -> dict | None:
         """Return the RGBIC effect catalog used by newer Dreo devices."""
-        response, status_code = self._call_authenticated_api(
-            "/api/device/rgb-effect/all/list",
-            "get",
-            {"devicesn": device.serial_number},  # RGBIC API expects lowercase, not deviceSn
-            header_overrides={"lang": "es", "country": "ES", "appversion": "3.8.2"},
+        language = (
+            self.catalog_language
+            if device.device_definition.supports_rgbic_mode_light
+            else "es"
         )
-        if status_code != 200 or not isinstance(response, dict) or response.get("code") != 0:
+
+        def _request(lang: str):
+            response, status_code = self._call_authenticated_api(
+                "/api/device/rgb-effect/all/list",
+                "get",
+                {"devicesn": device.serial_number},  # RGBIC API expects lowercase, not deviceSn
+                header_overrides={"lang": lang, "country": "ES", "appversion": "3.8.2"},
+            )
+            if (
+                status_code == 200
+                and isinstance(response, dict)
+                and type(response.get("code")) is int
+                and response["code"] == 0
+                and isinstance(response.get("data"), dict)
+                and (
+                    not device.device_definition.supports_rgbic_mode_light
+                    or _rgbic_catalog_has_effects(response["data"])
+                )
+            ):
+                return response["data"], response, status_code
+            return None, response, status_code
+
+        catalog, response, status_code = _request(language)
+        if (
+            catalog is None
+            and language != "en"
+            and device.device_definition.supports_rgbic_mode_light
+        ):
+            catalog, response, status_code = _request("en")
+        if catalog is None:
             _LOGGER.warning(
                 "get_rgbic_effect_catalog: request failed for %s status=%s response=%s",
                 device.name,
@@ -483,7 +542,7 @@ class PyDreo:  # pylint: disable=function-redefined
                 Helpers.redactor(json.dumps(response)),
             )
             return None
-        return response.get("data") or {}
+        return catalog
 
     def _prepare_rgbic_edit_batch_entry(
         self,

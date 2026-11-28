@@ -55,6 +55,7 @@ class TestInit:
 
         async def exercise_service():
             hass = HomeAssistant(str(tmp_path))
+            hass.config.language = "pt-BR"
             hass.config_entries = MagicMock()
             hass.config_entries.async_forward_entry_setups = AsyncMock()
             hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
@@ -101,10 +102,13 @@ class TestInit:
                     )
 
             with (
-                patch("custom_components.dreo.pydreo.PyDreo", return_value=manager),
+                patch("custom_components.dreo.pydreo.PyDreo", return_value=manager) as mock_pydreo,
                 patch("custom_components.dreo._install_ha_call_later_scheduler"),
             ):
                 assert await async_setup_entry(hass, config_entry)
+
+            mock_pydreo.assert_called_once()
+            assert mock_pydreo.call_args.kwargs["language"] == "pt-BR"
 
             service_data = {"device_id": "ha-530s", "colors": ["#ff0000", "#00ff00"]}
             await call_service(service_data)
