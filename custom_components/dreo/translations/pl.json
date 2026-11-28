@@ -30,6 +30,16 @@
       }
     }
   },
+  "services": {
+    "set_rgbic_segments": {
+      "name": "Ustaw kolory segmentów RGBIC",
+      "description": "Ustawia kolory segmentów zgodnie z kolejnością w katalogu zgodnego oczyszczacza Dreo 530S.",
+      "fields": {
+        "device_id": {"name": "Urządzenie", "description": "Wybierz zgodny oczyszczacz Dreo 530S."},
+        "colors": {"name": "Kolory segmentów", "description": "Wprowadź kolor #RRGGBB dla każdego segmentu w kolejności katalogu."}
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "water_empty": {

@@ -9,11 +9,38 @@ from typing import TYPE_CHECKING
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .const import DOMAIN, PYDREO_MANAGER, DREO_PLATFORMS, CONF_AUTO_RECONNECT, DEBUG_TEST_MODE
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import device_registry as dr
 
 if TYPE_CHECKING:
     from .pydreo import PyDreo
 
 _LOGGER = logging.getLogger(__name__)
+
+RGBIC_SEGMENT_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): vol.All(str, cv.string),
+        vol.Required("colors"): [vol.All(str, cv.string)],
+    }
+)
+
+
+def _resolve_rgbic_segment_device(hass: HomeAssistant, manager: "PyDreo", device_id: str):
+    """Resolve a selected Home Assistant device to a compatible Dreo purifier."""
+    registry_device = dr.async_get(hass).async_get(device_id)
+    if registry_device is None:
+        return None
+    serial = None
+    for identifier in registry_device.identifiers:
+        if isinstance(identifier, tuple) and len(identifier) == 2 and identifier[0] == DOMAIN:
+            serial = identifier[1]
+            break
+    if serial is None:
+        return None
+    for device in manager.devices:
+        if device.serial_number == serial and device.device_definition.supports_rgbic_mode_light:
+            return device
+    return None
 
 
 def _install_ha_call_later_scheduler(
@@ -269,6 +296,33 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][PYDREO_MANAGER] = pydreo_manager
     hass.data[DOMAIN][DREO_PLATFORMS] = platforms
+
+    async def _async_set_rgbic_segments(call: ServiceCall) -> None:
+        """Set the ordered RGBIC segment colors on a selected compatible device."""
+        selected_device_id = call.data.get("device_id")
+        colors = call.data.get("colors")
+        device = _resolve_rgbic_segment_device(hass, pydreo_manager, selected_device_id)
+        if device is None:
+            raise HomeAssistantError("The selected device does not support RGBIC segment colors")
+        if not isinstance(colors, list):
+            raise HomeAssistantError("colors must be a list of #RRGGBB strings")
+        try:
+            success = await hass.async_add_executor_job(device.set_rgbic_segment_colors, colors)
+        except Exception as err:  # pylint: disable=broad-except
+            _LOGGER.warning("RGBIC segment write failed for %s (%s)", device.name, type(err).__name__)
+            raise HomeAssistantError("RGBIC segment color write failed; check integration logs") from None
+        if not success:
+            raise HomeAssistantError("RGBIC segment color write failed; check integration logs")
+
+    hass.services.async_register(
+        DOMAIN,
+        "set_rgbic_segments",
+        _async_set_rgbic_segments,
+        schema=RGBIC_SEGMENT_SERVICE_SCHEMA,
+    )
+    config_entry.async_on_unload(
+        lambda: hass.services.async_remove(DOMAIN, "set_rgbic_segments")
+    )
 
     _LOGGER.debug("async_setup_entry: Platforms are: %s", platforms)
 

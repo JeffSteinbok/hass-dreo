@@ -518,12 +518,8 @@ class PyDreo:  # pylint: disable=function-redefined
                 )
                 return None
 
-            # Catalogs can put wholeColorList on multiple layouts, so update every
-            # matching layout instead of assuming the color is always in layouts[0].
             for layout in whole_color_layouts:
                 layout["currentSelected"] = "whole"
-                # Keep the existing HCF color casing, while matching the captured
-                # lowercase hexadecimal format used by the DR-HAP010S app.
                 if device.device_definition.supports_rgbic_mode_light:
                     layout["wholeColorList"] = [color.lower()]
                 else:
@@ -598,6 +594,39 @@ class PyDreo:  # pylint: disable=function-redefined
         )
         if entry is None:
             return False
+        return self._post_rgbic_edit_batch(device, [entry])
+
+    def set_rgbic_segment_colors(self, device: PyDreoBaseDevice, colors: list[str]) -> bool:
+        """Set the saved per-segment colors on a compatible 530S purifier."""
+        if not device.device_definition.supports_rgbic_mode_light:
+            return False
+        if not PyDreoAirPurifier._rgbic_segment_color_list_valid(colors):
+            _LOGGER.warning("set_rgbic_segment_colors: colors must be a list of #RRGGBB strings")
+            return False
+        colors = [value.lower() for value in colors]
+        catalog = self.get_rgbic_effect_catalog(device)
+        if not catalog:
+            return False
+        effect = PyDreoAirPurifier._rgbic_color_effect(catalog)
+        if effect is None:
+            _LOGGER.warning("set_rgbic_segment_colors: no compatible Constant effect for %s", device.name)
+            return False
+        layout = PyDreoAirPurifier._rgbic_segment_layout(effect)
+        catalog_colors = layout.get("colorList") if layout else None
+        if not isinstance(catalog_colors, list) or len(colors) != len(catalog_colors):
+            _LOGGER.warning("set_rgbic_segment_colors: expected %s colors, received %s for %s",
+                            len(catalog_colors) if isinstance(catalog_colors, list) else 0, len(colors), device.name)
+            return False
+        entry = self._prepare_rgbic_edit_batch_entry(device, effect, effect_name=effect["name"])
+        if entry is None:
+            return False
+        layouts = entry["subEffects"][0]["layouts"]
+        layout_index = next(
+            index for index, candidate in enumerate(effect.get("layouts") or [])
+            if candidate is layout
+        )
+        layouts[layout_index]["currentSelected"] = "segment"
+        layouts[layout_index]["colorList"] = list(colors)
         return self._post_rgbic_edit_batch(device, [entry])
 
     def set_rgbic_scene_effect(self, device: PyDreoBaseDevice, effect_name: str) -> bool:

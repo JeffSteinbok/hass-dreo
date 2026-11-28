@@ -30,6 +30,16 @@
       }
     }
   },
+  "services": {
+    "set_rgbic_segments": {
+      "name": "Imposta i colori dei segmenti RGBIC",
+      "description": "Imposta i colori ordinati dei segmenti di un purificatore Dreo 530S compatibile.",
+      "fields": {
+        "device_id": {"name": "Dispositivo", "description": "Seleziona un purificatore Dreo 530S compatibile."},
+        "colors": {"name": "Colori dei segmenti", "description": "Inserisci un colore #RRGGBB per ogni segmento nell’ordine del catalogo."}
+      }
+    }
+  },
   "entity": {
     "binary_sensor": {
       "water_empty": {
