@@ -42,6 +42,115 @@ class TestInit:
         assert "model: DR-HAP010S" in services
         assert "serial_number" not in services
 
+    def test_rgbic_segment_service_validates_calls_and_unloads(self, tmp_path, caplog):
+        from homeassistant.core import HomeAssistant
+        from homeassistant.exceptions import HomeAssistantError
+        from homeassistant.config_entries import ConfigEntry, ConfigEntryState, SOURCE_USER
+        from types import MappingProxyType
+        import custom_components.dreo as dreo_integration
+        from custom_components.dreo import async_setup_entry
+        from custom_components.dreo.const import DOMAIN
+        from custom_components.dreo.pydreo.constant import DreoDeviceType
+        import voluptuous as vol
+
+        async def exercise_service():
+            hass = HomeAssistant(str(tmp_path))
+            hass.config_entries = MagicMock()
+            hass.config_entries.async_forward_entry_setups = AsyncMock()
+            hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
+
+            compatible = MagicMock()
+            compatible.type = DreoDeviceType.AIR_PURIFIER
+            compatible.serial_number = "530S-SERIAL"
+            compatible.device_definition.supports_rgbic_mode_light = True
+            compatible.set_rgbic_segment_colors = MagicMock(return_value=True)
+            incompatible = MagicMock()
+            incompatible.serial_number = "OTHER-SERIAL"
+            incompatible.device_definition.supports_rgbic_mode_light = False
+            manager = MagicMock()
+            manager.login.return_value = True
+            manager.load_devices.return_value = True
+            manager.devices = [compatible, incompatible]
+
+            config_entry = ConfigEntry(
+                data={"username": "test@example.com", "password": "password"},
+                discovery_keys=MappingProxyType({}),
+                domain=DOMAIN,
+                entry_id="dreo-test-entry",
+                minor_version=1,
+                options={},
+                source=SOURCE_USER,
+                state=ConfigEntryState.LOADED,
+                subentries_data=None,
+                title="Dreo test",
+                unique_id="530S-SERIAL",
+                version=1,
+            )
+
+            registry_device = MagicMock()
+            registry_device.identifiers = {(DOMAIN, compatible.serial_number)}
+            registry = MagicMock()
+            registry.async_get.side_effect = lambda device_id: (
+                registry_device if device_id == "ha-530s" else None
+            )
+
+            async def call_service(service_data):
+                with patch("custom_components.dreo.dr.async_get", return_value=registry):
+                    return await hass.services.async_call(
+                        DOMAIN, "set_rgbic_segments", service_data, blocking=True
+                    )
+
+            with (
+                patch("custom_components.dreo.pydreo.PyDreo", return_value=manager),
+                patch("custom_components.dreo._install_ha_call_later_scheduler"),
+            ):
+                assert await async_setup_entry(hass, config_entry)
+
+            service_data = {"device_id": "ha-530s", "colors": ["#ff0000", "#00ff00"]}
+            await call_service(service_data)
+            compatible.set_rgbic_segment_colors.assert_called_once_with(service_data["colors"])
+
+            for invalid_data in (
+                {"colors": ["#ff0000"]},
+                {"device_id": "ha-530s"},
+                {"device_id": 123, "colors": ["#ff0000"]},
+                {"device_id": "ha-530s", "colors": "#ff0000"},
+                {"device_id": "ha-530s", "colors": [1]},
+            ):
+                with pytest.raises(vol.Invalid):
+                    await call_service(invalid_data)
+
+            with pytest.raises(HomeAssistantError, match="does not support"):
+                await call_service({"device_id": "missing", "colors": ["#ff0000"]})
+
+            registry_device.identifiers = {(DOMAIN, incompatible.serial_number)}
+            with pytest.raises(HomeAssistantError, match="does not support"):
+                await call_service({"device_id": "ha-530s", "colors": ["#ff0000"]})
+
+            registry_device.identifiers = {(DOMAIN, compatible.serial_number)}
+            compatible.set_rgbic_segment_colors.return_value = False
+            with pytest.raises(HomeAssistantError, match="write failed"):
+                await call_service({"device_id": "ha-530s", "colors": ["#ff0000"]})
+
+            internal_error = "sensitive internal device detail"
+            compatible.set_rgbic_segment_colors.side_effect = RuntimeError(internal_error)
+            with pytest.raises(HomeAssistantError, match="write failed") as error:
+                await call_service({"device_id": "ha-530s", "colors": ["#ff0000"]})
+            assert internal_error not in str(error.value)
+            assert internal_error not in caplog.text
+            assert "RGBIC segment write failed" in caplog.text
+            assert "RuntimeError" in caplog.text
+
+            assert hass.services.has_service(DOMAIN, "set_rgbic_segments")
+            integration = MagicMock()
+            integration.domain = DOMAIN
+            integration.async_get_component = AsyncMock(return_value=dreo_integration)
+            async with config_entry.setup_lock:
+                assert await config_entry.async_unload(hass, integration=integration)
+            assert not hass.services.has_service(DOMAIN, "set_rgbic_segments")
+
+        asyncio.run(exercise_service())
+
     def test_debug_test_mode(self):
         """Test that DEBUG_TEST_MODE is set to False."""
         assert DEBUG_TEST_MODE is False, "DEBUG_TEST_MODE should be False to merge changes."

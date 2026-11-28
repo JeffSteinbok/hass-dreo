@@ -492,34 +492,15 @@ class PyDreo:  # pylint: disable=function-redefined
         *,
         effect_name: str,
         color: str | None = None,
-        segment_colors: list[str] | None = None,
         current_selected: str | None = None,
     ) -> dict | None:
         """Build one ``/api/device/rgb-effect/edit/batch`` item from a catalog entry."""
         layouts = json.loads(json.dumps(effect.get("layouts") or []))
-        if device.device_definition.supports_rgbic_mode_light and (
-            current_selected is not None or color is not None or segment_colors is not None
-        ):
-            primary_layout = PyDreoAirPurifier._rgbic_segment_layout(effect)
-            if primary_layout is None:
-                _LOGGER.warning("set_rgbic_effect: no valid segment layout for %s", device.name)
-                return None
-            primary_index = next(
-                index for index, layout in enumerate(effect.get("layouts") or [])
-                if layout is primary_layout
-            )
-            layouts[primary_index]["currentSelected"] = current_selected or (
-                "whole" if color is not None else layouts[primary_index].get("currentSelected")
-            )
-            if color is not None:
-                layouts[primary_index]["wholeColorList"] = [color.lower()]
-            if segment_colors is not None:
-                layouts[primary_index]["colorList"] = list(segment_colors)
-        elif current_selected is not None:
+        if current_selected is not None:
             for layout in layouts:
                 if isinstance(layout, dict) and layout.get("viewType") == "SEGMENT_COLOR_LIST":
                     layout["currentSelected"] = current_selected
-        if color is not None and not device.device_definition.supports_rgbic_mode_light:
+        if color is not None:
             if not layouts:
                 _LOGGER.warning(
                     "set_rgbic_effect: color override requires a wholeColorList layout"
@@ -537,27 +518,12 @@ class PyDreo:  # pylint: disable=function-redefined
                 )
                 return None
 
-            # Preserve legacy behavior on effect API devices other than the 530S.
             for layout in whole_color_layouts:
                 layout["currentSelected"] = "whole"
-                # Keep the existing HCF color casing, while matching the captured
-                # lowercase hexadecimal format used by the DR-HAP010S app.
                 if device.device_definition.supports_rgbic_mode_light:
                     layout["wholeColorList"] = [color.lower()]
                 else:
                     layout["wholeColorList"] = [color.upper()]
-
-        if segment_colors is not None and not device.device_definition.supports_rgbic_mode_light:
-            segment_layouts = [
-                layout for layout in layouts
-                if isinstance(layout, dict) and layout.get("viewType") == "SEGMENT_COLOR_LIST"
-            ]
-            if not segment_layouts:
-                _LOGGER.warning("set_rgbic_effect: Constant effect has no segment color layout for %s", device.name)
-                return None
-            for layout in segment_layouts:
-                layout["currentSelected"] = "segment"
-                layout["colorList"] = list(segment_colors)
 
         # `id` identifies this catalog record; `referencedId` is the effect
         # resource used by the REST subEffects payload. Keep them separate: for
@@ -634,13 +600,7 @@ class PyDreo:  # pylint: disable=function-redefined
         """Set the saved per-segment colors on a compatible 530S purifier."""
         if not device.device_definition.supports_rgbic_mode_light:
             return False
-        if not isinstance(colors, list) or any(
-            not isinstance(value, str)
-            or len(value) != 7
-            or value[0] != "#"
-            or any(char not in "0123456789abcdefABCDEF" for char in value[1:])
-            for value in colors
-        ):
+        if not PyDreoAirPurifier._rgbic_segment_color_list_valid(colors):
             _LOGGER.warning("set_rgbic_segment_colors: colors must be a list of #RRGGBB strings")
             return False
         colors = [value.lower() for value in colors]
@@ -657,12 +617,16 @@ class PyDreo:  # pylint: disable=function-redefined
             _LOGGER.warning("set_rgbic_segment_colors: expected %s colors, received %s for %s",
                             len(catalog_colors) if isinstance(catalog_colors, list) else 0, len(colors), device.name)
             return False
-        entry = self._prepare_rgbic_edit_batch_entry(
-            device, effect, effect_name=effect["name"],
-            segment_colors=colors, current_selected="segment",
-        )
+        entry = self._prepare_rgbic_edit_batch_entry(device, effect, effect_name=effect["name"])
         if entry is None:
             return False
+        layouts = entry["subEffects"][0]["layouts"]
+        layout_index = next(
+            index for index, candidate in enumerate(effect.get("layouts") or [])
+            if candidate is layout
+        )
+        layouts[layout_index]["currentSelected"] = "segment"
+        layouts[layout_index]["colorList"] = list(colors)
         return self._post_rgbic_edit_batch(device, [entry])
 
     def set_rgbic_scene_effect(self, device: PyDreoBaseDevice, effect_name: str) -> bool:

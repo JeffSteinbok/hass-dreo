@@ -139,8 +139,9 @@ data:
   colors:
     - "#ff0000"
     - "#00ff00"
-    # Continue in catalog order for every segment.
 ```
+
+The 530S requires exactly 17 colors, one for each segment, in catalog order.
 
 Selecting an RGB color or **Constant** uses the uniform ring color and preserves the saved
 segment colors.

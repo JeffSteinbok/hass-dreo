@@ -361,26 +361,8 @@ class PyDreoAirPurifier(PyDreoFanBase):
         )
 
     @staticmethod
-    def _rgbic_segment_color_list_valid(layout: object) -> bool:
-        """True when a layout has a non-empty list of valid segment colors."""
-        if not isinstance(layout, dict):
-            return False
-        colors = layout.get("colorList")
-        return (
-            isinstance(colors, list)
-            and bool(colors)
-            and all(
-                isinstance(color, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", color) is not None
-                for color in colors
-            )
-        )
-
-    @staticmethod
-    def _rgbic_whole_color_list_valid(layout: object) -> bool:
-        """True when the layout's preserved whole-ring color list is valid hex."""
-        if not isinstance(layout, dict):
-            return False
-        colors = layout.get("wholeColorList")
+    def _rgbic_segment_color_list_valid(colors: object) -> bool:
+        """True when a list contains one or more #RRGGBB strings."""
         return (
             isinstance(colors, list)
             and bool(colors)
@@ -392,13 +374,12 @@ class PyDreoAirPurifier(PyDreoFanBase):
 
     @staticmethod
     def _rgbic_segment_layout(effect: dict | None) -> dict | None:
-        """Return the first valid segment layout that also stores whole-ring color."""
+        """Return the first segment layout with preserved whole and valid segment colors."""
         if effect is None:
             return None
         return next((layout for layout in (effect.get("layouts") or [])
                      if PyDreoAirPurifier._rgbic_whole_color_layout(layout)
-                     and PyDreoAirPurifier._rgbic_segment_color_list_valid(layout)
-                     and PyDreoAirPurifier._rgbic_whole_color_list_valid(layout)), None)
+                     and PyDreoAirPurifier._rgbic_segment_color_list_valid(layout.get("colorList"))), None)
 
     @staticmethod
     def _rgbic_color_effect(catalog: dict) -> dict | None:

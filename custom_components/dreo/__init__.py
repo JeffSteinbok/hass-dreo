@@ -17,20 +17,30 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+RGBIC_SEGMENT_SERVICE_SCHEMA = vol.Schema(
+    {
+        vol.Required("device_id"): vol.All(str, cv.string),
+        vol.Required("colors"): [vol.All(str, cv.string)],
+    }
+)
+
 
 def _resolve_rgbic_segment_device(hass: HomeAssistant, manager: "PyDreo", device_id: str):
     """Resolve a selected Home Assistant device to a compatible Dreo purifier."""
     registry_device = dr.async_get(hass).async_get(device_id)
-    serial = next(
-        (identifier[1] for identifier in (registry_device.identifiers if registry_device else set())
-         if isinstance(identifier, tuple) and len(identifier) == 2 and identifier[0] == DOMAIN),
-        None,
-    )
-    return next(
-        (item for item in manager.devices
-         if item.serial_number == serial and item.device_definition.supports_rgbic_mode_light),
-        None,
-    )
+    if registry_device is None:
+        return None
+    serial = None
+    for identifier in registry_device.identifiers:
+        if isinstance(identifier, tuple) and len(identifier) == 2 and identifier[0] == DOMAIN:
+            serial = identifier[1]
+            break
+    if serial is None:
+        return None
+    for device in manager.devices:
+        if device.serial_number == serial and device.device_definition.supports_rgbic_mode_light:
+            return device
+    return None
 
 
 def _install_ha_call_later_scheduler(
@@ -304,7 +314,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         if not success:
             raise HomeAssistantError("RGBIC segment color write failed; check integration logs")
 
-    hass.services.async_register(DOMAIN, "set_rgbic_segments", _async_set_rgbic_segments)
+    hass.services.async_register(
+        DOMAIN,
+        "set_rgbic_segments",
+        _async_set_rgbic_segments,
+        schema=RGBIC_SEGMENT_SERVICE_SCHEMA,
+    )
     config_entry.async_on_unload(
         lambda: hass.services.async_remove(DOMAIN, "set_rgbic_segments")
     )
