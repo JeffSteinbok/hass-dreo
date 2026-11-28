@@ -801,6 +801,17 @@ class TestDreo530SRGBICLightHA(TestDeviceBase, IntegrationTestBase):
         assert entity.extra_state_attributes["segment_colors"] == colors
         assert entity.effect == "Scene"
 
+        from custom_components.dreo.pydreo.pydreoairpurifier import RgbicSegmentColorValidationError
+        with patch.object(
+            device._dreo,
+            "set_rgbic_segment_colors",
+            side_effect=RgbicSegmentColorValidationError("invalid segment colors"),
+        ):
+            with pytest.raises(RgbicSegmentColorValidationError):
+                device.set_rgbic_segment_colors(requested, raise_validation_errors=True)
+        assert entity.extra_state_attributes["segment_colors"] == colors
+        assert entity.effect == "Scene"
+
         with patch.object(device._dreo, "set_rgbic_segment_colors", return_value=True):
             assert device.set_rgbic_segment_colors(requested)
         assert entity.extra_state_attributes["segment_colors"] == requested

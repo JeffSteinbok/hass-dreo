@@ -2906,7 +2906,7 @@ class TestPyDreoAirPurifier(TestBase):
         assert layouts[1]["currentSelected"] == "segment"
         assert layouts[2] == effect["layouts"][2]
 
-    @pytest.mark.parametrize("colors", [[], ["red"], ["#123456", "#bad"]])
+    @pytest.mark.parametrize("colors", [["red"], ["#123456", "#bad"]])
     def test_segment_write_rejects_invalid_hex_colors(self, colors):
         self.get_devices_file_name = "get_devices_HAP010S.json"
         self.pydreo_manager.load_devices()
@@ -2915,6 +2915,78 @@ class TestPyDreoAirPurifier(TestBase):
              patch.object(self.pydreo_manager, "_post_rgbic_edit_batch") as post:
             assert not self.pydreo_manager.set_rgbic_segment_colors(device, colors)
         get_catalog.assert_not_called()
+        post.assert_not_called()
+
+    def test_segment_write_reports_catalog_count_and_invalid_color_position(self):
+        from custom_components.dreo.pydreo.pydreoairpurifier import RgbicSegmentColorValidationError
+
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        catalog = {"basicEffects": [{
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constante", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "wholeColorList": ["#abcdef"],
+                "colorList": ["#111111", "#222222", "#333333"],
+            }],
+        }]}
+        with patch.object(self.pydreo_manager, "get_rgbic_effect_catalog", return_value=catalog) as get_catalog, \
+             patch.object(self.pydreo_manager, "_post_rgbic_edit_batch") as post:
+            with pytest.raises(RgbicSegmentColorValidationError, match="Expected 3 colors, got 2"):
+                self.pydreo_manager.set_rgbic_segment_colors(
+                    device, ["#111111", "#222222"], raise_validation_errors=True
+                )
+            with pytest.raises(RgbicSegmentColorValidationError, match=r"Expected 3 colors, got 0\."):
+                self.pydreo_manager.set_rgbic_segment_colors(
+                    device, [], raise_validation_errors=True
+                )
+            with pytest.raises(RgbicSegmentColorValidationError, match="position 3"):
+                self.pydreo_manager.set_rgbic_segment_colors(
+                    device,
+                    ["#111111", "#222222", "invalid"],
+                    raise_validation_errors=True,
+                )
+        assert get_catalog.call_count == 2
+        post.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "layout",
+        [
+            {"viewType": "SEGMENT_COLOR_LIST", "wholeColorList": ["#abcdef"], "colorList": ["invalid"]},
+            {"viewType": "SEGMENT_COLOR_LIST", "wholeColorList": ["#abcdef"]},
+        ],
+    )
+    def test_segment_write_rejects_catalog_without_valid_segment_color_list(self, layout):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        catalog = {"basicEffects": [{
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constante", "layouts": [layout],
+        }]}
+        with patch.object(self.pydreo_manager, "get_rgbic_effect_catalog", return_value=catalog) as get_catalog, \
+             patch.object(self.pydreo_manager, "_post_rgbic_edit_batch") as post:
+            assert not self.pydreo_manager.set_rgbic_segment_colors(
+                device, ["#112233"], raise_validation_errors=True
+            )
+        get_catalog.assert_called_once_with(device)
+        post.assert_not_called()
+
+    def test_segment_write_validation_errors_preserve_boolean_contract(self):
+        self.get_devices_file_name = "get_devices_HAP010S.json"
+        self.pydreo_manager.load_devices()
+        device = self.pydreo_manager.devices[0]
+        catalog = {"basicEffects": [{
+            "id": "constant-id", "referencedId": "constant-ref", "effectType": 0,
+            "name": "Constante", "layouts": [{
+                "viewType": "SEGMENT_COLOR_LIST", "wholeColorList": ["#abcdef"],
+                "colorList": ["#111111", "#222222", "#333333"],
+            }],
+        }]}
+        with patch.object(self.pydreo_manager, "get_rgbic_effect_catalog", return_value=catalog), \
+             patch.object(self.pydreo_manager, "_post_rgbic_edit_batch") as post:
+            assert not self.pydreo_manager.set_rgbic_segment_colors(device, ["#111111"])
+            assert not self.pydreo_manager.set_rgbic_segment_colors(device, ["#111111", "bad", "#333333"])
         post.assert_not_called()
 
     def test_segment_write_rejects_catalog_length_mismatch_and_api_failure(self):

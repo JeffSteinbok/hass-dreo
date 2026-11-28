@@ -5,12 +5,14 @@ from __future__ import annotations
 import logging
 import threading
 from collections.abc import Callable
+from functools import partial
 from typing import TYPE_CHECKING
 
 from .haimports import *  # pylint: disable=W0401,W0614
 from .const import DOMAIN, PYDREO_MANAGER, DREO_PLATFORMS, CONF_AUTO_RECONNECT, DEBUG_TEST_MODE
-from homeassistant.exceptions import HomeAssistantError
+from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
 from homeassistant.helpers import device_registry as dr
+from .pydreo.pydreoairpurifier import RgbicSegmentColorValidationError
 
 if TYPE_CHECKING:
     from .pydreo import PyDreo
@@ -19,8 +21,8 @@ _LOGGER = logging.getLogger(__name__)
 
 RGBIC_SEGMENT_SERVICE_SCHEMA = vol.Schema(
     {
-        vol.Required("device_id"): vol.All(str, cv.string),
-        vol.Required("colors"): [vol.All(str, cv.string)],
+        vol.Required("device_id"): cv.string,
+        vol.Required("colors"): [cv.string],
     }
 )
 
@@ -304,10 +306,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         device = _resolve_rgbic_segment_device(hass, pydreo_manager, selected_device_id)
         if device is None:
             raise HomeAssistantError("The selected device does not support RGBIC segment colors")
-        if not isinstance(colors, list):
-            raise HomeAssistantError("colors must be a list of #RRGGBB strings")
         try:
-            success = await hass.async_add_executor_job(device.set_rgbic_segment_colors, colors)
+            success = await hass.async_add_executor_job(
+                partial(device.set_rgbic_segment_colors, colors, raise_validation_errors=True)
+            )
+        except RgbicSegmentColorValidationError as err:
+            raise ServiceValidationError(str(err)) from None
         except Exception as err:  # pylint: disable=broad-except
             _LOGGER.warning("RGBIC segment write failed for %s (%s)", device.name, type(err).__name__)
             raise HomeAssistantError("RGBIC segment color write failed; check integration logs") from None
