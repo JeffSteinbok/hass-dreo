@@ -44,13 +44,14 @@ class TestInit:
 
     def test_rgbic_segment_service_validates_calls_and_unloads(self, tmp_path, caplog):
         from homeassistant.core import HomeAssistant
-        from homeassistant.exceptions import HomeAssistantError
+        from homeassistant.exceptions import HomeAssistantError, ServiceValidationError
         from homeassistant.config_entries import ConfigEntry, ConfigEntryState, SOURCE_USER
         from types import MappingProxyType
         import custom_components.dreo as dreo_integration
         from custom_components.dreo import async_setup_entry
         from custom_components.dreo.const import DOMAIN
         from custom_components.dreo.pydreo.constant import DreoDeviceType
+        from custom_components.dreo.pydreo.pydreoairpurifier import RgbicSegmentColorValidationError
         import voluptuous as vol
 
         async def exercise_service():
@@ -108,17 +109,20 @@ class TestInit:
 
             service_data = {"device_id": "ha-530s", "colors": ["#ff0000", "#00ff00"]}
             await call_service(service_data)
-            compatible.set_rgbic_segment_colors.assert_called_once_with(service_data["colors"])
+            compatible.set_rgbic_segment_colors.assert_called_once_with(
+                service_data["colors"], raise_validation_errors=True
+            )
 
             for invalid_data in (
                 {"colors": ["#ff0000"]},
                 {"device_id": "ha-530s"},
-                {"device_id": 123, "colors": ["#ff0000"]},
                 {"device_id": "ha-530s", "colors": "#ff0000"},
-                {"device_id": "ha-530s", "colors": [1]},
             ):
                 with pytest.raises(vol.Invalid):
                     await call_service(invalid_data)
+
+            with pytest.raises(HomeAssistantError, match="does not support"):
+                await call_service({"device_id": 123, "colors": ["#ff0000"]})
 
             with pytest.raises(HomeAssistantError, match="does not support"):
                 await call_service({"device_id": "missing", "colors": ["#ff0000"]})
@@ -129,8 +133,9 @@ class TestInit:
 
             registry_device.identifiers = {(DOMAIN, compatible.serial_number)}
             compatible.set_rgbic_segment_colors.return_value = False
-            with pytest.raises(HomeAssistantError, match="write failed"):
+            with pytest.raises(HomeAssistantError, match="write failed") as write_error:
                 await call_service({"device_id": "ha-530s", "colors": ["#ff0000"]})
+            assert not isinstance(write_error.value, ServiceValidationError)
 
             internal_error = "sensitive internal device detail"
             compatible.set_rgbic_segment_colors.side_effect = RuntimeError(internal_error)
@@ -140,6 +145,22 @@ class TestInit:
             assert internal_error not in caplog.text
             assert "RGBIC segment write failed" in caplog.text
             assert "RuntimeError" in caplog.text
+
+            compatible.set_rgbic_segment_colors.side_effect = RgbicSegmentColorValidationError(
+                "Expected 17 colors, got 15."
+            )
+            with pytest.raises(ServiceValidationError, match="Expected 17 colors, got 15"):
+                await call_service({"device_id": "ha-530s", "colors": ["#ff0000"] * 15})
+            compatible.set_rgbic_segment_colors.side_effect = RgbicSegmentColorValidationError(
+                "Color at position 3 must be a valid #RRGGBB hexadecimal value."
+            )
+            with pytest.raises(ServiceValidationError, match="position 3"):
+                await call_service({"device_id": "ha-530s", "colors": ["#ff0000"] * 17})
+            compatible.set_rgbic_segment_colors.side_effect = RgbicSegmentColorValidationError(
+                "Color at position 1 must be a valid #RRGGBB hexadecimal value."
+            )
+            with pytest.raises(ServiceValidationError, match="position 1"):
+                await call_service({"device_id": "ha-530s", "colors": [1]})
 
             assert hass.services.has_service(DOMAIN, "set_rgbic_segments")
             integration = MagicMock()

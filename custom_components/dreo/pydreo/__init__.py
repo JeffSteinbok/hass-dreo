@@ -20,7 +20,7 @@ from .pydreounknowndevice import PyDreoUnknownDevice
 from .pydreotowerfan import PyDreoTowerFan
 from .pydreoaircirculator import PyDreoAirCirculator
 from .pydreoceilingfan import PyDreoCeilingFan
-from .pydreoairpurifier import PyDreoAirPurifier
+from .pydreoairpurifier import PyDreoAirPurifier, RgbicSegmentColorValidationError
 from .pydreoheater import PyDreoHeater
 from .pydreoairconditioner import PyDreoAC
 from .pydreochefmaker import PyDreoChefMaker
@@ -519,7 +519,10 @@ class PyDreo:  # pylint: disable=function-redefined
                 return None
 
             for layout in whole_color_layouts:
+                # Catalogs can store wholeColorList on multiple layouts; update all
+                # matching layouts so every persisted whole-color value stays in sync.
                 layout["currentSelected"] = "whole"
+                # The 530S catalog uses lowercase hex, while HCF catalogs use uppercase.
                 if device.device_definition.supports_rgbic_mode_light:
                     layout["wholeColorList"] = [color.lower()]
                 else:
@@ -596,13 +599,32 @@ class PyDreo:  # pylint: disable=function-redefined
             return False
         return self._post_rgbic_edit_batch(device, [entry])
 
-    def set_rgbic_segment_colors(self, device: PyDreoBaseDevice, colors: list[str]) -> bool:
+    def set_rgbic_segment_colors(
+        self,
+        device: PyDreoBaseDevice,
+        colors: list[str],
+        *,
+        raise_validation_errors: bool = False,
+    ) -> bool:
         """Set the saved per-segment colors on a compatible 530S purifier."""
         if not device.device_definition.supports_rgbic_mode_light:
             return False
-        if not PyDreoAirPurifier._rgbic_segment_color_list_valid(colors):
-            _LOGGER.warning("set_rgbic_segment_colors: colors must be a list of #RRGGBB strings")
+
+        def validation_failed(message: str) -> bool:
+            _LOGGER.warning("set_rgbic_segment_colors: %s for %s", message, device.name)
+            if raise_validation_errors:
+                raise RgbicSegmentColorValidationError(message)
             return False
+
+        if not isinstance(colors, list):
+            return validation_failed("colors must be a list of #RRGGBB strings")
+        if colors and not PyDreoAirPurifier._rgbic_segment_color_list_valid(colors):
+            for index, color in enumerate(colors, start=1):
+                if not PyDreoAirPurifier._rgbic_segment_color_list_valid([color]):
+                    return validation_failed(
+                        f"Color at position {index} must be a valid #RRGGBB hexadecimal value."
+                    )
+
         colors = [value.lower() for value in colors]
         catalog = self.get_rgbic_effect_catalog(device)
         if not catalog:
@@ -612,11 +634,13 @@ class PyDreo:  # pylint: disable=function-redefined
             _LOGGER.warning("set_rgbic_segment_colors: no compatible Constant effect for %s", device.name)
             return False
         layout = PyDreoAirPurifier._rgbic_segment_layout(effect)
-        catalog_colors = layout.get("colorList") if layout else None
-        if not isinstance(catalog_colors, list) or len(colors) != len(catalog_colors):
-            _LOGGER.warning("set_rgbic_segment_colors: expected %s colors, received %s for %s",
-                            len(catalog_colors) if isinstance(catalog_colors, list) else 0, len(colors), device.name)
+        if layout is None:
+            _LOGGER.warning("set_rgbic_segment_colors: no valid segment color layout for %s", device.name)
             return False
+        catalog_colors = layout.get("colorList")
+        if len(colors) != len(catalog_colors):
+            expected = len(catalog_colors)
+            return validation_failed(f"Expected {expected} colors, got {len(colors)}.")
         entry = self._prepare_rgbic_edit_batch_entry(device, effect, effect_name=effect["name"])
         if entry is None:
             return False

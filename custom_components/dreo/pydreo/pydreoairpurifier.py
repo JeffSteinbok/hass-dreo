@@ -20,6 +20,11 @@ from .models import DreoDeviceDetails
 
 _LOGGER = logging.getLogger(__name__)
 
+
+class RgbicSegmentColorValidationError(ValueError):
+    """Invalid segment color input or segment count for an RGBIC catalog."""
+
+
 if TYPE_CHECKING:
     from pydreo import PyDreo
 
@@ -526,11 +531,15 @@ class PyDreoAirPurifier(PyDreoFanBase):
             self._skip_next_constant_refresh = None
         self._do_callbacks()
 
-    def set_rgbic_segment_colors(self, colors: list[str]) -> bool:
+    def set_rgbic_segment_colors(
+        self, colors: list[str], *, raise_validation_errors: bool = False
+    ) -> bool:
         """Write saved segment colors and update local state only after success."""
         if not self._device_definition.supports_rgbic_mode_light:
             return False
-        if not self._dreo.set_rgbic_segment_colors(self, colors):
+        if not self._dreo.set_rgbic_segment_colors(
+            self, colors, raise_validation_errors=raise_validation_errors
+        ):
             return False
         self.apply_rgbic_segment_colors([color.lower() for color in colors])
         return True
